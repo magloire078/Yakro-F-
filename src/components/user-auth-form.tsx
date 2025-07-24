@@ -45,7 +45,8 @@ export function UserAuthForm() {
         });
         router.push('/');
     } catch (error: any) {
-        if (error.code === AuthErrorCodes.USER_NOT_FOUND || error.code === 'auth/wrong-password') {
+        // Check for specific error codes to determine if we should create a new user
+        if (error.code === AuthErrorCodes.USER_NOT_FOUND || error.code === 'auth/wrong-password' || error.code === AuthErrorCodes.INVALID_CREDENTIAL) {
             // If user doesn't exist or wrong password (since we use a dummy one), create a new account
             try {
                 await createUserWithEmailAndPassword(auth, data.email, dummyPassword);
@@ -55,18 +56,27 @@ export function UserAuthForm() {
                 });
                 router.push('/profile-selection');
             } catch (creationError: any) {
-                 toast({
-                    variant: "destructive",
-                    title: "Erreur de création de compte",
-                    description: creationError.message,
-                });
+                // Handle case where user already exists but password was wrong initially (race condition or complex state)
+                 if (creationError.code === AuthErrorCodes.EMAIL_EXISTS) {
+                     toast({
+                        variant: "destructive",
+                        title: "Erreur de connexion",
+                        description: "Cet utilisateur existe déjà. Impossible de se connecter.",
+                    });
+                 } else {
+                    toast({
+                        variant: "destructive",
+                        title: "Erreur de création de compte",
+                        description: "Une erreur est survenue. Veuillez réessayer.",
+                    });
+                 }
             }
         } else {
-            // Handle other errors
+            // Handle other unexpected errors
             toast({
                 variant: "destructive",
                 title: "Erreur d'authentification",
-                description: error.message,
+                description: "Une erreur inattendue est survenue. Veuillez réessayer.",
             });
         }
     } finally {
