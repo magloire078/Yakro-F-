@@ -33,24 +33,27 @@ export function UserAuthForm() {
   async function onSubmit(data: FormData) {
     setIsLoading(true);
     
+    // Using a dummy password for this demo since we don't have a password field
+    const dummyPassword = "defaultPassword123";
+
     try {
         // Try to sign in first
-        await signInWithEmailAndPassword(auth, data.email, "defaultPassword123"); // Using a dummy password
+        await signInWithEmailAndPassword(auth, data.email, dummyPassword);
         toast({
             title: "Connexion réussie",
             description: "Heureux de vous revoir !",
         });
-        router.push('/');
+        router.push('/profile-selection');
     } catch (error: any) {
         if (error.code === AuthErrorCodes.USER_NOT_FOUND || error.code === 'auth/wrong-password') {
             // If user doesn't exist or wrong password (since we use a dummy one), create a new account
             try {
-                await createUserWithEmailAndPassword(auth, data.email, "defaultPassword123");
+                await createUserWithEmailAndPassword(auth, data.email, dummyPassword);
                 toast({
                     title: "Compte créé avec succès",
-                    description: "Bienvenue sur Yakro Fê !",
+                    description: "Bienvenue sur Yakro Go !",
                 });
-                router.push('/');
+                router.push('/profile-selection');
             } catch (creationError: any) {
                  toast({
                     variant: "destructive",
