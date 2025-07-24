@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 
 
 export default function DashboardPage() {
-    const { restaurants, menuItems, addMenuItem } = useData();
+    const { restaurants, addMenuItem } = useData();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [description, setDescription] = React.useState('');
     const [loading, setLoading] = React.useState(false);
@@ -31,8 +31,10 @@ export default function DashboardPage() {
 
     React.useEffect(() => {
         if (!restaurants.length) return;
-        setSelectedRestaurant(restaurants[0]);
-    },[restaurants]);
+        if(!selectedRestaurant) {
+            setSelectedRestaurant(restaurants[0]);
+        }
+    },[restaurants, selectedRestaurant]);
     
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -84,7 +86,7 @@ export default function DashboardPage() {
             setGeneratedItem(newItem);
             toast({
                 title: 'Plat généré avec succès !',
-                description: 'Voici une proposition. Vous pourrez bientôt l\'ajouter à votre menu.',
+                description: 'Voici une proposition. Vous pouvez l\'ajouter à votre menu.',
             });
         } catch (error) {
             console.error('Failed to generate menu item:', error);
@@ -104,14 +106,24 @@ export default function DashboardPage() {
         // We don't want to save the temporary `id` to Firestore
         const { id, ...itemToAdd } = generatedItem;
 
-        await addMenuItem(itemToAdd);
-
-        setGeneratedItem(null);
-        setDescription('');
-        toast({
-            title: 'Plat ajouté !',
-            description: `${generatedItem.name} est maintenant disponible dans votre menu.`
-        });
+        setLoading(true);
+        try {
+            await addMenuItem(itemToAdd);
+            setGeneratedItem(null);
+            setDescription('');
+            toast({
+                title: 'Plat ajouté !',
+                description: `${generatedItem.name} est maintenant disponible dans votre menu.`
+            });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Erreur',
+                description: "Impossible d'ajouter le plat à la base de données."
+            });
+        } finally {
+            setLoading(false);
+        }
     }
 
     if (authLoading || !user) {
@@ -159,7 +171,7 @@ export default function DashboardPage() {
                             />
                         </div>
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
-                            {loading ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
+                            {loading && !generatedItem ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
                             Générer le plat
                         </Button>
                     </CardContent>
@@ -168,7 +180,7 @@ export default function DashboardPage() {
                 <div>
                     <h2 className="text-2xl font-headline mb-4">Résultat de la génération</h2>
                      <div className="p-4 border-2 border-dashed rounded-lg min-h-[200px] flex items-center justify-center">
-                        {loading ? (
+                        {loading && !generatedItem ? (
                              <div className="text-center text-muted-foreground animate-pulse">
                                 <p>L'IA est en cuisine...</p>
                              </div>
@@ -180,10 +192,13 @@ export default function DashboardPage() {
                             <p className="text-muted-foreground">Le plat que vous générez apparaîtra ici.</p>
                         )}
                     </div>
-                    {generatedItem && !loading && (
+                    {generatedItem && (
                         <div className="mt-4 flex justify-end gap-2">
                             <Button variant="outline" onClick={() => setGeneratedItem(null)}>Rejeter</Button>
-                             <Button onClick={handleAddItemToMenu}>Ajouter au menu</Button>
+                             <Button onClick={handleAddItemToMenu} disabled={loading}>
+                                {loading && <Loader className="animate-spin mr-2" />}
+                                Ajouter au menu
+                             </Button>
                         </div>
                     )}
                 </div>

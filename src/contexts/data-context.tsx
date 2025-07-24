@@ -16,8 +16,6 @@ interface DataState {
   isLoading: boolean;
   fetchData: () => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
-  setRestaurants: (restaurants: Restaurant[]) => void;
-  setMenuItems: (menuItems: MenuItem[]) => void;
   generateAllImages: () => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
@@ -28,23 +26,23 @@ const useDataStore = create<DataState>((set, get) => ({
   menuItems: [],
   isGenerating: false,
   isLoading: true,
-  setRestaurants: (restaurants) => set({ restaurants }),
-  setMenuItems: (menuItems) => set({ menuItems }),
 
   fetchData: async () => {
-    if(!get().isLoading) return; // prevent multiple fetches
+    // Prevent multiple fetches if already loading or data is present
+    if (!get().isLoading && get().restaurants.length > 0) return;
+    set({ isLoading: true });
     try {
       const restaurantsCollection = collection(db, 'restaurants');
       const restaurantSnapshot = await getDocs(restaurantsCollection);
       const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-      set({ restaurants: restaurantList });
+      set({ restaurants: restaurantList.length > 0 ? restaurantList : initialRestaurants });
 
       const menuItemsCollection = collection(db, 'menuItems');
       const menuItemSnapshot = await getDocs(menuItemsCollection);
       const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
-      set({ menuItems: menuList });
+      set({ menuItems: menuList.length > 0 ? menuList : initialMenuItems });
     } catch (error) {
-      console.error("Error fetching data from Firestore: ", error);
+      console.error("Error fetching data from Firestore, using initial data: ", error);
       set({ restaurants: initialRestaurants, menuItems: initialMenuItems });
     } finally {
       set({ isLoading: false });
@@ -99,16 +97,13 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
+// Initialize data fetching once
+if (typeof window !== 'undefined') {
+    useDataStore.getState().fetchData();
+}
+
 // The hook to be used in components
-export const useData = () => {
-    const state = useDataStore();
-    React.useEffect(() => {
-        if(state.isLoading) {
-            state.fetchData();
-        }
-    }, [state.isLoading, state.fetchData]);
-    return state;
-};
+export const useData = useDataStore;
 
 // This is needed for the user history generation helper which runs outside of React components
 // It might be stale if used before data is fetched.
