@@ -2,8 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Search, UtensilsCrossed, Image as ImageIcon, Loader } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { UtensilsCrossed, Image as ImageIcon, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
 import { MenuItemCard } from '@/components/menu-item-card';
@@ -11,11 +10,11 @@ import { Recommendations, RecommendationsSkeleton } from '@/components/recommend
 import { OrderStatus } from '@/components/order-status';
 import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
-import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useToast } from '@/hooks/use-toast';
 import { useImages } from '@/contexts/image-context';
 import { pastOrders } from '@/lib/data';
 import type { Order } from '@/lib/types';
+import { SearchBar } from '@/components/search-bar';
 
 
 // Helper function to generate user history summary
@@ -119,8 +118,8 @@ export default function Home() {
     }
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
   };
 
   const filteredRestaurants = restaurants.filter(restaurant =>
@@ -141,16 +140,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-12">
       <section>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Chercher un restaurant ou un produit..."
-              className="w-full rounded-full p-3 pl-10 text-base bg-card border-2 border-primary/20 focus:border-primary"
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
-          </div>
+          <SearchBar onSearchChange={handleSearchChange} initialSearchTerm={searchTerm} />
       </section>
 
       <div>
