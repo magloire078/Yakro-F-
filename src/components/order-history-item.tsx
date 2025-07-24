@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -8,6 +9,7 @@ import type { Order } from '@/lib/types';
 import { useCart } from '@/contexts/cart-context';
 import { Card } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useImages } from '@/contexts/image-context';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -16,6 +18,8 @@ interface OrderHistoryItemProps {
 export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const { getMenuItemImage } = useImages();
+
 
   const handleReorder = () => {
     order.items.forEach(item => {
@@ -41,7 +45,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-semibold text-lg text-primary">{order.total.toLocaleString('fr-FR')} FCFA</span>
-                <Badge variant={order.status === 'Livrée' ? 'default' : 'destructive'}>
+                <Badge variant={order.status === 'Livrée' ? 'default' : 'destructive'} className={order.status === 'Livrée' ? 'bg-green-600' : ''}>
                     {order.status}
                 </Badge>
               </div>
@@ -52,7 +56,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 {order.items.map(item => (
                     <div key={item.id} className="flex justify-between items-center">
                         <div className="flex items-center gap-4">
-                            <Image src={item.image} alt={item.name} width={40} height={40} className="rounded-md" data-ai-hint={item.imageHint}/>
+                            <Image src={getMenuItemImage(item.id)} alt={item.name} width={40} height={40} className="rounded-md" data-ai-hint={item.imageHint}/>
                             <div>
                                 <span>{item.quantity} x </span>
                                 <span className="font-medium">{item.name}</span>

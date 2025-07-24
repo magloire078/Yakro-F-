@@ -1,5 +1,7 @@
 
 
+'use client';
+
 import { OrderHistoryItem } from "@/components/order-history-item";
 import { pastOrders } from "@/lib/data";
 
