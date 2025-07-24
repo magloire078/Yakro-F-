@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/contexts/cart-context';
 import { Sidebar } from '@/components/sidebar';
+import { ImageProvider } from '@/contexts/image-context';
 
 export const metadata: Metadata = {
   title: 'Yakro Fê',
@@ -23,13 +24,15 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Belleza&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <CartProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 p-8 bg-muted/30">{children}</main>
-          </div>
-          <Toaster />
-        </CartProvider>
+        <ImageProvider>
+          <CartProvider>
+            <div className="flex min-h-screen">
+              <Sidebar />
+              <main className="flex-1 p-8 bg-muted/30">{children}</main>
+            </div>
+            <Toaster />
+          </CartProvider>
+        </ImageProvider>
       </body>
     </html>
   );

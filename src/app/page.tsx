@@ -9,27 +9,11 @@ import { RestaurantCard } from '@/components/restaurant-card';
 import { MenuItemCard } from '@/components/menu-item-card';
 import { Recommendations, RecommendationsSkeleton } from '@/components/recommendations';
 import { OrderStatus } from '@/components/order-status';
-import type { Restaurant, MenuItem } from '@/lib/types';
 import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useToast } from '@/hooks/use-toast';
-
-const initialRestaurants: Restaurant[] = [
-    { id: '1', name: 'Le Pili Pili', cuisine: 'Ivoirienne', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/600x400', imageHint: 'african food' },
-    { id: '2', name: 'Chez Mario', cuisine: 'Pizza', rating: 4.7, deliveryTime: 35, image: 'https://placehold.co/600x400', imageHint: 'pizza' },
-    { id: '3', name: 'Le Bazin', cuisine: 'Africaine', rating: 4.6, deliveryTime: 30, image: 'https://placehold.co/600x400', imageHint: 'traditional african food' },
-    { id: '4', name: 'La Brise du Lac', cuisine: 'Grillades', rating: 4.5, deliveryTime: 40, image: 'https://placehold.co/600x400', imageHint: 'lake view' },
-];
-
-const initialMenuItems: MenuItem[] = [
-    { id: 'm1', name: 'Poulet Braisé', description: 'Poulet entier grillé, mariné aux épices locales.', price: 7500, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken', restaurantId: '1' },
-    { id: 'm2', name: 'Foutou Banane, Sauce Graine', description: 'Foutou de banane plantain accompagné d\'une sauce onctueuse aux noix de palme.', price: 5000, image: 'https://placehold.co/600x400', imageHint: 'fufu palm nut soup', restaurantId: '3' },
-    { id: 'm3', name: 'Attiéké Poisson Thon', description: 'La spécialité ivoirienne par excellence : semoule de manioc et thon frit.', price: 3500, image: 'https://placehold.co/600x400', imageHint: 'attieke fried fish', restaurantId: '1' },
-    { id: 'm4', name: 'Kedjenou de Poulet', description: 'Poulet mijoté aux légumes et épices, cuit à l\'étouffée.', price: 6000, image: 'https://placehold.co/600x400', imageHint: 'chicken stew', restaurantId: '4' },
-    { id: 'm5', name: 'Alloco', description: 'Bananes plantains mûres frites, un délice sucré-salé.', price: 1500, image: 'https://placehold.co/600x400', imageHint: 'fried plantain', restaurantId: '3' },
-    { id: 'm6', name: 'Pizza Reine', description: 'Pizza garnie de jambon, champignons et fromage.', price: 8000, image: 'https://placehold.co/600x400', imageHint: 'pizza', restaurantId: '2' },
-];
+import { useImages } from '@/contexts/image-context';
 
 export default function Home() {
   const [isOrderPlaced, setIsOrderPlaced] = React.useState(false);
@@ -37,9 +21,12 @@ export default function Home() {
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
   
-  const [restaurants, setRestaurants] = React.useState<Restaurant[]>(initialRestaurants);
-  const [menuItems, setMenuItems] = React.useState<MenuItem[]>(initialMenuItems);
-  const [isGeneratingImages, setIsGeneratingImages] = React.useState(false);
+  const { 
+    restaurants, 
+    menuItems, 
+    isGenerating, 
+    generateAllImages 
+  } = useImages();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = React.useState('');
 
@@ -73,42 +60,23 @@ export default function Home() {
   }
   
   const handleGenerateImages = async () => {
-    setIsGeneratingImages(true);
     toast({
       title: "Génération d'images en cours...",
       description: "Cela peut prendre quelques instants.",
     });
-
     try {
-      const updatedMenuItems = await Promise.all(
-        menuItems.map(async (item) => {
-          const { imageUrl } = await generateImage({ prompt: item.name });
-          return { ...item, image: imageUrl };
-        })
-      );
-      setMenuItems(updatedMenuItems);
-      
-      const updatedRestaurants = await Promise.all(
-        restaurants.map(async (resto) => {
-          const { imageUrl } = await generateImage({ prompt: resto.cuisine });
-          return { ...resto, image: imageUrl };
-        })
-      );
-      setRestaurants(updatedRestaurants);
-
+      await generateAllImages();
       toast({
         title: "Images générées !",
         description: "Les images des plats et restaurants ont été mises à jour.",
       });
     } catch (error) {
-      console.error("Error generating images:", error);
+       console.error("Error generating images:", error);
       toast({
         variant: "destructive",
         title: "Erreur de génération",
         description: "Impossible de générer les images pour le moment.",
       });
-    } finally {
-      setIsGeneratingImages(false);
     }
   };
 
@@ -147,7 +115,7 @@ export default function Home() {
       </section>
 
       <div>
-        {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} menuItems={menuItems} />}
+        {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} />}
 
         <section className="mt-16">
           <div className="flex items-center justify-between mb-6">
@@ -165,8 +133,8 @@ export default function Home() {
            <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-headline text-foreground">À la carte</h2>
              <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleGenerateImages} disabled={isGeneratingImages}>
-                {isGeneratingImages ? <Loader className="animate-spin" /> : <ImageIcon />}
+              <Button variant="outline" onClick={handleGenerateImages} disabled={isGenerating}>
+                {isGenerating ? <Loader className="animate-spin" /> : <ImageIcon />}
                 Générer les images
               </Button>
               <Button variant="link" className="text-primary">Voir tout</Button>

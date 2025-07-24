@@ -3,33 +3,14 @@
 
 import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
-import type { MenuItem, Restaurant } from "@/lib/types";
+import { useImages } from "@/contexts/image-context";
 import { Clock, Star } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 
-const restaurants: Restaurant[] = [
-    { id: '1', name: 'Le Pili Pili', cuisine: 'Ivoirienne', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/1200x400', imageHint: 'african food' },
-    { id: '2', name: 'Chez Mario', cuisine: 'Pizza', rating: 4.7, deliveryTime: 35, image: 'https://placehold.co/1200x400', imageHint: 'pizza' },
-    { id: '3', name: 'Le Bazin', cuisine: 'Africaine', rating: 4.6, deliveryTime: 30, image: 'https://placehold.co/1200x400', imageHint: 'traditional african food' },
-    { id: '4', name: 'La Brise du Lac', cuisine: 'Grillades', rating: 4.5, deliveryTime: 40, image: 'https://placehold.co/1200x400', imageHint: 'lake view' },
-];
-
-const menuItems: MenuItem[] = [
-    { id: 'm1', name: 'Poulet Braisé', description: 'Poulet entier grillé, mariné aux épices locales.', price: 7500, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken', restaurantId: '1' },
-    { id: 'm2', name: 'Foutou Banane, Sauce Graine', description: 'Foutou de banane plantain accompagné d\'une sauce onctueuse aux noix de palme.', price: 5000, image: 'https://placehold.co/600x400', imageHint: 'fufu palm nut soup', restaurantId: '3' },
-    { id: 'm3', name: 'Attiéké Poisson Thon', description: 'La spécialité ivoirienne par excellence : semoule de manioc et thon frit.', price: 3500, image: 'https://placehold.co/600x400', imageHint: 'attieke fried fish', restaurantId: '1' },
-    { id: 'm4', name: 'Kedjenou de Poulet', description: 'Poulet mijoté aux légumes et épices, cuit à l\'étouffée.', price: 6000, image: 'https://placehold.co/600x400', imageHint: 'chicken stew', restaurantId: '4' },
-    { id: 'm5', name: 'Alloco', description: 'Bananes plantains mûres frites, un délice sucré-salé.', price: 1500, image: 'https://placehold.co/600x400', imageHint: 'fried plantain', restaurantId: '3' },
-    { id: 'm6', name: 'Pizza Reine', description: 'Pizza garnie de jambon, champignons et fromage.', price: 8000, image: 'https://placehold.co/600x400', imageHint: 'pizza', restaurantId: '2' },
-    { id: 'm7', name: 'Pizza 4 Saisons', description: 'Pizza végétarienne avec artichauts, poivrons, olives et champignons.', price: 8500, image: 'https://placehold.co/600x400', imageHint: 'vegetarian pizza', restaurantId: '2' },
-    { id: 'm8', name: 'Brochettes de Boeuf', description: 'Tendres morceaux de boeuf marinés et grillés.', price: 4000, image: 'https://placehold.co/600x400', imageHint: 'beef skewers', restaurantId: '4' },
-
-];
-
-
 export default function RestaurantPage() {
     const params = useParams();
+    const { restaurants, menuItems } = useImages();
     const restaurant = restaurants.find(r => r.id === params.id);
 
     if (!restaurant) {

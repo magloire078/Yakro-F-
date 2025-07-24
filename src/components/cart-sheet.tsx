@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -15,9 +16,11 @@ import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
 import { Minus, Plus, Trash2 } from 'lucide-react';
+import { useImages } from '@/contexts/image-context';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
   const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+  const { getMenuItemImage } = useImages();
 
   const handlePlaceOrder = () => {
     // This is a simulation. In a real app, this would trigger the checkout flow.
@@ -42,7 +45,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                 {cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-4">
                     <Image
-                      src={item.image}
+                      src={getMenuItemImage(item.id)}
                       alt={item.name}
                       width={64}
                       height={64}
