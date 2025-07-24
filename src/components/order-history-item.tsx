@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import type { Order } from '@/lib/types';
 import { useCart } from '@/contexts/cart-context';
 import { Card } from './ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -14,12 +15,17 @@ interface OrderHistoryItemProps {
 
 export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const { addToCart } = useCart();
+  const { toast } = useToast();
 
   const handleReorder = () => {
     order.items.forEach(item => {
-        for (let i = 0; i < item.quantity; i++) {
-            addToCart(item);
-        }
+        // The item in order.items might not have all the fields of a full MenuItem (like description),
+        // but addToCart only needs the fields present in CartItem which extends MenuItem.
+        addToCart(item);
+    });
+    toast({
+        title: "Commande ajoutée au panier",
+        description: `Les articles de votre commande chez ${order.restaurantName} ont été ajoutés.`,
     });
   }
 
@@ -56,9 +62,11 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                     </div>
                 ))}
             </div>
-            <div className="mt-6 flex justify-end">
-                <Button onClick={handleReorder}>Recommander</Button>
-            </div>
+             {order.status === 'Livrée' && (
+              <div className="mt-6 flex justify-end">
+                  <Button onClick={handleReorder}>Recommander</Button>
+              </div>
+            )}
           </AccordionContent>
         </AccordionItem>
       </Accordion>
