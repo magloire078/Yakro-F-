@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import type { MenuItem, Restaurant } from "@/lib/types";
 import { Clock, Star } from "lucide-react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 
 const restaurants: Restaurant[] = [
     { id: '1', name: 'Le Pili Pili', cuisine: 'Ivoirienne', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/1200x400', imageHint: 'african food' },
@@ -27,7 +28,8 @@ const menuItems: MenuItem[] = [
 ];
 
 
-export default function RestaurantPage({ params }: { params: { id: string } }) {
+export default function RestaurantPage() {
+    const params = useParams();
     const restaurant = restaurants.find(r => r.id === params.id);
 
     if (!restaurant) {
