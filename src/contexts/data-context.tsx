@@ -31,9 +31,8 @@ const useDataStore = create<DataState>((set, get) => ({
   isLoading: true,
 
   fetchData: async () => {
-    // Prevent multiple fetches if already loading or data is present
-    if (get().restaurants.length > 0 && get().orders.length > 0) {
-      set({ isLoading: false });
+    // Prevent multiple fetches if already loading
+    if (!get().isLoading && get().restaurants.length > 0) {
       return;
     }
     set({ isLoading: true });
