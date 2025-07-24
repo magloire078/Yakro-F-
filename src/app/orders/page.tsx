@@ -38,7 +38,7 @@ const pastOrders: Order[] = [
 
 export default function OrdersPage() {
     return (
-        <div className="container mx-auto py-8 px-4">
+        <div className="container mx-auto">
             <h1 className="text-4xl font-headline text-primary mb-8">Historique des commandes</h1>
             <div className="space-y-6">
                 {pastOrders.map(order => (

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/contexts/cart-context';
-import { Header } from '@/components/header';
+import { Sidebar } from '@/components/sidebar';
 
 export const metadata: Metadata = {
   title: 'Yakro Fê',
@@ -24,9 +24,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <CartProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <main className="flex-1 p-8 bg-muted/30">{children}</main>
           </div>
           <Toaster />
         </CartProvider>
