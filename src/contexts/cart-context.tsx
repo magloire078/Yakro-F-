@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -15,8 +16,31 @@ interface CartContextType {
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
 
+const getInitialCart = (): CartItem[] => {
+    if (typeof window === 'undefined') {
+        return [];
+    }
+    try {
+        const item = window.localStorage.getItem('yakro-fe-cart');
+        return item ? JSON.parse(item) : [];
+    } catch (error) {
+        console.warn('Error reading localStorage cart', error);
+        return [];
+    }
+};
+
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = React.useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
+
+  React.useEffect(() => {
+    try {
+        window.localStorage.setItem('yakro-fe-cart', JSON.stringify(cartItems));
+    } catch (error) {
+        console.warn('Error writing to localStorage cart', error);
+    }
+  }, [cartItems]);
+
 
   const addToCart = (item: MenuItem) => {
     setCartItems(prevItems => {
