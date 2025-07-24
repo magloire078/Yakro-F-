@@ -10,9 +10,10 @@ import { generateVideo } from '@/ai/flows/generate-video-flow';
 import type { Restaurant } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader, Video } from 'lucide-react';
+import Image from 'next/image';
 
 export default function MarketingPage() {
-  const { restaurants } = useImages();
+  const { restaurants, menuItems, getRestaurantImage } = useImages();
   const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(restaurants[0] || null);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -32,6 +33,8 @@ export default function MarketingPage() {
       const result = await generateVideo({
         restaurantName: selectedRestaurant.name,
         cuisine: selectedRestaurant.cuisine,
+        // We will pass an image in the next step
+        imageDataUri: null
       });
       setVideoUrl(result.videoUrl);
       toast({
@@ -49,6 +52,8 @@ export default function MarketingPage() {
       setLoading(false);
     }
   };
+  
+  const restaurantImage = selectedRestaurant ? getRestaurantImage(selectedRestaurant.id) : null;
 
   return (
     <div className="container mx-auto">
@@ -56,56 +61,78 @@ export default function MarketingPage() {
         <h1 className="text-4xl font-headline text-primary">Marketing Vidéo IA</h1>
       </div>
 
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Générateur de Publicité Vidéo</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <label className="font-medium">Sélectionnez un restaurant</label>
-            <Select
-              onValueChange={value => {
-                setSelectedRestaurant(restaurants.find(r => r.id === value) || null);
-                setVideoUrl(null);
-              }}
-              defaultValue={selectedRestaurant?.id}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choisissez un restaurant" />
-              </SelectTrigger>
-              <SelectContent>
-                {restaurants.map(r => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {r.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button onClick={handleGenerateVideo} disabled={loading || !selectedRestaurant} className="w-full" size="lg">
-            {loading ? <Loader className="animate-spin" /> : <Video className="mr-2" />}
-            {loading ? 'Génération en cours...' : 'Générer la vidéo promotionnelle'}
-          </Button>
-
-          {loading && (
-            <div className="text-center text-muted-foreground animate-pulse">
-              <p>L'IA réalise votre chef-d'œuvre...</p>
-              <p>Cette opération peut prendre une minute.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Générateur de Publicité Vidéo</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <label className="font-medium">1. Sélectionnez un restaurant</label>
+              <Select
+                onValueChange={value => {
+                  setSelectedRestaurant(restaurants.find(r => r.id === value) || null);
+                  setVideoUrl(null);
+                }}
+                defaultValue={selectedRestaurant?.id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisissez un restaurant" />
+                </SelectTrigger>
+                <SelectContent>
+                  {restaurants.map(r => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
-
-          {videoUrl && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Résultat :</h3>
-              <video controls autoPlay loop className="w-full rounded-lg border">
-                <source src={videoUrl} type="video/mp4" />
-                Votre navigateur ne supporte pas la lecture de vidéos.
-              </video>
+            
+            <div className="space-y-2">
+                <label className="font-medium">2. Image de référence (Optionnel)</label>
+                <div className="border rounded-lg p-2 bg-muted h-48 flex items-center justify-center">
+                   {restaurantImage ? (
+                     <Image src={restaurantImage} alt={selectedRestaurant?.name || ""} width={300} height={150} className="object-contain rounded-md" />
+                   ) : (
+                    <p className="text-sm text-muted-foreground">L'image du restaurant apparaîtra ici.</p>
+                   )}
+                </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            <Button onClick={handleGenerateVideo} disabled={loading || !selectedRestaurant} className="w-full" size="lg">
+              {loading ? <Loader className="animate-spin" /> : <Video className="mr-2" />}
+              {loading ? 'Génération en cours...' : 'Générer la vidéo promotionnelle'}
+            </Button>
+          </CardContent>
+        </Card>
+        
+        <div className="flex flex-col">
+            <h2 className="text-2xl font-headline mb-4">Résultat</h2>
+            <Card className="flex-1 flex items-center justify-center bg-muted/30">
+                 {loading && (
+                    <div className="text-center text-muted-foreground p-8">
+                      <Loader className="animate-spin h-12 w-12 mx-auto mb-4 text-primary" />
+                      <p className="font-semibold">L'IA réalise votre chef-d'œuvre...</p>
+                      <p className="text-sm">Cette opération peut prendre une minute.</p>
+                    </div>
+                  )}
+
+                  {!loading && videoUrl && (
+                    <div className="w-full">
+                      <video controls autoPlay loop className="w-full rounded-lg border">
+                        <source src={videoUrl} type="video/mp4" />
+                        Votre navigateur ne supporte pas la lecture de vidéos.
+                      </video>
+                    </div>
+                  )}
+                  
+                  {!loading && !videoUrl && (
+                     <p className="text-muted-foreground p-8 text-center">La vidéo générée apparaîtra ici.</p>
+                  )}
+            </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow for generating a promotional video for a restaurant.
@@ -10,10 +11,12 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
+import type { MediaPart } from 'genkit';
 
 const GenerateVideoInputSchema = z.object({
   restaurantName: z.string().describe('The name of the restaurant.'),
   cuisine: z.string().describe('The cuisine of the restaurant.'),
+  imageDataUri: z.string().nullable().describe("An optional image of the restaurant or a dish, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
 });
 export type GenerateVideoInput = z.infer<typeof GenerateVideoInputSchema>;
 
@@ -84,8 +87,20 @@ const generateVideoFlow = ai.defineFlow(
     name: 'generateVideoFlow',
     inputSchema: GenerateVideoInputSchema,
   },
-  async ({ restaurantName, cuisine }) => {
-    const prompt = `A cinematic, professional 5-second video advertisement for a restaurant named "${restaurantName}". The restaurant specializes in ${cuisine} cuisine. Show delicious, steaming food, a glimpse of a warm and inviting atmosphere. Food photography style.`;
+  async ({ restaurantName, cuisine, imageDataUri }) => {
+    
+    const textPrompt = `A cinematic, professional 5-second video advertisement for a restaurant named "${restaurantName}". The restaurant specializes in ${cuisine} cuisine. Show delicious, steaming food, a glimpse of a warm and inviting atmosphere. Food photography style.`;
+    
+    let prompt: (string | MediaPart)[] | string;
+    
+    if(imageDataUri) {
+        prompt = [
+            { text: `Animate this image: ${textPrompt}` },
+            { media: { url: imageDataUri } }
+        ]
+    } else {
+        prompt = textPrompt;
+    }
 
     const { operation } = await ai.generate({
       model: googleAI.model('veo-2.0-generate-001'),
