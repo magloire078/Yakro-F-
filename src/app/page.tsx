@@ -85,7 +85,7 @@ export default function Home() {
       </section>
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} />}
+        {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} menuItems={menuItems} />}
 
         <section className="mt-16">
           <div className="flex items-center justify-between mb-6">

@@ -7,15 +7,39 @@ import { Button } from './ui/button';
 import { Star } from 'lucide-react';
 import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Skeleton } from './ui/skeleton';
+import { useCart } from '@/contexts/cart-context';
+import type { MenuItem } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface RecommendationsProps {
   recommendationsData: PersonalizedRecommendationsOutput | null;
+  menuItems: MenuItem[];
 }
 
-export function Recommendations({ recommendationsData }: RecommendationsProps) {
+export function Recommendations({ recommendationsData, menuItems }: RecommendationsProps) {
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+
   if (!recommendationsData || recommendationsData.recommendations.length === 0) {
     return null;
   }
+
+  const handleAddToCart = (recommendedItemName: string) => {
+    const menuItem = menuItems.find(item => item.name === recommendedItemName);
+    if (menuItem) {
+      addToCart(menuItem);
+      toast({
+        title: "Ajouté au panier",
+        description: `${menuItem.name} a été ajouté à votre panier.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Article non disponible",
+        description: "Désolé, cet article n'est pas disponible pour le moment.",
+      });
+    }
+  };
 
   return (
     <section className="w-full">
@@ -51,7 +75,7 @@ export function Recommendations({ recommendationsData }: RecommendationsProps) {
                           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
                           <span className="text-sm font-bold">4.7</span>
                        </div>
-                       <Button size="sm" variant="outline" className="text-primary border-primary">Ajouter</Button>
+                       <Button size="sm" variant="outline" className="text-primary border-primary" onClick={() => handleAddToCart(rec.item)}>Ajouter</Button>
                     </div>
                   </CardContent>
                 </Card>
