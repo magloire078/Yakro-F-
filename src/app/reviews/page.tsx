@@ -13,6 +13,7 @@ import type { Review, Restaurant } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Ear, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { RatingsChart } from '@/components/ratings-chart';
 
 export default function ReviewsPage() {
   const { restaurants } = useImages();
@@ -95,10 +96,28 @@ export default function ReviewsPage() {
     });
   };
   
-  const averageRating = React.useMemo(() => {
-    if (reviews.length === 0) return 0;
+  const { averageRating, ratingsDistribution } = React.useMemo(() => {
+    if (reviews.length === 0) {
+      return { 
+        averageRating: '0.0', 
+        ratingsDistribution: [
+          { rating: 5, count: 0 },
+          { rating: 4, count: 0 },
+          { rating: 3, count: 0 },
+          { rating: 2, count: 0 },
+          { rating: 1, count: 0 },
+        ] 
+      };
+    }
     const total = reviews.reduce((acc, review) => acc + review.rating, 0);
-    return (total / reviews.length).toFixed(1);
+    const average = (total / reviews.length).toFixed(1);
+    
+    const distribution = [5, 4, 3, 2, 1].map(star => ({
+        rating: star,
+        count: reviews.filter(r => r.rating === star).length
+    }));
+
+    return { averageRating: average, ratingsDistribution: distribution };
   }, [reviews]);
 
   return (
@@ -143,15 +162,19 @@ export default function ReviewsPage() {
                 </Button>
             </div>
             
-            {audioUrl ? (
-                <audio controls src={audioUrl} className="w-full">
-                    Your browser does not support the audio element.
-                </audio>
-            ) : (
-                <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio || reviews.length === 0}>
-                    <Ear className="mr-2" />
-                    {isGeneratingAudio ? 'Création Audio...' : 'Écouter les avis'}
-                </Button>
+            {reviews.length > 0 && (
+              <>
+              {audioUrl ? (
+                  <audio controls src={audioUrl} className="w-full">
+                      Your browser does not support the audio element.
+                  </audio>
+              ) : (
+                  <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio || reviews.length === 0}>
+                      <Ear className="mr-2" />
+                      {isGeneratingAudio ? 'Création Audio...' : 'Écouter les avis'}
+                  </Button>
+              )}
+              </>
             )}
 
 
@@ -168,9 +191,17 @@ export default function ReviewsPage() {
             {!loading && reviews.length === 0 && <p>Aucun avis pour ce restaurant. Soyez le premier !</p>}
           </div>
 
-          <div className="lg:col-span-1">
-             <h2 className="text-2xl font-headline text-foreground mb-4">Laissez votre avis</h2>
-             <ReviewForm onSubmit={handleAddReview} />
+          <div className="lg:col-span-1 space-y-8">
+             <div>
+                <h2 className="text-2xl font-headline text-foreground mb-4">Laissez votre avis</h2>
+                <ReviewForm onSubmit={handleAddReview} />
+             </div>
+             {reviews.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-headline text-foreground mb-4">Répartition des notes</h2>
+                  <RatingsChart data={ratingsDistribution} />
+                </div>
+             )}
           </div>
         </div>
       )}
