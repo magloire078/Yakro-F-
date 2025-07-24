@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
 import { Star, Clock } from 'lucide-react';
@@ -10,31 +11,33 @@ interface RestaurantCardProps {
 
 export function RestaurantCard({ restaurant }: RestaurantCardProps) {
   return (
-    <Card className="overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer group">
-      <CardHeader className="p-0">
-        <Image
-          src={restaurant.image}
-          alt={restaurant.name}
-          width={400}
-          height={200}
-          className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
-          data-ai-hint={restaurant.imageHint}
-        />
-      </CardHeader>
-      <CardContent className="p-4">
-        <h3 className="text-lg font-bold font-headline truncate">{restaurant.name}</h3>
-        <p className="text-sm text-muted-foreground">{restaurant.cuisine}</p>
-        <div className="flex justify-between items-center mt-3 text-sm">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-            <span className="font-semibold">{restaurant.rating}</span>
-          </Badge>
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span>{restaurant.deliveryTime} min</span>
+    <Link href={`/restaurants/${restaurant.id}`}>
+      <Card className="overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer group h-full">
+        <CardHeader className="p-0">
+          <Image
+            src={restaurant.image}
+            alt={restaurant.name}
+            width={400}
+            height={200}
+            className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+            data-ai-hint={restaurant.imageHint}
+          />
+        </CardHeader>
+        <CardContent className="p-4">
+          <h3 className="text-lg font-bold font-headline truncate">{restaurant.name}</h3>
+          <p className="text-sm text-muted-foreground">{restaurant.cuisine}</p>
+          <div className="flex justify-between items-center mt-3 text-sm">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+              <span className="font-semibold">{restaurant.rating}</span>
+            </Badge>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>{restaurant.deliveryTime} min</span>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
