@@ -1,3 +1,4 @@
+
 // src/ai/flows/search-flow.ts
 'use server';
 /**
@@ -47,9 +48,9 @@ User Query: "{{{query}}}"
 Analyze the query and extract the following information:
 - Keywords: General terms from the query.
 - Cuisine: Identify any mentioned cuisines (e.g., Ivoirienne, Pizza, Africaine, Grillades).
-- Price Range: Identify any price constraints (e.g., "pas cher", "bon marché", "moins de 5000").
-- Delivery Time: Note any constraints on delivery time (e.g., "rapide", "en moins de 30 minutes").
-- Rating: Note any preference for ratings (e.g., "bien noté", "le meilleur").
+- Price Range: Identify any price constraints. For "pas cher" or "bon marché" consider a max of 4000. For "moins de X", set max to X.
+- Delivery Time: Note any constraints on delivery time (e.g., "rapide", "en moins de 30 minutes"). "Rapide" should be interpreted as under 30 minutes.
+- Rating: Note any preference for ratings (e.g., "bien noté", "le meilleur"). "Bien noté" or "le meilleur" should be interpreted as a minimum rating of 4.
 - Search Terms: List any specific dishes mentioned in the query.
 
 Return the result in JSON format.

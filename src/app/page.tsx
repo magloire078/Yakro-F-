@@ -134,11 +134,20 @@ export default function Home() {
 
         if (!interpretedSearch) return matchesText;
 
-        // AI-powered search
-        const hasCuisine = interpretedSearch.cuisine?.length > 0;
-        const matchesCuisine = hasCuisine ? interpretedSearch.cuisine.some(c => restaurant.cuisine.toLowerCase().includes(c.toLowerCase())) : true;
+        // AI-powered search filters
+        const matchesCuisine = interpretedSearch.cuisine?.length > 0 
+            ? interpretedSearch.cuisine.some(c => restaurant.cuisine.toLowerCase().includes(c.toLowerCase())) 
+            : true;
+        
+        const matchesRating = interpretedSearch.rating 
+            ? restaurant.rating >= interpretedSearch.rating 
+            : true;
 
-        return matchesText && matchesCuisine;
+        const matchesDeliveryTime = interpretedSearch.deliveryTime
+            ? restaurant.deliveryTime <= interpretedSearch.deliveryTime
+            : true;
+
+        return matchesText && matchesCuisine && matchesRating && matchesDeliveryTime;
     });
   }, [restaurants, searchQuery, interpretedSearch]);
 
@@ -156,19 +165,22 @@ export default function Home() {
         
         if (!interpretedSearch) return matchesText;
 
-        // AI-powered search
+        // AI-powered search filters
         const allSearchTerms = [
             ...(interpretedSearch.keywords || []),
             ...(interpretedSearch.searchTerms || [])
         ].map(t => t.toLowerCase());
 
-        const hasSearchTerms = allSearchTerms.length > 0;
-        const matchesSearchTerms = hasSearchTerms ? allSearchTerms.some(term => 
+        const matchesSearchTerms = allSearchTerms.length > 0 ? allSearchTerms.some(term => 
             item.name.toLowerCase().includes(term) ||
             item.description.toLowerCase().includes(term)
         ) : true;
         
-        return matchesText || matchesSearchTerms;
+        const matchesPrice = interpretedSearch.priceRange
+            ? (item.price >= (interpretedSearch.priceRange.min || 0)) && (item.price <= (interpretedSearch.priceRange.max || Infinity))
+            : true;
+
+        return (matchesText || matchesSearchTerms) && matchesPrice;
     });
   }, [menuItems, searchQuery, interpretedSearch]);
 
