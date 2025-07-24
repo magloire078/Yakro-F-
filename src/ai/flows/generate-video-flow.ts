@@ -95,7 +95,7 @@ const generateVideoFlow = ai.defineFlow(
     
     if(imageDataUri) {
         prompt = [
-            { text: `Animate this image: ${textPrompt}` },
+            { text: `Animate this image in a subtle, elegant way. Make the food steam, add a gentle zoom or pan effect. The final video should feel like a premium food commercial for "${restaurantName}".` },
             { media: { url: imageDataUri } }
         ]
     } else {
