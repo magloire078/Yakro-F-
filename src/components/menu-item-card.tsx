@@ -1,0 +1,39 @@
+'use client';
+
+import Image from 'next/image';
+import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
+import { PlusCircle } from 'lucide-react';
+import type { MenuItem } from '@/lib/types';
+import { useCart } from '@/contexts/cart-context';
+
+interface MenuItemCardProps {
+  item: MenuItem;
+}
+
+export function MenuItemCard({ item }: MenuItemCardProps) {
+    const { addToCart } = useCart();
+
+  return (
+    <Card className="flex items-center p-4 gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 group">
+      <Image
+        src={item.image}
+        alt={item.name}
+        width={100}
+        height={100}
+        className="rounded-lg object-cover w-24 h-24"
+        data-ai-hint={item.imageHint}
+      />
+      <div className="flex-1">
+        <h4 className="font-bold font-headline">{item.name}</h4>
+        <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
+        <div className="flex justify-between items-center mt-2">
+          <p className="text-lg font-semibold text-primary">{item.price.toFixed(2)} €</p>
+          <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => addToCart(item)}>
+            <PlusCircle className="w-6 h-6" />
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
