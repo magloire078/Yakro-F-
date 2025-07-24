@@ -11,7 +11,7 @@ import { OrderStatus } from '@/components/order-status';
 import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { useToast } from '@/hooks/use-toast';
-import { useImages } from '@/contexts/image-context';
+import { useImages, getRestaurantsForHistory } from '@/contexts/image-context';
 import { pastOrders } from '@/lib/data';
 import type { Order } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
@@ -31,7 +31,7 @@ const generateUserHistorySummary = (orders: Order[]): string => {
       totalSpent += order.total;
       order.items.forEach(item => {
         // We need to find the restaurant to get the cuisine
-        const restaurant = useImages.getState().restaurants.find(r => r.id === item.restaurantId);
+        const restaurant = getRestaurantsForHistory().find(r => r.id === item.restaurantId);
         if (restaurant) {
           cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
         }
@@ -121,19 +121,11 @@ export default function Home() {
   };
 
   const filteredRestaurants = React.useMemo(() => {
-    if (!searchQuery && !interpretedSearch) return restaurants;
+    if (!interpretedSearch) {
+       return restaurants.filter(restaurant => restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) || restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
 
     return restaurants.filter(restaurant => {
-        const searchText = searchQuery.toLowerCase();
-        
-        // Basic text search
-        const matchesText = searchText ? 
-            restaurant.name.toLowerCase().includes(searchText) ||
-            restaurant.cuisine.toLowerCase().includes(searchText)
-            : true;
-
-        if (!interpretedSearch) return matchesText;
-
         // AI-powered search filters
         const matchesCuisine = interpretedSearch.cuisine?.length > 0 
             ? interpretedSearch.cuisine.some(c => restaurant.cuisine.toLowerCase().includes(c.toLowerCase())) 
@@ -147,24 +139,16 @@ export default function Home() {
             ? restaurant.deliveryTime <= interpretedSearch.deliveryTime
             : true;
 
-        return matchesText && matchesCuisine && matchesRating && matchesDeliveryTime;
+        return matchesCuisine && matchesRating && matchesDeliveryTime;
     });
   }, [restaurants, searchQuery, interpretedSearch]);
 
   const filteredMenuItems = React.useMemo(() => {
-    if (!searchQuery && !interpretedSearch) return menuItems;
+     if (!interpretedSearch) {
+       return menuItems.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
 
     return menuItems.filter(item => {
-        const searchText = searchQuery.toLowerCase();
-        
-        // Basic text search
-        const matchesText = searchText ?
-            item.name.toLowerCase().includes(searchText) ||
-            item.description.toLowerCase().includes(searchText)
-            : true;
-        
-        if (!interpretedSearch) return matchesText;
-
         // AI-powered search filters
         const allSearchTerms = [
             ...(interpretedSearch.keywords || []),
@@ -180,7 +164,7 @@ export default function Home() {
             ? (item.price >= (interpretedSearch.priceRange.min || 0)) && (item.price <= (interpretedSearch.priceRange.max || Infinity))
             : true;
 
-        return (matchesText || matchesSearchTerms) && matchesPrice;
+        return matchesSearchTerms && matchesPrice;
     });
   }, [menuItems, searchQuery, interpretedSearch]);
 

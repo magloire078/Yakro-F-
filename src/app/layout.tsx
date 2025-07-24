@@ -24,7 +24,6 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Belleza&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <ImageProvider>
           <CartProvider>
             <div className="flex min-h-screen">
               <Sidebar />
@@ -32,7 +31,6 @@ export default function RootLayout({
             </div>
             <Toaster />
           </CartProvider>
-        </ImageProvider>
       </body>
     </html>
   );

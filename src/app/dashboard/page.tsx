@@ -18,7 +18,7 @@ import { generateImage } from '@/ai/flows/generate-image-flow';
 
 
 export default function DashboardPage() {
-    const { restaurants } = useImages();
+    const { restaurants, menuItems, setMenuItems } = useImages();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(restaurants[0] || null);
     const [description, setDescription] = React.useState('');
     const [loading, setLoading] = React.useState(false);
@@ -82,6 +82,17 @@ export default function DashboardPage() {
             setLoading(false);
         }
     };
+    
+    const handleAddItemToMenu = () => {
+        if (!generatedItem) return;
+        setMenuItems([...menuItems, generatedItem]);
+        setGeneratedItem(null);
+        setDescription('');
+        toast({
+            title: 'Plat ajouté !',
+            description: `${generatedItem.name} est maintenant disponible dans votre menu.`
+        });
+    }
 
     return (
         <div className="container mx-auto">
@@ -143,8 +154,8 @@ export default function DashboardPage() {
                     </div>
                     {generatedItem && !loading && (
                         <div className="mt-4 flex justify-end gap-2">
-                            <Button variant="outline">Modifier</Button>
-                             <Button disabled>Ajouter au menu (bientôt !)</Button>
+                            <Button variant="outline" onClick={() => setGeneratedItem(null)}>Rejeter</Button>
+                             <Button onClick={handleAddItemToMenu}>Ajouter au menu</Button>
                         </div>
                     )}
                 </div>
