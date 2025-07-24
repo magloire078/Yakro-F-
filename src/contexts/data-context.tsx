@@ -6,7 +6,7 @@ import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialMenuItems, initialRestaurants } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface DataState {
@@ -18,6 +18,7 @@ interface DataState {
   fetchData: () => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
+  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
   generateAllImages: () => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
@@ -31,8 +32,8 @@ const useDataStore = create<DataState>((set, get) => ({
   isLoading: true,
 
   fetchData: async () => {
-    // Prevent multiple fetches if already loading
-    if (!get().isLoading && get().restaurants.length > 0) {
+    // Prevent multiple fetches
+    if (!get().isLoading && get().restaurants.length > 0 && get().menuItems.length > 0) {
       return;
     }
     set({ isLoading: true });
@@ -81,6 +82,21 @@ const useDataStore = create<DataState>((set, get) => ({
         set(state => ({ orders: [...state.orders, newOrder]}));
     } catch (e) {
         console.error("Error adding order: ", e);
+        throw e;
+    }
+  },
+
+  updateOrderStatus: async (orderId: string, status: Order['status']) => {
+    const orderDocRef = doc(db, 'orders', orderId);
+    try {
+        await updateDoc(orderDocRef, { status });
+        set(state => ({
+            orders: state.orders.map(order => 
+                order.id === orderId ? { ...order, status } : order
+            ),
+        }));
+    } catch (e) {
+        console.error("Error updating order status: ", e);
         throw e;
     }
   },

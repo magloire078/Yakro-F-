@@ -28,9 +28,10 @@ const ActiveDelivery = {
 export default function DeliveryPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const { orders, isLoading } = useData();
+    const { orders, isLoading, updateOrderStatus } = useData();
     const [currentDelivery, setCurrentDelivery] = React.useState<any>(null);
     const { toast } = useToast();
+    const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -42,32 +43,52 @@ export default function DeliveryPage() {
         return orders.filter(o => o.status === 'Placée');
     }, [orders]);
 
-    const handleAcceptDelivery = (delivery: Order) => {
-        // In a real app, this would update the backend
-        // For now, we simulate by creating an active delivery view from the order
-         const activeDeliveryDetails = {
-            id: delivery.id,
-            restaurantName: delivery.restaurantName,
-            restaurantAddress: 'Rue des Jardins, Cocody', // Mocked, would come from restaurant data
-            customerAddress: 'Angré 7ème Tranche', // Mocked, would come from user profile
-            status: 'En cours',
-            items: delivery.items.map(i => i.name),
-            customerPhone: '07 01 02 03 04', // Mocked
-        };
-        setCurrentDelivery(activeDeliveryDetails);
-        toast({
-            title: "Course acceptée !",
-            description: `Vous allez livrer la commande de ${delivery.restaurantName}.`,
-        });
+    const handleAcceptDelivery = async (delivery: Order) => {
+        setIsAccepting(delivery.id);
+        try {
+            await updateOrderStatus(delivery.id, 'En Route');
+            
+            const activeDeliveryDetails = {
+                id: delivery.id,
+                restaurantName: delivery.restaurantName,
+                restaurantAddress: 'Rue des Jardins, Cocody', // Mocked, would come from restaurant data
+                customerAddress: 'Angré 7ème Tranche', // Mocked, would come from user profile
+                status: 'En Route',
+                items: delivery.items.map(i => i.name),
+                customerPhone: '07 01 02 03 04', // Mocked
+            };
+            setCurrentDelivery(activeDeliveryDetails);
+            toast({
+                title: "Course acceptée !",
+                description: `Vous allez livrer la commande de ${delivery.restaurantName}.`,
+            });
+        } catch(error) {
+             toast({
+                variant: 'destructive',
+                title: "Erreur",
+                description: "Impossible d'accepter cette course pour le moment.",
+            });
+        } finally {
+            setIsAccepting(null);
+        }
     };
 
-    const handleCompleteDelivery = () => {
-        // In a real app, this would update the backend
-        setCurrentDelivery(null);
-        toast({
-            title: "Livraison terminée !",
-            description: `Bien joué !`,
-        });
+    const handleCompleteDelivery = async () => {
+        if (!currentDelivery) return;
+        try {
+            await updateOrderStatus(currentDelivery.id, 'Livrée');
+            setCurrentDelivery(null);
+            toast({
+                title: "Livraison terminée !",
+                description: `Bien joué !`,
+            });
+        } catch(error) {
+            toast({
+                variant: 'destructive',
+                title: "Erreur",
+                description: "Impossible de marquer cette course comme livrée.",
+            });
+        }
     }
 
     if (authLoading || !user || isLoading) {
@@ -145,7 +166,10 @@ export default function DeliveryPage() {
                                 </div>
                                 <Badge variant="secondary" className="text-base">{delivery.total.toLocaleString('fr-FR')} FCFA</Badge>
                            </div>
-                           <Button onClick={() => handleAcceptDelivery(delivery)}>Accepter</Button>
+                           <Button onClick={() => handleAcceptDelivery(delivery)} disabled={isAccepting !== null}>
+                             {isAccepting === delivery.id && <Loader className="animate-spin mr-2"/>}
+                             Accepter
+                           </Button>
                         </CardContent>
                     </Card>
                 ))}
