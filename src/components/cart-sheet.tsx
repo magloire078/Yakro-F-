@@ -52,7 +52,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                     <div className="flex-1">
                       <p className="font-semibold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {(item.price * item.quantity).toFixed(2)} FCFA
+                        {(item.price * item.quantity).toLocaleString('fr-FR')} FCFA
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Button
@@ -91,7 +91,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col w-full gap-4">
                  <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>{cartTotal.toFixed(2)} FCFA</span>
+                    <span>{cartTotal.toLocaleString('fr-FR')} FCFA</span>
                   </div>
                 <SheetClose asChild>
                   <Button size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handlePlaceOrder}>

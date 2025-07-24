@@ -40,7 +40,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 <p className="text-sm text-muted-foreground">{new Date(order.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
               <div className="flex items-center gap-4">
-                <span className="font-semibold text-lg text-primary">{order.total.toFixed(2)} FCFA</span>
+                <span className="font-semibold text-lg text-primary">{order.total.toLocaleString('fr-FR')} FCFA</span>
                 <Badge variant={order.status === 'Livrée' ? 'default' : 'destructive'}>
                     {order.status}
                 </Badge>
@@ -58,7 +58,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                                 <span className="font-medium">{item.name}</span>
                             </div>
                         </div>
-                        <span>{(item.price * item.quantity).toFixed(2)} FCFA</span>
+                        <span>{(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>
                     </div>
                 ))}
             </div>
