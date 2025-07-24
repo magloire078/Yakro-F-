@@ -41,6 +41,7 @@ export default function Home() {
   const [menuItems, setMenuItems] = React.useState<MenuItem[]>(initialMenuItems);
   const [isGeneratingImages, setIsGeneratingImages] = React.useState(false);
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = React.useState('');
 
 
   React.useEffect(() => {
@@ -111,6 +112,20 @@ export default function Home() {
     }
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredRestaurants = restaurants.filter(restaurant =>
+    restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredMenuItems = menuItems.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
 
   if (isOrderPlaced) {
     return <OrderStatus onNewOrder={handleNewOrder} />;
@@ -125,6 +140,8 @@ export default function Home() {
               type="search"
               placeholder="Chercher un restaurant ou un produit..."
               className="w-full rounded-full p-3 pl-10 text-base bg-card border-2 border-primary/20 focus:border-primary"
+              value={searchTerm}
+              onChange={handleSearchChange}
             />
           </div>
       </section>
@@ -138,7 +155,7 @@ export default function Home() {
             <Button variant="link" className="text-primary">Voir tout</Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {restaurants.map(restaurant => (
+            {filteredRestaurants.map(restaurant => (
               <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}
           </div>
@@ -156,7 +173,7 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {menuItems.map(item => (
+            {filteredMenuItems.map(item => (
               <MenuItemCard key={item.id} item={item} />
             ))}
           </div>
