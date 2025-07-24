@@ -43,7 +43,7 @@ export function UserAuthForm() {
             title: "Connexion réussie",
             description: "Heureux de vous revoir !",
         });
-        router.push('/profile-selection');
+        router.push('/');
     } catch (error: any) {
         if (error.code === AuthErrorCodes.USER_NOT_FOUND || error.code === 'auth/wrong-password') {
             // If user doesn't exist or wrong password (since we use a dummy one), create a new account
