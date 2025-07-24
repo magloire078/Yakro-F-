@@ -6,32 +6,32 @@ const pastOrders: Order[] = [
         id: 'order1',
         restaurantName: 'Le Pili Pili',
         date: '2024-05-18',
-        total: 27.50,
+        total: 11000,
         status: 'Livrée',
         items: [
-            { id: 'm1', name: 'Poulet Braisé', price: 12.50, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'grilled chicken' },
-            { id: 'm5', name: 'Attiéké Poisson', price: 15.00, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'african dish' },
+            { id: 'm1', name: 'Poulet Braisé', price: 7500, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'grilled chicken' },
+            { id: 'm3', name: 'Attiéké Poisson Thon', price: 3500, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'attieke fried fish' },
         ]
     },
     {
         id: 'order2',
-        restaurantName: 'Pizza Bella',
+        restaurantName: 'Chez Mario',
         date: '2024-05-15',
-        total: 21.00,
+        total: 6500,
         status: 'Livrée',
         items: [
-            { id: 'm2', name: 'Pizza Margherita', price: 14.00, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'pizza' },
-            { id: 'm6', name: 'Tiramisu', price: 7.00, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'tiramisu' },
+            { id: 'm5', name: 'Alloco', price: 1500, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'fried plantain' },
+            { id: 'm2', name: 'Foutou Banane, Sauce Graine', price: 5000, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'fufu palm nut soup' },
         ]
     },
     {
         id: 'order3',
-        restaurantName: 'Burger Queen',
+        restaurantName: 'La Brise du Lac',
         date: '2024-05-12',
-        total: 9.50,
+        total: 6000,
         status: 'Annulée',
         items: [
-            { id: 'm4', name: 'Classic Cheeseburger', price: 9.50, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'cheeseburger' },
+            { id: 'm4', name: 'Kedjenou de Poulet', price: 6000, quantity: 1, description: '', image: 'https://placehold.co/100x100', imageHint: 'chicken stew' },
         ]
     }
 ];

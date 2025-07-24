@@ -15,19 +15,19 @@ import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useToast } from '@/hooks/use-toast';
 
 const initialRestaurants: Restaurant[] = [
-  { id: '1', name: 'Le Pili Pili', cuisine: 'Ivorian', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/600x400', imageHint: 'african food' },
-  { id: '2', name: 'Pizza Bella', cuisine: 'Italian', rating: 4.6, deliveryTime: 30, image: 'https://placehold.co/600x400', imageHint: 'pizza' },
-  { id: '3', name: 'Sushi House', cuisine: 'Japanese', rating: 4.7, deliveryTime: 40, image: 'https://placehold.co/600x400', imageHint: 'sushi' },
-  { id: '4', name: 'Burger Queen', cuisine: 'American', rating: 4.5, deliveryTime: 20, image: 'https://placehold.co/600x400', imageHint: 'burger' },
+  { id: '1', name: 'Le Pili Pili', cuisine: 'Ivoirienne', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/600x400', imageHint: 'african food' },
+  { id: '2', name: 'Chez Mario', cuisine: 'Européenne', rating: 4.7, deliveryTime: 35, image: 'https://placehold.co/600x400', imageHint: 'fancy dining' },
+  { id: '3', name: 'Le Bazin', cuisine: 'Africaine', rating: 4.6, deliveryTime: 30, image: 'https://placehold.co/600x400', imageHint: 'traditional african food' },
+  { id: '4', name: 'La Brise du Lac', cuisine: 'Grillades', rating: 4.5, deliveryTime: 40, image: 'https://placehold.co/600x400', imageHint: 'lake view' },
 ];
 
 const initialMenuItems: MenuItem[] = [
-  { id: 'm1', name: 'Poulet Braisé', description: 'Poulet grillé mariné aux épices locales.', price: 12.50, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken' },
-  { id: 'm2', name: 'Pizza Margherita', description: 'Classique tomate, mozzarella, basilic.', price: 14.00, image: 'https://placehold.co/600x400', imageHint: 'pizza' },
-  { id: 'm3', name: 'Combo Sushi', description: 'Assortiment de 16 sushis et makis.', price: 25.00, image: 'https://placehold.co/600x400', imageHint: 'sushi platter' },
-  { id: 'm4', name: 'Classic Cheeseburger', description: 'Boeuf, cheddar, laitue, tomate, oignons.', price: 9.50, image: 'https://placehold.co/600x400', imageHint: 'cheeseburger' },
-  { id: 'm5', name: 'Attiéké Poisson', description: 'Semoule de manioc avec poisson frit.', price: 15.00, image: 'https://placehold.co/600x400', imageHint: 'african dish' },
-  { id: 'm6', name: 'Tiramisu', description: 'Dessert italien crémeux au café.', price: 7.00, image: 'https://placehold.co/600x400', imageHint: 'tiramisu' },
+  { id: 'm1', name: 'Poulet Braisé', description: 'Poulet entier grillé, mariné aux épices locales.', price: 7500, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken' },
+  { id: 'm2', name: 'Foutou Banane, Sauce Graine', description: 'Foutou de banane plantain accompagné d\'une sauce onctueuse aux noix de palme.', price: 5000, image: 'https://placehold.co/600x400', imageHint: 'fufu palm nut soup' },
+  { id: 'm3', name: 'Attiéké Poisson Thon', description: 'La spécialité ivoirienne par excellence : semoule de manioc et thon frit.', price: 3500, image: 'https://placehold.co/600x400', imageHint: 'attieke fried fish' },
+  { id: 'm4', name: 'Kedjenou de Poulet', description: 'Poulet mijoté aux légumes et épices, cuit à l\'étouffée.', price: 6000, image: 'https://placehold.co/600x400', imageHint: 'chicken stew' },
+  { id: 'm5', name: 'Alloco', description: 'Bananes plantains mûres frites, un délice sucré-salé.', price: 1500, image: 'https://placehold.co/600x400', imageHint: 'fried plantain' },
+  { id: 'm6', name: 'Soupe du Pêcheur', description: 'Soupe de fruits de mer riche et parfumée.', price: 8000, image: 'https://placehold.co/600x400', imageHint: 'seafood soup' },
 ];
 
 export default function Home() {
@@ -36,7 +36,7 @@ export default function Home() {
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
   
-  const [restaurants] = React.useState<Restaurant[]>(initialRestaurants);
+  const [restaurants, setRestaurants] = React.useState<Restaurant[]>(initialRestaurants);
   const [menuItems, setMenuItems] = React.useState<MenuItem[]>(initialMenuItems);
   const [isGeneratingImages, setIsGeneratingImages] = React.useState(false);
   const { toast } = useToast();
@@ -85,9 +85,17 @@ export default function Home() {
         })
       );
       setMenuItems(updatedMenuItems);
+      const updatedRestaurants = await Promise.all(
+        restaurants.map(async (resto) => {
+          const { imageUrl } = await generateImage({ prompt: resto.cuisine });
+          return { ...resto, image: imageUrl };
+        })
+      );
+      setRestaurants(updatedRestaurants);
+
       toast({
         title: "Images générées !",
-        description: "Les images des plats ont été mises à jour.",
+        description: "Les images des plats et restaurants ont été mises à jour.",
       });
     } catch (error) {
       console.error("Error generating images:", error);
@@ -142,7 +150,7 @@ export default function Home() {
 
         <section className="mt-16">
            <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-headline text-foreground">Plats du Jour</h2>
+            <h2 className="text-3xl font-headline text-foreground">À la carte</h2>
              <div className="flex items-center gap-2">
               <Button variant="outline" onClick={handleGenerateImages} disabled={isGeneratingImages}>
                 {isGeneratingImages ? <Loader className="animate-spin" /> : <ImageIcon />}
@@ -152,7 +160,7 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8">
-            {menuItems.slice(0, 6).map(item => (
+            {menuItems.map(item => (
               <MenuItemCard key={item.id} item={item} />
             ))}
           </div>

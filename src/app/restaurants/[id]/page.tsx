@@ -7,19 +7,19 @@ import { Clock, Star } from "lucide-react";
 import Image from "next/image";
 
 const restaurants: Restaurant[] = [
-  { id: '1', name: 'Le Pili Pili', cuisine: 'Ivorian', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/1200x400', imageHint: 'african food' },
-  { id: '2', name: 'Pizza Bella', cuisine: 'Italian', rating: 4.6, deliveryTime: 30, image: 'https://placehold.co/1200x400', imageHint: 'pizza' },
-  { id: '3', name: 'Sushi House', cuisine: 'Japanese', rating: 4.7, deliveryTime: 40, image: 'https://placehold.co/1200x400', imageHint: 'sushi' },
-  { id: '4', name: 'Burger Queen', cuisine: 'American', rating: 4.5, deliveryTime: 20, image: 'https://placehold.co/1200x400', imageHint: 'burger' },
+  { id: '1', name: 'Le Pili Pili', cuisine: 'Ivoirienne', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/1200x400', imageHint: 'african food' },
+  { id: '2', name: 'Chez Mario', cuisine: 'Européenne', rating: 4.7, deliveryTime: 35, image: 'https://placehold.co/1200x400', imageHint: 'fancy dining' },
+  { id: '3', name: 'Le Bazin', cuisine: 'Africaine', rating: 4.6, deliveryTime: 30, image: 'https://placehold.co/1200x400', imageHint: 'traditional african food' },
+  { id: '4', name: 'La Brise du Lac', cuisine: 'Grillades', rating: 4.5, deliveryTime: 40, image: 'https://placehold.co/1200x400', imageHint: 'lake view' },
 ];
 
 const menuItems: MenuItem[] = [
-  { id: 'm1', name: 'Poulet Braisé', description: 'Poulet grillé mariné aux épices locales.', price: 12.50, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken' },
-  { id: 'm2', name: 'Pizza Margherita', description: 'Classique tomate, mozzarella, basilic.', price: 14.00, image: 'https://placehold.co/600x400', imageHint: 'pizza' },
-  { id: 'm3', name: 'Combo Sushi', description: 'Assortiment de 16 sushis et makis.', price: 25.00, image: 'https://placehold.co/600x400', imageHint: 'sushi platter' },
-  { id: 'm4', name: 'Classic Cheeseburger', description: 'Boeuf, cheddar, laitue, tomate, oignons.', price: 9.50, image: 'https://placehold.co/600x400', imageHint: 'cheeseburger' },
-  { id: 'm5', name: 'Attiéké Poisson', description: 'Semoule de manioc avec poisson frit.', price: 15.00, image: 'https://placehold.co/600x400', imageHint: 'african dish' },
-  { id: 'm6', name: 'Tiramisu', description: 'Dessert italien crémeux au café.', price: 7.00, image: 'https://placehold.co/600x400', imageHint: 'tiramisu' },
+  { id: 'm1', name: 'Poulet Braisé', description: 'Poulet entier grillé, mariné aux épices locales.', price: 7500, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken' },
+  { id: 'm2', name: 'Foutou Banane, Sauce Graine', description: 'Foutou de banane plantain accompagné d\'une sauce onctueuse aux noix de palme.', price: 5000, image: 'https://placehold.co/600x400', imageHint: 'fufu palm nut soup' },
+  { id: 'm3', name: 'Attiéké Poisson Thon', description: 'La spécialité ivoirienne par excellence : semoule de manioc et thon frit.', price: 3500, image: 'https://placehold.co/600x400', imageHint: 'attieke fried fish' },
+  { id: 'm4', name: 'Kedjenou de Poulet', description: 'Poulet mijoté aux légumes et épices, cuit à l\'étouffée.', price: 6000, image: 'https://placehold.co/600x400', imageHint: 'chicken stew' },
+  { id: 'm5', name: 'Alloco', description: 'Bananes plantains mûres frites, un délice sucré-salé.', price: 1500, image: 'https://placehold.co/600x400', imageHint: 'fried plantain' },
+  { id: 'm6', name: 'Soupe du Pêcheur', description: 'Soupe de fruits de mer riche et parfumée.', price: 8000, image: 'https://placehold.co/600x400', imageHint: 'seafood soup' },
 ];
 
 
