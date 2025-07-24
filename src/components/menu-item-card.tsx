@@ -28,7 +28,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
         <h4 className="font-bold font-headline">{item.name}</h4>
         <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
         <div className="flex justify-between items-center mt-2">
-          <p className="text-lg font-semibold text-primary">{item.price.toFixed(2)} €</p>
+          <p className="text-lg font-semibold text-primary">{item.price.toFixed(2)} FCFA</p>
           <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => addToCart(item)}>
             <PlusCircle className="w-6 h-6" />
           </Button>
