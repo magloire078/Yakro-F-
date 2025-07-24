@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function LoginPage() {
     return (
-        <div className="container relative flex h-full min-h-screen flex-col items-center justify-center">
+        <div className="flex h-full items-center justify-center">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
                 <Card className="p-6">
                     <CardHeader className="text-center">
