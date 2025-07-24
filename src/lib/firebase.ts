@@ -6,7 +6,7 @@ import { getStorage } from 'firebase/storage';
 const firebaseConfig = {
   "projectId": "yakro-go",
   "appId": "1:102516892596:web:44d219ce96eb75352808e1",
-  "storageBucket": "yakro-go.appspot.com",
+  "storageBucket": "yakro-go.firebaseapp.com",
   "apiKey": "AIzaSyBl9KMx5EuvhN71R81bNRqXuQhVdNKPGdc",
   "authDomain": "yakro-go.firebaseapp.com",
   "measurementId": "",
