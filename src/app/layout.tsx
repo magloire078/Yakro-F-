@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/contexts/cart-context';
 import { Sidebar } from '@/components/sidebar';
 import { AuthProvider } from '@/contexts/auth-context';
+import { MobileHeader } from '@/components/mobile-header';
 
 export const metadata: Metadata = {
   title: 'Yakro Go',
@@ -28,8 +29,13 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <div className="flex min-h-screen">
-              <Sidebar />
-              <main className="flex-1 p-8 bg-muted/30">{children}</main>
+              <div className="hidden md:flex">
+                <Sidebar />
+              </div>
+              <div className="flex-1 flex flex-col">
+                <MobileHeader />
+                <main className="flex-1 p-4 md:p-8 bg-muted/30">{children}</main>
+              </div>
             </div>
             <Toaster />
           </CartProvider>

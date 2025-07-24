@@ -188,7 +188,7 @@ export default function Home() {
         <section className="mt-16">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-headline text-foreground">Restaurants Populaires</h2>
-            <Button variant="link" className="text-primary">Voir tout</Button>
+            <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredRestaurants.map(restaurant => (
@@ -203,9 +203,9 @@ export default function Home() {
              <div className="flex items-center gap-2">
               <Button variant="outline" onClick={handleGenerateImages} disabled={isGenerating}>
                 {isGenerating ? <Loader className="animate-spin" /> : <ImageIcon />}
-                Générer les images
+                <span className="hidden sm:inline-block">Générer les images</span>
               </Button>
-              <Button variant="link" className="text-primary">Voir tout</Button>
+              <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8">
