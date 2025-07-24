@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, ShoppingCart, Star, Video } from 'lucide-react';
+import { Home, History, ShoppingCart, Star, Video, LayoutDashboard } from 'lucide-react';
 
 export function Sidebar() {
   const { cartCount } = useCart();
@@ -40,6 +40,12 @@ export function Sidebar() {
              <Link href="/marketing">
               <Video className="mr-2 h-5 w-5" />
               Marketing
+            </Link>
+          </Button>
+           <Button variant="ghost" className="justify-start text-lg" asChild>
+             <Link href="/dashboard">
+              <LayoutDashboard className="mr-2 h-5 w-5" />
+              Dashboard
             </Link>
           </Button>
         </nav>
