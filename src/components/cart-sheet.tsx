@@ -17,15 +17,27 @@ import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
+import { useToast } from '@/hooks/use-toast';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
-  const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount, placeOrder } = useCart();
   const { getMenuItem } = useData();
+  const { toast } = useToast();
 
-  const handlePlaceOrder = () => {
-    // This is a simulation. In a real app, this would trigger the checkout flow.
-    // We fire a custom event that the main page can listen to.
-    window.dispatchEvent(new CustomEvent('place-order'));
+  const handlePlaceOrder = async () => {
+    try {
+        await placeOrder();
+        toast({
+            title: 'Commande passée !',
+            description: 'Votre commande a été envoyée au restaurant.',
+        });
+    } catch(e) {
+        toast({
+            variant: 'destructive',
+            title: 'Erreur',
+            description: 'Impossible de passer la commande pour le moment.',
+        });
+    }
   };
 
   return (

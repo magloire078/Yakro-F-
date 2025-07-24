@@ -2,20 +2,22 @@
 'use client';
 
 import * as React from 'react';
-import type { Restaurant, MenuItem } from '@/lib/types';
+import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialMenuItems, initialRestaurants } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
+  orders: Order[];
   isGenerating: boolean;
   isLoading: boolean;
   fetchData: () => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
+  addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   generateAllImages: () => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
@@ -24,6 +26,7 @@ interface DataState {
 const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
+  orders: [],
   isGenerating: false,
   isLoading: true,
 
@@ -32,18 +35,27 @@ const useDataStore = create<DataState>((set, get) => ({
     if (!get().isLoading && get().restaurants.length > 0) return;
     set({ isLoading: true });
     try {
+      // Fetch Restaurants
       const restaurantsCollection = collection(db, 'restaurants');
       const restaurantSnapshot = await getDocs(restaurantsCollection);
       const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
       set({ restaurants: restaurantList.length > 0 ? restaurantList : initialRestaurants });
 
+      // Fetch Menu Items
       const menuItemsCollection = collection(db, 'menuItems');
       const menuItemSnapshot = await getDocs(menuItemsCollection);
       const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
       set({ menuItems: menuList.length > 0 ? menuList : initialMenuItems });
+
+      // Fetch Orders
+      const ordersCollection = collection(db, 'orders');
+      const orderSnapshot = await getDocs(ordersCollection);
+      const orderList = orderSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+      set({ orders: orderList });
+
     } catch (error) {
       console.error("Error fetching data from Firestore, using initial data: ", error);
-      set({ restaurants: initialRestaurants, menuItems: initialMenuItems });
+      set({ restaurants: initialRestaurants, menuItems: initialMenuItems, orders: [] });
     } finally {
       set({ isLoading: false });
     }
@@ -55,7 +67,18 @@ const useDataStore = create<DataState>((set, get) => ({
         const newItem = { id: docRef.id, ...item };
         set(state => ({ menuItems: [...state.menuItems, newItem]}));
     } catch (e) {
-        console.error("Error adding document: ", e);
+        console.error("Error adding menu item: ", e);
+        throw e;
+    }
+  },
+
+  addOrder: async (order) => {
+    try {
+        const docRef = await addDoc(collection(db, "orders"), order);
+        const newOrder = { id: docRef.id, ...order };
+        set(state => ({ orders: [...state.orders, newOrder]}));
+    } catch (e) {
+        console.error("Error adding order: ", e);
         throw e;
     }
   },
@@ -97,12 +120,6 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
-// Initialize data fetching once
-// if (typeof window !== 'undefined') {
-//     useDataStore.getState().fetchData();
-// }
-
-// The hook to be used in components
 export const useData = useDataStore;
 
 // This is needed for the user history generation helper which runs outside of React components

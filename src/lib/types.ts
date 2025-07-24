@@ -1,3 +1,4 @@
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -24,17 +25,19 @@ export interface CartItem extends MenuItem {
 
 export interface Order {
   id: string;
+  userId: string;
   items: CartItem[];
   total: number;
   date: string;
   restaurantName: string;
-  status: string;
+  restaurantId: string;
+  status: 'Placée' | 'En Préparation' | 'En Route' | 'Livrée' | 'Annulée';
 }
 
 export interface Review {
   id: string;
   restaurantId: string;
-  userName: string;
+  userName:string;
   rating: number;
   comment: string;
 }

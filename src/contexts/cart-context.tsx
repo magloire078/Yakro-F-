@@ -2,7 +2,9 @@
 'use client';
 
 import * as React from 'react';
-import type { CartItem, MenuItem } from '@/lib/types';
+import type { CartItem, MenuItem, Order } from '@/lib/types';
+import { useData } from './data-context';
+import { useAuth } from './auth-context';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -10,6 +12,7 @@ interface CartContextType {
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
+  placeOrder: () => Promise<void>;
   cartTotal: number;
   cartCount: number;
 }
@@ -32,6 +35,9 @@ const getInitialCart = (): CartItem[] => {
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
+  const { addOrder, getRestaurant } = useData();
+  const { user } = useAuth();
+
 
   React.useEffect(() => {
     try {
@@ -80,8 +86,36 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return cartItems.reduce((count, item) => count + item.quantity, 0);
   }, [cartItems]);
 
+  const placeOrder = async () => {
+    if (!user || cartItems.length === 0) {
+        // In a real app, you'd show an error message
+        console.error("User not logged in or cart is empty");
+        return;
+    }
+    
+    // Assume all items in cart are from the same restaurant for this demo
+    const restaurantId = cartItems[0].restaurantId;
+    const restaurant = getRestaurant(restaurantId);
+
+    const newOrder: Omit<Order, 'id'> = {
+        userId: user.uid,
+        items: cartItems,
+        total: cartTotal,
+        date: new Date().toISOString(),
+        restaurantName: restaurant?.name || 'Restaurant inconnu',
+        restaurantId: restaurantId,
+        status: 'Placée', // Initial status
+    };
+
+    await addOrder(newOrder);
+
+    // This is a simulation. In a real app, this would trigger the checkout flow.
+    // We fire a custom event that the main page can listen to.
+    window.dispatchEvent(new CustomEvent('place-order'));
+  };
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, placeOrder }}>
       {children}
     </CartContext.Provider>
   );
