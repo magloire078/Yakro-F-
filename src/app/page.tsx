@@ -14,6 +14,38 @@ import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } fro
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useToast } from '@/hooks/use-toast';
 import { useImages } from '@/contexts/image-context';
+import { pastOrders } from '@/lib/data';
+import type { Order } from '@/lib/types';
+
+
+// Helper function to generate user history summary
+const generateUserHistorySummary = (orders: Order[]): string => {
+  const cuisineCount: { [key: string]: number } = {};
+  const itemCount: { [key: string]: number } = {};
+  let totalSpent = 0;
+  let deliveredOrders = 0;
+
+  orders.forEach(order => {
+    if (order.status === 'Livrée') {
+      deliveredOrders++;
+      totalSpent += order.total;
+      order.items.forEach(item => {
+        // We need to find the restaurant to get the cuisine
+        const restaurant = useImages.getState().restaurants.find(r => r.id === item.restaurantId);
+        if (restaurant) {
+          cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
+        }
+        itemCount[item.name] = (itemCount[item.name] || 0) + item.quantity;
+      });
+    }
+  });
+  
+  const favoriteCuisine = Object.keys(cuisineCount).reduce((a, b) => cuisineCount[a] > cuisineCount[b] ? a : b, '');
+  const favoriteItems = Object.entries(itemCount).sort((a,b) => b[1] - a[1]).slice(0,3).map(item => item[0]);
+
+  return `The user has placed ${deliveredOrders} orders. They have spent a total of ${totalSpent} FCFA. Their favorite cuisine seems to be ${favoriteCuisine}. They frequently order the following items: ${favoriteItems.join(', ')}.`;
+}
+
 
 export default function Home() {
   const [isOrderPlaced, setIsOrderPlaced] = React.useState(false);
@@ -32,9 +64,10 @@ export default function Home() {
 
 
   React.useEffect(() => {
+    const userHistorySummary = generateUserHistorySummary(pastOrders);
     setLoadingRecommendations(true);
     getPersonalizedRecommendations({
-      userHistory: 'Loves Ivorian food, spicy dishes, and has ordered pizza twice this month.',
+      userHistory: userHistorySummary,
       currentLocation: 'Abidjan, Ivory Coast',
       timeOfDay: 'Diner',
     })
