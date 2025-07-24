@@ -41,24 +41,24 @@ export default function RestaurantPage() {
 
     return (
         <div>
-            <div className="relative h-64 w-full -m-8">
+            <div className="relative h-48 md:h-64 w-full -mx-4 md:-mx-8 -mt-4 md:-mt-8">
                 <Image 
                     src={restaurant.image}
                     alt={restaurant.name}
                     fill
                     objectFit="cover"
                     data-ai-hint={restaurant.imageHint}
-                    className="rounded-xl"
+                    className="md:rounded-xl"
                 />
-                <div className="absolute inset-0 bg-black/50 flex items-end p-8 rounded-xl">
+                <div className="absolute inset-0 bg-black/50 flex items-end p-4 md:p-8 md:rounded-xl">
                     <div className="text-white">
-                        <h1 className="text-5xl font-headline">{restaurant.name}</h1>
-                        <p className="text-lg">{restaurant.cuisine}</p>
+                        <h1 className="text-3xl md:text-5xl font-headline">{restaurant.name}</h1>
+                        <p className="text-md md:text-lg">{restaurant.cuisine}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto py-8">
+            <div className="py-8">
                 <div className="flex items-center gap-6 mb-8">
                      <Badge variant="outline" className="flex items-center gap-1 text-base p-2">
                         <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
@@ -71,8 +71,8 @@ export default function RestaurantPage() {
                 </div>
 
 
-                <h2 className="text-3xl font-headline text-foreground mb-6">Menu</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Menu</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     {restaurantMenu.length > 0 ? restaurantMenu.map(item => (
                         <MenuItemCard key={item.id} item={item} />
                     )) : (

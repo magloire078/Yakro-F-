@@ -129,13 +129,13 @@ export default function ReviewsPage() {
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-4xl font-headline text-primary">Avis des clients</h1>
-        <div className="flex items-center gap-2">
+        <h1 className="text-3xl md:text-4xl font-headline text-primary">Avis des clients</h1>
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <Select
             onValueChange={value => setSelectedRestaurant(restaurants.find(r => r.id === value) || null)}
             value={selectedRestaurant?.id || ''}
           >
-            <SelectTrigger className="w-[280px]">
+            <SelectTrigger className="w-full md:w-[280px]">
               <SelectValue placeholder="Sélectionnez un restaurant" />
             </SelectTrigger>
             <SelectContent>
@@ -152,9 +152,9 @@ export default function ReviewsPage() {
       {selectedRestaurant && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
                 <div className="flex items-center gap-4">
-                    <h2 className="text-3xl font-headline text-foreground">{selectedRestaurant.name}</h2>
+                    <h2 className="text-2xl md:text-3xl font-headline text-foreground">{selectedRestaurant.name}</h2>
                     {reviews.length > 0 && (
                         <div className="flex items-center gap-2 text-xl font-bold">
                             <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />

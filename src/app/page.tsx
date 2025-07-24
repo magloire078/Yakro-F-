@@ -193,7 +193,7 @@ export default function Home() {
   );
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-8 md:gap-12">
       <section>
           <SearchBar 
             onSearchChange={setSearchQuery} 
@@ -204,30 +204,30 @@ export default function Home() {
       <div>
         {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} />}
 
-        <section className="mt-16">
+        <section className="mt-12 md:mt-16">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-headline text-foreground">Restaurants Populaires</h2>
+            <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants Populaires</h2>
             <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {isLoading ? renderSkeletons(3, 'restaurant') : filteredRestaurants.map(restaurant => (
               <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}
           </div>
         </section>
 
-        <section className="mt-16">
+        <section className="mt-12 md:mt-16">
            <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-headline text-foreground">À la carte</h2>
+            <h2 className="text-2xl md:text-3xl font-headline text-foreground">À la carte</h2>
              <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleGenerateImages} disabled={isGenerating}>
+              <Button variant="outline" onClick={handleGenerateImages} disabled={isGenerating} size="sm">
                 {isGenerating ? <Loader className="animate-spin" /> : <ImageIcon />}
-                <span className="hidden sm:inline-block">Générer les images</span>
+                <span className="hidden sm:inline-block ml-2">Générer les images</span>
               </Button>
               <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
              {isLoading ? renderSkeletons(4, 'menu') : filteredMenuItems.map(item => (
               <MenuItemCard key={item.id} item={item} />
             ))}

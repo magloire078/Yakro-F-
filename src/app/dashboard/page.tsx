@@ -136,7 +136,7 @@ export default function DashboardPage() {
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-4xl font-headline text-primary mb-8">Dashboard Restaurateur</h1>
+            <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Dashboard Restaurateur</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <Card>
                     <CardHeader>

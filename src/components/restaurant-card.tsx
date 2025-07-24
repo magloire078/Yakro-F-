@@ -13,13 +13,12 @@ export function RestaurantCard({ restaurant }: RestaurantCardProps) {
   return (
     <Link href={`/restaurants/${restaurant.id}`}>
       <Card className="overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer group h-full">
-        <CardHeader className="p-0">
+        <CardHeader className="p-0 relative h-40">
           <Image
             src={restaurant.image}
             alt={restaurant.name}
-            width={400}
-            height={200}
-            className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
             data-ai-hint={restaurant.imageHint}
           />
         </CardHeader>
