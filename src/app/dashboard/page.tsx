@@ -13,6 +13,8 @@ import { Loader, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { MenuItemCard } from '@/components/menu-item-card';
 import type { MenuItem, Restaurant } from '@/lib/types';
+import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
+import { generateImage } from '@/ai/flows/generate-image-flow';
 
 
 export default function DashboardPage() {
@@ -40,17 +42,28 @@ export default function DashboardPage() {
         });
 
         try {
-            // This is where we will call the AI flow in the next step
-            // For now, we'll simulate a delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            // And return a dummy item
+            // Step 1: Generate the menu item details (name, desc, price, image prompt)
+            const itemDetails = await generateMenuItem({
+                restaurantName: selectedRestaurant.name,
+                cuisine: selectedRestaurant.cuisine,
+                description: description,
+            });
+
+            toast({
+                title: 'Détails générés !',
+                description: 'Création de l\'image en cours...',
+            });
+
+            // Step 2: Generate the image using the prompt from the first flow
+            const { imageUrl } = await generateImage({ prompt: itemDetails.imagePrompt });
+
             const newItem: MenuItem = {
                  id: `gen-${Date.now()}`,
-                 name: 'Plat Généré (Démo)',
-                 description: 'Une délicieuse création de notre IA. La vraie magie arrive bientôt !',
-                 price: 12345,
-                 image: 'https://placehold.co/600x400',
-                 imageHint: 'ai generated food',
+                 name: itemDetails.name,
+                 description: itemDetails.generatedDescription,
+                 price: itemDetails.price,
+                 image: imageUrl,
+                 imageHint: itemDetails.imagePrompt.split(' ').slice(0, 2).join(' '), // use first two words of prompt as hint
                  restaurantId: selectedRestaurant.id
             }
             setGeneratedItem(newItem);

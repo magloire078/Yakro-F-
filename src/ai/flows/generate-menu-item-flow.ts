@@ -28,13 +28,37 @@ export type GenerateMenuItemOutput = z.infer<typeof GenerateMenuItemOutputSchema
 
 
 export async function generateMenuItem(input: GenerateMenuItemInput): Promise<GenerateMenuItemOutput> {
-  // This is a placeholder. We will implement the actual flow in the next step.
-  console.log('Generating menu item with input:', input);
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return {
-    name: 'Plat Démo',
-    generatedDescription: 'Description générée pour le plat de démo.',
-    price: 5000,
-    imagePrompt: 'a high quality, professional photograph of a delicious meal, food photography',
-  };
+  return generateMenuItemFlow(input);
 }
+
+const prompt = ai.definePrompt({
+    name: 'generateMenuItemPrompt',
+    input: { schema: GenerateMenuItemInputSchema },
+    output: { schema: GenerateMenuItemOutputSchema },
+    prompt: `You are an expert in West African and particularly Ivorian cuisine and marketing. Your task is to generate a new menu item for a restaurant based on a user's simple description.
+
+    Restaurant Name: {{{restaurantName}}}
+    Cuisine: {{{cuisine}}}
+    User's Description: "{{{description}}}"
+
+    Based on this information, please generate the following:
+    1.  **Name:** A creative, appealing, and authentic-sounding name for the dish in French.
+    2.  **Description:** An enticing and delicious-sounding description in French, between 20 and 40 words.
+    3.  **Price:** A realistic price in West African CFA Francs (XOF). The price should be reasonable for the described dish and be a multiple of 50 or 100.
+    4.  **Image Prompt:** A detailed prompt for an image generation model to create a photorealistic, appetizing picture of the dish. Include details about the plating, lighting (e.g., natural light), composition (e.g., close-up shot), background, and style (e.g., professional food photography, rustic).
+    
+    Return the result in JSON format.
+    `,
+});
+
+const generateMenuItemFlow = ai.defineFlow(
+    {
+        name: 'generateMenuItemFlow',
+        inputSchema: GenerateMenuItemInputSchema,
+        outputSchema: GenerateMenuItemOutputSchema,
+    },
+    async (input) => {
+        const { output } = await prompt(input);
+        return output!;
+    }
+);
