@@ -32,7 +32,10 @@ const useDataStore = create<DataState>((set, get) => ({
 
   fetchData: async () => {
     // Prevent multiple fetches if already loading or data is present
-    if (!get().isLoading && get().restaurants.length > 0) return;
+    if (get().restaurants.length > 0 && get().orders.length > 0) {
+      set({ isLoading: false });
+      return;
+    }
     set({ isLoading: true });
     try {
       // Fetch Restaurants
@@ -123,5 +126,5 @@ const useDataStore = create<DataState>((set, get) => ({
 export const useData = useDataStore;
 
 // This is needed for the user history generation helper which runs outside of React components
-// It might be stale if used before data is fetched.
+// It might be stale if used before data is present.
 export const getRestaurantsForHistory = () => useDataStore.getState().restaurants;

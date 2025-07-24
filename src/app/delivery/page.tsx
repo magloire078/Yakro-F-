@@ -4,33 +4,16 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, MapPin, Package, Clock, Phone } from 'lucide-react';
+import { Loader, MapPin, Package, Clock, Phone, Bike } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useData } from '@/contexts/data-context';
+import type { Order } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock data for deliveries
-const availableDeliveries = [
-    {
-        id: 'del1',
-        restaurantName: 'Le Pili Pili',
-        restaurantAddress: 'Rue des Jardins, Cocody',
-        customerAddress: 'Angré 7ème Tranche',
-        status: 'En attente',
-        estimatedTime: 15,
-        earnings: 1200,
-    },
-    {
-        id: 'del2',
-        restaurantName: 'Chez Mario',
-        restaurantAddress: 'Boulevard de Marseille, Zone 4',
-        customerAddress: 'Plateau, Cité Administrative',
-        status: 'En attente',
-        estimatedTime: 20,
-        earnings: 1500,
-    },
-];
 
+// Mock data for Active Delivery - we can make this dynamic later
 const ActiveDelivery = {
     id: 'del3',
     restaurantName: 'Le Bazin',
@@ -45,7 +28,9 @@ const ActiveDelivery = {
 export default function DeliveryPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
+    const { orders, isLoading } = useData();
     const [currentDelivery, setCurrentDelivery] = React.useState<any>(null);
+    const { toast } = useToast();
 
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -53,17 +38,39 @@ export default function DeliveryPage() {
         }
     }, [user, authLoading, router]);
 
-    const handleAcceptDelivery = (delivery: any) => {
+    const availableDeliveries = React.useMemo(() => {
+        return orders.filter(o => o.status === 'Placée');
+    }, [orders]);
+
+    const handleAcceptDelivery = (delivery: Order) => {
         // In a real app, this would update the backend
-        setCurrentDelivery(ActiveDelivery);
+        // For now, we simulate by creating an active delivery view from the order
+         const activeDeliveryDetails = {
+            id: delivery.id,
+            restaurantName: delivery.restaurantName,
+            restaurantAddress: 'Rue des Jardins, Cocody', // Mocked, would come from restaurant data
+            customerAddress: 'Angré 7ème Tranche', // Mocked, would come from user profile
+            status: 'En cours',
+            items: delivery.items.map(i => i.name),
+            customerPhone: '07 01 02 03 04', // Mocked
+        };
+        setCurrentDelivery(activeDeliveryDetails);
+        toast({
+            title: "Course acceptée !",
+            description: `Vous allez livrer la commande de ${delivery.restaurantName}.`,
+        });
     };
 
     const handleCompleteDelivery = () => {
         // In a real app, this would update the backend
         setCurrentDelivery(null);
+        toast({
+            title: "Livraison terminée !",
+            description: `Bien joué !`,
+        });
     }
 
-    if (authLoading || !user) {
+    if (authLoading || !user || isLoading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
@@ -129,21 +136,25 @@ export default function DeliveryPage() {
                         <CardContent className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                            <div className="flex-1">
                              <p className="font-bold">{delivery.restaurantName}</p>
-                             <p className="text-sm text-muted-foreground">À livrer à <span className="font-medium text-foreground">{delivery.customerAddress}</span></p>
+                             <p className="text-sm text-muted-foreground">Commande passée le {new Date(delivery.date).toLocaleTimeString('fr-FR')}</p>
                            </div>
                            <div className="flex items-center gap-4 text-sm">
                                 <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4"/>
-                                    <span>{delivery.estimatedTime} min</span>
+                                    <Package className="w-4 h-4"/>
+                                    <span>{delivery.items.length} article(s)</span>
                                 </div>
-                                <Badge variant="secondary" className="text-base">{delivery.earnings.toLocaleString('fr-FR')} FCFA</Badge>
+                                <Badge variant="secondary" className="text-base">{delivery.total.toLocaleString('fr-FR')} FCFA</Badge>
                            </div>
                            <Button onClick={() => handleAcceptDelivery(delivery)}>Accepter</Button>
                         </CardContent>
                     </Card>
                 ))}
                  {availableDeliveries.length === 0 && !currentDelivery && (
-                    <p className="text-muted-foreground text-center py-8">Aucune course disponible pour le moment.</p>
+                    <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4">
+                        <Bike className="w-16 h-16"/>
+                        <p className="text-lg font-medium">Aucune course disponible</p>
+                        <p>Revenez plus tard pour de nouvelles opportunités de livraison.</p>
+                    </div>
                 )}
             </div>
         </div>
