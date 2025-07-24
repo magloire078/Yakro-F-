@@ -24,10 +24,8 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
 
   const handlePlaceOrder = () => {
     // This is a simulation. In a real app, this would trigger the checkout flow.
-    const placeOrderTrigger = document.getElementById('placeOrderTrigger');
-    if (placeOrderTrigger) {
-      placeOrderTrigger.click();
-    }
+    // We fire a custom event that the main page can listen to.
+    window.dispatchEvent(new CustomEvent('place-order'));
   };
 
   return (

@@ -82,11 +82,17 @@ export default function Home() {
         setLoadingRecommendations(false);
       });
   }, []);
+  
+  React.useEffect(() => {
+    // This is a bit of a hack to be able to trigger the order status from the cart sheet
+    const handleOrderPlaced = () => {
+        setIsOrderPlaced(true);
+        clearCart();
+    };
+    window.addEventListener('place-order', handleOrderPlaced);
+    return () => window.removeEventListener('place-order', handleOrderPlaced);
+  }, [clearCart]);
 
-  const handlePlaceOrder = () => {
-    setIsOrderPlaced(true);
-    clearCart();
-  };
 
   const handleNewOrder = () => {
     setIsOrderPlaced(false);
@@ -180,8 +186,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-      {/* This is a hidden prop to trigger order status for demonstration */}
-      <button onClick={handlePlaceOrder} className="hidden" id="placeOrderTrigger">Place Order</button>
     </div>
   );
 }

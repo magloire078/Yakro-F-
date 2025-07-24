@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,10 +7,10 @@ import { Button } from './ui/button';
 import { CheckCircle, CookingPot, Bike, Home } from 'lucide-react';
 
 const statuses = [
-  { name: 'Placée', icon: <CheckCircle className="h-8 w-8" /> },
-  { name: 'En Préparation', icon: <CookingPot className="h-8 w-8" /> },
-  { name: 'En Route', icon: <Bike className="h-8 w-8" /> },
-  { name: 'Livrée', icon: <Home className="h-8 w-8" /> },
+  { name: 'Placée', icon: <CheckCircle className="h-10 w-10" />, description: "Votre commande a été reçue, nous la préparons." },
+  { name: 'En Préparation', icon: <CookingPot className="h-10 w-10" />, description: "Le restaurant prépare votre repas avec soin." },
+  { name: 'En Route', icon: <Bike className="h-10 w-10" />, description: "Votre livreur est en chemin pour vous régaler." },
+  { name: 'Livrée', icon: <Home className="h-10 w-10" />, description: "Bon appétit ! Votre commande est arrivée." },
 ];
 
 interface OrderStatusProps {
@@ -29,39 +30,38 @@ export function OrderStatus({ onNewOrder }: OrderStatusProps) {
   }, [statusIndex]);
 
   const progressValue = ((statusIndex + 1) / statuses.length) * 100;
+  const currentStatus = statuses[statusIndex];
+  const isFinished = statusIndex === statuses.length - 1;
 
   return (
-    <div className="w-full max-w-2xl mx-auto py-12 px-4 flex flex-col items-center text-center">
-      <h1 className="text-4xl font-headline text-primary mb-4">Suivi de votre commande</h1>
-      <p className="text-lg text-muted-foreground mb-8">
-        Nous vous tiendrons au courant de l'avancement de votre commande.
-      </p>
+    <div className="w-full max-w-4xl mx-auto py-12 px-4 flex flex-col items-center justify-center text-center h-full">
+      <div className="w-full p-8 border-2 border-primary/20 rounded-xl bg-card shadow-2xl flex flex-col items-center">
+        <div className={`mb-6 p-4 rounded-full transition-colors duration-500 text-primary animate-pulse`}>
+          {currentStatus.icon}
+        </div>
+        <h1 className="text-5xl font-headline text-primary mb-2">{currentStatus.name}</h1>
+        <p className="text-lg text-muted-foreground mb-12 h-6">
+          {currentStatus.description}
+        </p>
 
-      <div className="w-full p-8 border-2 border-primary/20 rounded-xl bg-card shadow-lg">
-        <div className="mb-8">
-          <Progress value={progressValue} className="h-3 bg-primary/20" />
-          <div className="flex justify-between mt-2">
+        <div className="w-full max-w-md">
+          <Progress value={progressValue} className="h-2" />
+          <div className="flex justify-between mt-3">
             {statuses.map((status, index) => (
-              <div key={status.name} className={`flex flex-col items-center transition-colors duration-500 ${index <= statusIndex ? 'text-primary' : 'text-muted-foreground'}`}>
-                <div className={`p-2 rounded-full transition-colors duration-500 ${index <= statusIndex ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                    {status.icon}
-                </div>
-                <span className="text-xs mt-2 font-semibold">{status.name}</span>
+              <div key={status.name} className="flex flex-col items-center">
+                <div className={`w-3 h-3 rounded-full transition-colors duration-500 ${index <= statusIndex ? 'bg-primary' : 'bg-muted'}`}></div>
+                <span className={`text-xs mt-2 font-semibold transition-colors duration-500 ${index <= statusIndex ? 'text-primary' : 'text-muted-foreground'}`}>{status.name}</span>
               </div>
             ))}
           </div>
         </div>
-        
-        <div className="text-2xl font-bold font-body animate-pulse">
-            {statuses[statusIndex].name}...
-        </div>
       </div>
       
-      {statusIndex === statuses.length - 1 && (
-        <div className="mt-8 flex flex-col items-center gap-4 transition-opacity duration-500 opacity-100">
+      {isFinished && (
+        <div className="mt-10 flex flex-col items-center gap-4 transition-opacity duration-1000 opacity-100 animate-fade-in">
             <h2 className="text-3xl font-headline text-green-600">Bon appétit !</h2>
-            <p className="text-muted-foreground">N'hésitez pas à laisser un avis.</p>
-            <Button onClick={onNewOrder} size="lg">Commander à nouveau</Button>
+            <p className="text-muted-foreground">Votre commande a été livrée avec succès.</p>
+            <Button onClick={onNewOrder} size="lg" className="mt-4">Commander à nouveau</Button>
         </div>
       )}
     </div>
