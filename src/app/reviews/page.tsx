@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useImages } from '@/contexts/image-context';
+import { useData } from '@/contexts/data-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { generateReviews } from '@/ai/flows/generate-reviews-flow';
@@ -16,14 +16,20 @@ import { useToast } from '@/hooks/use-toast';
 import { RatingsChart } from '@/components/ratings-chart';
 
 export default function ReviewsPage() {
-  const { restaurants } = useImages();
-  const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(restaurants[0] || null);
+  const { restaurants } = useData();
+  const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
   const [reviews, setReviews] = React.useState<Review[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [audioUrl, setAudioUrl] = React.useState<string | null>(null);
   const [isGeneratingAudio, setIsGeneratingAudio] = React.useState(false);
 
   const { toast } = useToast();
+
+   React.useEffect(() => {
+        if(restaurants.length > 0 && !selectedRestaurant) {
+            setSelectedRestaurant(restaurants[0]);
+        }
+    }, [restaurants, selectedRestaurant]);
 
   const handleGenerateReviews = React.useCallback(async () => {
     if (!selectedRestaurant) return;
@@ -127,7 +133,7 @@ export default function ReviewsPage() {
         <div className="flex items-center gap-2">
           <Select
             onValueChange={value => setSelectedRestaurant(restaurants.find(r => r.id === value) || null)}
-            defaultValue={selectedRestaurant?.id}
+            value={selectedRestaurant?.id || ''}
           >
             <SelectTrigger className="w-[280px]">
               <SelectValue placeholder="Sélectionnez un restaurant" />

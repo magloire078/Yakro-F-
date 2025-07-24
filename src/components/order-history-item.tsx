@@ -9,7 +9,7 @@ import type { Order } from '@/lib/types';
 import { useCart } from '@/contexts/cart-context';
 import { Card } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useImages } from '@/contexts/image-context';
+import { useData } from '@/contexts/data-context';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -18,14 +18,15 @@ interface OrderHistoryItemProps {
 export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const { getMenuItemImage } = useImages();
+  const { getMenuItem } = useData();
 
 
   const handleReorder = () => {
     order.items.forEach(item => {
-        // The item in order.items might not have all the fields of a full MenuItem (like description),
-        // but addToCart only needs the fields present in CartItem which extends MenuItem.
-        addToCart(item);
+        const menuItem = getMenuItem(item.id);
+        if (menuItem) {
+            addToCart(menuItem);
+        }
     });
     toast({
         title: "Commande ajoutée au panier",
@@ -53,18 +54,22 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
           </AccordionTrigger>
           <AccordionContent className="p-6 pt-0">
             <div className="space-y-4">
-                {order.items.map(item => (
-                    <div key={item.id} className="flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                            <Image src={getMenuItemImage(item.id)} alt={item.name} width={40} height={40} className="rounded-md" data-ai-hint={item.imageHint}/>
-                            <div>
-                                <span>{item.quantity} x </span>
-                                <span className="font-medium">{item.name}</span>
+                {order.items.map(item => {
+                    const menuItem = getMenuItem(item.id);
+                    if (!menuItem) return null;
+                    return (
+                        <div key={item.id} className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                                <Image src={menuItem.image} alt={menuItem.name} width={40} height={40} className="rounded-md" data-ai-hint={menuItem.imageHint}/>
+                                <div>
+                                    <span>{item.quantity} x </span>
+                                    <span className="font-medium">{item.name}</span>
+                                </div>
                             </div>
+                            <span>{(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>
                         </div>
-                        <span>{(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
              {order.status === 'Livrée' && (
               <div className="mt-6 flex justify-end">

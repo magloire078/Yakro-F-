@@ -11,11 +11,12 @@ import { OrderStatus } from '@/components/order-status';
 import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { useToast } from '@/hooks/use-toast';
-import { useImages, getRestaurantsForHistory } from '@/contexts/image-context';
+import { useData, getRestaurantsForHistory } from '@/contexts/data-context';
 import { pastOrders } from '@/lib/data';
 import type { Order } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 // Helper function to generate user history summary
@@ -57,12 +58,18 @@ export default function Home() {
     restaurants, 
     menuItems, 
     isGenerating, 
-    generateAllImages 
-  } = useImages();
+    generateAllImages,
+    isLoading,
+    fetchData,
+  } = useData();
+
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
 
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   React.useEffect(() => {
     const userHistorySummary = generateUserHistorySummary(pastOrders);
@@ -172,6 +179,18 @@ export default function Home() {
   if (isOrderPlaced) {
     return <OrderStatus onNewOrder={handleNewOrder} />;
   }
+  
+  const renderSkeletons = (count: number, type: 'restaurant' | 'menu') => (
+    Array.from({ length: count }).map((_, i) => (
+      <div key={i} className="flex flex-col space-y-3">
+        <Skeleton className={`w-full ${type === 'restaurant' ? 'h-[200px]' : 'h-[120px]'} rounded-xl`} />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[250px]" />
+          <Skeleton className="h-4 w-[200px]" />
+        </div>
+      </div>
+    ))
+  );
 
   return (
     <div className="flex flex-col gap-12">
@@ -191,7 +210,7 @@ export default function Home() {
             <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredRestaurants.map(restaurant => (
+            {isLoading ? renderSkeletons(3, 'restaurant') : filteredRestaurants.map(restaurant => (
               <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}
           </div>
@@ -209,7 +228,7 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {filteredMenuItems.map(item => (
+             {isLoading ? renderSkeletons(4, 'menu') : filteredMenuItems.map(item => (
               <MenuItemCard key={item.id} item={item} />
             ))}
           </div>

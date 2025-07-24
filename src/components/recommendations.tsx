@@ -11,7 +11,7 @@ import { Skeleton } from './ui/skeleton';
 import { useCart } from '@/contexts/cart-context';
 import type { MenuItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useImages } from '@/contexts/image-context';
+import { useData } from '@/contexts/data-context';
 
 interface RecommendationsProps {
   recommendationsData: PersonalizedRecommendationsOutput | null;
@@ -20,7 +20,7 @@ interface RecommendationsProps {
 export function Recommendations({ recommendationsData }: RecommendationsProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const { menuItems, getMenuItemImage } = useImages();
+  const { menuItems, getMenuItem } = useData();
 
   if (!recommendationsData || recommendationsData.recommendations.length === 0) {
     return null;
@@ -56,14 +56,14 @@ export function Recommendations({ recommendationsData }: RecommendationsProps) {
         <CarouselContent>
           {recommendationsData.recommendations.map((rec, index) => {
             const menuItem = menuItems.find(item => item.name === rec.item);
-            const imageSrc = menuItem ? getMenuItemImage(menuItem.id) : `https://placehold.co/600x400`;
+            const imageSrc = menuItem ? getMenuItem(menuItem.id)?.image : `https://placehold.co/600x400`;
             return (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
                   <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <CardHeader className="p-0">
                       <Image
-                          src={imageSrc}
+                          src={imageSrc || 'https://placehold.co/600x400'}
                           alt={rec.item}
                           width={600}
                           height={400}

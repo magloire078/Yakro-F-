@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useImages } from '@/contexts/image-context';
+import { useData } from '@/contexts/data-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,8 +31,8 @@ async function toDataURL(url: string): Promise<string> {
 
 
 export default function MarketingPage() {
-  const { restaurants, menuItems, getRestaurantImage } = useImages();
-  const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(restaurants[0] || null);
+  const { restaurants, getRestaurant } = useData();
+  const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
@@ -40,12 +40,18 @@ export default function MarketingPage() {
   const router = useRouter();
 
   React.useEffect(() => {
+    if(restaurants.length > 0 && !selectedRestaurant) {
+      setSelectedRestaurant(restaurants[0]);
+    }
+  }, [restaurants, selectedRestaurant]);
+
+  React.useEffect(() => {
     if (!authLoading && !user) {
         router.push('/login');
     }
   }, [user, authLoading, router]);
 
-  const restaurantImage = selectedRestaurant ? getRestaurantImage(selectedRestaurant.id) : null;
+  const restaurantImage = selectedRestaurant ? getRestaurant(selectedRestaurant.id)?.image : null;
 
   const handleGenerateVideo = async () => {
     if (!selectedRestaurant) return;
@@ -133,7 +139,7 @@ export default function MarketingPage() {
                   setSelectedRestaurant(restaurants.find(r => r.id === value) || null);
                   setVideoUrl(null);
                 }}
-                defaultValue={selectedRestaurant?.id}
+                value={selectedRestaurant?.id || ''}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Choisissez un restaurant" />

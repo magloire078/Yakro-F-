@@ -16,11 +16,11 @@ import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { useImages } from '@/contexts/image-context';
+import { useData } from '@/contexts/data-context';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
   const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
-  const { getMenuItemImage } = useImages();
+  const { getMenuItem } = useData();
 
   const handlePlaceOrder = () => {
     // This is a simulation. In a real app, this would trigger the checkout flow.
@@ -40,51 +40,55 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
           <>
             <ScrollArea className="flex-1 pr-4">
               <div className="flex flex-col gap-4 py-4">
-                {cartItems.map(item => (
-                  <div key={item.id} className="flex items-center gap-4">
-                    <Image
-                      src={getMenuItemImage(item.id)}
-                      alt={item.name}
-                      width={64}
-                      height={64}
-                      className="rounded-md object-cover"
-                      data-ai-hint={item.imageHint}
-                    />
-                    <div className="flex-1">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(item.price * item.quantity).toLocaleString('fr-FR')} FCFA
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-6 text-center">{item.quantity}</span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                {cartItems.map(item => {
+                    const menuItem = getMenuItem(item.id);
+                    if (!menuItem) return null;
+                    return (
+                        <div key={item.id} className="flex items-center gap-4">
+                            <Image
+                            src={menuItem.image}
+                            alt={menuItem.name}
+                            width={64}
+                            height={64}
+                            className="rounded-md object-cover"
+                            data-ai-hint={menuItem.imageHint}
+                            />
+                            <div className="flex-1">
+                            <p className="font-semibold">{menuItem.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {(menuItem.price * item.quantity).toLocaleString('fr-FR')} FCFA
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                                <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                >
+                                <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-6 text-center">{item.quantity}</span>
+                                <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                >
+                                <Plus className="h-3 w-3" />
+                                </Button>
+                            </div>
+                            </div>
+                            <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => removeFromCart(item.id)}
+                            >
+                            <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )
+                })}
               </div>
             </ScrollArea>
             <Separator />

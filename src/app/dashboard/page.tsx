@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useImages } from '@/contexts/image-context';
+import { useData } from '@/contexts/data-context';
 import { Loader, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { MenuItemCard } from '@/components/menu-item-card';
@@ -20,14 +20,19 @@ import { useRouter } from 'next/navigation';
 
 
 export default function DashboardPage() {
-    const { restaurants, menuItems, setMenuItems } = useImages();
-    const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(restaurants[0] || null);
+    const { restaurants, menuItems, addMenuItem } = useData();
+    const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [description, setDescription] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [generatedItem, setGeneratedItem] = React.useState<MenuItem | null>(null);
     const { toast } = useToast();
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
+
+    React.useEffect(() => {
+        if (!restaurants.length) return;
+        setSelectedRestaurant(restaurants[0]);
+    },[restaurants]);
     
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -93,9 +98,14 @@ export default function DashboardPage() {
         }
     };
     
-    const handleAddItemToMenu = () => {
+    const handleAddItemToMenu = async () => {
         if (!generatedItem) return;
-        setMenuItems([...menuItems, generatedItem]);
+        
+        // We don't want to save the temporary `id` to Firestore
+        const { id, ...itemToAdd } = generatedItem;
+
+        await addMenuItem(itemToAdd);
+
         setGeneratedItem(null);
         setDescription('');
         toast({
@@ -126,7 +136,7 @@ export default function DashboardPage() {
                             <Label>Restaurant</Label>
                             <Select
                                 onValueChange={value => setSelectedRestaurant(restaurants.find(r => r.id === value) || null)}
-                                defaultValue={selectedRestaurant?.id}
+                                value={selectedRestaurant?.id || ''}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Choisissez votre restaurant" />

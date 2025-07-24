@@ -6,8 +6,8 @@ import type { Restaurant, MenuItem } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialMenuItems, initialRestaurants } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc, doc, getDoc, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase'; // Assuming db is exported from firebase.ts
+import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface DataState {
   restaurants: Restaurant[];
@@ -32,7 +32,7 @@ const useDataStore = create<DataState>((set, get) => ({
   setMenuItems: (menuItems) => set({ menuItems }),
 
   fetchData: async () => {
-    set({ isLoading: true });
+    if(!get().isLoading) return; // prevent multiple fetches
     try {
       const restaurantsCollection = collection(db, 'restaurants');
       const restaurantSnapshot = await getDocs(restaurantsCollection);
@@ -45,7 +45,6 @@ const useDataStore = create<DataState>((set, get) => ({
       set({ menuItems: menuList });
     } catch (error) {
       console.error("Error fetching data from Firestore: ", error);
-      // Fallback to initial data if Firestore fetch fails
       set({ restaurants: initialRestaurants, menuItems: initialMenuItems });
     } finally {
       set({ isLoading: false });
@@ -59,13 +58,12 @@ const useDataStore = create<DataState>((set, get) => ({
         set(state => ({ menuItems: [...state.menuItems, newItem]}));
     } catch (e) {
         console.error("Error adding document: ", e);
+        throw e;
     }
   },
 
   generateAllImages: async () => {
     set({ isGenerating: true });
-    // This function would need to be updated to write changes back to Firestore
-    // For now, it will only update the local state.
     console.warn("generateAllImages only updates local state and does not persist to Firestore in this version.");
     try {
       const updatedMenuItems = await Promise.all(
@@ -94,17 +92,23 @@ const useDataStore = create<DataState>((set, get) => ({
     }
   },
   getMenuItem: (id: string) => {
-    const item = get().menuItems.find(i => i.id === id);
-    return item;
+    return get().menuItems.find(i => i.id === id);
   },
   getRestaurant: (id: string) => {
-    const restaurant = get().restaurants.find(r => r.id === id);
-    return restaurant;
+    return get().restaurants.find(r => r.id === id);
   },
 }));
 
 // The hook to be used in components
-export const useData = useDataStore;
+export const useData = () => {
+    const state = useDataStore();
+    React.useEffect(() => {
+        if(state.isLoading) {
+            state.fetchData();
+        }
+    }, [state.isLoading, state.fetchData]);
+    return state;
+};
 
 // This is needed for the user history generation helper which runs outside of React components
 // It might be stale if used before data is fetched.

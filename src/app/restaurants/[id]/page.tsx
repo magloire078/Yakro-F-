@@ -1,17 +1,37 @@
 
 'use client'
 
+import * as React from 'react';
 import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
-import { useImages } from "@/contexts/image-context";
-import { Clock, Star } from "lucide-react";
+import { useData } from "@/contexts/data-context";
+import { Clock, Star, Loader } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RestaurantPage() {
     const params = useParams();
-    const { restaurants, menuItems } = useImages();
-    const restaurant = restaurants.find(r => r.id === params.id);
+    const { restaurants, menuItems, getRestaurant, isLoading, fetchData } = useData();
+    const [restaurant, setRestaurant] = React.useState(getRestaurant(params.id as string));
+
+    React.useEffect(() => {
+        if (isLoading) {
+            fetchData();
+        }
+    }, [isLoading, fetchData]);
+
+    React.useEffect(() => {
+        setRestaurant(getRestaurant(params.id as string));
+    }, [params.id, restaurants, getRestaurant]);
+
+    if (isLoading) {
+        return (
+             <div className="flex h-full w-full items-center justify-center">
+                <Loader className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        )
+    }
 
     if (!restaurant) {
         return <div>Restaurant non trouvé</div>
@@ -25,7 +45,7 @@ export default function RestaurantPage() {
                 <Image 
                     src={restaurant.image}
                     alt={restaurant.name}
-                    layout="fill"
+                    fill
                     objectFit="cover"
                     data-ai-hint={restaurant.imageHint}
                     className="rounded-xl"
