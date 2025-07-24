@@ -98,9 +98,9 @@ const useDataStore = create<DataState>((set, get) => ({
 }));
 
 // Initialize data fetching once
-if (typeof window !== 'undefined') {
-    useDataStore.getState().fetchData();
-}
+// if (typeof window !== 'undefined') {
+//     useDataStore.getState().fetchData();
+// }
 
 // The hook to be used in components
 export const useData = useDataStore;

@@ -12,23 +12,44 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RestaurantPage() {
     const params = useParams();
-    const { restaurants, menuItems, getRestaurant, isLoading, fetchData } = useData();
+    const { getRestaurant, getMenuItem, menuItems, isLoading, fetchData } = useData();
     const [restaurant, setRestaurant] = React.useState(getRestaurant(params.id as string));
 
     React.useEffect(() => {
-        if (isLoading) {
+        // Fetch data if it's not already loaded, for deep links
+        if (!restaurant) {
             fetchData();
         }
-    }, [isLoading, fetchData]);
+    }, [restaurant, fetchData]);
 
     React.useEffect(() => {
         setRestaurant(getRestaurant(params.id as string));
-    }, [params.id, restaurants, getRestaurant]);
+    }, [params.id, getRestaurant]);
 
-    if (isLoading) {
+    if (isLoading && !restaurant) {
         return (
-             <div className="flex h-full w-full items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-primary" />
+             <div className="space-y-8">
+                <Skeleton className="h-48 md:h-64 w-full -mx-4 md:-mx-8 -mt-4 md:-mt-8 md:rounded-xl" />
+                <div className="py-8">
+                     <Skeleton className="h-10 w-48 mb-8" />
+                     <Skeleton className="h-8 w-32 mb-6" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                        <div className="flex items-center space-x-4">
+                            <Skeleton className="h-24 w-24 rounded-lg" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-[250px]" />
+                                <Skeleton className="h-4 w-[200px]" />
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <Skeleton className="h-24 w-24 rounded-lg" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-[250px]" />
+                                <Skeleton className="h-4 w-[200px]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -46,7 +67,8 @@ export default function RestaurantPage() {
                     src={restaurant.image}
                     alt={restaurant.name}
                     fill
-                    objectFit="cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    style={{objectFit: 'cover'}}
                     data-ai-hint={restaurant.imageHint}
                     className="md:rounded-xl"
                 />
