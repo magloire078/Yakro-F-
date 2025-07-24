@@ -30,3 +30,11 @@ export interface Order {
   restaurantName: string;
   status: string;
 }
+
+export interface Review {
+  id: string;
+  restaurantId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+}
