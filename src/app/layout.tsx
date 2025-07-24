@@ -1,12 +1,13 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/contexts/cart-context';
 import { Sidebar } from '@/components/sidebar';
-import { ImageProvider } from '@/contexts/image-context';
+import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
-  title: 'Yakro Fê',
+  title: 'Yakro Go',
   description: 'Votre ville, livrée.',
 };
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Belleza&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
+        <AuthProvider>
           <CartProvider>
             <div className="flex min-h-screen">
               <Sidebar />
@@ -31,6 +33,7 @@ export default function RootLayout({
             </div>
             <Toaster />
           </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

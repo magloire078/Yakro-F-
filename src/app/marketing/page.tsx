@@ -11,10 +11,15 @@ import type { Restaurant } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader, Video } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
 
 // Helper to convert image URL to data URI
 async function toDataURL(url: string): Promise<string> {
-    const response = await fetch(url);
+    // This proxy is needed to avoid CORS issues when running in a browser environment
+    // In a real production app, you'd want a more robust solution.
+    const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+    const response = await fetch(proxyUrl);
     const blob = await response.blob();
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -31,6 +36,14 @@ export default function MarketingPage() {
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!authLoading && !user) {
+        router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   const restaurantImage = selectedRestaurant ? getRestaurantImage(selectedRestaurant.id) : null;
 
@@ -47,13 +60,10 @@ export default function MarketingPage() {
     let imageDataUri: string | null = null;
     try {
       if (restaurantImage) {
-        // If the image is already a data URI, use it directly. Otherwise, fetch and convert.
         if (restaurantImage.startsWith('data:')) {
             imageDataUri = restaurantImage;
-        } else {
-            // This proxy is needed to avoid CORS issues when running in a browser environment
-            const proxyUrl = `https://cors-anywhere.herokuapp.com/${restaurantImage}`;
-            imageDataUri = await toDataURL(proxyUrl);
+        } else if (restaurantImage.startsWith('http')) {
+             imageDataUri = await toDataURL(restaurantImage);
         }
       }
     } catch (error) {
@@ -61,7 +71,7 @@ export default function MarketingPage() {
         toast({
             variant: "destructive",
             title: "Erreur de préparation",
-            description: "Impossible de charger l'image de référence."
+            description: "Impossible de charger l'image de référence. Le service proxy est peut-être indisponible."
         });
         setLoading(false);
         return;
@@ -96,6 +106,14 @@ export default function MarketingPage() {
     }
   };
   
+  if (authLoading || !user) {
+    return (
+        <div className="flex h-full w-full items-center justify-center">
+            <Loader className="h-16 w-16 animate-spin text-primary" />
+        </div>
+    )
+  }
+
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">

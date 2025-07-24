@@ -11,6 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthErrorCodes } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+
 
 const userAuthSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse e-mail valide.' }),
@@ -24,20 +28,47 @@ export function UserAuthForm() {
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-
-    // TODO: Intégrer la logique Firebase Auth ici
-    console.log(data.email);
     
-    setTimeout(() => {
+    try {
+        // Try to sign in first
+        await signInWithEmailAndPassword(auth, data.email, "defaultPassword123"); // Using a dummy password
         toast({
-            title: "Fonctionnalité en cours de développement",
-            description: "La connexion avec Firebase sera bientôt disponible.",
+            title: "Connexion réussie",
+            description: "Heureux de vous revoir !",
         });
+        router.push('/');
+    } catch (error: any) {
+        if (error.code === AuthErrorCodes.USER_NOT_FOUND || error.code === 'auth/wrong-password') {
+            // If user doesn't exist or wrong password (since we use a dummy one), create a new account
+            try {
+                await createUserWithEmailAndPassword(auth, data.email, "defaultPassword123");
+                toast({
+                    title: "Compte créé avec succès",
+                    description: "Bienvenue sur Yakro Fê !",
+                });
+                router.push('/');
+            } catch (creationError: any) {
+                 toast({
+                    variant: "destructive",
+                    title: "Erreur de création de compte",
+                    description: creationError.message,
+                });
+            }
+        } else {
+            // Handle other errors
+            toast({
+                variant: "destructive",
+                title: "Erreur d'authentification",
+                description: error.message,
+            });
+        }
+    } finally {
         setIsLoading(false);
-    }, 1000);
+    }
   }
 
   return (
@@ -63,12 +94,15 @@ export function UserAuthForm() {
                 {errors.email.message}
               </p>
             )}
+             <p className="px-1 text-xs text-muted-foreground">
+                Aucun mot de passe requis pour cette démo.
+              </p>
           </div>
           <Button disabled={isLoading}>
             {isLoading && (
               <Loader className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Se connecter avec l'e-mail
+            Continuer avec l'e-mail
           </Button>
         </div>
       </form>

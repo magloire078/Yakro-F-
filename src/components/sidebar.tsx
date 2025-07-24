@@ -6,16 +6,34 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, ShoppingCart, Star, Video, LayoutDashboard, LogIn } from 'lucide-react';
+import { Home, History, ShoppingCart, Star, Video, LayoutDashboard, LogIn, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { Avatar, AvatarFallback } from './ui/avatar';
+
 
 export function Sidebar() {
   const { cartCount } = useCart();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
+  }
+  
+  const getInitials = (email: string | null | undefined) => {
+    if (!email) return '?';
+    return email.substring(0, 2).toUpperCase();
+  }
 
   return (
     <aside className="w-64 flex flex-col p-6 bg-card border-r">
        <Link href="/" className="mb-12 flex items-center space-x-2">
           <Icons.logo className="h-10 w-10 text-primary" />
-          <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
+          <span className="font-headline text-3xl font-bold text-primary">Yakro Go</span>
         </Link>
         <nav className="flex flex-col gap-4">
           <Button variant="ghost" className="justify-start text-lg" asChild>
@@ -36,27 +54,50 @@ export function Sidebar() {
               Avis
             </Link>
           </Button>
-          <Button variant="ghost" className="justify-start text-lg" asChild>
-             <Link href="/marketing">
-              <Video className="mr-2 h-5 w-5" />
-              Marketing
-            </Link>
-          </Button>
-           <Button variant="ghost" className="justify-start text-lg" asChild>
-             <Link href="/dashboard">
-              <LayoutDashboard className="mr-2 h-5 w-5" />
-              Dashboard
-            </Link>
-          </Button>
+          {(user) && (
+            <>
+              <Button variant="ghost" className="justify-start text-lg" asChild>
+                <Link href="/marketing">
+                  <Video className="mr-2 h-5 w-5" />
+                  Marketing
+                </Link>
+              </Button>
+              <Button variant="ghost" className="justify-start text-lg" asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="mr-2 h-5 w-5" />
+                  Dashboard
+                </Link>
+              </Button>
+            </>
+          )}
         </nav>
 
         <div className="mt-auto space-y-4">
-           <Button variant="outline" className="w-full text-lg py-6" asChild>
-             <Link href="/login">
-                <LogIn className="mr-2 h-5 w-5" />
-                Connexion
-             </Link>
-          </Button>
+           {!loading && !user && (
+            <Button variant="outline" className="w-full text-lg py-6" asChild>
+                <Link href="/login">
+                    <LogIn className="mr-2 h-5 w-5" />
+                    Connexion
+                </Link>
+            </Button>
+           )}
+           {!loading && user && (
+            <div className="space-y-4">
+                <div className="flex items-center gap-3 p-2 rounded-lg border">
+                    <Avatar>
+                        <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 overflow-hidden">
+                        <p className="text-sm font-semibold truncate">{user.email}</p>
+                    </div>
+                </div>
+                <Button variant="outline" className="w-full text-lg py-6" onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-5 w-5" />
+                    Déconnexion
+                </Button>
+            </div>
+           )}
+
            <CartSheet>
             <Button variant="default" className="w-full text-lg py-6">
               <ShoppingCart className="mr-2 h-5 w-5" />

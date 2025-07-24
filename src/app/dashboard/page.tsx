@@ -15,6 +15,8 @@ import { MenuItemCard } from '@/components/menu-item-card';
 import type { MenuItem, Restaurant } from '@/lib/types';
 import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
 import { generateImage } from '@/ai/flows/generate-image-flow';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
 
 
 export default function DashboardPage() {
@@ -24,6 +26,14 @@ export default function DashboardPage() {
     const [loading, setLoading] = React.useState(false);
     const [generatedItem, setGeneratedItem] = React.useState<MenuItem | null>(null);
     const { toast } = useToast();
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+    
+    React.useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/login');
+        }
+    }, [user, authLoading, router]);
 
     const handleGenerateItem = async () => {
         if (!selectedRestaurant || !description) {
@@ -92,6 +102,14 @@ export default function DashboardPage() {
             title: 'Plat ajouté !',
             description: `${generatedItem.name} est maintenant disponible dans votre menu.`
         });
+    }
+
+    if (authLoading || !user) {
+        return (
+             <div className="flex h-full w-full items-center justify-center">
+                <Loader className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        )
     }
 
     return (
