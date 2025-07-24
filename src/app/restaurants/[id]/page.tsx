@@ -15,12 +15,15 @@ const restaurants: Restaurant[] = [
 ];
 
 const menuItems: MenuItem[] = [
-    { id: 'm1', name: 'Poulet Braisé', description: 'Poulet entier grillé, mariné aux épices locales.', price: 7500, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken' },
-    { id: 'm2', name: 'Foutou Banane, Sauce Graine', description: 'Foutou de banane plantain accompagné d\'une sauce onctueuse aux noix de palme.', price: 5000, image: 'https://placehold.co/600x400', imageHint: 'fufu palm nut soup' },
-    { id: 'm3', name: 'Attiéké Poisson Thon', description: 'La spécialité ivoirienne par excellence : semoule de manioc et thon frit.', price: 3500, image: 'https://placehold.co/600x400', imageHint: 'attieke fried fish' },
-    { id: 'm4', name: 'Kedjenou de Poulet', description: 'Poulet mijoté aux légumes et épices, cuit à l\'étouffée.', price: 6000, image: 'https://placehold.co/600x400', imageHint: 'chicken stew' },
-    { id: 'm5', name: 'Alloco', description: 'Bananes plantains mûres frites, un délice sucré-salé.', price: 1500, image: 'https://placehold.co/600x400', imageHint: 'fried plantain' },
-    { id: 'm6', name: 'Pizza Reine', description: 'Pizza garnie de jambon, champignons et fromage.', price: 8000, image: 'https://placehold.co/600x400', imageHint: 'pizza' },
+    { id: 'm1', name: 'Poulet Braisé', description: 'Poulet entier grillé, mariné aux épices locales.', price: 7500, image: 'https://placehold.co/600x400', imageHint: 'grilled chicken', restaurantId: '1' },
+    { id: 'm2', name: 'Foutou Banane, Sauce Graine', description: 'Foutou de banane plantain accompagné d\'une sauce onctueuse aux noix de palme.', price: 5000, image: 'https://placehold.co/600x400', imageHint: 'fufu palm nut soup', restaurantId: '3' },
+    { id: 'm3', name: 'Attiéké Poisson Thon', description: 'La spécialité ivoirienne par excellence : semoule de manioc et thon frit.', price: 3500, image: 'https://placehold.co/600x400', imageHint: 'attieke fried fish', restaurantId: '1' },
+    { id: 'm4', name: 'Kedjenou de Poulet', description: 'Poulet mijoté aux légumes et épices, cuit à l\'étouffée.', price: 6000, image: 'https://placehold.co/600x400', imageHint: 'chicken stew', restaurantId: '4' },
+    { id: 'm5', name: 'Alloco', description: 'Bananes plantains mûres frites, un délice sucré-salé.', price: 1500, image: 'https://placehold.co/600x400', imageHint: 'fried plantain', restaurantId: '3' },
+    { id: 'm6', name: 'Pizza Reine', description: 'Pizza garnie de jambon, champignons et fromage.', price: 8000, image: 'https://placehold.co/600x400', imageHint: 'pizza', restaurantId: '2' },
+    { id: 'm7', name: 'Pizza 4 Saisons', description: 'Pizza végétarienne avec artichauts, poivrons, olives et champignons.', price: 8500, image: 'https://placehold.co/600x400', imageHint: 'vegetarian pizza', restaurantId: '2' },
+    { id: 'm8', name: 'Brochettes de Boeuf', description: 'Tendres morceaux de boeuf marinés et grillés.', price: 4000, image: 'https://placehold.co/600x400', imageHint: 'beef skewers', restaurantId: '4' },
+
 ];
 
 
@@ -31,8 +34,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
         return <div>Restaurant non trouvé</div>
     }
 
-    // For now, we'll show all menu items for any restaurant
-    const restaurantMenu = menuItems;
+    const restaurantMenu = menuItems.filter(item => item.restaurantId === params.id);
 
     return (
         <div>
@@ -68,12 +70,13 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
 
                 <h2 className="text-3xl font-headline text-foreground mb-6">Menu</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                    {restaurantMenu.map(item => (
+                    {restaurantMenu.length > 0 ? restaurantMenu.map(item => (
                         <MenuItemCard key={item.id} item={item} />
-                    ))}
+                    )) : (
+                        <p>Aucun plat disponible pour ce restaurant.</p>
+                    )}
                 </div>
             </div>
         </div>
     )
 }
-

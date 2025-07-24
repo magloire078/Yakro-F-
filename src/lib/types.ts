@@ -5,6 +5,7 @@ export interface MenuItem {
   price: number;
   image: string;
   imageHint: string;
+  restaurantId: string;
 }
 
 export interface Restaurant {
