@@ -1,3 +1,4 @@
+
 // src/components/search-bar.tsx
 'use client';
 
@@ -10,39 +11,44 @@ import { useDebounce } from '@/hooks/use-debounce';
 
 interface SearchBarProps {
   onSearchChange: (searchTerm: string) => void;
-  initialSearchTerm: string;
+  onInterpretedSearchChange: (interpreted: IntelligentSearchOutput | null) => void;
 }
 
-export function SearchBar({ onSearchChange, initialSearchTerm }: SearchBarProps) {
-  const [searchTerm, setSearchTerm] = React.useState(initialSearchTerm);
-  const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
+export function SearchBar({ onSearchChange, onInterpretedSearchChange }: SearchBarProps) {
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [interpretedResult, setInterpretedResult] = React.useState<IntelligentSearchOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = React.useState(false);
   
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
-    onSearchChange(value); // Propagate changes immediately for simple filtering
+    onSearchChange(value);
   };
 
   const clearSearch = () => {
     setSearchTerm('');
     onSearchChange('');
-    setInterpretedSearch(null);
+    setInterpretedResult(null);
+    onInterpretedSearchChange(null);
   }
 
   React.useEffect(() => {
     if (debouncedSearchTerm.length > 3) {
       setIsAiLoading(true);
       intelligentSearch({ query: debouncedSearchTerm })
-        .then(setInterpretedSearch)
+        .then(result => {
+            setInterpretedResult(result);
+            onInterpretedSearchChange(result);
+        })
         .catch(console.error)
         .finally(() => setIsAiLoading(false));
     } else {
-      setInterpretedSearch(null);
+      setInterpretedResult(null);
+      onInterpretedSearchChange(null);
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, onInterpretedSearchChange]);
 
   return (
     <div className="w-full">
@@ -53,7 +59,7 @@ export function SearchBar({ onSearchChange, initialSearchTerm }: SearchBarProps)
           placeholder="J'ai envie de..."
           className="w-full rounded-full p-3 pl-10 text-base bg-card border-2 border-primary/20 focus:border-primary"
           value={searchTerm}
-          onChange={handleSearchChange}
+          onChange={handleInputChange}
         />
         {isAiLoading ? (
             <Loader className="absolute right-10 top-1/2 -translate-y-1/2 h-5 w-5 text-primary animate-spin" />
@@ -64,12 +70,12 @@ export function SearchBar({ onSearchChange, initialSearchTerm }: SearchBarProps)
              <X className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground cursor-pointer" onClick={clearSearch} />
         )}
       </div>
-      {interpretedSearch && (
+      {interpretedResult && (
         <div className="mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground">
             <span>Recherche IA:</span>
-            {interpretedSearch.cuisine?.map(c => <Badge key={c} variant="secondary">{c}</Badge>)}
-            {interpretedSearch.keywords?.map(k => <Badge key={k} variant="secondary">{k}</Badge>)}
-            {interpretedSearch.searchTerms?.map(s => <Badge key={s} variant="secondary">{s}</Badge>)}
+            {interpretedResult.cuisine?.map(c => <Badge key={c} variant="secondary">{c}</Badge>)}
+            {interpretedResult.keywords?.map(k => <Badge key={k} variant="secondary">{k}</Badge>)}
+            {interpretedResult.searchTerms?.map(s => <Badge key={s} variant="secondary">{s}</Badge>)}
         </div>
       )}
     </div>

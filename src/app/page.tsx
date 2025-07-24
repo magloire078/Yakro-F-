@@ -15,6 +15,7 @@ import { useImages } from '@/contexts/image-context';
 import { pastOrders } from '@/lib/data';
 import type { Order } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
+import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 
 
 // Helper function to generate user history summary
@@ -59,7 +60,8 @@ export default function Home() {
     generateAllImages 
   } = useImages();
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
 
 
   React.useEffect(() => {
@@ -118,19 +120,57 @@ export default function Home() {
     }
   };
 
-  const handleSearchChange = (term: string) => {
-    setSearchTerm(term);
-  };
+  const filteredRestaurants = React.useMemo(() => {
+    if (!searchQuery && !interpretedSearch) return restaurants;
 
-  const filteredRestaurants = restaurants.filter(restaurant =>
-    restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    return restaurants.filter(restaurant => {
+        const searchText = searchQuery.toLowerCase();
+        
+        // Basic text search
+        const matchesText = searchText ? 
+            restaurant.name.toLowerCase().includes(searchText) ||
+            restaurant.cuisine.toLowerCase().includes(searchText)
+            : true;
 
-  const filteredMenuItems = menuItems.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+        if (!interpretedSearch) return matchesText;
+
+        // AI-powered search
+        const hasCuisine = interpretedSearch.cuisine?.length > 0;
+        const matchesCuisine = hasCuisine ? interpretedSearch.cuisine.some(c => restaurant.cuisine.toLowerCase().includes(c.toLowerCase())) : true;
+
+        return matchesText && matchesCuisine;
+    });
+  }, [restaurants, searchQuery, interpretedSearch]);
+
+  const filteredMenuItems = React.useMemo(() => {
+    if (!searchQuery && !interpretedSearch) return menuItems;
+
+    return menuItems.filter(item => {
+        const searchText = searchQuery.toLowerCase();
+        
+        // Basic text search
+        const matchesText = searchText ?
+            item.name.toLowerCase().includes(searchText) ||
+            item.description.toLowerCase().includes(searchText)
+            : true;
+        
+        if (!interpretedSearch) return matchesText;
+
+        // AI-powered search
+        const allSearchTerms = [
+            ...(interpretedSearch.keywords || []),
+            ...(interpretedSearch.searchTerms || [])
+        ].map(t => t.toLowerCase());
+
+        const hasSearchTerms = allSearchTerms.length > 0;
+        const matchesSearchTerms = hasSearchTerms ? allSearchTerms.some(term => 
+            item.name.toLowerCase().includes(term) ||
+            item.description.toLowerCase().includes(term)
+        ) : true;
+        
+        return matchesText || matchesSearchTerms;
+    });
+  }, [menuItems, searchQuery, interpretedSearch]);
 
 
   if (isOrderPlaced) {
@@ -140,7 +180,10 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-12">
       <section>
-          <SearchBar onSearchChange={handleSearchChange} initialSearchTerm={searchTerm} />
+          <SearchBar 
+            onSearchChange={setSearchQuery} 
+            onInterpretedSearchChange={setInterpretedSearch}
+          />
       </section>
 
       <div>
