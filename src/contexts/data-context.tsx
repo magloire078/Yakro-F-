@@ -7,7 +7,8 @@ import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 interface DataState {
   restaurants: Restaurant[];
@@ -24,6 +25,8 @@ interface DataState {
   getRestaurant: (id: string) => Restaurant | undefined;
 }
 
+let unsubscribeFromOrders: () => void = () => {};
+
 const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
@@ -37,64 +40,61 @@ const useDataStore = create<DataState>((set, get) => ({
     }
     set({ isLoading: true });
     try {
-      // Fetch Restaurants
+      // Fetch Restaurants and Menu Items
       const restaurantsCollection = collection(db, 'restaurants');
+      const menuItemsCollection = collection(db, 'menuItems');
+
       let restaurantSnapshot = await getDocs(restaurantsCollection);
-      
-      // Seed restaurants if collection is empty
       if (restaurantSnapshot.empty) {
+        console.log("Firestore 'restaurants' is empty. Seeding data...");
         const batch = writeBatch(db);
         initialRestaurants.forEach(resto => {
           const docRef = doc(restaurantsCollection);
           batch.set(docRef, resto);
         });
         await batch.commit();
-        restaurantSnapshot = await getDocs(restaurantsCollection); // Re-fetch after seeding
-        console.log("Firestore 'restaurants' collection seeded.");
+        restaurantSnapshot = await getDocs(restaurantsCollection);
       }
       const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
       set({ restaurants: restaurantList });
 
-      // Fetch Menu Items
-      const menuItemsCollection = collection(db, 'menuItems');
       let menuItemSnapshot = await getDocs(menuItemsCollection);
-
-      // Seed menu items if collection is empty
       if (menuItemSnapshot.empty && restaurantList.length > 0) {
+        console.log("Firestore 'menuItems' is empty. Seeding data...");
         const batch = writeBatch(db);
-        const afrinaRestoId = restaurantList.find(r => r.name === 'Le Bazin')?.id;
-        const piliPiliRestoId = restaurantList.find(r => r.name === 'Le Pili Pili')?.id;
-        const pizzaDoudouRestoId = restaurantList.find(r => r.name === 'Pizza Doudou')?.id;
-
-        if (piliPiliRestoId && afrinaRestoId && pizzaDoudouRestoId) {
-            initialMenuItems.forEach(item => {
-                const docRef = doc(menuItemsCollection);
-                let restaurantId = afrinaRestoId; // default
-                if(item.name.includes('Poulet') || item.name.includes('Attiéké')) restaurantId = piliPiliRestoId;
-                if(item.name.includes('Pizza')) restaurantId = pizzaDoudouRestoId;
-
-                batch.set(docRef, {...item, restaurantId});
-            });
-            await batch.commit();
-            menuItemSnapshot = await getDocs(menuItemsCollection); // Re-fetch
-            console.log("Firestore 'menuItems' collection seeded.");
-        }
+        initialMenuItems.forEach(item => {
+          const docRef = doc(menuItemsCollection);
+          const restaurant = restaurantList.find(r => r.imageHint.includes(item.imageHint.split(' ')[0]));
+          batch.set(docRef, { ...item, restaurantId: restaurant?.id || restaurantList[0].id });
+        });
+        await batch.commit();
+        menuItemSnapshot = await getDocs(menuItemsCollection);
       }
-
       const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
       set({ menuItems: menuList });
 
+      // Listen to auth state to decide when to fetch orders
+      onAuthStateChanged(auth, user => {
+        // Unsubscribe from previous listener if it exists
+        unsubscribeFromOrders(); 
 
-      // Fetch Orders initially and then listen for real-time updates
-      const ordersCollection = collection(db, 'orders');
-      onSnapshot(ordersCollection, (snapshot) => {
-        const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-        set({ orders: orderList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
+        if (user) {
+          // If user is logged in, listen to orders
+          const ordersCollection = collection(db, 'orders');
+          unsubscribeFromOrders = onSnapshot(ordersCollection, (snapshot) => {
+            const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+            set({ orders: orderList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
+          }, (error) => {
+            console.error("Error in orders snapshot listener:", error);
+          });
+        } else {
+          // If user is logged out, clear orders
+          set({ orders: [] });
+        }
       });
 
     } catch (error) {
       console.error("Error fetching data from Firestore: ", error);
-       // In case of error, set to empty arrays, relying on Firestore as the source of truth
       set({ restaurants: [], menuItems: [], orders: [] });
     } finally {
       set({ isLoading: false });
@@ -103,33 +103,31 @@ const useDataStore = create<DataState>((set, get) => ({
 
   addMenuItem: async (item) => {
     try {
-        const docRef = await addDoc(collection(db, "menuItems"), item);
-        const newItem = { id: docRef.id, ...item };
-        set(state => ({ menuItems: [...state.menuItems, newItem]}));
+      const docRef = await addDoc(collection(db, "menuItems"), item);
+      const newItem = { id: docRef.id, ...item } as MenuItem;
+      set(state => ({ menuItems: [...state.menuItems, newItem] }));
     } catch (e) {
-        console.error("Error adding menu item: ", e);
-        throw e;
+      console.error("Error adding menu item: ", e);
+      throw e;
     }
   },
 
   addOrder: async (order) => {
     try {
-        await addDoc(collection(db, "orders"), order);
-        // The real-time listener will add the order to the state.
+      await addDoc(collection(db, "orders"), order);
     } catch (e) {
-        console.error("Error adding order: ", e);
-        throw e;
+      console.error("Error adding order: ", e);
+      throw e;
     }
   },
 
   updateOrderStatus: async (orderId: string, status: Order['status']) => {
     const orderDocRef = doc(db, 'orders', orderId);
     try {
-        await updateDoc(orderDocRef, { status });
-        // The real-time listener will automatically update the local state.
+      await updateDoc(orderDocRef, { status });
     } catch (e) {
-        console.error("Error updating order status: ", e);
-        throw e;
+      console.error("Error updating order status: ", e);
+      throw e;
     }
   },
 
@@ -140,21 +138,21 @@ const useDataStore = create<DataState>((set, get) => ({
       const updatedMenuItems = await Promise.all(
         get().menuItems.map(async (item) => {
           if (item.image.startsWith('https://placehold.co')) {
-              const { imageUrl } = await generateImage({ prompt: item.imageHint || item.name });
-              return { ...item, image: imageUrl };
+            const { imageUrl } = await generateImage({ prompt: item.imageHint || item.name });
+            return { ...item, image: imageUrl };
           }
           return item;
         })
       );
       set({ menuItems: updatedMenuItems });
-      
+
       const updatedRestaurants = await Promise.all(
         get().restaurants.map(async (resto) => {
-           if (resto.image.startsWith('https://placehold.co')) {
+          if (resto.image.startsWith('https://placehold.co')) {
             const { imageUrl } = await generateImage({ prompt: resto.imageHint || resto.cuisine });
             return { ...resto, image: imageUrl };
-           }
-           return resto;
+          }
+          return resto;
         })
       );
       set({ restaurants: updatedRestaurants });
@@ -172,5 +170,4 @@ const useDataStore = create<DataState>((set, get) => ({
 
 export const useData = useDataStore;
 
-// This is needed for the user history generation helper which runs outside of React components
 export const getRestaurantsForHistory = () => useDataStore.getState().restaurants;
