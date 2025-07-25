@@ -48,6 +48,7 @@ export default function DeliveryPage() {
     const handleAcceptDelivery = async (delivery: Order) => {
         setIsAccepting(delivery.id);
         try {
+            // This is the key change: update status in Firestore
             await updateOrderStatus(delivery.id, 'En Route');
             
             const activeDeliveryDetails = {
@@ -86,7 +87,7 @@ export default function DeliveryPage() {
                 description: `Bien joué !`,
             });
         } catch(error) {
-            toast({
+             toast({
                 variant: 'destructive',
                 title: "Erreur",
                 description: "Impossible de marquer cette course comme livrée.",
