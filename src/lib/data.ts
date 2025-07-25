@@ -38,7 +38,20 @@ export const pastOrders: Order[] = [
     }
 ];
 
-// Deprecated: These arrays are no longer used for initial data.
-// The app now fetches directly from Firestore.
-export const initialRestaurants: Restaurant[] = [];
-export const initialMenuItems: MenuItem[] = [];
+// Data for seeding the database if it's empty
+export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
+    { name: 'Le Pili Pili', cuisine: 'Ivoirienne', rating: 4.8, deliveryTime: 25, image: 'https://placehold.co/600x400', imageHint: 'african food' },
+    { name: 'Chez Oklou', cuisine: 'Togolaise', rating: 4.6, deliveryTime: 35, image: 'https://placehold.co/600x400', imageHint: 'togolese food' },
+    { name: 'Le Bazin', cuisine: 'Africaine', rating: 4.5, deliveryTime: 30, image: 'https://placehold.co/600x400', imageHint: 'african basin' },
+    { name: 'La Brise du Lac', cuisine: 'Européenne', rating: 4.7, deliveryTime: 40, image: 'https://placehold.co/600x400', imageHint: 'lake view' },
+    { name: 'Pizza Doudou', cuisine: 'Pizzeria', rating: 4.3, deliveryTime: 30, image: 'https://placehold.co/600x400', imageHint: 'pizza delivery' }
+];
+
+export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
+    { name: 'Poulet Braisé', description: 'Poulet entier grillé, mariné aux épices locales.', price: 7500, image: 'https://placehold.co/400x400', imageHint: 'grilled chicken' },
+    { name: 'Foutou Banane, Sauce Graine', description: 'Foutou de banane plantain accompagné d\'une sauce onctueuse aux noix de palme.', price: 5000, image: 'https://placehold.co/400x400', imageHint: 'fufu palm nut soup' },
+    { name: 'Attiéké Poisson Thon', description: 'La spécialité ivoirienne par excellence : semoule de manioc et thon frit.', price: 3500, image: 'https://placehold.co/400x400', imageHint: 'attieke fried fish' },
+    { name: 'Kedjenou de Poulet', description: 'Poulet mijoté aux légumes et épices, cuit à l\'étouffée.', price: 6000, image: 'https://placehold.co/400x400', imageHint: 'chicken stew' },
+    { name: 'Alloco', description: 'Bananes plantains mûres frites, un délice sucré-salé.', price: 1500, image: 'https://placehold.co/400x400', imageHint: 'fried plantain' },
+    { name: 'Pizza Reine', description: 'La classique : Jambon, champignons, fromage.', price: 5500, image: 'https://placehold.co/400x400', imageHint: 'regina pizza' }
+];

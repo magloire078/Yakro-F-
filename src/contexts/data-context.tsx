@@ -6,7 +6,7 @@ import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface DataState {
@@ -32,7 +32,6 @@ const useDataStore = create<DataState>((set, get) => ({
   isLoading: true,
 
   fetchData: async () => {
-    // Prevent multiple fetches if data is already loaded
     if (!get().isLoading && get().restaurants.length > 0) {
       return;
     }
@@ -40,21 +39,57 @@ const useDataStore = create<DataState>((set, get) => ({
     try {
       // Fetch Restaurants
       const restaurantsCollection = collection(db, 'restaurants');
-      const restaurantSnapshot = await getDocs(restaurantsCollection);
+      let restaurantSnapshot = await getDocs(restaurantsCollection);
+      
+      // Seed restaurants if collection is empty
+      if (restaurantSnapshot.empty) {
+        const batch = writeBatch(db);
+        initialRestaurants.forEach(resto => {
+          const docRef = doc(restaurantsCollection);
+          batch.set(docRef, resto);
+        });
+        await batch.commit();
+        restaurantSnapshot = await getDocs(restaurantsCollection); // Re-fetch after seeding
+        console.log("Firestore 'restaurants' collection seeded.");
+      }
       const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
       set({ restaurants: restaurantList });
 
       // Fetch Menu Items
       const menuItemsCollection = collection(db, 'menuItems');
-      const menuItemSnapshot = await getDocs(menuItemsCollection);
+      let menuItemSnapshot = await getDocs(menuItemsCollection);
+
+      // Seed menu items if collection is empty
+      if (menuItemSnapshot.empty && restaurantList.length > 0) {
+        const batch = writeBatch(db);
+        const afrinaRestoId = restaurantList.find(r => r.name === 'Le Bazin')?.id;
+        const piliPiliRestoId = restaurantList.find(r => r.name === 'Le Pili Pili')?.id;
+        const pizzaDoudouRestoId = restaurantList.find(r => r.name === 'Pizza Doudou')?.id;
+
+        if (piliPiliRestoId && afrinaRestoId && pizzaDoudouRestoId) {
+            initialMenuItems.forEach(item => {
+                const docRef = doc(menuItemsCollection);
+                let restaurantId = afrinaRestoId; // default
+                if(item.name.includes('Poulet') || item.name.includes('Attiéké')) restaurantId = piliPiliRestoId;
+                if(item.name.includes('Pizza')) restaurantId = pizzaDoudouRestoId;
+
+                batch.set(docRef, {...item, restaurantId});
+            });
+            await batch.commit();
+            menuItemSnapshot = await getDocs(menuItemsCollection); // Re-fetch
+            console.log("Firestore 'menuItems' collection seeded.");
+        }
+      }
+
       const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
       set({ menuItems: menuList });
+
 
       // Fetch Orders initially and then listen for real-time updates
       const ordersCollection = collection(db, 'orders');
       onSnapshot(ordersCollection, (snapshot) => {
         const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-        set({ orders: orderList });
+        set({ orders: orderList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
       });
 
     } catch (error) {
@@ -79,7 +114,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
   addOrder: async (order) => {
     try {
-        const docRef = await addDoc(collection(db, "orders"), order);
+        await addDoc(collection(db, "orders"), order);
         // The real-time listener will add the order to the state.
     } catch (e) {
         console.error("Error adding order: ", e);
