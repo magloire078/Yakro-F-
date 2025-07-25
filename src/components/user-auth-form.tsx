@@ -5,24 +5,27 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { auth } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthErrorCodes } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-
 
 const userAuthSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse e-mail valide.' }),
+  password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
 });
 
 type FormData = z.infer<typeof userAuthSchema>;
 
-export function UserAuthForm() {
+interface UserAuthFormProps {
+  mode: 'login' | 'signup';
+}
+
+export function UserAuthForm({ mode }: UserAuthFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(userAuthSchema),
   });
@@ -32,66 +35,49 @@ export function UserAuthForm() {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-    
-    // Using a dummy password for this demo since we don't have a password field
-    const dummyPassword = "defaultPassword123";
 
-    try {
-        // Try to sign in first. This is the primary action.
-        await signInWithEmailAndPassword(auth, data.email, dummyPassword);
+    if (mode === 'signup') {
+      try {
+        await createUserWithEmailAndPassword(auth, data.email, data.password);
         toast({
-            title: "Connexion réussie",
-            description: "Heureux de vous revoir !",
+          title: "Compte créé avec succès",
+          description: "Bienvenue sur Yakro Go ! Veuillez vous connecter.",
+        });
+        // Redirect to login page or profile selection after sign up
+        router.push('/profile-selection');
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'inscription",
+          description: error.message,
+        });
+      }
+    } else { // mode === 'login'
+      try {
+        await signInWithEmailAndPassword(auth, data.email, data.password);
+        toast({
+          title: "Connexion réussie",
+          description: "Heureux de vous revoir !",
         });
         router.push('/');
-    } catch (error: any) {
-        // If sign-in fails, check the error code to decide the next step.
-        if (error.code === AuthErrorCodes.USER_NOT_FOUND) {
-            // This is the ideal case for a new user. The account doesn't exist, so create it.
-            try {
-                await createUserWithEmailAndPassword(auth, data.email, dummyPassword);
-                toast({
-                    title: "Compte créé avec succès",
-                    description: "Bienvenue sur Yakro Go !",
-                });
-                router.push('/profile-selection');
-            } catch (creationError: any) {
-                 // This catch is for rare cases where creation might fail right after a check.
-                 toast({
-                    variant: "destructive",
-                    title: "Erreur de création de compte",
-                    description: `Une erreur est survenue: ${creationError.message}`,
-                });
-            }
-        } else if (error.code === AuthErrorCodes.INVALID_CREDENTIAL || error.code === 'auth/wrong-password') {
-            // This error means the email exists, but the dummy password is wrong.
-            // This can happen if the account was created in a previous session with a different (now lost) dummy password.
-            // In a real app with a password field, you'd just say "Wrong password".
-            // For this demo, we explain the situation.
-            toast({
-                variant: "destructive",
-                title: "Erreur de connexion",
-                description: "Ce compte existe déjà mais le mot de passe est incorrect. Pour cette démo, veuillez essayer une autre adresse e-mail.",
-            });
-        } else {
-            // Handle other unexpected Firebase errors (e.g., network issues)
-            toast({
-                variant: "destructive",
-                title: "Erreur d'authentification",
-                description: `Une erreur inattendue est survenue: ${error.message}`,
-            });
-        }
-    } finally {
-        setIsLoading(false);
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Erreur de connexion",
+          description: "Vos identifiants sont incorrects. Veuillez réessayer.",
+        });
+      }
     }
+
+    setIsLoading(false);
   }
 
   return (
     <div className="grid gap-6">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-2">
+        <div className="grid gap-4">
           <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="email">
+            <Label htmlFor="email">
               Email
             </Label>
             <Input
@@ -109,15 +95,29 @@ export function UserAuthForm() {
                 {errors.email.message}
               </p>
             )}
-             <p className="px-1 text-xs text-muted-foreground">
-                Aucun mot de passe requis pour cette démo.
-              </p>
           </div>
-          <Button disabled={isLoading}>
+          <div className="grid gap-1">
+            <Label htmlFor="password">
+              Mot de passe
+            </Label>
+            <Input
+              id="password"
+              placeholder="********"
+              type="password"
+              disabled={isLoading}
+              {...register('password')}
+            />
+            {errors?.password && (
+              <p className="px-1 text-xs text-destructive">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+          <Button disabled={isLoading} className="mt-2">
             {isLoading && (
               <Loader className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Continuer avec l'e-mail
+            {mode === 'login' ? 'Se connecter' : "Créer un compte"}
           </Button>
         </div>
       </form>
