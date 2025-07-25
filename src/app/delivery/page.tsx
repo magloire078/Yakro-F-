@@ -32,6 +32,8 @@ export default function DeliveryPage() {
     const [currentDelivery, setCurrentDelivery] = React.useState<any>(null);
     const { toast } = useToast();
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
+    const [isCompleting, setIsCompleting] = React.useState(false);
+
 
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -75,6 +77,7 @@ export default function DeliveryPage() {
 
     const handleCompleteDelivery = async () => {
         if (!currentDelivery) return;
+        setIsCompleting(true);
         try {
             await updateOrderStatus(currentDelivery.id, 'Livrée');
             setCurrentDelivery(null);
@@ -88,6 +91,8 @@ export default function DeliveryPage() {
                 title: "Erreur",
                 description: "Impossible de marquer cette course comme livrée.",
             });
+        } finally {
+            setIsCompleting(false);
         }
     }
 
@@ -139,7 +144,10 @@ export default function DeliveryPage() {
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <Button className="w-full" size="lg" onClick={handleCompleteDelivery}>Marquer comme livré</Button>
+                            <Button className="w-full" size="lg" onClick={handleCompleteDelivery} disabled={isCompleting}>
+                                {isCompleting && <Loader className="animate-spin mr-2" />}
+                                Marquer comme livré
+                            </Button>
                             <Button variant="outline" className="w-full" size="lg">Problème ?</Button>
                         </div>
                     </CardContent>
