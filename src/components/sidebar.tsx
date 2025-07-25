@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, ShoppingCart, Star, Video, LayoutDashboard, LogIn, LogOut, User, ChefHat, Bike } from 'lucide-react';
+import { Home, History, ShoppingCart, Star, Video, LayoutDashboard, LogIn, LogOut, User, ChefHat, Bike, Megaphone } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -60,6 +60,12 @@ export function Sidebar() {
                 <Link href="/dashboard">
                   <ChefHat className="mr-2 h-5 w-5" />
                   Profil Restaurateur
+                </Link>
+              </Button>
+               <Button variant="ghost" className="justify-start text-lg" asChild>
+                <Link href="/marketing">
+                  <Megaphone className="mr-2 h-5 w-5" />
+                  Marketing IA
                 </Link>
               </Button>
               <Button variant="ghost" className="justify-start text-lg" asChild>
