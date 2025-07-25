@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
-import { initialMenuItems, initialRestaurants } from '@/lib/data';
+import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -32,7 +32,7 @@ const useDataStore = create<DataState>((set, get) => ({
   isLoading: true,
 
   fetchData: async () => {
-    // Prevent multiple initial fetches
+    // Prevent multiple fetches if data is already loaded
     if (!get().isLoading && get().restaurants.length > 0) {
       return;
     }
@@ -42,26 +42,25 @@ const useDataStore = create<DataState>((set, get) => ({
       const restaurantsCollection = collection(db, 'restaurants');
       const restaurantSnapshot = await getDocs(restaurantsCollection);
       const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-      set({ restaurants: restaurantList.length > 0 ? restaurantList : initialRestaurants });
+      set({ restaurants: restaurantList });
 
       // Fetch Menu Items
       const menuItemsCollection = collection(db, 'menuItems');
       const menuItemSnapshot = await getDocs(menuItemsCollection);
       const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
-      set({ menuItems: menuList.length > 0 ? menuList : initialMenuItems });
+      set({ menuItems: menuList });
 
       // Fetch Orders initially and then listen for real-time updates
       const ordersCollection = collection(db, 'orders');
-      const unsubscribe = onSnapshot(ordersCollection, (snapshot) => {
+      onSnapshot(ordersCollection, (snapshot) => {
         const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
         set({ orders: orderList });
       });
-      // In a real app, you'd manage this unsubscribe callback, e.g., when the app closes.
-      // For this demo, it will listen as long as the app is open.
 
     } catch (error) {
-      console.error("Error fetching data from Firestore, using initial data: ", error);
-      set({ restaurants: initialRestaurants, menuItems: initialMenuItems, orders: [] });
+      console.error("Error fetching data from Firestore: ", error);
+       // In case of error, set to empty arrays, relying on Firestore as the source of truth
+      set({ restaurants: [], menuItems: [], orders: [] });
     } finally {
       set({ isLoading: false });
     }
@@ -81,8 +80,7 @@ const useDataStore = create<DataState>((set, get) => ({
   addOrder: async (order) => {
     try {
         const docRef = await addDoc(collection(db, "orders"), order);
-        const newOrder = { id: docRef.id, ...order };
-        set(state => ({ orders: [...state.orders, newOrder]}));
+        // The real-time listener will add the order to the state.
     } catch (e) {
         console.error("Error adding order: ", e);
         throw e;
@@ -140,5 +138,4 @@ const useDataStore = create<DataState>((set, get) => ({
 export const useData = useDataStore;
 
 // This is needed for the user history generation helper which runs outside of React components
-// It might be stale if used before data is present.
 export const getRestaurantsForHistory = () => useDataStore.getState().restaurants;
