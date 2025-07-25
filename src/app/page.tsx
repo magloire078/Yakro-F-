@@ -17,6 +17,7 @@ import type { Order } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/auth-context';
 
 
 // Helper function to generate user history summary
@@ -49,19 +50,22 @@ const generateUserHistorySummary = (orders: Order[]): string => {
 
 
 export default function Home() {
-  const [isOrderPlaced, setIsOrderPlaced] = React.useState(false);
-  const { clearCart } = useCart();
+  const { cartItems, clearCart } = useCart();
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
+  const { user } = useAuth();
   
   const { 
     restaurants, 
     menuItems, 
+    orders,
     isGenerating, 
     generateAllImages,
     isLoading,
     fetchData,
   } = useData();
+
+  const [isOrderPlaced, setIsOrderPlaced] = React.useState(false);
 
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -70,6 +74,21 @@ export default function Home() {
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Check for active orders for the current user
+  React.useEffect(() => {
+    if (user && orders.length > 0) {
+        const activeUserOrder = orders.find(o => o.userId === user.uid && o.status !== 'Livrée' && o.status !== 'Annulée');
+        if (activeUserOrder) {
+            setIsOrderPlaced(true);
+        } else {
+            setIsOrderPlaced(false);
+        }
+    } else {
+        setIsOrderPlaced(false);
+    }
+  }, [orders, user]);
+
 
   React.useEffect(() => {
     const userHistorySummary = generateUserHistorySummary(pastOrders);
@@ -92,7 +111,7 @@ export default function Home() {
   }, []);
   
   React.useEffect(() => {
-    // This is a bit of a hack to be able to trigger the order status from the cart sheet
+    // This is how we know an order was just placed from the cart
     const handleOrderPlaced = () => {
         setIsOrderPlaced(true);
         clearCart();

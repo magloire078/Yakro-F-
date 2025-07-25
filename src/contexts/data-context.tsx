@@ -6,7 +6,7 @@ import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialMenuItems, initialRestaurants } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface DataState {
@@ -32,8 +32,8 @@ const useDataStore = create<DataState>((set, get) => ({
   isLoading: true,
 
   fetchData: async () => {
-    // Prevent multiple fetches
-    if (!get().isLoading && get().restaurants.length > 0 && get().menuItems.length > 0) {
+    // Prevent multiple initial fetches
+    if (!get().isLoading && get().restaurants.length > 0) {
       return;
     }
     set({ isLoading: true });
@@ -50,11 +50,14 @@ const useDataStore = create<DataState>((set, get) => ({
       const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
       set({ menuItems: menuList.length > 0 ? menuList : initialMenuItems });
 
-      // Fetch Orders
+      // Fetch Orders initially and then listen for real-time updates
       const ordersCollection = collection(db, 'orders');
-      const orderSnapshot = await getDocs(ordersCollection);
-      const orderList = orderSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-      set({ orders: orderList });
+      const unsubscribe = onSnapshot(ordersCollection, (snapshot) => {
+        const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+        set({ orders: orderList });
+      });
+      // In a real app, you'd manage this unsubscribe callback, e.g., when the app closes.
+      // For this demo, it will listen as long as the app is open.
 
     } catch (error) {
       console.error("Error fetching data from Firestore, using initial data: ", error);
@@ -90,11 +93,7 @@ const useDataStore = create<DataState>((set, get) => ({
     const orderDocRef = doc(db, 'orders', orderId);
     try {
         await updateDoc(orderDocRef, { status });
-        set(state => ({
-            orders: state.orders.map(order => 
-                order.id === orderId ? { ...order, status } : order
-            ),
-        }));
+        // The real-time listener will automatically update the local state.
     } catch (e) {
         console.error("Error updating order status: ", e);
         throw e;
