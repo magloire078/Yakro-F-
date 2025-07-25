@@ -37,7 +37,7 @@ export function UserAuthForm() {
     const dummyPassword = "defaultPassword123";
 
     try {
-        // Try to sign in first
+        // Try to sign in first. This is the primary action.
         await signInWithEmailAndPassword(auth, data.email, dummyPassword);
         toast({
             title: "Connexion réussie",
@@ -45,10 +45,9 @@ export function UserAuthForm() {
         });
         router.push('/');
     } catch (error: any) {
-        // If sign-in fails, check the error code.
-        if (error.code === AuthErrorCodes.USER_NOT_FOUND || error.code === 'auth/wrong-password') {
-            // If the user does not exist or the dummy password is wrong (likely for an existing user from a previous session),
-            // attempt to create a new account.
+        // If sign-in fails, check the error code to decide the next step.
+        if (error.code === AuthErrorCodes.USER_NOT_FOUND) {
+            // This is the ideal case for a new user. The account doesn't exist, so create it.
             try {
                 await createUserWithEmailAndPassword(auth, data.email, dummyPassword);
                 toast({
@@ -57,47 +56,25 @@ export function UserAuthForm() {
                 });
                 router.push('/profile-selection');
             } catch (creationError: any) {
-                 // This can happen if the user exists but the password was wrong in the initial sign-in attempt.
-                 if (creationError.code === AuthErrorCodes.EMAIL_EXISTS) {
-                     toast({
-                        variant: "destructive",
-                        title: "Erreur de connexion",
-                        description: "Un compte avec cet e-mail existe déjà, mais le mot de passe est incorrect. Comme il s'agit d'une démo, ce cas ne peut être résolu.",
-                    });
-                 } else {
-                    toast({
-                        variant: "destructive",
-                        title: "Erreur de création de compte",
-                        description: "Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.",
-                    });
-                 }
-            }
-        } else if (error.code === AuthErrorCodes.INVALID_CREDENTIAL) {
-            // This is a more generic error, often happens if the email format is malformed on Firebase's side
-            // or other sign-in issues. We'll guide the user to try creating an account.
-            toast({
-                variant: "destructive",
-                title: "Erreur d'authentification",
-                description: "Impossible de vous connecter. Si vous n'avez pas de compte, nous allons essayer d'en créer un.",
-            });
-             try {
-                await createUserWithEmailAndPassword(auth, data.email, dummyPassword);
-                toast({
-                    title: "Compte créé avec succès",
-                    description: "Bienvenue sur Yakro Go !",
-                });
-                router.push('/profile-selection');
-            } catch (creationError: any) {
+                 // This catch is for rare cases where creation might fail right after a check.
                  toast({
                     variant: "destructive",
                     title: "Erreur de création de compte",
-                    description: "Une erreur est survenue. Veuillez réessayer.",
+                    description: `Une erreur est survenue: ${creationError.message}`,
                 });
             }
-        }
-        
-        else {
-            // Handle other unexpected errors
+        } else if (error.code === AuthErrorCodes.INVALID_CREDENTIAL || error.code === 'auth/wrong-password') {
+            // This error means the email exists, but the dummy password is wrong.
+            // This can happen if the account was created in a previous session with a different (now lost) dummy password.
+            // In a real app with a password field, you'd just say "Wrong password".
+            // For this demo, we explain the situation.
+            toast({
+                variant: "destructive",
+                title: "Erreur de connexion",
+                description: "Ce compte existe déjà mais le mot de passe est incorrect. Pour cette démo, veuillez essayer une autre adresse e-mail.",
+            });
+        } else {
+            // Handle other unexpected Firebase errors (e.g., network issues)
             toast({
                 variant: "destructive",
                 title: "Erreur d'authentification",
