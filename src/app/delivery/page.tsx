@@ -13,23 +13,11 @@ import type { Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 
-// Mock data for Active Delivery - we can make this dynamic later
-const ActiveDelivery = {
-    id: 'del3',
-    restaurantName: 'Le Bazin',
-    restaurantAddress: 'II Plateaux Vallon',
-    customerAddress: 'Riviera Palmeraie',
-    status: 'En cours',
-    items: ['Foutou Banane', 'Alloco'],
-    customerPhone: '07 01 02 03 04',
-};
-
-
 export default function DeliveryPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { orders, isLoading, updateOrderStatus } = useData();
-    const [currentDelivery, setCurrentDelivery] = React.useState<any>(null);
+    const [currentDelivery, setCurrentDelivery] = React.useState<Order | null>(null);
     const { toast } = useToast();
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
     const [isCompleting, setIsCompleting] = React.useState(false);
@@ -44,23 +32,21 @@ export default function DeliveryPage() {
     const availableDeliveries = React.useMemo(() => {
         return orders.filter(o => o.status === 'Placée');
     }, [orders]);
+    
+    // Check if the current user has an active delivery
+    React.useEffect(() => {
+        if (user) {
+            const activeOrder = orders.find(o => o.delivererId === user.uid && o.status === 'En Route');
+            setCurrentDelivery(activeOrder || null);
+        }
+    }, [orders, user]);
 
     const handleAcceptDelivery = async (delivery: Order) => {
+        if (!user) return;
         setIsAccepting(delivery.id);
         try {
-            // This is the key change: update status in Firestore
-            await updateOrderStatus(delivery.id, 'En Route');
-            
-            const activeDeliveryDetails = {
-                id: delivery.id,
-                restaurantName: delivery.restaurantName,
-                restaurantAddress: 'Rue des Jardins, Cocody', // Mocked, would come from restaurant data
-                customerAddress: 'Angré 7ème Tranche', // Mocked, would come from user profile
-                status: 'En Route',
-                items: delivery.items.map(i => i.name),
-                customerPhone: '07 01 02 03 04', // Mocked
-            };
-            setCurrentDelivery(activeDeliveryDetails);
+            await updateOrderStatus(delivery.id, 'En Route', user.uid);
+            setCurrentDelivery({ ...delivery, status: 'En Route', delivererId: user.uid });
             toast({
                 title: "Course acceptée !",
                 description: `Vous allez livrer la commande de ${delivery.restaurantName}.`,
@@ -112,7 +98,7 @@ export default function DeliveryPage() {
                 <Card className="bg-primary/5">
                     <CardHeader>
                         <CardTitle className="flex justify-between items-center">
-                           <span>Commande pour {currentDelivery.customerAddress}</span>
+                           <span>Commande pour {currentDelivery.customerAddress || "Adresse inconnue"}</span>
                            <Badge variant="default">En cours</Badge>
                         </CardTitle>
                         <CardDescription>Du restaurant : {currentDelivery.restaurantName}</CardDescription>
@@ -123,25 +109,25 @@ export default function DeliveryPage() {
                                 <MapPin className="text-primary"/>
                                 <div>
                                     <p className="font-semibold">Récupérer à</p>
-                                    <p>{currentDelivery.restaurantAddress}</p>
+                                    <p>{currentDelivery.restaurantAddress || "Rue des Jardins, Cocody"}</p>
                                 </div>
                             </div>
                              <div className="flex items-center gap-4">
                                 <MapPin className="text-green-500"/>
                                 <div>
                                     <p className="font-semibold">Livrer à</p>
-                                    <p>{currentDelivery.customerAddress}</p>
+                                    <p>{currentDelivery.customerAddress || "Angré 7ème Tranche"}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="border-t pt-4 space-y-2">
                              <div className="flex items-center gap-4">
                                 <Package className="text-muted-foreground"/>
-                                <p>Contenu: {currentDelivery.items.join(', ')}</p>
+                                <p>Contenu: {currentDelivery.items.map(i => i.name).join(', ')}</p>
                             </div>
                              <div className="flex items-center gap-4">
                                 <Phone className="text-muted-foreground"/>
-                                <p>Client: {currentDelivery.customerPhone}</p>
+                                <p>Client: {currentDelivery.customerPhone || "07 01 02 03 04"}</p>
                             </div>
                         </div>
                         <div className="flex gap-4">

@@ -19,7 +19,7 @@ interface DataState {
   fetchData: () => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
-  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
+  updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
   generateAllImages: () => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
@@ -76,7 +76,9 @@ const useDataStore = create<DataState>((set, get) => ({
       // Listen to auth state to decide when to fetch orders
       onAuthStateChanged(auth, user => {
         // Unsubscribe from previous listener if it exists
-        unsubscribeFromOrders(); 
+        if (typeof unsubscribeFromOrders === 'function') {
+            unsubscribeFromOrders();
+        }
 
         if (user) {
           // If user is logged in, listen to orders
@@ -121,10 +123,14 @@ const useDataStore = create<DataState>((set, get) => ({
     }
   },
 
-  updateOrderStatus: async (orderId: string, status: Order['status']) => {
+  updateOrderStatus: async (orderId: string, status: Order['status'], delivererId?: string) => {
     const orderDocRef = doc(db, 'orders', orderId);
     try {
-      await updateDoc(orderDocRef, { status });
+        const updateData: {status: Order['status'], delivererId?: string} = { status };
+        if (delivererId) {
+            updateData.delivererId = delivererId;
+        }
+      await updateDoc(orderDocRef, updateData);
     } catch (e) {
       console.error("Error updating order status: ", e);
       throw e;

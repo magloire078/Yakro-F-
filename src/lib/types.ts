@@ -32,6 +32,10 @@ export interface Order {
   restaurantName: string;
   restaurantId: string;
   status: 'Placée' | 'En Préparation' | 'En Route' | 'Livrée' | 'Annulée';
+  delivererId?: string;
+  customerAddress?: string;
+  restaurantAddress?: string;
+  customerPhone?: string;
 }
 
 export interface Review {
