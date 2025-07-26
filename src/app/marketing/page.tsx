@@ -14,19 +14,17 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 
-// Helper to convert image URL to data URI
+// Helper to convert image URL to data URI.
+// In a real app, you might want a more robust solution, but this works for demo purposes.
 async function toDataURL(url: string): Promise<string> {
-    // This proxy is needed to avoid CORS issues when running in a browser environment
-    // In a real production app, you'd want a more robust solution.
-    const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
-    const response = await fetch(proxyUrl);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 
@@ -60,15 +58,18 @@ export default function MarketingPage() {
     setVideoUrl(null);
     toast({
       title: 'Préparation de la génération...',
-      description: 'Conversion de l\'image en cours.',
+      description: 'Cette opération peut prendre jusqu\'à une minute.',
     });
 
     let imageDataUri: string | null = null;
     try {
       if (restaurantImage) {
+        // Handle images that are already data URIs (from AI generation) and standard URLs (from initial data)
         if (restaurantImage.startsWith('data:')) {
             imageDataUri = restaurantImage;
         } else if (restaurantImage.startsWith('http')) {
+             // Note: This conversion can fail due to CORS if the image host doesn't allow it.
+             // For placehold.co, it works, but a production app would need a server-side proxy or direct image uploads.
              imageDataUri = await toDataURL(restaurantImage);
         }
       }
@@ -77,7 +78,7 @@ export default function MarketingPage() {
         toast({
             variant: "destructive",
             title: "Erreur de préparation",
-            description: "Impossible de charger l'image de référence. Le service proxy est peut-être indisponible."
+            description: "Impossible de charger l'image de référence. L'hôte de l'image bloque peut-être la conversion."
         });
         setLoading(false);
         return;
@@ -86,7 +87,7 @@ export default function MarketingPage() {
 
     toast({
       title: 'Génération de la vidéo en cours...',
-      description: 'Cela peut prendre jusqu\'à une minute. Veuillez patienter.',
+      description: 'L\'IA réalise votre spot publicitaire. Veuillez patienter.',
     });
 
     try {
@@ -155,7 +156,7 @@ export default function MarketingPage() {
             </div>
             
             <div className="space-y-2">
-                <label className="font-medium">2. Image de référence (Optionnel)</label>
+                <label className="font-medium">2. Image de référence</label>
                 <div className="border rounded-lg p-2 bg-muted h-48 flex items-center justify-center">
                    {restaurantImage ? (
                      <Image src={restaurantImage} alt={selectedRestaurant?.name || ""} width={300} height={150} className="object-contain rounded-md" />

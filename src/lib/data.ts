@@ -1,12 +1,15 @@
+
 import type { MenuItem, Restaurant, Order } from './types';
 
-// These are now legacy and only used for type reference or specific non-core features.
-// The primary data is now fetched directly from Firestore.
+// These are used for seeding the database on first run and for providing static data
+// for features that don't require real-time updates.
 
 export const pastOrders: Order[] = [
     {
         id: 'order1',
+        userId: 'user1',
         restaurantName: 'Le Pili Pili',
+        restaurantId: '1',
         date: '2024-07-21',
         total: 11000,
         status: 'Livrée',
@@ -17,7 +20,9 @@ export const pastOrders: Order[] = [
     },
     {
         id: 'order2',
+        userId: 'user1',
         restaurantName: 'Le Bazin',
+        restaurantId: '3',
         date: '2024-07-18',
         total: 6500,
         status: 'Livrée',
@@ -28,7 +33,9 @@ export const pastOrders: Order[] = [
     },
     {
         id: 'order3',
+        userId: 'user1',
         restaurantName: 'La Brise du Lac',
+        restaurantId: '4',
         date: '2024-07-15',
         total: 6000,
         status: 'Annulée',

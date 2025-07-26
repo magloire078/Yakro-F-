@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -6,7 +7,7 @@ import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
 interface DataState {
@@ -32,14 +33,12 @@ const useDataStore = create<DataState>((set, get) => ({
   isGenerating: false,
   isLoading: true,
   setOrders: (orders: Order[]) => {
-      // Simple merge and deduplicate
       const allOrders = [...get().orders, ...orders];
       const uniqueOrders = Array.from(new Map(allOrders.map(o => [o.id, o])).values());
       set({ orders: uniqueOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
   },
 
   fetchData: async () => {
-    // This function now only fetches public data (restaurants and menu items)
     if (!get().isLoading && get().restaurants.length > 0) {
       return;
     }
@@ -79,7 +78,8 @@ const useDataStore = create<DataState>((set, get) => ({
 
     } catch (error) {
       console.error("Error fetching public data from Firestore: ", error);
-      set({ restaurants: [], menuItems: [] });
+      // Fallback to initial data if Firestore fetch fails
+      set({ restaurants: initialRestaurants, menuItems: initialMenuItems });
     } finally {
       set({ isLoading: false });
     }
@@ -121,6 +121,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
   generateAllImages: async () => {
     set({ isGenerating: true });
+    // This function only updates the local state for now. A real app would persist these changes to Firestore.
     console.warn("generateAllImages only updates local state and does not persist to Firestore in this version.");
     try {
       const updatedMenuItems = await Promise.all(
@@ -156,74 +157,55 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
-// This hook is for components that need to listen to real-time order updates.
-// It will only run if the user is authenticated.
+
 export function useOrders() {
   const { user } = useAuth();
-  const { setOrders: setGlobalOrders } = useDataStore();
+  const setOrders = useDataStore(state => state.setOrders);
 
   React.useEffect(() => {
     if (!user) {
-      setGlobalOrders([]); // Clear orders on logout
+      setOrders([]);
       return;
     }
 
     const ordersCollection = collection(db, 'orders');
     const unsubscribes: Unsubscribe[] = [];
     
-    // Create a helper to manage state updates and avoid race conditions
     let ordersMap = new Map<string, Order>();
-
     const updateOrdersState = () => {
         const sortedOrders = Array.from(ordersMap.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setGlobalOrders(sortedOrders);
+        setOrders(sortedOrders);
     }
     
-    // Query for orders where the user is the customer
+    const setupSubscription = (q: any, source: string) => {
+       return onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if(change.type === 'removed') {
+                    ordersMap.delete(change.doc.id);
+                } else {
+                    ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
+                }
+            });
+            updateOrdersState();
+        }, (error) => {
+            console.error(`Error on snapshot listener for ${source}:`, error);
+        });
+    }
+
+    // Queries for a logged-in user
     const customerQuery = query(ordersCollection, where("userId", "==", user.uid));
-    unsubscribes.push(onSnapshot(customerQuery, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-          if(change.type === 'removed') {
-            ordersMap.delete(change.doc.id);
-          } else {
-            ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
-          }
-      });
-      updateOrdersState();
-    }));
+    unsubscribes.push(setupSubscription(customerQuery, 'customer'));
 
-    // Query for orders where the user is the deliverer
     const delivererQuery = query(ordersCollection, where("delivererId", "==", user.uid));
-    unsubscribes.push(onSnapshot(delivererQuery, (snapshot) => {
-       snapshot.docChanges().forEach((change) => {
-          if(change.type === 'removed') {
-            ordersMap.delete(change.doc.id);
-          } else {
-            ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
-          }
-      });
-      updateOrdersState();
-    }));
+    unsubscribes.push(setupSubscription(delivererQuery, 'deliverer'));
 
-    // Query for available orders for deliverers
     const availableDeliveriesQuery = query(ordersCollection, where("status", "==", "Placée"));
-    unsubscribes.push(onSnapshot(availableDeliveriesQuery, (snapshot) => {
-       snapshot.docChanges().forEach((change) => {
-          if(change.type === 'removed') {
-            ordersMap.delete(change.doc.id);
-          } else {
-            ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
-          }
-      });
-      updateOrdersState();
-    }));
-
+    unsubscribes.push(setupSubscription(availableDeliveriesQuery, 'available'));
 
     return () => {
-        // Unsubscribe from all listeners on cleanup
         unsubscribes.forEach(unsub => unsub());
     }; 
-  }, [user, setGlobalOrders]);
+  }, [user, setOrders]);
 }
 
 

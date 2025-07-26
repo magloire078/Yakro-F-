@@ -76,9 +76,10 @@ export async function generateVideo(
   }
   const videoBuffer = await videoDownloadResponse.arrayBuffer();
   const base64Video = Buffer.from(videoBuffer).toString('base64');
+  const contentType = videoPart.media.contentType || 'video/mp4';
 
   return {
-    videoUrl: `data:video/mp4;base64,${base64Video}`,
+    videoUrl: `data:${contentType};base64,${base64Video}`,
   };
 }
 

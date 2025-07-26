@@ -11,7 +11,6 @@ const firebaseConfig = {
   "storageBucket": "yakro-go.appspot.com",
   "apiKey": "AIzaSyBl9KMx5EuvhN71R81bNRqXuQhVdNKPGdc",
   "authDomain": "yakro-go.firebaseapp.com",
-  "measurementId": "",
   "messagingSenderId": "102516892596"
 };
 
