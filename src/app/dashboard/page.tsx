@@ -172,8 +172,8 @@ export default function DashboardPage() {
                             />
                         </div>
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
-                            {loading ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
-                            {loading ? 'Génération en cours...' : 'Générer le plat'}
+                            {loading && !generatedItem ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
+                            {loading && !generatedItem ? 'Génération en cours...' : 'Générer le plat'}
                         </Button>
                     </CardContent>
                 </Card>
@@ -223,5 +223,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    
