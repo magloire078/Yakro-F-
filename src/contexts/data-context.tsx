@@ -8,7 +8,7 @@ import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useAuth } from './auth-context';
 
 interface DataState {
   restaurants: Restaurant[];
@@ -17,6 +17,7 @@ interface DataState {
   isGenerating: boolean;
   isLoading: boolean;
   fetchData: () => Promise<void>;
+  setOrders: (orders: Order[]) => void;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
@@ -25,22 +26,21 @@ interface DataState {
   getRestaurant: (id: string) => Restaurant | undefined;
 }
 
-let unsubscribeFromOrders: () => void = () => {};
-
 const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
   isGenerating: false,
   isLoading: true,
+  setOrders: (orders: Order[]) => set({ orders }),
 
   fetchData: async () => {
+    // This function now only fetches public data (restaurants and menu items)
     if (!get().isLoading && get().restaurants.length > 0) {
       return;
     }
     set({ isLoading: true });
     try {
-      // Fetch Restaurants and Menu Items
       const restaurantsCollection = collection(db, 'restaurants');
       const menuItemsCollection = collection(db, 'menuItems');
 
@@ -73,31 +73,9 @@ const useDataStore = create<DataState>((set, get) => ({
       const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
       set({ menuItems: menuList });
 
-      // Listen to auth state to decide when to fetch orders
-      onAuthStateChanged(auth, user => {
-        // Unsubscribe from previous listener if it exists
-        if (typeof unsubscribeFromOrders === 'function') {
-            unsubscribeFromOrders();
-        }
-
-        if (user) {
-          // If user is logged in, listen to orders
-          const ordersCollection = collection(db, 'orders');
-          unsubscribeFromOrders = onSnapshot(ordersCollection, (snapshot) => {
-            const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-            set({ orders: orderList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
-          }, (error) => {
-            console.error("Error in orders snapshot listener:", error);
-          });
-        } else {
-          // If user is logged out, clear orders
-          set({ orders: [] });
-        }
-      });
-
     } catch (error) {
-      console.error("Error fetching data from Firestore: ", error);
-      set({ restaurants: [], menuItems: [], orders: [] });
+      console.error("Error fetching public data from Firestore: ", error);
+      set({ restaurants: [], menuItems: [] });
     } finally {
       set({ isLoading: false });
     }
@@ -174,6 +152,32 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
+// This hook is for components that need to listen to real-time order updates.
+// It will only run if the user is authenticated.
+export function useOrders() {
+  const { user } = useAuth();
+  const { setOrders } = useDataStore();
+
+  React.useEffect(() => {
+    if (!user) {
+      setOrders([]); // Clear orders on logout
+      return;
+    }
+
+    const ordersCollection = collection(db, 'orders');
+    const unsubscribe = onSnapshot(ordersCollection, (snapshot) => {
+      const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+      setOrders(orderList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    }, (error) => {
+      console.error("Error in orders snapshot listener:", error);
+    });
+
+    return () => unsubscribe(); // Cleanup subscription on unmount or user change
+  }, [user, setOrders]);
+}
+
+
 export const useData = useDataStore;
 
 export const getRestaurantsForHistory = () => useDataStore.getState().restaurants;
+
