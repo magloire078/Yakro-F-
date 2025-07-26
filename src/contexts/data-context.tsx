@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -6,7 +7,7 @@ import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
@@ -39,6 +40,7 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 
   fetchData: async () => {
+    // Prevent re-fetching if data is already loaded.
     if (!get().isLoading && get().restaurants.length > 0) {
       return;
     }
@@ -121,30 +123,39 @@ const useDataStore = create<DataState>((set, get) => ({
 
   generateAllImages: async () => {
     set({ isGenerating: true });
-    // This function only updates the local state for now. A real app would persist these changes to Firestore.
-    console.warn("generateAllImages only updates local state and does not persist to Firestore in this version.");
+    
+    // This function will now update Firestore as well as the local state.
+    const batch = writeBatch(db);
     try {
       const updatedMenuItems = await Promise.all(
         get().menuItems.map(async (item) => {
           if (item.image.startsWith('https://placehold.co')) {
             const { imageUrl } = await generateImage({ prompt: item.imageHint || item.name });
+            const itemRef = doc(db, 'menuItems', item.id);
+            batch.update(itemRef, { image: imageUrl });
             return { ...item, image: imageUrl };
           }
           return item;
         })
       );
-      set({ menuItems: updatedMenuItems });
 
       const updatedRestaurants = await Promise.all(
         get().restaurants.map(async (resto) => {
           if (resto.image.startsWith('https://placehold.co')) {
             const { imageUrl } = await generateImage({ prompt: resto.imageHint || resto.cuisine });
+            const restoRef = doc(db, 'restaurants', resto.id);
+            batch.update(restoRef, { image: imageUrl });
             return { ...resto, image: imageUrl };
           }
           return resto;
         })
       );
-      set({ restaurants: updatedRestaurants });
+      
+      await batch.commit();
+      set({ menuItems: updatedMenuItems, restaurants: updatedRestaurants });
+
+    } catch(error) {
+        console.error("Error generating or updating images in Firestore:", error);
     } finally {
       set({ isGenerating: false });
     }
@@ -158,9 +169,15 @@ const useDataStore = create<DataState>((set, get) => ({
 }));
 
 
+export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const store = useDataStore();
+  return <>{children}</>;
+};
+
 export function useOrders() {
   const { user } = useAuth();
   const setOrders = useDataStore(state => state.setOrders);
+  const currentOrdersRef = React.useRef<Map<string, Order>>(new Map());
 
   React.useEffect(() => {
     if (!user) {
@@ -169,38 +186,38 @@ export function useOrders() {
     }
 
     const ordersCollection = collection(db, 'orders');
-    const unsubscribes: Unsubscribe[] = [];
-    
-    let ordersMap = new Map<string, Order>();
-    const updateOrdersState = () => {
-        const sortedOrders = Array.from(ordersMap.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setOrders(sortedOrders);
-    }
-    
-    const setupSubscription = (q: any, source: string) => {
-       return onSnapshot(q, (snapshot) => {
+    let unsubscribes: Unsubscribe[] = [];
+
+    const setupSubscription = (q: Query<DocumentData, DocumentData>, source: string) => {
+       const unsub = onSnapshot(q, (snapshot) => {
+            let changed = false;
             snapshot.docChanges().forEach((change) => {
-                if(change.type === 'removed') {
-                    ordersMap.delete(change.doc.id);
+                changed = true;
+                if (change.type === 'removed') {
+                    currentOrdersRef.current.delete(change.doc.id);
                 } else {
-                    ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
+                    currentOrdersRef.current.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
                 }
             });
-            updateOrdersState();
+            if(changed) {
+                const sortedOrders = Array.from(currentOrdersRef.current.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                setOrders(sortedOrders);
+            }
         }, (error) => {
             console.error(`Error on snapshot listener for ${source}:`, error);
         });
+        unsubscribes.push(unsub);
     }
 
     // Queries for a logged-in user
     const customerQuery = query(ordersCollection, where("userId", "==", user.uid));
-    unsubscribes.push(setupSubscription(customerQuery, 'customer'));
+    setupSubscription(customerQuery, 'customer');
 
     const delivererQuery = query(ordersCollection, where("delivererId", "==", user.uid));
-    unsubscribes.push(setupSubscription(delivererQuery, 'deliverer'));
+    setupSubscription(delivererQuery, 'deliverer');
 
     const availableDeliveriesQuery = query(ordersCollection, where("status", "==", "Placée"));
-    unsubscribes.push(setupSubscription(availableDeliveriesQuery, 'available'));
+    setupSubscription(availableDeliveriesQuery, 'available');
 
     return () => {
         unsubscribes.forEach(unsub => unsub());

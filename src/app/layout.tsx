@@ -2,10 +2,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { CartProvider } from '@/contexts/cart-context';
-import { Sidebar } from '@/components/sidebar';
 import { AuthProvider } from '@/contexts/auth-context';
-import { MobileHeader } from '@/components/mobile-header';
+import { DataProvider } from '@/contexts/data-context';
+import { CartProvider } from '@/contexts/cart-context';
 
 export const metadata: Metadata = {
   title: 'Yakro Go',
@@ -19,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -29,18 +28,12 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <CartProvider>
-            <div className="flex min-h-screen">
-              <div className="hidden md:flex">
-                <Sidebar />
-              </div>
-              <div className="flex-1 flex flex-col">
-                <MobileHeader />
-                <main className="flex-1 p-4 md:p-8 bg-muted/30">{children}</main>
-              </div>
-            </div>
-            <Toaster />
-          </CartProvider>
+          <DataProvider>
+            <CartProvider>
+                {children}
+              <Toaster />
+            </CartProvider>
+          </DataProvider>
         </AuthProvider>
       </body>
     </html>

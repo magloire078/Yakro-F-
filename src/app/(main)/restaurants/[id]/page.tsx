@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import * as React from 'react';
@@ -12,19 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RestaurantPage() {
     const params = useParams();
-    const { getRestaurant, getMenuItem, menuItems, isLoading, fetchData } = useData();
-    const [restaurant, setRestaurant] = React.useState(getRestaurant(params.id as string));
-
-    React.useEffect(() => {
-        // Fetch data if it's not already loaded, for deep links
-        if (!restaurant) {
-            fetchData();
-        }
-    }, [restaurant, fetchData]);
-
-    React.useEffect(() => {
-        setRestaurant(getRestaurant(params.id as string));
-    }, [params.id, getRestaurant]);
+    const { getRestaurant, menuItems, isLoading } = useData();
+    const restaurant = getRestaurant(params.id as string);
 
     if (isLoading && !restaurant) {
         return (

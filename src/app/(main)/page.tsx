@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -50,7 +51,7 @@ const generateUserHistorySummary = (orders: Order[]): string => {
 
 
 export default function Home() {
-  const { cartItems, clearCart } = useCart();
+  const { clearCart } = useCart();
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
   const { user } = useAuth();
@@ -62,7 +63,6 @@ export default function Home() {
     isGenerating, 
     generateAllImages,
     isLoading,
-    fetchData,
   } = useData();
   
   // Start listening for order updates if the user is logged in
@@ -73,10 +73,6 @@ export default function Home() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
-
-  React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   // Check for active orders for the current user
   React.useEffect(() => {
