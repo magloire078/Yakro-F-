@@ -63,6 +63,10 @@ export default function ReviewsPage() {
   const handleGenerateAudio = React.useCallback(async () => {
     if (reviews.length === 0) return;
     setIsGeneratingAudio(true);
+    toast({
+        title: 'Génération Audio en cours...',
+        description: 'L\'IA prépare la narration des avis.'
+    });
     try {
         const audioInput = {
             reviews: reviews.map(r => ({ userName: r.userName, rating: r.rating, comment: r.comment }))
@@ -172,7 +176,7 @@ export default function ReviewsPage() {
               <>
               {audioUrl ? (
                   <audio controls src={audioUrl} className="w-full">
-                      Your browser does not support the audio element.
+                      Votre navigateur ne supporte pas l'élément audio.
                   </audio>
               ) : (
                   <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio || reviews.length === 0}>
