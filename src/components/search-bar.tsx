@@ -73,9 +73,9 @@ export function SearchBar({ onSearchChange, onInterpretedSearchChange }: SearchB
       {interpretedResult && (
         <div className="mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground">
             <span>Recherche IA:</span>
-            {interpretedResult.cuisine?.map(c => <Badge key={c} variant="secondary">{c}</Badge>)}
-            {interpretedResult.keywords?.map(k => <Badge key={k} variant="secondary">{k}</Badge>)}
-            {interpretedResult.searchTerms?.map(s => <Badge key={s} variant="secondary">{s}</Badge>)}
+            {interpretedResult.cuisine?.map((c, i) => <Badge key={`cuisine-${c}-${i}`} variant="secondary">{c}</Badge>)}
+            {interpretedResult.keywords?.map((k, i) => <Badge key={`keyword-${k}-${i}`} variant="secondary">{k}</Badge>)}
+            {interpretedResult.searchTerms?.map((s, i) => <Badge key={`term-${s}-${i}`} variant="secondary">{s}</Badge>)}
         </div>
       )}
     </div>
