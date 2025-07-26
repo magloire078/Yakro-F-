@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, ShoppingCart, Star, Video, LayoutDashboard, LogIn, LogOut, User, ChefHat, Bike, Megaphone } from 'lucide-react';
+import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -94,7 +94,7 @@ export function Sidebar() {
                         <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-semibold truncate">{user.email}</p>
+                        <p className="text-sm font-semibold truncate">{user.email || 'Utilisateur'}</p>
                     </div>
                 </div>
                 <Button variant="outline" className="w-full text-lg py-6" onClick={handleSignOut}>

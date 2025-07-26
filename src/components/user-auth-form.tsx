@@ -41,7 +41,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
         await createUserWithEmailAndPassword(auth, data.email, data.password);
         toast({
           title: "Compte créé avec succès",
-          description: "Bienvenue sur Yakro Go ! Veuillez vous connecter.",
+          description: "Bienvenue sur Yakro Go ! Veuillez choisir un profil.",
         });
         // Redirect to login page or profile selection after sign up
         router.push('/profile-selection');
@@ -49,7 +49,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
         toast({
           variant: "destructive",
           title: "Erreur d'inscription",
-          description: error.message,
+          description: "Cette adresse e-mail est peut-être déjà utilisée.",
         });
       }
     } else { // mode === 'login'
