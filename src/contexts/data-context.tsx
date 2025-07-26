@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,7 +5,7 @@ import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
@@ -32,7 +31,12 @@ const useDataStore = create<DataState>((set, get) => ({
   orders: [],
   isGenerating: false,
   isLoading: true,
-  setOrders: (orders: Order[]) => set({ orders }),
+  setOrders: (orders: Order[]) => {
+      // Simple merge and deduplicate
+      const allOrders = [...get().orders, ...orders];
+      const uniqueOrders = Array.from(new Map(allOrders.map(o => [o.id, o])).values());
+      set({ orders: uniqueOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
+  },
 
   fetchData: async () => {
     // This function now only fetches public data (restaurants and menu items)
@@ -156,28 +160,73 @@ const useDataStore = create<DataState>((set, get) => ({
 // It will only run if the user is authenticated.
 export function useOrders() {
   const { user } = useAuth();
-  const { setOrders } = useDataStore();
+  const { setOrders: setGlobalOrders } = useDataStore();
 
   React.useEffect(() => {
     if (!user) {
-      setOrders([]); // Clear orders on logout
+      setGlobalOrders([]); // Clear orders on logout
       return;
     }
 
     const ordersCollection = collection(db, 'orders');
-    const unsubscribe = onSnapshot(ordersCollection, (snapshot) => {
-      const orderList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-      setOrders(orderList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    }, (error) => {
-      console.error("Error in orders snapshot listener:", error);
-    });
+    const unsubscribes: Unsubscribe[] = [];
+    
+    // Create a helper to manage state updates and avoid race conditions
+    let ordersMap = new Map<string, Order>();
 
-    return () => unsubscribe(); // Cleanup subscription on unmount or user change
-  }, [user, setOrders]);
+    const updateOrdersState = () => {
+        const sortedOrders = Array.from(ordersMap.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setGlobalOrders(sortedOrders);
+    }
+    
+    // Query for orders where the user is the customer
+    const customerQuery = query(ordersCollection, where("userId", "==", user.uid));
+    unsubscribes.push(onSnapshot(customerQuery, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+          if(change.type === 'removed') {
+            ordersMap.delete(change.doc.id);
+          } else {
+            ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
+          }
+      });
+      updateOrdersState();
+    }));
+
+    // Query for orders where the user is the deliverer
+    const delivererQuery = query(ordersCollection, where("delivererId", "==", user.uid));
+    unsubscribes.push(onSnapshot(delivererQuery, (snapshot) => {
+       snapshot.docChanges().forEach((change) => {
+          if(change.type === 'removed') {
+            ordersMap.delete(change.doc.id);
+          } else {
+            ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
+          }
+      });
+      updateOrdersState();
+    }));
+
+    // Query for available orders for deliverers
+    const availableDeliveriesQuery = query(ordersCollection, where("status", "==", "Placée"));
+    unsubscribes.push(onSnapshot(availableDeliveriesQuery, (snapshot) => {
+       snapshot.docChanges().forEach((change) => {
+          if(change.type === 'removed') {
+            ordersMap.delete(change.doc.id);
+          } else {
+            ordersMap.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
+          }
+      });
+      updateOrdersState();
+    }));
+
+
+    return () => {
+        // Unsubscribe from all listeners on cleanup
+        unsubscribes.forEach(unsub => unsub());
+    }; 
+  }, [user, setGlobalOrders]);
 }
 
 
 export const useData = useDataStore;
 
 export const getRestaurantsForHistory = () => useDataStore.getState().restaurants;
-
