@@ -9,33 +9,34 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2 } from 'lucide-react';
+import { Loader, Wand2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { MenuItemCard } from '@/components/menu-item-card';
 import type { MenuItem, Restaurant } from '@/lib/types';
 import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
+import NextImage from 'next/image';
 
+type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
 
 export default function DashboardPage() {
     const { restaurants, addMenuItem } = useData();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [description, setDescription] = React.useState('');
     const [loading, setLoading] = React.useState(false);
-    const [generatedItem, setGeneratedItem] = React.useState<MenuItem | null>(null);
+    const [generatedItem, setGeneratedItem] = React.useState<GeneratedMenuItem | null>(null);
     const { toast } = useToast();
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
 
     React.useEffect(() => {
         if (!restaurants.length) return;
-        if(!selectedRestaurant) {
+        if (!selectedRestaurant) {
             setSelectedRestaurant(restaurants[0]);
         }
-    },[restaurants, selectedRestaurant]);
-    
+    }, [restaurants, selectedRestaurant]);
+
     React.useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
@@ -59,7 +60,6 @@ export default function DashboardPage() {
         });
 
         try {
-            // Step 1: Generate the menu item details (name, desc, price, image prompt)
             const itemDetails = await generateMenuItem({
                 restaurantName: selectedRestaurant.name,
                 cuisine: selectedRestaurant.cuisine,
@@ -71,22 +71,19 @@ export default function DashboardPage() {
                 description: 'Création de l\'image en cours...',
             });
 
-            // Step 2: Generate the image using the prompt from the first flow
             const { imageUrl } = await generateImage({ prompt: itemDetails.imagePrompt });
 
-            const newItem: MenuItem = {
-                 id: `gen-${Date.now()}`,
-                 name: itemDetails.name,
-                 description: itemDetails.generatedDescription,
-                 price: itemDetails.price,
-                 image: imageUrl,
-                 imageHint: itemDetails.imagePrompt.split(' ').slice(0, 2).join(' '), // use first two words of prompt as hint
-                 restaurantId: selectedRestaurant.id
-            }
+            const newItem: GeneratedMenuItem = {
+                name: itemDetails.name,
+                description: itemDetails.generatedDescription,
+                price: itemDetails.price,
+                image: imageUrl,
+                imageHint: itemDetails.imagePrompt.split(' ').slice(0, 2).join(' '),
+            };
             setGeneratedItem(newItem);
             toast({
                 title: 'Plat généré avec succès !',
-                description: 'Voici une proposition. Vous pouvez l\'ajouter à votre menu.',
+                description: 'Voici une proposition. Vous pouvez la modifier et l\'ajouter à votre menu.',
             });
         } catch (error) {
             console.error('Failed to generate menu item:', error);
@@ -99,39 +96,43 @@ export default function DashboardPage() {
             setLoading(false);
         }
     };
-    
-    const handleAddItemToMenu = async () => {
-        if (!generatedItem) return;
-        
-        // We don't want to save the temporary `id` to Firestore
-        const { id, ...itemToAdd } = generatedItem;
+
+    const handleAddItemToMenu = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!generatedItem || !selectedRestaurant) return;
 
         setLoading(true);
         try {
-            await addMenuItem(itemToAdd);
+            await addMenuItem({ ...generatedItem, restaurantId: selectedRestaurant.id });
             setGeneratedItem(null);
             setDescription('');
             toast({
                 title: 'Plat ajouté !',
-                description: `${generatedItem.name} est maintenant disponible dans votre menu.`
+                description: `${generatedItem.name} est maintenant disponible dans votre menu.`,
             });
         } catch (error) {
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: "Impossible d'ajouter le plat à la base de données."
+                description: "Impossible d'ajouter le plat à la base de données.",
             });
         } finally {
             setLoading(false);
         }
-    }
+    };
+
+    const handleItemChange = (field: keyof GeneratedMenuItem, value: string | number) => {
+        if (generatedItem) {
+            setGeneratedItem({ ...generatedItem, [field]: value });
+        }
+    };
 
     if (authLoading || !user) {
         return (
-             <div className="flex h-full w-full items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
             </div>
-        )
+        );
     }
 
     return (
@@ -161,7 +162,7 @@ export default function DashboardPage() {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description du plat</Label>
+                            <Label htmlFor="description">Description simple du plat</Label>
                             <Textarea
                                 id="description"
                                 placeholder="Ex: Un plat de riz traditionnel avec du poulet mariné aux épices locales, servi avec une sauce arachide et des légumes frais."
@@ -171,36 +172,52 @@ export default function DashboardPage() {
                             />
                         </div>
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
-                            {loading && !generatedItem ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
-                            Générer le plat
+                            {loading ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
+                            {loading ? 'Génération en cours...' : 'Générer le plat'}
                         </Button>
                     </CardContent>
                 </Card>
 
                 <div>
                     <h2 className="text-2xl font-headline mb-4">Résultat de la génération</h2>
-                     <div className="p-4 border-2 border-dashed rounded-lg min-h-[200px] flex items-center justify-center">
+                    <div className="p-4 border-2 border-dashed rounded-lg min-h-[400px] flex items-center justify-center bg-card">
                         {loading && !generatedItem ? (
-                             <div className="text-center text-muted-foreground animate-pulse">
+                            <div className="text-center text-muted-foreground animate-pulse">
+                                <Wand2 className="h-12 w-12 mx-auto mb-4 text-primary" />
                                 <p>L'IA est en cuisine...</p>
-                             </div>
+                            </div>
                         ) : generatedItem ? (
-                           <div className="w-full max-w-md">
-                                <MenuItemCard item={generatedItem} />
-                           </div>
+                            <form onSubmit={handleAddItemToMenu} className="w-full space-y-4">
+                                <div className="relative h-48 w-full rounded-lg overflow-hidden">
+                                     <NextImage src={generatedItem.image} alt={generatedItem.name} layout="fill" objectFit="cover" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="itemName">Nom du plat</Label>
+                                    <Input id="itemName" value={generatedItem.name} onChange={(e) => handleItemChange('name', e.target.value)} />
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="itemDescription">Description</Label>
+                                    <Textarea id="itemDescription" value={generatedItem.description} onChange={(e) => handleItemChange('description', e.target.value)} rows={3} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="itemPrice">Prix (FCFA)</Label>
+                                    <Input id="itemPrice" type="number" value={generatedItem.price} onChange={(e) => handleItemChange('price', Number(e.target.value))} />
+                                </div>
+                                <div className="mt-4 flex justify-end gap-2">
+                                    <Button variant="outline" type="button" onClick={() => setGeneratedItem(null)}>Rejeter</Button>
+                                    <Button type="submit" disabled={loading}>
+                                        {loading ? <Loader className="animate-spin mr-2" /> : null}
+                                        Ajouter au menu
+                                    </Button>
+                                </div>
+                            </form>
                         ) : (
-                            <p className="text-muted-foreground">Le plat que vous générez apparaîtra ici.</p>
+                             <div className="text-center text-muted-foreground">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-4" />
+                                <p>Le plat que vous générez apparaîtra ici.</p>
+                             </div>
                         )}
                     </div>
-                    {generatedItem && (
-                        <div className="mt-4 flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setGeneratedItem(null)}>Rejeter</Button>
-                             <Button onClick={handleAddItemToMenu} disabled={loading}>
-                                {loading && <Loader className="animate-spin mr-2" />}
-                                Ajouter au menu
-                             </Button>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
