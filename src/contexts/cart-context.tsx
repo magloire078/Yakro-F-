@@ -105,6 +105,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         restaurantName: restaurant?.name || 'Restaurant inconnu',
         restaurantId: restaurantId,
         status: 'Placée', // Initial status
+        // Add mock data for delivery details
+        customerAddress: 'Angré 7ème Tranche, Villa 123',
+        restaurantAddress: restaurant?.address || 'Rue des Jardins, Cocody',
+        customerPhone: '07 01 02 03 04',
     };
 
     await addOrder(newOrder);

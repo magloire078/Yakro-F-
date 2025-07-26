@@ -17,6 +17,7 @@ export interface Restaurant {
   deliveryTime: number;
   image: string;
   imageHint: string;
+  address?: string;
 }
 
 export interface CartItem extends MenuItem {
@@ -33,9 +34,9 @@ export interface Order {
   restaurantId: string;
   status: 'Placée' | 'En Préparation' | 'En Route' | 'Livrée' | 'Annulée';
   delivererId?: string;
-  customerAddress?: string;
-  restaurantAddress?: string;
-  customerPhone?: string;
+  customerAddress: string;
+  restaurantAddress: string;
+  customerPhone: string;
 }
 
 export interface Review {

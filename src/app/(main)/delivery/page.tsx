@@ -5,7 +5,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, MapPin, Package, Clock, Phone, Bike } from 'lucide-react';
+import { Loader, MapPin, Package, Phone, Bike, Home, ChefHat } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -101,44 +101,44 @@ export default function DeliveryPage() {
                 <Card className="bg-primary/5">
                     <CardHeader>
                         <CardTitle className="flex justify-between items-center">
-                           <span>Commande pour {currentDelivery.customerAddress || "Adresse inconnue"}</span>
+                           <span>Commande n°{currentDelivery.id.slice(0, 5)}...</span>
                            <Badge variant="default">En cours</Badge>
                         </CardTitle>
-                        <CardDescription>Du restaurant : {currentDelivery.restaurantName}</CardDescription>
+                        <CardDescription>Récupérez et livrez la commande suivante.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <MapPin className="text-primary"/>
+                        <div className="space-y-4 border-b pb-4">
+                            <div className="flex items-start gap-4">
+                                <ChefHat className="text-primary mt-1"/>
                                 <div>
-                                    <p className="font-semibold">Récupérer à</p>
-                                    <p>{currentDelivery.restaurantAddress || "Rue des Jardins, Cocody"}</p>
+                                    <p className="font-semibold text-lg">1. Récupérer chez {currentDelivery.restaurantName}</p>
+                                    <p className="text-muted-foreground">{currentDelivery.restaurantAddress}</p>
                                 </div>
                             </div>
-                             <div className="flex items-center gap-4">
-                                <MapPin className="text-green-500"/>
+                             <div className="flex items-start gap-4">
+                                <Home className="text-green-500 mt-1"/>
                                 <div>
-                                    <p className="font-semibold">Livrer à</p>
-                                    <p>{currentDelivery.customerAddress || "Angré 7ème Tranche"}</p>
+                                    <p className="font-semibold text-lg">2. Livrer à</p>
+                                    <p className="text-muted-foreground">{currentDelivery.customerAddress}</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="border-t pt-4 space-y-2">
+                        <div className="space-y-3">
                              <div className="flex items-center gap-4">
                                 <Package className="text-muted-foreground"/>
-                                <p>Contenu: {currentDelivery.items.map(i => i.name).join(', ')}</p>
+                                <p>Contenu : {currentDelivery.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</p>
                             </div>
                              <div className="flex items-center gap-4">
                                 <Phone className="text-muted-foreground"/>
-                                <p>Client: {currentDelivery.customerPhone || "07 01 02 03 04"}</p>
+                                <p>Client : {currentDelivery.customerPhone}</p>
                             </div>
                         </div>
-                        <div className="flex gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
                             <Button className="w-full" size="lg" onClick={handleCompleteDelivery} disabled={isCompleting}>
                                 {isCompleting && <Loader className="animate-spin mr-2" />}
                                 Marquer comme livré
                             </Button>
-                            <Button variant="outline" className="w-full" size="lg">Problème ?</Button>
+                            <Button variant="outline" className="w-full" size="lg">Signaler un problème</Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -150,31 +150,34 @@ export default function DeliveryPage() {
         <div className="container mx-auto">
             <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Courses disponibles</h1>
             <div className="space-y-4">
-                {availableDeliveries.map(delivery => (
+                {availableDeliveries.length > 0 ? availableDeliveries.map(delivery => (
                     <Card key={delivery.id}>
-                        <CardContent className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                           <div className="flex-1">
-                             <p className="font-bold">{delivery.restaurantName}</p>
-                             <p className="text-sm text-muted-foreground">Commande passée le {new Date(delivery.date).toLocaleTimeString('fr-FR')}</p>
+                        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+                           <div className="md:col-span-1">
+                             <p className="font-bold text-lg">{delivery.restaurantName}</p>
+                             <p className="text-sm text-muted-foreground">De: {delivery.restaurantAddress}</p>
+                             <p className="text-sm text-muted-foreground">À: {delivery.customerAddress}</p>
                            </div>
-                           <div className="flex items-center gap-4 text-sm">
-                                <div className="flex items-center gap-1">
-                                    <Package className="w-4 h-4"/>
+                           <div className="md:col-span-1 flex flex-row md:flex-col items-start md:items-center justify-between gap-2 text-sm">
+                                <Badge variant="secondary" className="text-base font-bold">{delivery.total.toLocaleString('fr-FR')} FCFA</Badge>
+                                <div className="flex items-center gap-2">
+                                    <Package className="w-4 h-4 text-muted-foreground"/>
                                     <span>{delivery.items.length} article(s)</span>
                                 </div>
-                                <Badge variant="secondary" className="text-base">{delivery.total.toLocaleString('fr-FR')} FCFA</Badge>
                            </div>
-                           <Button onClick={() => handleAcceptDelivery(delivery)} disabled={isAccepting !== null}>
-                             {isAccepting === delivery.id && <Loader className="animate-spin mr-2"/>}
-                             Accepter
-                           </Button>
+                           <div className="md:col-span-1 flex justify-start md:justify-end">
+                               <Button onClick={() => handleAcceptDelivery(delivery)} disabled={isAccepting !== null} size="lg">
+                                 {isAccepting === delivery.id && <Loader className="animate-spin mr-2"/>}
+                                 Accepter la course
+                               </Button>
+                           </div>
                         </CardContent>
                     </Card>
-                ))}
+                )) : null}
                  {availableDeliveries.length === 0 && !currentDelivery && (
-                    <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4">
+                    <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
                         <Bike className="w-16 h-16"/>
-                        <p className="text-lg font-medium">Aucune course disponible</p>
+                        <p className="text-lg font-medium">Aucune course disponible pour le moment</p>
                         <p>Revenez plus tard pour de nouvelles opportunités de livraison.</p>
                     </div>
                 )}
