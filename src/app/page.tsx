@@ -11,7 +11,7 @@ import { OrderStatus } from '@/components/order-status';
 import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { useToast } from '@/hooks/use-toast';
-import { useData, getRestaurantsForHistory } from '@/contexts/data-context';
+import { useData, getRestaurantsForHistory, useOrders } from '@/contexts/data-context';
 import { pastOrders } from '@/lib/data';
 import type { Order } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
@@ -64,6 +64,9 @@ export default function Home() {
     isLoading,
     fetchData,
   } = useData();
+  
+  // Start listening for order updates if the user is logged in
+  useOrders();
 
   const [isOrderPlaced, setIsOrderPlaced] = React.useState(false);
 

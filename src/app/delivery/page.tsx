@@ -8,7 +8,7 @@ import { Loader, MapPin, Package, Clock, Phone, Bike } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useData } from '@/contexts/data-context';
+import { useData, useOrders } from '@/contexts/data-context';
 import type { Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,7 +21,9 @@ export default function DeliveryPage() {
     const { toast } = useToast();
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
     const [isCompleting, setIsCompleting] = React.useState(false);
-
+    
+    // Start listening for order updates
+    useOrders();
 
     React.useEffect(() => {
         if (!authLoading && !user) {
