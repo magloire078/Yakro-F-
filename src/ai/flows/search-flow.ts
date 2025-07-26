@@ -10,7 +10,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const IntelligentSearchInputSchema = z.object({
   query: z.string().describe('The user\'s search query in natural language.'),
