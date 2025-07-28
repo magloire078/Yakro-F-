@@ -74,7 +74,7 @@ const useDataStore = create<DataState>((set, get) => ({
       // Fallback to initial data if Firestore fetch fails
       set({ restaurants: initialRestaurants, menuItems: initialMenuItems });
     } finally {
-      set({ isLoading: false });
+      // The loading state will be properly set by the realtime listeners
     }
   },
   
@@ -172,6 +172,7 @@ function useRealtimeData() {
             useDataStore.setState({ restaurants: restaurantList, isLoading: false });
         }, (error) => {
              console.error("Error on restaurants snapshot listener:", error);
+             useDataStore.setState({ isLoading: false });
         });
 
         // Menu Items Listener
