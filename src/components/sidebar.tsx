@@ -102,12 +102,6 @@ export function Sidebar() {
            )}
            {!loading && user && (
             <div className="space-y-4">
-                <Button variant="ghost" className="w-full text-md" asChild>
-                    <Link href="/profile-selection">
-                        <Replace className="mr-2 h-5 w-5" />
-                        Changer de profil
-                    </Link>
-                </Button>
                 <div className="flex items-center gap-3 p-2 rounded-lg border">
                     <Avatar>
                         <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
