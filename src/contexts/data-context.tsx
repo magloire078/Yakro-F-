@@ -15,7 +15,6 @@ interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
   orders: Order[];
-  users: DocumentData[];
   isGenerating: boolean;
   isLoading: boolean;
   fetchData: () => Promise<void>;
@@ -31,7 +30,6 @@ const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
-  users: [],
   isGenerating: false,
   isLoading: true,
 
@@ -56,10 +54,9 @@ const useDataStore = create<DataState>((set, get) => ({
         await batch.commit();
         restaurantSnapshot = await getDocs(restaurantsCollection);
       }
-      const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
       
-
       let menuItemSnapshot = await getDocs(menuItemsCollection);
+      const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
       if (menuItemSnapshot.empty && restaurantList.length > 0) {
         console.log("Firestore 'menuItems' is empty. Seeding data...");
         const batch = writeBatch(db);
@@ -174,20 +171,17 @@ function useRealtimeData() {
         const unsubRestaurants = onSnapshot(collection(db, "restaurants"), (snapshot) => {
             const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
             useDataStore.setState({ restaurants: restaurantList });
+        }, (error) => {
+             console.error("Error on restaurants snapshot listener:", error);
         });
 
         // Menu Items Listener
         const unsubMenuItems = onSnapshot(collection(db, "menuItems"), (snapshot) => {
             const menuList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
             useDataStore.setState({ menuItems: menuList });
+        }, (error) => {
+             console.error("Error on menuItems snapshot listener:", error);
         });
-
-        // Users Listener
-        const unsubUsers = onSnapshot(collection(db, "users"), (snapshot) => {
-            const userList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            useDataStore.setState({ users: userList });
-        });
-
 
         // Orders Listener (remains user-dependent)
         let unsubOrders: Unsubscribe | null = null;
@@ -197,9 +191,6 @@ function useRealtimeData() {
             // This query combines all necessary order fetching logic
             const q = query(ordersCollection, 
                 where("userId", "==", user.uid)
-                // We can't do an OR query for delivererId and status easily, 
-                // so we will have to listen to multiple queries or fetch them separately.
-                // For simplicity, we keep the multiple listeners approach for orders.
             );
 
             let orderUnsubscribes: Unsubscribe[] = [];
@@ -217,7 +208,7 @@ function useRealtimeData() {
                     const sortedOrders = Array.from(currentOrdersRef.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     useDataStore.setState({ orders: sortedOrders });
                 }, (error) => {
-                    console.error(`Error on snapshot listener:`, error);
+                    console.error(`Error on orders snapshot listener:`, error);
                 });
                 orderUnsubscribes.push(unsub);
             }
@@ -236,7 +227,6 @@ function useRealtimeData() {
         return () => {
             unsubRestaurants();
             unsubMenuItems();
-            unsubUsers();
             if (unsubOrders) unsubOrders();
         }; 
     }, [user]);
