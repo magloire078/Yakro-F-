@@ -198,6 +198,7 @@ function useRealtimeData() {
                             currentOrdersRef.delete(change.doc.id);
                         } else {
                             const orderData = { id: change.doc.id, ...change.doc.data() } as Order;
+                            // This ensures we don't have duplicate orders from multiple queries
                             currentOrdersRef.set(change.doc.id, orderData);
                         }
                     });
