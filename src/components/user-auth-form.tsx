@@ -54,7 +54,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
           title: "Compte créé avec succès",
           description: "Bienvenue sur Yakro Go ! Veuillez choisir un profil.",
         });
-        // Redirect to login page or profile selection after sign up
+        // Redirect to profile selection after sign up
         router.push('/profile-selection');
       } catch (error: any) {
         toast({
