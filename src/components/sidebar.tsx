@@ -6,12 +6,13 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList } from 'lucide-react';
+import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 export function Sidebar() {
   const { cartCount } = useCart();
@@ -107,21 +108,36 @@ export function Sidebar() {
             </Button>
            )}
            {!loading && user && (
-            <div className="space-y-4">
-                <div className="flex items-center gap-3 p-2 rounded-lg border">
-                    <Avatar>
-                        <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-semibold truncate">{user.email || 'Utilisateur'}</p>
-                         <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-3 p-2 rounded-lg border cursor-pointer hover:bg-muted">
+                        <Avatar>
+                            <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 overflow-hidden">
+                            <p className="text-sm font-semibold truncate">{user.email || 'Utilisateur'}</p>
+                            <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
+                        </div>
                     </div>
-                </div>
-                <Button variant="outline" className="w-full text-lg py-6" onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-5 w-5" />
-                    Déconnexion
-                </Button>
-            </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 mb-2">
+                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                        <User className="mr-2 h-4 w-4"/>
+                        Profil
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                        <Settings className="mr-2 h-4 w-4"/>
+                        Paramètres
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                        <LogOut className="mr-2 h-4 w-4"/>
+                        Déconnexion
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
            )}
             {activeRole === 'customer' && (
                <div className="hidden md:block">
