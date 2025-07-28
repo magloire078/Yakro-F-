@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { generateVideo } from '@/ai/flows/generate-video-flow';
-import { type Restaurant, SUPER_USER_EMAIL } from '@/lib/types';
+import { type Restaurant } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader, Video } from 'lucide-react';
 import Image from 'next/image';
@@ -38,8 +38,8 @@ export default function MarketingPage() {
   const router = useRouter();
 
   React.useEffect(() => {
-    if (!authLoading && (!user || user.email !== SUPER_USER_EMAIL)) {
-        router.push('/');
+    if (!authLoading && !user) {
+        router.push('/login');
     }
   }, [user, authLoading, router]);
 
@@ -113,7 +113,7 @@ export default function MarketingPage() {
     }
   };
   
-  if (authLoading || !user || user.email !== SUPER_USER_EMAIL) {
+  if (authLoading || !user) {
     return (
         <div className="flex h-full w-full items-center justify-center">
             <Loader className="h-16 w-16 animate-spin text-primary" />

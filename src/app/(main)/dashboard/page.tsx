@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -12,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
 import { Loader, Wand2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type MenuItem, type Restaurant, SUPER_USER_EMAIL } from '@/lib/types';
+import { type MenuItem, type Restaurant } from '@/lib/types';
 import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useAuth } from '@/contexts/auth-context';
@@ -32,8 +31,8 @@ export default function DashboardPage() {
     const router = useRouter();
 
     React.useEffect(() => {
-        if (!authLoading && (!user || user.email !== SUPER_USER_EMAIL)) {
-            router.push('/');
+        if (!authLoading && !user) {
+            router.push('/login');
         }
     }, [user, authLoading, router]);
 
@@ -128,7 +127,7 @@ export default function DashboardPage() {
         }
     };
 
-    if (authLoading || !user || user.email !== SUPER_USER_EMAIL) {
+    if (authLoading || !user) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />

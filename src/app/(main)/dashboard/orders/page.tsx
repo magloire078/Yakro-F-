@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/contexts/data-context';
-import { type Order, SUPER_USER_EMAIL } from '@/lib/types';
+import { type Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -21,8 +21,8 @@ export default function DashboardOrdersPage() {
     const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
 
     React.useEffect(() => {
-        if (!authLoading && (!user || user.email !== SUPER_USER_EMAIL)) {
-            router.push('/');
+        if (!authLoading && !user) {
+            router.push('/login');
         }
     }, [user, authLoading, router]);
 

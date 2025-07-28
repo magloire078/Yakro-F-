@@ -9,7 +9,6 @@ import { create } from 'zustand';
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
-import { SUPER_USER_EMAIL } from '@/lib/types';
 
 interface DataState {
   restaurants: Restaurant[];
@@ -198,8 +197,6 @@ function useRealtimeData() {
                             currentOrdersRef.delete(change.doc.id);
                         } else {
                             const orderData = { id: change.doc.id, ...change.doc.data() } as Order;
-                             // For super user, avoid overwriting if a more specific query already added the doc
-                            if(user.email === SUPER_USER_EMAIL && currentOrdersRef.has(orderData.id) && q.type === 'collection') return;
                             currentOrdersRef.set(change.doc.id, orderData);
                         }
                     });
@@ -211,13 +208,11 @@ function useRealtimeData() {
                 orderUnsubscribes.push(unsub);
             }
 
-            // Regular user sees only their orders
+            // Any user can see their own orders
             setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
             
-            // Super user sees all active orders for all users
-            if(user.email === SUPER_USER_EMAIL) {
-                setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation", "En Route"])));
-            }
+            // All users can see active orders for the restaurateur/delivery views
+            setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation", "En Route"])));
 
             unsubOrders = () => orderUnsubscribes.forEach(unsub => unsub());
 

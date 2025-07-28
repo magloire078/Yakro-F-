@@ -12,8 +12,6 @@ import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { SUPER_USER_EMAIL } from '@/lib/types';
-
 
 export function Sidebar() {
   const { cartCount } = useCart();
@@ -29,8 +27,6 @@ export function Sidebar() {
     if (!email) return '?';
     return email.substring(0, 2).toUpperCase();
   }
-
-  const isSuperUser = user?.email === SUPER_USER_EMAIL;
 
   return (
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
@@ -63,7 +59,7 @@ export function Sidebar() {
               Avis
             </Link>
           </Button>
-          {(isSuperUser) && (
+          {user && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/dashboard">

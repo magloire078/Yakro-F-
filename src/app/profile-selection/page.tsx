@@ -3,15 +3,10 @@
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { User, ChefHat, Loader, Bike } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { SUPER_USER_EMAIL } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
 
 export default function ProfileSelectionPage() {
     const router = useRouter();
@@ -30,45 +25,6 @@ export default function ProfileSelectionPage() {
             </div>
         )
     }
-
-    const isSuperUser = user.email === SUPER_USER_EMAIL;
-    
-    const AdminProfileCard = ({ href, icon, title, description }: { href: string, icon: React.ReactNode, title: string, description: string }) => {
-        const cardContent = (
-             <Card className={cn(
-                "h-full flex flex-col items-center justify-center p-8 text-center transition-all duration-300 shadow-lg",
-                isSuperUser ? "hover:bg-accent/50 hover:border-primary cursor-pointer hover:shadow-2xl" : "bg-muted/50 cursor-not-allowed opacity-70"
-             )}>
-                <CardHeader>
-                    {icon}
-                    <CardTitle className="mt-4 text-2xl">{title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <CardDescription>
-                       {description}
-                    </CardDescription>
-                </CardContent>
-            </Card>
-        );
-
-        if (isSuperUser) {
-            return <Link href={href} className="h-full">{cardContent}</Link>;
-        }
-
-        return (
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div className="h-full">{cardContent}</div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Ce profil est réservé aux administrateurs.</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        );
-    }
-
 
     return (
         <div className="flex h-full flex-col items-center justify-center text-center">
@@ -91,19 +47,33 @@ export default function ProfileSelectionPage() {
                     </Card>
                 </Link>
                 
-                <AdminProfileCard
-                    href="/dashboard"
-                    icon={<ChefHat className="h-16 w-16 mx-auto text-primary" />}
-                    title="Je suis un Restaurateur"
-                    description="Gérez votre menu, créez des plats avec l'IA et développez votre activité grâce à nos outils marketing."
-                />
+                <Link href="/dashboard" className="h-full">
+                    <Card className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl">
+                        <CardHeader>
+                            <ChefHat className="h-16 w-16 mx-auto text-primary" />
+                            <CardTitle className="mt-4 text-2xl">Je suis un Restaurateur</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <CardDescription>
+                                Gérez votre menu, créez des plats avec l'IA et développez votre activité grâce à nos outils marketing.
+                            </CardDescription>
+                        </CardContent>
+                    </Card>
+                </Link>
 
-                <AdminProfileCard
-                    href="/delivery"
-                    icon={<Bike className="h-16 w-16 mx-auto text-primary" />}
-                    title="Je suis un Livreur"
-                    description="Acceptez des courses, suivez vos livraisons et gérez vos revenus."
-                />
+                <Link href="/delivery" className="h-full">
+                     <Card className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl">
+                        <CardHeader>
+                            <Bike className="h-16 w-16 mx-auto text-primary" />
+                            <CardTitle className="mt-4 text-2xl">Je suis un Livreur</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <CardDescription>
+                               Acceptez des courses, suivez vos livraisons et gérez vos revenus.
+                            </CardDescription>
+                        </CardContent>
+                    </Card>
+                </Link>
 
             </div>
         </div>

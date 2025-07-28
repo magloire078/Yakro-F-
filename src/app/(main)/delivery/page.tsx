@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/contexts/data-context';
-import { type Order, SUPER_USER_EMAIL } from '@/lib/types';
+import { type Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -23,8 +23,8 @@ export default function DeliveryPage() {
     const [isCompleting, setIsCompleting] = React.useState(false);
     
     React.useEffect(() => {
-        if (!authLoading && (!user || user.email !== SUPER_USER_EMAIL)) {
-            router.push('/');
+        if (!authLoading && !user) {
+            router.push('/login');
         }
     }, [user, authLoading, router]);
 
@@ -82,7 +82,7 @@ export default function DeliveryPage() {
         }
     }
 
-    if (authLoading || isLoading || !user || user.email !== SUPER_USER_EMAIL) {
+    if (authLoading || isLoading || !user) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
