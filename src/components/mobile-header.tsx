@@ -9,9 +9,11 @@ import { Sidebar } from './sidebar';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
+import { useAuth } from '@/contexts/auth-context';
 
 export function MobileHeader() {
   const { cartCount } = useCart();
+  const { activeRole } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 md:hidden">
@@ -31,17 +33,19 @@ export function MobileHeader() {
             <Icons.logo className="h-8 w-8 text-primary" />
           </Link>
       </div>
-       <CartSheet>
-            <Button variant="outline" size="icon" className="relative">
-              <Icons.cart className="h-5 w-5" />
-               <span className="sr-only">Ouvrir le panier</span>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
-          </CartSheet>
+      {activeRole === 'customer' && (
+        <CartSheet>
+              <Button variant="outline" size="icon" className="relative">
+                <Icons.cart className="h-5 w-5" />
+                <span className="sr-only">Ouvrir le panier</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </CartSheet>
+      )}
     </header>
   );
 }

@@ -22,7 +22,7 @@ import {
 
 export function Sidebar() {
   const { cartCount } = useCart();
-  const { user, loading, activeRole, setActiveRole } = useAuth();
+  const { user, loading, activeRole } = useAuth();
   const router = useRouter();
   
   const handleSignOut = async () => {
@@ -129,17 +129,19 @@ export function Sidebar() {
                 </Button>
             </div>
            )}
-           <div className="hidden md:block">
-              <CartSheet>
-                <Button variant="default" className="w-full text-lg py-6">
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  Panier
-                  {cartCount > 0 && (
-                    <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">{cartCount}</span>
-                  )}
-                </Button>
-              </CartSheet>
-            </div>
+            {activeRole === 'customer' && (
+               <div className="hidden md:block">
+                <CartSheet>
+                  <Button variant="default" className="w-full text-lg py-6">
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Panier
+                    {cartCount > 0 && (
+                      <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">{cartCount}</span>
+                    )}
+                  </Button>
+                </CartSheet>
+              </div>
+            )}
         </div>
     </aside>
   );
