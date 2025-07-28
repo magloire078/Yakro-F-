@@ -35,7 +35,7 @@ export function Recommendations({ recommendationsData, isCarousel = true }: Reco
   }
 
   const handleAddToCart = (recommendedItemName: string) => {
-    const menuItem = menuItems.find(item => item.name.toLowerCase() === recommendedItemName.toLowerCase());
+    const menuItem = menuItems.find(item => item && item.name && item.name.toLowerCase() === recommendedItemName.toLowerCase());
     if (menuItem) {
       addToCart(menuItem);
       toast({
@@ -52,7 +52,7 @@ export function Recommendations({ recommendationsData, isCarousel = true }: Reco
   };
   
   const RecommendationCard = ({ rec, index }: { rec: any, index: number}) => {
-    const menuItem = menuItems.find(item => item.name.toLowerCase() === rec.item.toLowerCase());
+    const menuItem = menuItems.find(item => item && item.name && item.name.toLowerCase() === rec.item.toLowerCase());
     const imageSrc = menuItem ? getMenuItem(menuItem.id)?.image : `https://placehold.co/600x400`;
     
     return (
