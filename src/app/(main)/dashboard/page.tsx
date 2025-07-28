@@ -12,8 +12,7 @@ import { useData } from '@/contexts/data-context';
 import { Loader, Wand2, Image as ImageIcon, ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type MenuItem, type Restaurant } from '@/lib/types';
-import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
-import { generateImage } from '@/ai/flows/generate-image-flow';
+import { generateMenuItem, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import NextImage from 'next/image';
@@ -71,11 +70,11 @@ export default function DashboardPage() {
         setGeneratedItem(null);
         toast({
             title: 'Génération de plat en cours...',
-            description: 'L\'IA concocte quelque chose de délicieux pour vous.',
+            description: 'L\'IA concocte quelque chose de délicieux pour vous. Cela peut prendre un moment.',
         });
 
         try {
-            const itemDetails = await generateMenuItem({
+            const itemDetails: GenerateMenuItemOutput = await generateMenuItem({
                 restaurantName: selectedRestaurant.name,
                 cuisine: selectedRestaurant.cuisine,
                 description: description,
@@ -83,20 +82,14 @@ export default function DashboardPage() {
                 ...(price && { price: Number(price) }),
             });
 
-            toast({
-                title: 'Détails générés !',
-                description: 'Création de l\'image en cours...',
-            });
-
-            const { imageUrl } = await generateImage({ prompt: itemDetails.imagePrompt });
-
             const newItem: GeneratedMenuItem = {
                 name: itemDetails.name,
-                description: itemDetails.generatedDescription,
+                description: itemDetails.description,
                 price: itemDetails.price,
-                image: imageUrl,
-                imageHint: itemDetails.imagePrompt.split(' ').slice(0, 2).join(' '),
+                image: itemDetails.image,
+                imageHint: itemDetails.imageHint,
             };
+
             setGeneratedItem(newItem);
             toast({
                 title: 'Plat généré avec succès !',
@@ -107,7 +100,7 @@ export default function DashboardPage() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur de génération',
-                description: 'Impossible de générer le plat pour le moment.',
+                description: 'Impossible de générer le plat pour le moment. Le quota de l\'IA est peut-être atteint.',
             });
         } finally {
             setLoading(false);
@@ -223,8 +216,8 @@ export default function DashboardPage() {
                             </div>
                         </div>
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
-                            {loading && !generatedItem ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
-                            {loading && !generatedItem ? 'Génération en cours...' : 'Générer le plat'}
+                            {loading ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
+                            {loading ? 'Génération en cours...' : 'Générer le plat'}
                         </Button>
                     </CardContent>
                 </Card>
