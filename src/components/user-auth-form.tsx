@@ -70,7 +70,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
           title: "Connexion réussie",
           description: "Heureux de vous revoir !",
         });
-        router.push('/');
+        router.push('/profile-selection');
       } catch (error: any) {
         toast({
           variant: "destructive",

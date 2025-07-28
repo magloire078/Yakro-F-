@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Replace } from 'lucide-react';
+import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -36,24 +36,29 @@ export function Sidebar() {
           <span className="font-headline text-3xl font-bold text-primary">Yakro Go</span>
         </Link>
         <nav className="flex flex-col gap-4">
-          <Button variant="ghost" className="justify-start text-lg" asChild>
-            <Link href="/">
-              <Home className="mr-2 h-5 w-5" />
-              Accueil
-            </Link>
-          </Button>
-           <Button variant="ghost" className="justify-start text-lg" asChild>
-             <Link href="/recommendations">
-              <Sparkles className="mr-2 h-5 w-5" />
-              Pour Vous
-            </Link>
-          </Button>
-          <Button variant="ghost" className="justify-start text-lg" asChild>
-             <Link href="/orders">
-              <History className="mr-2 h-5 w-5" />
-              Historique
-            </Link>
-          </Button>
+           {/* Customer Links */}
+          {user && activeRole === 'customer' && (
+            <>
+              <Button variant="ghost" className="justify-start text-lg" asChild>
+                <Link href="/">
+                  <Home className="mr-2 h-5 w-5" />
+                  Accueil
+                </Link>
+              </Button>
+               <Button variant="ghost" className="justify-start text-lg" asChild>
+                 <Link href="/recommendations">
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Pour Vous
+                </Link>
+              </Button>
+              <Button variant="ghost" className="justify-start text-lg" asChild>
+                 <Link href="/orders">
+                  <History className="mr-2 h-5 w-5" />
+                  Historique
+                </Link>
+              </Button>
+            </>
+          )}
           
           {/* Restaurateur Links */}
           {user && activeRole === 'restaurateur' && (
@@ -111,6 +116,12 @@ export function Sidebar() {
                          <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
                     </div>
                 </div>
+                 <Button variant="outline" className="w-full text-lg" asChild>
+                    <Link href="/profile-selection">
+                      <User className="mr-2 h-5 w-5" />
+                      Changer de profil
+                    </Link>
+                  </Button>
                 <Button variant="outline" className="w-full text-lg py-6" onClick={handleSignOut}>
                     <LogOut className="mr-2 h-5 w-5" />
                     Déconnexion
