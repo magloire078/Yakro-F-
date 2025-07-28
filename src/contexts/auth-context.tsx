@@ -20,6 +20,7 @@ const getInitialRole = (): UserRole => {
     if (typeof window === 'undefined') {
         return 'customer';
     }
+    // Use localStorage for persistence across sessions
     return (localStorage.getItem('activeRole') as UserRole) || 'customer';
 };
 
@@ -27,15 +28,17 @@ const getInitialRole = (): UserRole => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [activeRole, setActiveRoleState] = React.useState<UserRole>(getInitialRole);
+  const [activeRole, setActiveRoleState] = React.useState<UserRole>('customer');
 
   React.useEffect(() => {
+    // Set initial role from localStorage on the client side
+    setActiveRoleState(getInitialRole());
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (!user) {
-          // Keep role on logout for better UX on re-login, but you could clear it if needed
-          // localStorage.removeItem('activeRole');
-          // setActiveRoleState('customer');
+          // Keep role on logout for better UX on re-login.
+          // The login page will handle redirecting based on the stored role.
       }
       setLoading(false);
     });

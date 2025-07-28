@@ -28,6 +28,8 @@ export function Sidebar() {
   const handleChangeProfile = () => {
     // Clear the role so the profile selection page doesn't auto-redirect
     localStorage.removeItem('activeRole');
+    // We set it to customer as a fallback before redirecting
+    setActiveRole('customer');
     router.push('/profile-selection');
   }
   

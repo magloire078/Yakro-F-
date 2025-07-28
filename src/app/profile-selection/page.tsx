@@ -30,9 +30,15 @@ export default function ProfileSelectionPage() {
         // explicitly navigated here (e.g., via "Change Profile").
         const savedRole = localStorage.getItem('activeRole') as UserRole;
         if (!loading && user && savedRole && isInitialRedirect) {
-            router.push(roleToPathMap[savedRole] || '/');
+            // Check if the stored role is valid, otherwise default to customer
+            if (roleToPathMap[savedRole]) {
+                router.push(roleToPathMap[savedRole]);
+            } else {
+                 router.push('/');
+            }
         } else {
             // Allow the page to render if the user is here intentionally
+            // or if no role was saved.
             setIsInitialRedirect(false);
         }
     }, [user, loading, router, isInitialRedirect]);
@@ -42,7 +48,7 @@ export default function ProfileSelectionPage() {
         router.push(path);
     };
     
-    // Show a loader while the initial redirect check is happening
+    // Show a loader while the initial redirect check is happening or auth is loading
     if (loading || isInitialRedirect) {
         return (
             <div className="flex h-full w-full items-center justify-center">

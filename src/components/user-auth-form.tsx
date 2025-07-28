@@ -69,18 +69,8 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
           title: "Connexion réussie",
           description: "Heureux de vous revoir !",
         });
-        // Check for a saved role, otherwise go to selection
-        const savedRole = localStorage.getItem('activeRole');
-        if (savedRole) {
-            const roleToPathMap = {
-                customer: '/',
-                restaurateur: '/dashboard',
-                livreur: '/delivery',
-            };
-            router.push(roleToPathMap[savedRole as keyof typeof roleToPathMap] || '/');
-        } else {
-            router.push('/profile-selection');
-        }
+        // Redirect to profile selection, which will handle routing based on saved role.
+        router.push('/profile-selection');
 
       } catch (error: any) {
         toast({
