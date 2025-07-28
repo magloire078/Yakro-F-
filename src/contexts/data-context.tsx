@@ -39,42 +39,15 @@ const useDataStore = create<DataState>((set, get) => ({
     }
     set({ isLoading: true });
     try {
-      const restaurantsCollection = collection(db, 'restaurants');
-      const menuItemsCollection = collection(db, 'menuItems');
-
-      let restaurantSnapshot = await getDocs(restaurantsCollection);
-      if (restaurantSnapshot.empty) {
-        console.log("Firestore 'restaurants' is empty. Seeding data...");
-        const batch = writeBatch(db);
-        initialRestaurants.forEach(resto => {
-          const docRef = doc(restaurantsCollection);
-          batch.set(docRef, resto);
-        });
-        await batch.commit();
-        restaurantSnapshot = await getDocs(restaurantsCollection);
-      }
-      
-      let menuItemSnapshot = await getDocs(menuItemsCollection);
-      const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-      if (menuItemSnapshot.empty && restaurantList.length > 0) {
-        console.log("Firestore 'menuItems' is empty. Seeding data...");
-        const batch = writeBatch(db);
-        initialMenuItems.forEach(item => {
-          const docRef = doc(menuItemsCollection);
-          const restaurant = restaurantList.find(r => r.imageHint.includes(item.imageHint.split(' ')[0]));
-          batch.set(docRef, { ...item, restaurantId: restaurant?.id || restaurantList[0].id });
-        });
-        await batch.commit();
-        menuItemSnapshot = await getDocs(menuItemsCollection);
-      }
-      
-
+      // This function now primarily serves to ensure a connection is established
+      // and to satisfy the initial loading state. The actual data population
+      // is handled by the realtime listeners.
+      await getDocs(collection(db, 'restaurants'));
     } catch (error) {
-      console.error("Error fetching public data from Firestore: ", error);
-      // Fallback to initial data if Firestore fetch fails
-      set({ restaurants: initialRestaurants, menuItems: initialMenuItems });
+      console.error("Error connecting to Firestore: ", error);
     } finally {
-      // The loading state will be properly set by the realtime listeners
+      // The loading state will be properly set to false by the realtime listeners
+      // once they fetch the initial data (or confirm it's empty).
     }
   },
   
