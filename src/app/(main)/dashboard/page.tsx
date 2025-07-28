@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, Image as ImageIcon } from 'lucide-react';
+import { Loader, Wand2, Image as ImageIcon, ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type MenuItem, type Restaurant } from '@/lib/types';
 import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
@@ -21,7 +21,7 @@ import NextImage from 'next/image';
 type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
 
 export default function DashboardPage() {
-    const { restaurants, addMenuItem } = useData();
+    const { restaurants, addMenuItem, isLoading: isDataLoading } = useData();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
     const [generatedItem, setGeneratedItem] = React.useState<GeneratedMenuItem | null>(null);
@@ -51,6 +51,9 @@ export default function DashboardPage() {
     React.useEffect(() => {
         if (restaurants.length > 0 && !selectedRestaurant) {
             setSelectedRestaurant(restaurants[0]);
+        }
+        if (restaurants.length === 0) {
+            setSelectedRestaurant(null);
         }
     }, [restaurants, selectedRestaurant]);
 
@@ -142,12 +145,31 @@ export default function DashboardPage() {
         }
     };
 
-    if (authLoading || !user || activeRole !== 'restaurateur') {
+    if (authLoading || isDataLoading || !user || activeRole !== 'restaurateur') {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
             </div>
         );
+    }
+    
+    if (restaurants.length === 0) {
+        return (
+             <div className="flex h-full w-full items-center justify-center">
+                <Card className="max-w-lg text-center p-8">
+                    <CardHeader>
+                        <ChefHat className="h-16 w-16 mx-auto text-primary" />
+                        <CardTitle className="text-2xl mt-4">Bienvenue sur votre espace restaurateur !</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <CardDescription className="text-base">
+                            Il semble que vous n'ayez pas encore de restaurant. Pour commencer à créer des plats avec notre IA, vous devez d'abord enregistrer votre établissement.
+                        </CardDescription>
+                        <Button className="mt-6" disabled>Créer mon premier restaurant (bientôt disponible)</Button>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     return (
@@ -249,3 +271,5 @@ export default function DashboardPage() {
         </div>
     );
 }
+
+    
