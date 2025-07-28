@@ -23,12 +23,17 @@ type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
 export default function DashboardPage() {
     const { restaurants, addMenuItem } = useData();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
-    const [description, setDescription] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [generatedItem, setGeneratedItem] = React.useState<GeneratedMenuItem | null>(null);
     const { toast } = useToast();
     const { user, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
+
+    // Form state
+    const [description, setDescription] = React.useState('');
+    const [name, setName] = React.useState('');
+    const [price, setPrice] = React.useState('');
+
 
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -44,8 +49,7 @@ export default function DashboardPage() {
     }, [user, authLoading, router, activeRole, toast]);
 
     React.useEffect(() => {
-        if (!restaurants.length) return;
-        if (!selectedRestaurant) {
+        if (restaurants.length > 0 && !selectedRestaurant) {
             setSelectedRestaurant(restaurants[0]);
         }
     }, [restaurants, selectedRestaurant]);
@@ -55,7 +59,7 @@ export default function DashboardPage() {
             toast({
                 variant: 'destructive',
                 title: 'Informations manquantes',
-                description: 'Veuillez sélectionner un restaurant et entrer une description.',
+                description: 'Veuillez sélectionner un restaurant et entrer au minimum une description.',
             });
             return;
         }
@@ -71,6 +75,8 @@ export default function DashboardPage() {
                 restaurantName: selectedRestaurant.name,
                 cuisine: selectedRestaurant.cuisine,
                 description: description,
+                ...(name && { name }),
+                ...(price && { price: Number(price) }),
             });
 
             toast({
@@ -113,6 +119,8 @@ export default function DashboardPage() {
             await addMenuItem({ ...generatedItem, restaurantId: selectedRestaurant.id });
             setGeneratedItem(null);
             setDescription('');
+            setName('');
+            setPrice('');
             toast({
                 title: 'Plat ajouté !',
                 description: `${generatedItem.name} est maintenant disponible dans votre menu.`,
@@ -149,7 +157,7 @@ export default function DashboardPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Créateur de Plats par IA</CardTitle>
-                        <CardDescription>Décrivez simplement le plat que vous imaginez, et laissez l'IA créer un nom, une description, un prix et une image pour vous.</CardDescription>
+                        <CardDescription>Décrivez simplement le plat que vous imaginez, et laissez l'IA créer un nom, une description, un prix et une image pour vous. Vous pouvez aussi pré-remplir certains champs pour guider l'IA.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -169,14 +177,25 @@ export default function DashboardPage() {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description simple du plat</Label>
+                            <Label htmlFor="description">Description simple du plat (obligatoire)</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Ex: Un plat de riz traditionnel avec du poulet mariné aux épices locales, servi avec une sauce arachide et des légumes frais."
+                                placeholder="Ex: Un plat de riz traditionnel avec du poulet mariné aux épices locales..."
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
-                                rows={4}
+                                rows={3}
+                                required
                             />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Nom du plat (optionnel)</Label>
+                                <Input id="name" placeholder="Ex: Poulet Yassa" value={name} onChange={e => setName(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="price">Prix (optionnel)</Label>
+                                <Input id="price" type="number" placeholder="Ex: 3500" value={price} onChange={e => setPrice(e.target.value)} />
+                            </div>
                         </div>
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
                             {loading && !generatedItem ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
