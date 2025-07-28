@@ -116,12 +116,6 @@ export function Sidebar() {
                          <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
                     </div>
                 </div>
-                 <Button variant="outline" className="w-full text-lg" asChild>
-                    <Link href="/profile-selection">
-                      <User className="mr-2 h-5 w-5" />
-                      Changer de profil
-                    </Link>
-                  </Button>
                 <Button variant="outline" className="w-full text-lg py-6" onClick={handleSignOut}>
                     <LogOut className="mr-2 h-5 w-5" />
                     Déconnexion

@@ -8,13 +8,25 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import type { UserRole } from '@/lib/types';
 
+const roleToPathMap: Record<UserRole, string> = {
+    customer: '/',
+    restaurateur: '/dashboard',
+    livreur: '/delivery',
+}
+
 export default function ProfileSelectionPage() {
     const router = useRouter();
-    const { user, loading, setActiveRole } = useAuth();
+    const { user, loading, activeRole, setActiveRole } = useAuth();
 
     React.useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
+        }
+        // If a role is already selected, redirect to the corresponding page
+        // This prevents the user from coming back to this page to change roles
+        if (!loading && user && sessionStorage.getItem('activeRole')) {
+            const role = sessionStorage.getItem('activeRole') as UserRole;
+            router.push(roleToPathMap[role] || '/');
         }
     }, [user, loading, router]);
 
@@ -24,6 +36,16 @@ export default function ProfileSelectionPage() {
     };
     
     if (loading || !user) {
+        return (
+            <div className="flex h-full w-full items-center justify-center">
+                <Loader className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        )
+    }
+    
+    // Render the page only if no role has been selected yet.
+    // This check is an extra safeguard.
+    if (sessionStorage.getItem('activeRole')) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
