@@ -149,5 +149,3 @@ export function RecommendationsSkeleton() {
     </section>
   )
 }
-
-    
