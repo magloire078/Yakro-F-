@@ -3,97 +3,49 @@
 'use client';
 
 import * as React from 'react';
-import { UtensilsCrossed, Image as ImageIcon, Loader } from 'lucide-react';
+import { UtensilsCrossed, Pizza, Drumstick, Salad, Soup, Loader, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
-import { MenuItemCard } from '@/components/menu-item-card';
-import { OrderStatus } from '@/components/order-status';
-import { useCart } from '@/contexts/cart-context';
-import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
 import { SearchBar } from '@/components/search-bar';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
+import { Card, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
+
+interface Category {
+    name: string;
+    icon: React.ElementType;
+}
+
+const categories: Category[] = [
+    { name: 'Ivoirien', icon: Soup },
+    { name: 'Pizza', icon: Pizza },
+    { name: 'Grillades', icon: Drumstick },
+    { name: 'Salades', icon: Salad },
+];
 
 
 export default function Home() {
-  const { clearCart } = useCart();
   const { user } = useAuth();
   
   const { 
     restaurants, 
-    menuItems, 
-    orders,
-    isGenerating, 
-    generateAllImages,
     isLoading,
   } = useData();
   
-  const [isOrderPlaced, setIsOrderPlaced] = React.useState(false);
-
-  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
   
-  // Check for active orders for the current user
-  React.useEffect(() => {
-    if (user && orders.length > 0) {
-        const activeUserOrder = orders.find(o => o.userId === user.uid && o.status !== 'Livrée' && o.status !== 'Annulée');
-        if (activeUserOrder) {
-            setIsOrderPlaced(true);
-        } else {
-            setIsOrderPlaced(false);
-        }
-    } else {
-        setIsOrderPlaced(false);
-    }
-  }, [orders, user]);
-
-  
-  React.useEffect(() => {
-    // This is how we know an order was just placed from the cart
-    const handleOrderPlaced = () => {
-        setIsOrderPlaced(true);
-        clearCart();
-    };
-    window.addEventListener('place-order', handleOrderPlaced);
-    return () => window.removeEventListener('place-order', handleOrderPlaced);
-  }, [clearCart]);
-
-
-  const handleNewOrder = () => {
-    setIsOrderPlaced(false);
-  }
-  
-  const handleGenerateImages = async () => {
-    toast({
-      title: "Génération d'images en cours...",
-      description: "Cela peut prendre quelques instants.",
-    });
-    try {
-      await generateAllImages();
-      toast({
-        title: "Images générées !",
-        description: "Les images des plats et restaurants ont été mises à jour.",
-      });
-    } catch (error) {
-       console.error("Error generating images:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur de génération",
-        description: "Impossible de générer les images pour le moment.",
-      });
-    }
-  };
-
   const filteredRestaurants = React.useMemo(() => {
-    if (!interpretedSearch && !searchQuery) return restaurants;
-    
     let results = restaurants;
     
     if (searchQuery && !interpretedSearch) {
-        results = restaurants.filter(restaurant => restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) || restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase()));
+        results = restaurants.filter(restaurant => 
+            restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+        );
     }
 
     if (interpretedSearch) {
@@ -113,51 +65,14 @@ export default function Home() {
             return matchesCuisine && matchesRating && matchesDeliveryTime;
         });
     }
-    return results;
+    return results.slice(0, 6); // Limiter à 6 restaurants
   }, [restaurants, searchQuery, interpretedSearch]);
 
-  const filteredMenuItems = React.useMemo(() => {
-     if (!interpretedSearch && !searchQuery) return menuItems;
-     
-     let results = menuItems;
 
-     if (searchQuery && !interpretedSearch) {
-        results = menuItems.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-     }
-
-    if (interpretedSearch) {
-        results = menuItems.filter(item => {
-            const allSearchTerms = [
-                ...(interpretedSearch.keywords || []),
-                ...(interpretedSearch.searchTerms || [])
-            ].map(t => t.toLowerCase());
-
-            if (!item || !item.name || !item.description) return false;
-
-            const matchesSearchTerms = allSearchTerms.length > 0 ? allSearchTerms.some(term => 
-                item.name.toLowerCase().includes(term) ||
-                item.description.toLowerCase().includes(term)
-            ) : true;
-            
-            const matchesPrice = interpretedSearch.priceRange
-                ? (item.price >= (interpretedSearch.priceRange.min || 0)) && (item.price <= (interpretedSearch.priceRange.max || Infinity))
-                : true;
-
-            return matchesSearchTerms && matchesPrice;
-        });
-    }
-    return results;
-  }, [menuItems, searchQuery, interpretedSearch]);
-
-
-  if (isOrderPlaced) {
-    return <OrderStatus onNewOrder={handleNewOrder} />;
-  }
-  
-  const renderSkeletons = (count: number, type: 'restaurant' | 'menu') => (
+  const renderSkeletons = (count: number) => (
     Array.from({ length: count }).map((_, i) => (
-      <div key={`skeleton-${type}-${i}`} className="flex flex-col space-y-3">
-        <Skeleton className={`w-full ${type === 'restaurant' ? 'h-[160px]' : 'h-[120px]'} rounded-xl`} />
+      <div key={`skeleton-resto-${i}`} className="flex flex-col space-y-3">
+        <Skeleton className="h-[160px] w-full rounded-xl" />
         <div className="space-y-2">
           <Skeleton className="h-4 w-[250px]" />
           <Skeleton className="h-4 w-[200px]" />
@@ -167,49 +82,62 @@ export default function Home() {
   );
 
   return (
-    <div className="flex flex-col gap-8 md:gap-12">
-      <section>
-          <SearchBar 
-            onSearchChange={setSearchQuery} 
-            onInterpretedSearchChange={setInterpretedSearch}
-          />
+    <div className="flex flex-col gap-12 md:gap-16">
+      
+      {/* Hero Section */}
+      <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-lg">
+        <h1 className="text-4xl md:text-6xl font-headline text-primary">Votre ville, livrée.</h1>
+        <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous. Simple, rapide et délicieux.
+        </p>
+        <div className="mt-8 max-w-xl mx-auto">
+            <SearchBar 
+                onSearchChange={setSearchQuery} 
+                onInterpretedSearchChange={setInterpretedSearch}
+            />
+        </div>
       </section>
 
-      <div>
-        <section className="mt-12 md:mt-16">
+      {/* Categories Section */}
+      <section>
+        <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Explorez par catégories</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {categories.map((category) => (
+                <Card key={category.name} className="flex flex-col items-center justify-center p-6 hover:bg-primary/10 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                    <category.icon className="w-12 h-12 text-primary mb-2"/>
+                    <p className="font-semibold text-lg">{category.name}</p>
+                </Card>
+            ))}
+        </div>
+      </section>
+
+
+      {/* Restaurants Section */}
+       <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants Populaires</h2>
             <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {isLoading ? renderSkeletons(3, 'restaurant') : filteredRestaurants.map(restaurant => (
-              <div key={restaurant.id}>
-                <RestaurantCard restaurant={restaurant} />
-              </div>
+            {isLoading ? renderSkeletons(6) : filteredRestaurants.map(restaurant => (
+              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}
           </div>
         </section>
 
-        <section className="mt-12 md:mt-16">
-           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl md:text-3xl font-headline text-foreground">À la carte</h2>
-             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleGenerateImages} disabled={isGenerating} size="sm">
-                {isGenerating ? <Loader className="animate-spin" /> : <ImageIcon />}
-                <span className="hidden sm:inline-block ml-2">Générer les images</span>
-              </Button>
-              <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-             {isLoading ? renderSkeletons(4, 'menu') : filteredMenuItems.map(item => (
-              <div key={item.id}>
-                <MenuItemCard item={item} />
-              </div>
-            ))}
-          </div>
+        {/* CTA Section */}
+        <section>
+            <Card className="bg-primary text-primary-foreground p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <h2 className="text-3xl font-headline">Vous êtes un restaurateur ?</h2>
+                    <p className="mt-2 max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité. L'inscription est simple et rapide.</p>
+                </div>
+                <Button variant="secondary" size="lg" className="shrink-0" asChild>
+                    <Link href="/login">Rejoindre l'aventure</Link>
+                </Button>
+            </Card>
         </section>
-      </div>
+
     </div>
   );
 }
