@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
+import { OrderStatus } from '@/components/order-status';
+import type { Order } from '@/lib/types';
 
 interface Category {
     name: string;
@@ -32,12 +34,64 @@ export default function Home() {
   
   const { 
     restaurants, 
+    orders,
     isLoading,
   } = useData();
   
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
-  
+  const [activeOrder, setActiveOrder] = React.useState<Order | null>(null);
+  const [showOrderStatus, setShowOrderStatus] = React.useState(false);
+
+
+  // Check for active orders for the current user
+  React.useEffect(() => {
+    if (user && orders.length > 0) {
+      const userOrders = orders
+        .filter(o => o.userId === user.uid)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      const latestActiveOrder = userOrders.find(o => o.status !== 'Livrée' && o.status !== 'Annulée');
+
+      if (latestActiveOrder) {
+        setActiveOrder(latestActiveOrder);
+        setShowOrderStatus(true);
+      } else {
+        setActiveOrder(null);
+        setShowOrderStatus(false);
+      }
+    } else {
+      setActiveOrder(null);
+      setShowOrderStatus(false);
+    }
+  }, [orders, user]);
+
+  // Listen for the custom event to show order status immediately after placing an order
+  React.useEffect(() => {
+    const handlePlaceOrder = () => {
+        // A small delay to allow the new order to be written to the database
+        // and picked up by the realtime listener.
+        setTimeout(() => {
+             if (user && orders.length > 0) {
+                const latestOrder = orders
+                    .filter(o => o.userId === user.uid)
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+                
+                if (latestOrder) {
+                    setActiveOrder(latestOrder);
+                    setShowOrderStatus(true);
+                }
+            }
+        }, 1000);
+    };
+
+    window.addEventListener('place-order', handlePlaceOrder);
+    return () => {
+        window.removeEventListener('place-order', handlePlaceOrder);
+    };
+  }, [orders, user]);
+
+
   const filteredRestaurants = React.useMemo(() => {
     let results = restaurants;
     
@@ -80,6 +134,10 @@ export default function Home() {
       </div>
     ))
   );
+
+  if (showOrderStatus && activeOrder) {
+    return <OrderStatus order={activeOrder} onNewOrder={() => setShowOrderStatus(false)} />;
+  }
 
   return (
     <div className="flex flex-col gap-12 md:gap-16">
@@ -133,7 +191,7 @@ export default function Home() {
                     <p className="mt-2 max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité. L'inscription est simple et rapide.</p>
                 </div>
                 <Button variant="secondary" size="lg" className="shrink-0" asChild>
-                    <Link href="/login">Rejoindre l'aventure</Link>
+                    <Link href="/dashboard/new-restaurant">Rejoindre l'aventure</Link>
                 </Button>
             </Card>
         </section>

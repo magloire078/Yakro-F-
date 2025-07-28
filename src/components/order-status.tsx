@@ -17,39 +17,15 @@ const statusConfig = {
 };
 
 interface OrderStatusProps {
+  order: Order;
   onNewOrder: () => void;
 }
 
-export function OrderStatus({ onNewOrder }: OrderStatusProps) {
-  const { user } = useAuth();
-  const { orders, isLoading } = useData();
-  const [latestOrder, setLatestOrder] = useState<Order | null>(null);
-
-  useEffect(() => {
-    if (user && orders.length > 0) {
-      const userOrders = orders
-        .filter(o => o.userId === user.uid)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      
-      if (userOrders.length > 0) {
-        setLatestOrder(userOrders[0]);
-      }
-    }
-  }, [orders, user]);
-
-  if (isLoading || !latestOrder) {
-    return (
-        <div className="w-full max-w-4xl mx-auto py-12 px-4 flex flex-col items-center justify-center text-center h-full">
-             <Loader className="w-12 h-12 animate-spin text-primary" />
-             <p className="mt-4 text-muted-foreground">Recherche de votre dernière commande...</p>
-        </div>
-    )
-  }
-
-  const currentStatus = statusConfig[latestOrder.status];
-  const isFinished = latestOrder.status === 'Livrée';
+export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
+  const currentStatus = statusConfig[order.status];
+  const isFinished = order.status === 'Livrée';
   const allStatuses = Object.values(statusConfig).filter(s => s.name !== 'Annulée');
-  const statusIndex = allStatuses.findIndex(s => s.name === latestOrder.status);
+  const statusIndex = allStatuses.findIndex(s => s.name === order.status);
 
 
   return (
@@ -64,6 +40,12 @@ export function OrderStatus({ onNewOrder }: OrderStatusProps) {
         </p>
 
         <div className="w-full max-w-md">
+           <div className="relative w-full h-1 bg-muted rounded-full">
+              <div 
+                className="absolute top-0 left-0 h-1 bg-primary rounded-full transition-all duration-500"
+                style={{width: `${(statusIndex / (allStatuses.length - 1)) * 100}%`}}
+              ></div>
+           </div>
            <div className="flex justify-between mt-3">
             {allStatuses.map((status, index) => (
               <div key={status.name} className="flex flex-col items-center">
