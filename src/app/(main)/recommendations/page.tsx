@@ -4,7 +4,7 @@
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useData, useOrders } from '@/contexts/data-context';
+import { useData } from '@/contexts/data-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Recommendations as RecommendationsComponent, RecommendationsSkeleton } from '@/components/recommendations';
 import { Loader, UserX } from 'lucide-react';
@@ -47,7 +47,6 @@ const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]):
 export default function RecommendationsPage() {
     const { user, loading: authLoading } = useAuth();
     const { orders, restaurants, isLoading: dataLoading } = useData();
-    useOrders();
 
     const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
     const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);

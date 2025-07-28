@@ -12,7 +12,7 @@ import { OrderStatus } from '@/components/order-status';
 import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { useToast } from '@/hooks/use-toast';
-import { useData, useOrders } from '@/contexts/data-context';
+import { useData } from '@/contexts/data-context';
 import type { Order, Restaurant } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
@@ -68,9 +68,6 @@ export default function Home() {
     isLoading,
   } = useData();
   
-  // Start listening for order updates if the user is logged in
-  useOrders();
-
   const [isOrderPlaced, setIsOrderPlaced] = React.useState(false);
 
   const { toast } = useToast();
@@ -277,5 +274,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

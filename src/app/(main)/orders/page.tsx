@@ -4,7 +4,7 @@
 
 import * as React from 'react';
 import { OrderHistoryItem } from "@/components/order-history-item";
-import { useData, useOrders } from "@/contexts/data-context";
+import { useData } from "@/contexts/data-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from 'next/navigation';
 import { Loader, History } from 'lucide-react';
@@ -16,9 +16,6 @@ export default function OrdersPage() {
     const { orders, isLoading } = useData();
     const router = useRouter();
     
-    // Start listening for order updates
-    useOrders();
-
     React.useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
