@@ -29,7 +29,7 @@ export default function DeliveryPage() {
     }, [user, authLoading, router]);
 
     const availableDeliveries = React.useMemo(() => {
-        return orders.filter(o => o.status === 'Placée');
+        return orders.filter(o => o.status === 'En Préparation');
     }, [orders]);
     
     // Check if the current user has an active delivery
@@ -174,7 +174,7 @@ export default function DeliveryPage() {
                     <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
                         <Bike className="w-16 h-16"/>
                         <p className="text-lg font-medium">Aucune course disponible pour le moment</p>
-                        <p>Revenez plus tard pour de nouvelles opportunités de livraison.</p>
+                        <p>Les commandes prêtes à être livrées apparaîtront ici.</p>
                     </div>
                 )}
             </div>

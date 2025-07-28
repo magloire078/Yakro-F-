@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles } from 'lucide-react';
+import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -70,6 +69,12 @@ export function Sidebar() {
                 <Link href="/dashboard">
                   <ChefHat className="mr-2 h-5 w-5" />
                   Profil Restaurateur
+                </Link>
+              </Button>
+              <Button variant="ghost" className="justify-start text-lg" asChild>
+                <Link href="/dashboard/orders">
+                  <ClipboardList className="mr-2 h-5 w-5" />
+                  Gérer les commandes
                 </Link>
               </Button>
                <Button variant="ghost" className="justify-start text-lg" asChild>

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -10,6 +9,7 @@ import { create } from 'zustand';
 import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
+import { SUPER_USER_EMAIL } from '@/lib/types';
 
 interface DataState {
   restaurants: Restaurant[];
@@ -170,7 +170,7 @@ function useRealtimeData() {
         // Restaurants Listener
         const unsubRestaurants = onSnapshot(collection(db, "restaurants"), (snapshot) => {
             const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-            useDataStore.setState({ restaurants: restaurantList });
+            useDataStore.setState({ restaurants: restaurantList, isLoading: false });
         }, (error) => {
              console.error("Error on restaurants snapshot listener:", error);
         });
@@ -183,18 +183,13 @@ function useRealtimeData() {
              console.error("Error on menuItems snapshot listener:", error);
         });
 
-        // Orders Listener (remains user-dependent)
+        // Orders Listener
         let unsubOrders: Unsubscribe | null = null;
         if (user) {
             const ordersCollection = collection(db, 'orders');
             
-            // This query combines all necessary order fetching logic
-            const q = query(ordersCollection, 
-                where("userId", "==", user.uid)
-            );
-
-            let orderUnsubscribes: Unsubscribe[] = [];
             const currentOrdersRef = new Map<string, Order>();
+            let orderUnsubscribes: Unsubscribe[] = [];
 
             const setupSubscription = (q: Query<DocumentData, DocumentData>) => {
                const unsub = onSnapshot(q, (snapshot) => {
@@ -202,7 +197,10 @@ function useRealtimeData() {
                         if (change.type === 'removed') {
                             currentOrdersRef.delete(change.doc.id);
                         } else {
-                            currentOrdersRef.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
+                            const orderData = { id: change.doc.id, ...change.doc.data() } as Order;
+                             // For super user, avoid overwriting if a more specific query already added the doc
+                            if(user.email === SUPER_USER_EMAIL && currentOrdersRef.has(orderData.id) && q.type === 'collection') return;
+                            currentOrdersRef.set(change.doc.id, orderData);
                         }
                     });
                     const sortedOrders = Array.from(currentOrdersRef.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -213,15 +211,18 @@ function useRealtimeData() {
                 orderUnsubscribes.push(unsub);
             }
 
-            // Queries for a logged-in user
+            // Regular user sees only their orders
             setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
-            setupSubscription(query(ordersCollection, where("delivererId", "==", user.uid)));
-            setupSubscription(query(ordersCollection, where("status", "==", "Placée")));
+            
+            // Super user sees all active orders for all users
+            if(user.email === SUPER_USER_EMAIL) {
+                setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation", "En Route"])));
+            }
 
             unsubOrders = () => orderUnsubscribes.forEach(unsub => unsub());
 
         } else {
-            useDataStore.setState({ orders: [] });
+            useDataStore.setState({ orders: [] }); // Clear orders on logout
         }
 
         return () => {
@@ -232,6 +233,8 @@ function useRealtimeData() {
     }, [user]);
 }
 
-
 export const useData = useDataStore;
-export const useOrders = () => {}; // This hook is now obsolete.
+
+// This hook is now obsolete and can be removed, but we keep it for compatibility with existing components
+// until they are all verified to not use it.
+export const useOrders = () => {};
