@@ -7,56 +7,18 @@ import { UtensilsCrossed, Image as ImageIcon, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
 import { MenuItemCard } from '@/components/menu-item-card';
-import { Recommendations, RecommendationsSkeleton } from '@/components/recommendations';
 import { OrderStatus } from '@/components/order-status';
 import { useCart } from '@/contexts/cart-context';
-import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
-import type { Order, Restaurant } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 
 
-// Helper function to generate user history summary
-const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]): string => {
-  if (orders.length === 0) {
-    return "L'utilisateur n'a pas encore d'historique de commandes.";
-  }
-  const cuisineCount: { [key: string]: number } = {};
-  const itemCount: { [key: string]: number } = {};
-  let totalSpent = 0;
-
-  orders.forEach(order => {
-    totalSpent += order.total;
-    const restaurant = restaurants.find(r => r.id === order.restaurantId);
-    if (restaurant) {
-      cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
-    }
-    order.items.forEach(item => {
-      itemCount[item.name] = (itemCount[item.name] || 0) + item.quantity;
-    });
-  });
-  
-  const favoriteCuisine = Object.keys(cuisineCount).length > 0 
-    ? Object.keys(cuisineCount).reduce((a, b) => cuisineCount[a] > cuisineCount[b] ? a : b, '')
-    : 'inconnue';
-  
-  const favoriteItems = Object.entries(itemCount)
-    .sort((a,b) => b[1] - a[1])
-    .slice(0,3)
-    .map(item => item[0]);
-
-  return `L'utilisateur a passé ${orders.length} commandes pour un total de ${totalSpent.toLocaleString('fr-FR')} FCFA. Sa cuisine préférée semble être ${favoriteCuisine}. Il commande fréquemment les plats suivants : ${favoriteItems.join(', ')}.`;
-}
-
-
 export default function Home() {
   const { clearCart } = useCart();
-  const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
-  const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
   const { user } = useAuth();
   
   const { 
@@ -74,11 +36,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
   
-  const userDeliveredOrders = React.useMemo(() => {
-    if (!user) return [];
-    return orders.filter(o => o.userId === user.uid && o.status === 'Livrée');
-  }, [orders, user]);
-
   // Check for active orders for the current user
   React.useEffect(() => {
     if (user && orders.length > 0) {
@@ -93,28 +50,6 @@ export default function Home() {
     }
   }, [orders, user]);
 
-
-  React.useEffect(() => {
-    const fetchRecommendations = async () => {
-        if (isLoading) return; // Wait for initial data to be loaded
-        setLoadingRecommendations(true);
-        const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
-        try {
-            const data = await getPersonalizedRecommendations({
-                userHistory: userHistorySummary,
-                currentLocation: 'Abidjan, Côte d\'Ivoire',
-                timeOfDay: new Date().getHours() < 12 ? 'Matin' : new Date().getHours() < 18 ? 'Après-midi' : 'Soir',
-            });
-            setRecommendations(data);
-        } catch (e) {
-            console.error("Error fetching recommendations:", e);
-            setRecommendations(null);
-        } finally {
-            setLoadingRecommendations(false);
-        }
-    };
-    fetchRecommendations();
-  }, [userDeliveredOrders, restaurants, isLoading]);
   
   React.useEffect(() => {
     // This is how we know an order was just placed from the cart
@@ -197,6 +132,8 @@ export default function Home() {
                 ...(interpretedSearch.searchTerms || [])
             ].map(t => t.toLowerCase());
 
+            if (!item || !item.name || !item.description) return false;
+
             const matchesSearchTerms = allSearchTerms.length > 0 ? allSearchTerms.some(term => 
                 item.name.toLowerCase().includes(term) ||
                 item.description.toLowerCase().includes(term)
@@ -239,8 +176,6 @@ export default function Home() {
       </section>
 
       <div>
-        {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} />}
-
         <section className="mt-12 md:mt-16">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants Populaires</h2>
