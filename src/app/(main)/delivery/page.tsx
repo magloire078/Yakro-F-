@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData, useOrders } from '@/contexts/data-context';
-import type { Order, SUPER_USER_EMAIL } from '@/lib/types';
+import { type Order, SUPER_USER_EMAIL } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 

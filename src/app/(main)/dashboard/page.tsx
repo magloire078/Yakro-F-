@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
 import { Loader, Wand2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { MenuItem, Restaurant, SUPER_USER_EMAIL } from '@/lib/types';
+import { type MenuItem, type Restaurant, SUPER_USER_EMAIL } from '@/lib/types';
 import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useAuth } from '@/contexts/auth-context';
