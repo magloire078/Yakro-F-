@@ -107,4 +107,11 @@ const generateVideoFlow = ai.defineFlow(
       model: googleAI.model('veo-2.0-generate-001'),
       prompt,
       config: {
-        durationSeconds: 5
+        durationSeconds: 5,
+        aspectRatio: '16:9',
+      },
+    });
+
+    return { operation };
+  }
+);

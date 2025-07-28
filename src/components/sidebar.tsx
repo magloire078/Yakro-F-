@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -7,19 +6,27 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User } from 'lucide-react';
+import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 export function Sidebar() {
   const { cartCount } = useCart();
-  const { user, loading, activeRole } = useAuth();
+  const { user, loading, activeRole, setActiveRole } = useAuth();
   const router = useRouter();
   
   const handleSignOut = async () => {
+    sessionStorage.removeItem('activeRole');
     await signOut(auth);
     router.push('/login');
   }
@@ -66,7 +73,7 @@ export function Sidebar() {
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/dashboard">
                   <ChefHat className="mr-2 h-5 w-5" />
-                  Dashboard
+                  Création de plat
                 </Link>
               </Button>
               <Button variant="ghost" className="justify-start text-lg" asChild>
