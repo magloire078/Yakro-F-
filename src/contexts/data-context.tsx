@@ -210,10 +210,12 @@ function useRealtimeData() {
                 orderUnsubscribes.push(unsub);
             }
 
-            // Any user can see their own orders
+            // Always fetch orders for the logged-in user, regardless of role.
+            // This is useful for history etc.
             setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
             
-            // If the user is a restaurateur or livreur, they can see all active orders.
+            // If the user is a restaurateur or livreur, they also need to see all active orders
+            // to be able to manage them.
             if (activeRole === 'restaurateur' || activeRole === 'livreur') {
                 setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation", "En Route"])));
             }
