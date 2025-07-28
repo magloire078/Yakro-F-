@@ -15,10 +15,10 @@ interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
   orders: Order[];
+  users: DocumentData[];
   isGenerating: boolean;
   isLoading: boolean;
   fetchData: () => Promise<void>;
-  setOrders: (orders: Order[]) => void;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
@@ -31,13 +31,9 @@ const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
+  users: [],
   isGenerating: false,
   isLoading: true,
-  setOrders: (orders: Order[]) => {
-      const allOrders = [...get().orders, ...orders];
-      const uniqueOrders = Array.from(new Map(allOrders.map(o => [o.id, o])).values());
-      set({ orders: uniqueOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
-  },
 
   fetchData: async () => {
     // Prevent re-fetching if data is already loaded.
@@ -61,7 +57,7 @@ const useDataStore = create<DataState>((set, get) => ({
         restaurantSnapshot = await getDocs(restaurantsCollection);
       }
       const restaurantList = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-      set({ restaurants: restaurantList });
+      
 
       let menuItemSnapshot = await getDocs(menuItemsCollection);
       if (menuItemSnapshot.empty && restaurantList.length > 0) {
@@ -75,8 +71,7 @@ const useDataStore = create<DataState>((set, get) => ({
         await batch.commit();
         menuItemSnapshot = await getDocs(menuItemsCollection);
       }
-      const menuList = menuItemSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
-      set({ menuItems: menuList });
+      
 
     } catch (error) {
       console.error("Error fetching public data from Firestore: ", error);
@@ -86,12 +81,10 @@ const useDataStore = create<DataState>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
-  addMenuItem: async (item) => {
+  
+   addMenuItem: async (item) => {
     try {
-      const docRef = await addDoc(collection(db, "menuItems"), item);
-      const newItem = { id: docRef.id, ...item } as MenuItem;
-      set(state => ({ menuItems: [...state.menuItems, newItem] }));
+      await addDoc(collection(db, "menuItems"), item);
     } catch (e) {
       console.error("Error adding menu item: ", e);
       throw e;
@@ -124,35 +117,28 @@ const useDataStore = create<DataState>((set, get) => ({
   generateAllImages: async () => {
     set({ isGenerating: true });
     
-    // This function will now update Firestore as well as the local state.
     const batch = writeBatch(db);
     try {
-      const updatedMenuItems = await Promise.all(
-        get().menuItems.map(async (item) => {
-          if (item.image.startsWith('https://placehold.co')) {
-            const { imageUrl } = await generateImage({ prompt: item.imageHint || item.name });
-            const itemRef = doc(db, 'menuItems', item.id);
-            batch.update(itemRef, { image: imageUrl });
-            return { ...item, image: imageUrl };
-          }
-          return item;
+      const menuItemsToUpdate = get().menuItems.filter(item => item.image.startsWith('https://placehold.co'));
+      const restaurantsToUpdate = get().restaurants.filter(resto => resto.image.startsWith('https://placehold.co'));
+
+      await Promise.all(
+        menuItemsToUpdate.map(async (item) => {
+          const { imageUrl } = await generateImage({ prompt: item.imageHint || item.name });
+          const itemRef = doc(db, 'menuItems', item.id);
+          batch.update(itemRef, { image: imageUrl });
         })
       );
-
-      const updatedRestaurants = await Promise.all(
-        get().restaurants.map(async (resto) => {
-          if (resto.image.startsWith('https://placehold.co')) {
-            const { imageUrl } = await generateImage({ prompt: resto.imageHint || resto.cuisine });
-            const restoRef = doc(db, 'restaurants', resto.id);
-            batch.update(restoRef, { image: imageUrl });
-            return { ...resto, image: imageUrl };
-          }
-          return resto;
+      
+      await Promise.all(
+         restaurantsToUpdate.map(async (resto) => {
+          const { imageUrl } = await generateImage({ prompt: resto.imageHint || resto.cuisine });
+          const restoRef = doc(db, 'restaurants', resto.id);
+          batch.update(restoRef, { image: imageUrl });
         })
       );
       
       await batch.commit();
-      set({ menuItems: updatedMenuItems, restaurants: updatedRestaurants });
 
     } catch(error) {
         console.error("Error generating or updating images in Firestore:", error);
@@ -168,64 +154,94 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
-
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const store = useDataStore();
+  const { fetchData } = useDataStore();
+  
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useRealtimeData();
+
   return <>{children}</>;
 };
 
-export function useOrders() {
-  const { user } = useAuth();
-  const setOrders = useDataStore(state => state.setOrders);
-  const currentOrdersRef = React.useRef<Map<string, Order>>(new Map());
+function useRealtimeData() {
+    const { user } = useAuth();
 
-  React.useEffect(() => {
-    if (!user) {
-      setOrders([]);
-      return;
-    }
-
-    const ordersCollection = collection(db, 'orders');
-    let unsubscribes: Unsubscribe[] = [];
-
-    const setupSubscription = (q: Query<DocumentData, DocumentData>, source: string) => {
-       const unsub = onSnapshot(q, (snapshot) => {
-            let changed = false;
-            snapshot.docChanges().forEach((change) => {
-                changed = true;
-                if (change.type === 'removed') {
-                    currentOrdersRef.current.delete(change.doc.id);
-                } else {
-                    currentOrdersRef.current.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
-                }
-            });
-            if(changed) {
-                const sortedOrders = Array.from(currentOrdersRef.current.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                setOrders(sortedOrders);
-            }
-        }, (error) => {
-            console.error(`Error on snapshot listener for ${source}:`, error);
+    React.useEffect(() => {
+        // Restaurants Listener
+        const unsubRestaurants = onSnapshot(collection(db, "restaurants"), (snapshot) => {
+            const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
+            useDataStore.setState({ restaurants: restaurantList });
         });
-        unsubscribes.push(unsub);
-    }
 
-    // Queries for a logged-in user
-    const customerQuery = query(ordersCollection, where("userId", "==", user.uid));
-    setupSubscription(customerQuery, 'customer');
+        // Menu Items Listener
+        const unsubMenuItems = onSnapshot(collection(db, "menuItems"), (snapshot) => {
+            const menuList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
+            useDataStore.setState({ menuItems: menuList });
+        });
 
-    const delivererQuery = query(ordersCollection, where("delivererId", "==", user.uid));
-    setupSubscription(delivererQuery, 'deliverer');
+        // Users Listener
+        const unsubUsers = onSnapshot(collection(db, "users"), (snapshot) => {
+            const userList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            useDataStore.setState({ users: userList });
+        });
 
-    const availableDeliveriesQuery = query(ordersCollection, where("status", "==", "Placée"));
-    setupSubscription(availableDeliveriesQuery, 'available');
 
-    return () => {
-        unsubscribes.forEach(unsub => unsub());
-    }; 
-  }, [user, setOrders]);
+        // Orders Listener (remains user-dependent)
+        let unsubOrders: Unsubscribe | null = null;
+        if (user) {
+            const ordersCollection = collection(db, 'orders');
+            
+            // This query combines all necessary order fetching logic
+            const q = query(ordersCollection, 
+                where("userId", "==", user.uid)
+                // We can't do an OR query for delivererId and status easily, 
+                // so we will have to listen to multiple queries or fetch them separately.
+                // For simplicity, we keep the multiple listeners approach for orders.
+            );
+
+            let orderUnsubscribes: Unsubscribe[] = [];
+            const currentOrdersRef = new Map<string, Order>();
+
+            const setupSubscription = (q: Query<DocumentData, DocumentData>) => {
+               const unsub = onSnapshot(q, (snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'removed') {
+                            currentOrdersRef.delete(change.doc.id);
+                        } else {
+                            currentOrdersRef.set(change.doc.id, { id: change.doc.id, ...change.doc.data() } as Order);
+                        }
+                    });
+                    const sortedOrders = Array.from(currentOrdersRef.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    useDataStore.setState({ orders: sortedOrders });
+                }, (error) => {
+                    console.error(`Error on snapshot listener:`, error);
+                });
+                orderUnsubscribes.push(unsub);
+            }
+
+            // Queries for a logged-in user
+            setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
+            setupSubscription(query(ordersCollection, where("delivererId", "==", user.uid)));
+            setupSubscription(query(ordersCollection, where("status", "==", "Placée")));
+
+            unsubOrders = () => orderUnsubscribes.forEach(unsub => unsub());
+
+        } else {
+            useDataStore.setState({ orders: [] });
+        }
+
+        return () => {
+            unsubRestaurants();
+            unsubMenuItems();
+            unsubUsers();
+            if (unsubOrders) unsubOrders();
+        }; 
+    }, [user]);
 }
 
 
 export const useData = useDataStore;
-
-export const getRestaurantsForHistory = () => useDataStore.getState().restaurants;
+export const useOrders = () => {}; // This hook is now obsolete.

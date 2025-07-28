@@ -10,9 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+
 
 const userAuthSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse e-mail valide.' }),
@@ -38,7 +40,16 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
 
     if (mode === 'signup') {
       try {
-        await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const user = userCredential.user;
+        
+        // Create a user document in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+            email: user.email,
+            createdAt: serverTimestamp(),
+            role: 'customer' // Default role
+        });
+        
         toast({
           title: "Compte créé avec succès",
           description: "Bienvenue sur Yakro Go ! Veuillez choisir un profil.",
