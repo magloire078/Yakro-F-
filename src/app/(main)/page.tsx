@@ -65,7 +65,7 @@ export default function Home() {
             return matchesCuisine && matchesRating && matchesDeliveryTime;
         });
     }
-    return results.slice(0, 6); // Limiter à 6 restaurants
+    return results;
   }, [restaurants, searchQuery, interpretedSearch]);
 
 
@@ -100,7 +100,7 @@ export default function Home() {
 
       {/* Categories Section */}
       <section>
-        <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Explorez par catégories</h2>
+        <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Explorer par catégories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {categories.map((category) => (
                 <Card key={category.name} className="flex flex-col items-center justify-center p-6 hover:bg-primary/10 hover:shadow-lg transition-all duration-300 cursor-pointer">

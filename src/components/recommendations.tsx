@@ -51,7 +51,7 @@ export function Recommendations({ recommendationsData, isCarousel = true }: Reco
     }
   };
   
-  const RecommendationCard = ({ rec, index }: { rec: any, index: number}) => {
+  const RecommendationCard = ({ rec }: { rec: any}) => {
     const menuItem = menuItems.find(item => item && item.name && item.name.toLowerCase() === rec.item.toLowerCase());
     const imageSrc = menuItem ? getMenuItem(menuItem.id)?.image : `https://placehold.co/600x400`;
     
@@ -98,7 +98,7 @@ export function Recommendations({ recommendationsData, isCarousel = true }: Reco
               {recommendationsData.recommendations.map((rec, index) => (
                   <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                     <div className="p-1 h-full">
-                       <RecommendationCard rec={rec} index={index} />
+                       <RecommendationCard rec={rec} />
                     </div>
                   </CarouselItem>
                 ))}
@@ -113,7 +113,7 @@ export function Recommendations({ recommendationsData, isCarousel = true }: Reco
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {recommendationsData.recommendations.map((rec, index) => (
-            <RecommendationCard key={index} rec={rec} index={index} />
+            <RecommendationCard key={index} rec={rec} />
         ))}
     </div>
   )
