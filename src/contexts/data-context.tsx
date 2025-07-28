@@ -163,7 +163,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 function useRealtimeData() {
-    const { user } = useAuth();
+    const { user, activeRole } = useAuth();
 
     React.useEffect(() => {
         // Restaurants Listener
@@ -212,8 +212,10 @@ function useRealtimeData() {
             // Any user can see their own orders
             setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
             
-            // All users can see active orders for the restaurateur/delivery views
-            setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation", "En Route"])));
+            // If the user is a restaurateur or livreur, they can see all active orders.
+            if (activeRole === 'restaurateur' || activeRole === 'livreur') {
+                setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation", "En Route"])));
+            }
 
             unsubOrders = () => orderUnsubscribes.forEach(unsub => unsub());
 
@@ -226,11 +228,7 @@ function useRealtimeData() {
             unsubMenuItems();
             if (unsubOrders) unsubOrders();
         }; 
-    }, [user]);
+    }, [user, activeRole]);
 }
 
 export const useData = useDataStore;
-
-// This hook is now obsolete and can be removed, but we keep it for compatibility with existing components
-// until they are all verified to not use it.
-export const useOrders = () => {};

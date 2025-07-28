@@ -52,7 +52,6 @@ export interface UserProfile {
     uid: string;
     email: string;
     createdAt: any; // Firestore Timestamp
-    role: 'customer' | 'restaurateur' | 'livreur' | 'admin';
 }
 
 export type UserRole = 'customer' | 'restaurateur' | 'livreur';

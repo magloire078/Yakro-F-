@@ -10,16 +10,24 @@ import type { UserRole } from '@/lib/types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  activeRole: UserRole | null;
-  setActiveRole: (role: UserRole | null) => void;
+  activeRole: UserRole;
+  setActiveRole: (role: UserRole) => void;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
+const getInitialRole = (): UserRole => {
+    if (typeof window === 'undefined') {
+        return 'customer';
+    }
+    return (sessionStorage.getItem('activeRole') as UserRole) || 'customer';
+};
+
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [activeRole, setActiveRoleState] = React.useState<UserRole | null>(null);
+  const [activeRole, setActiveRoleState] = React.useState<UserRole>(getInitialRole);
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -27,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!user) {
           // Clear role on logout
           sessionStorage.removeItem('activeRole');
-          setActiveRoleState(null);
+          setActiveRoleState('customer');
       }
       setLoading(false);
     });
@@ -35,22 +43,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  React.useEffect(() => {
-    // On initial load, try to get the role from session storage
-    const storedRole = sessionStorage.getItem('activeRole') as UserRole | null;
-    if (storedRole) {
-      setActiveRoleState(storedRole);
-    } else {
-      setActiveRoleState('customer'); // Default to customer
-    }
-  }, []);
-  
-  const setActiveRole = (role: UserRole | null) => {
-      if (role) {
-        sessionStorage.setItem('activeRole', role);
-      } else {
-        sessionStorage.removeItem('activeRole');
-      }
+  const setActiveRole = (role: UserRole) => {
+      sessionStorage.setItem('activeRole', role);
       setActiveRoleState(role);
   }
 
