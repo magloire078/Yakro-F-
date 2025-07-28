@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -9,7 +8,7 @@ import { Loader, MapPin, Package, Phone, Bike, Home, ChefHat } from 'lucide-reac
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useData, useOrders } from '@/contexts/data-context';
+import { useData } from '@/contexts/data-context';
 import { type Order, SUPER_USER_EMAIL } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,9 +22,6 @@ export default function DeliveryPage() {
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
     const [isCompleting, setIsCompleting] = React.useState(false);
     
-    // Start listening for order updates
-    useOrders();
-
     React.useEffect(() => {
         if (!authLoading && (!user || user.email !== SUPER_USER_EMAIL)) {
             router.push('/');
@@ -86,7 +82,7 @@ export default function DeliveryPage() {
         }
     }
 
-    if (authLoading || !user || isLoading || user.email !== SUPER_USER_EMAIL) {
+    if (authLoading || isLoading || !user || user.email !== SUPER_USER_EMAIL) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />

@@ -14,6 +14,7 @@ import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { SUPER_USER_EMAIL } from '@/lib/types';
 
 
 const userAuthSchema = z.object({
@@ -47,7 +48,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
         await setDoc(doc(db, "users", user.uid), {
             email: user.email,
             createdAt: serverTimestamp(),
-            role: 'customer' // Default role
+            role: user.email === SUPER_USER_EMAIL ? 'admin' : 'customer'
         });
         
         toast({

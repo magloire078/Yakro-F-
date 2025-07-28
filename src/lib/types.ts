@@ -47,4 +47,11 @@ export interface Review {
   comment: string;
 }
 
+export interface UserProfile {
+    uid: string;
+    email: string;
+    createdAt: any; // Firestore Timestamp
+    role: 'customer' | 'restaurateur' | 'livreur' | 'admin';
+}
+
 export const SUPER_USER_EMAIL = 'magloire078@gmail.com';
