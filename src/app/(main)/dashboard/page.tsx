@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
 import { Loader, Wand2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { MenuItem, Restaurant } from '@/lib/types';
+import type { MenuItem, Restaurant, SUPER_USER_EMAIL } from '@/lib/types';
 import { generateMenuItem } from '@/ai/flows/generate-menu-item-flow';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useAuth } from '@/contexts/auth-context';
@@ -32,17 +32,17 @@ export default function DashboardPage() {
     const router = useRouter();
 
     React.useEffect(() => {
+        if (!authLoading && (!user || user.email !== SUPER_USER_EMAIL)) {
+            router.push('/');
+        }
+    }, [user, authLoading, router]);
+
+    React.useEffect(() => {
         if (!restaurants.length) return;
         if (!selectedRestaurant) {
             setSelectedRestaurant(restaurants[0]);
         }
     }, [restaurants, selectedRestaurant]);
-
-    React.useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        }
-    }, [user, authLoading, router]);
 
     const handleGenerateItem = async () => {
         if (!selectedRestaurant || !description) {
@@ -128,7 +128,7 @@ export default function DashboardPage() {
         }
     };
 
-    if (authLoading || !user) {
+    if (authLoading || !user || user.email !== SUPER_USER_EMAIL) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData, useOrders } from '@/contexts/data-context';
-import type { Order } from '@/lib/types';
+import type { Order, SUPER_USER_EMAIL } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -27,8 +27,8 @@ export default function DeliveryPage() {
     useOrders();
 
     React.useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
+        if (!authLoading && (!user || user.email !== SUPER_USER_EMAIL)) {
+            router.push('/');
         }
     }, [user, authLoading, router]);
 
@@ -86,7 +86,7 @@ export default function DeliveryPage() {
         }
     }
 
-    if (authLoading || !user || isLoading) {
+    if (authLoading || !user || isLoading || user.email !== SUPER_USER_EMAIL) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />

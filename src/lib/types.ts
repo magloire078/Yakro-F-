@@ -46,3 +46,5 @@ export interface Review {
   rating: number;
   comment: string;
 }
+
+export const SUPER_USER_EMAIL = 'magloire078@gmail.com';

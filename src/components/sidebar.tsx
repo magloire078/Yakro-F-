@@ -12,6 +12,7 @@ import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { SUPER_USER_EMAIL } from '@/lib/types';
 
 
 export function Sidebar() {
@@ -28,6 +29,8 @@ export function Sidebar() {
     if (!email) return '?';
     return email.substring(0, 2).toUpperCase();
   }
+
+  const isSuperUser = user?.email === SUPER_USER_EMAIL;
 
   return (
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
@@ -54,7 +57,7 @@ export function Sidebar() {
               Avis
             </Link>
           </Button>
-          {(user) && (
+          {(isSuperUser) && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/dashboard">
@@ -103,8 +106,8 @@ export function Sidebar() {
                 </Button>
             </div>
            )}
-            <div className="hidden md:block">
-               <CartSheet>
+           <div className="hidden md:block">
+              <CartSheet>
                 <Button variant="default" className="w-full text-lg py-6">
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Panier
@@ -112,7 +115,7 @@ export function Sidebar() {
                     <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">{cartCount}</span>
                   )}
                 </Button>
-               </CartSheet>
+              </CartSheet>
             </div>
         </div>
     </aside>
