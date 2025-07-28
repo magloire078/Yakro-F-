@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, MapPin, Package, Phone, Bike, Home, ChefHat } from 'lucide-react';
+import { Loader, Phone, Bike, Home, ChefHat } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -128,7 +128,6 @@ export default function DeliveryPage() {
                         </div>
                         <div className="space-y-3">
                              <div className="flex items-center gap-4">
-                                <Package className="text-muted-foreground"/>
                                 <p>Contenu : {currentDelivery.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</p>
                             </div>
                              <div className="flex items-center gap-4">
@@ -164,7 +163,6 @@ export default function DeliveryPage() {
                            <div className="md:col-span-1 flex flex-row md:flex-col items-start md:items-center justify-between gap-2 text-sm">
                                 <Badge variant="secondary" className="text-base font-bold">{delivery.total.toLocaleString('fr-FR')} FCFA</Badge>
                                 <div className="flex items-center gap-2">
-                                    <Package className="w-4 h-4 text-muted-foreground"/>
                                     <span>{delivery.items.length} article(s)</span>
                                 </div>
                            </div>

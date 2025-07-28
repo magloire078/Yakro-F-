@@ -3,10 +3,8 @@
 
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order } from '@/lib/types';
-import { generateImage } from '@/ai/flows/generate-image-flow';
-import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import { create } from 'zustand';
-import { collection, getDocs, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
@@ -21,7 +19,6 @@ interface DataState {
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
-  generateAllImages: () => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
 }
@@ -34,21 +31,11 @@ const useDataStore = create<DataState>((set, get) => ({
   isLoading: true,
 
   fetchData: async () => {
-    // Prevent re-fetching if data is already loaded.
-    if (!get().isLoading && get().restaurants.length > 0) {
-      return;
-    }
-    set({ isLoading: true });
+    if (!get().isLoading) return;
     try {
-      // This function now primarily serves to ensure a connection is established
-      // and to satisfy the initial loading state. The actual data population
-      // is handled by the realtime listeners.
       await getDocs(collection(db, 'restaurants'));
     } catch (error) {
       console.error("Error connecting to Firestore: ", error);
-    } finally {
-      // The loading state will be properly set to false by the realtime listeners
-      // once they fetch the initial data (or confirm it's empty).
     }
   },
   
@@ -93,38 +80,6 @@ const useDataStore = create<DataState>((set, get) => ({
     }
   },
 
-  generateAllImages: async () => {
-    set({ isGenerating: true });
-    
-    const batch = writeBatch(db);
-    try {
-      const menuItemsToUpdate = get().menuItems.filter(item => item.image.startsWith('https://placehold.co'));
-      const restaurantsToUpdate = get().restaurants.filter(resto => resto.image.startsWith('https://placehold.co'));
-
-      await Promise.all(
-        menuItemsToUpdate.map(async (item) => {
-          const { imageUrl } = await generateImage({ prompt: item.imageHint || item.name });
-          const itemRef = doc(db, 'menuItems', item.id);
-          batch.update(itemRef, { image: imageUrl });
-        })
-      );
-      
-      await Promise.all(
-         restaurantsToUpdate.map(async (resto) => {
-          const { imageUrl } = await generateImage({ prompt: resto.imageHint || resto.cuisine });
-          const restoRef = doc(db, 'restaurants', resto.id);
-          batch.update(restoRef, { image: imageUrl });
-        })
-      );
-      
-      await batch.commit();
-
-    } catch(error) {
-        console.error("Error generating or updating images in Firestore:", error);
-    } finally {
-      set({ isGenerating: false });
-    }
-  },
   getMenuItem: (id: string) => {
     return get().menuItems.find(i => i.id === id);
   },
@@ -149,6 +104,8 @@ function useRealtimeData() {
     const { user, activeRole } = useAuth();
 
     React.useEffect(() => {
+        useDataStore.setState({ isLoading: true });
+
         // Restaurants Listener
         const unsubRestaurants = onSnapshot(collection(db, "restaurants"), (snapshot) => {
             const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
@@ -177,11 +134,10 @@ function useRealtimeData() {
             const setupSubscription = (q: Query<DocumentData, DocumentData>) => {
                const unsub = onSnapshot(q, (snapshot) => {
                     snapshot.docChanges().forEach((change) => {
+                        const orderData = { id: change.doc.id, ...change.doc.data() } as Order;
                         if (change.type === 'removed') {
                             currentOrdersRef.delete(change.doc.id);
                         } else {
-                            const orderData = { id: change.doc.id, ...change.doc.data() } as Order;
-                            // This ensures we don't have duplicate orders from multiple queries
                             currentOrdersRef.set(change.doc.id, orderData);
                         }
                     });
@@ -194,15 +150,20 @@ function useRealtimeData() {
             }
 
             // Always fetch orders for the logged-in user, regardless of role.
-            // This is useful for history etc.
             setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
             
-            // If the user is a restaurateur or livreur, they also need to see all active orders
-            // to be able to manage them.
-            if (activeRole === 'restaurateur' || activeRole === 'livreur') {
-                setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation", "En Route"])));
+            // If restaurateur, also get all orders placed at their restaurants.
+            // Note: This assumes the restaurateur manages ALL restaurants. 
+            // A real app would add a `ownerId` to restaurants.
+            if (activeRole === 'restaurateur') {
+                 setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation"])));
             }
 
+            // If livreur, get all orders ready for pickup.
+            if (activeRole === 'livreur') {
+                setupSubscription(query(ordersCollection, where("status", "==", "En Préparation")));
+            }
+            
             unsubOrders = () => orderUnsubscribes.forEach(unsub => unsub());
 
         } else {

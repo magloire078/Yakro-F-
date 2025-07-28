@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, Package, Clock, User, CheckCircle } from 'lucide-react';
+import { Loader, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,14 +33,18 @@ export default function DashboardOrdersPage() {
         }
     }, [user, authLoading, router, activeRole, toast]);
 
-    const activeOrders = React.useMemo(() => {
+    const newOrders = React.useMemo(() => {
         return orders
-            .filter(o => o.status === 'Placée' || o.status === 'En Préparation')
+            .filter(o => o.status === 'Placée')
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [orders]);
     
-    const newOrders = activeOrders.filter(o => o.status === 'Placée');
-    const preparingOrders = activeOrders.filter(o => o.status === 'En Préparation');
+    const preparingOrders = React.useMemo(() => {
+        return orders
+            .filter(o => o.status === 'En Préparation')
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [orders]);
+
 
     const handleAcceptOrder = async (orderId: string) => {
         setIsUpdating(orderId);
