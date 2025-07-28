@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
