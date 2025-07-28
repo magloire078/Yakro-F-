@@ -12,8 +12,8 @@ import { OrderStatus } from '@/components/order-status';
 import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { useToast } from '@/hooks/use-toast';
-import { useData, getRestaurantsForHistory, useOrders } from '@/contexts/data-context';
-import type { Order } from '@/lib/types';
+import { useData, useOrders } from '@/contexts/data-context';
+import type { Order, Restaurant } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,7 +21,7 @@ import { useAuth } from '@/contexts/auth-context';
 
 
 // Helper function to generate user history summary
-const generateUserHistorySummary = (orders: Order[], restaurants: any[]): string => {
+const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]): string => {
   if (orders.length === 0) {
     return "L'utilisateur n'a pas encore d'historique de commandes.";
   }
@@ -77,7 +77,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
   
-  const userOrders = React.useMemo(() => {
+  const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
     return orders.filter(o => o.userId === user.uid && o.status === 'Livrée');
   }, [orders, user]);
@@ -101,12 +101,12 @@ export default function Home() {
     const fetchRecommendations = async () => {
         if (isLoading) return; // Wait for initial data to be loaded
         setLoadingRecommendations(true);
-        const userHistorySummary = generateUserHistorySummary(userOrders, restaurants);
+        const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
         try {
             const data = await getPersonalizedRecommendations({
                 userHistory: userHistorySummary,
                 currentLocation: 'Abidjan, Côte d\'Ivoire',
-                timeOfDay: 'Soirée',
+                timeOfDay: new Date().getHours() < 12 ? 'Matin' : new Date().getHours() < 18 ? 'Après-midi' : 'Soir',
             });
             setRecommendations(data);
         } catch (e) {
@@ -117,7 +117,7 @@ export default function Home() {
         }
     };
     fetchRecommendations();
-  }, [userOrders, restaurants, isLoading]);
+  }, [userDeliveredOrders, restaurants, isLoading]);
   
   React.useEffect(() => {
     // This is how we know an order was just placed from the cart
