@@ -47,7 +47,6 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
         await setDoc(doc(db, "users", user.uid), {
             email: user.email,
             createdAt: serverTimestamp(),
-            role: 'customer' // All new users are customers by default
         });
         
         toast({
@@ -70,7 +69,19 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
           title: "Connexion réussie",
           description: "Heureux de vous revoir !",
         });
-        router.push('/profile-selection');
+        // Check for a saved role, otherwise go to selection
+        const savedRole = localStorage.getItem('activeRole');
+        if (savedRole) {
+            const roleToPathMap = {
+                customer: '/',
+                restaurateur: '/dashboard',
+                livreur: '/delivery',
+            };
+            router.push(roleToPathMap[savedRole as keyof typeof roleToPathMap] || '/');
+        } else {
+            router.push('/profile-selection');
+        }
+
       } catch (error: any) {
         toast({
           variant: "destructive",

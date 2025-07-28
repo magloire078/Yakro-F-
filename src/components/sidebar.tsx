@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, Repeat } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -20,10 +20,15 @@ export function Sidebar() {
   const router = useRouter();
   
   const handleSignOut = async () => {
-    sessionStorage.removeItem('activeRole');
-    setActiveRole('customer'); // Reset role on sign out
+    // We don't clear localStorage here so the user's role is remembered for next login
     await signOut(auth);
     router.push('/login');
+  }
+
+  const handleChangeProfile = () => {
+    // Clear the role so the profile selection page doesn't auto-redirect
+    localStorage.removeItem('activeRole');
+    router.push('/profile-selection');
   }
   
   const getInitials = (email: string | null | undefined) => {
@@ -102,8 +107,7 @@ export function Sidebar() {
            {!loading && !user && (
             <Button variant="outline" className="w-full text-lg py-6" asChild>
                 <Link href="/login">
-                    <LogIn className="mr-2 h-5 w-5" />
-                    Connexion
+                    Se connecter
                 </Link>
             </Button>
            )}
@@ -130,6 +134,10 @@ export function Sidebar() {
                     <DropdownMenuItem>
                         <Settings className="mr-2 h-4 w-4"/>
                         Paramètres
+                    </DropdownMenuItem>
+                     <DropdownMenuItem onClick={handleChangeProfile}>
+                        <Repeat className="mr-2 h-4 w-4"/>
+                        Changer de profil
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>

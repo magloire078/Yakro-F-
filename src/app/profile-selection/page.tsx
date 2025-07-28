@@ -17,35 +17,33 @@ const roleToPathMap: Record<UserRole, string> = {
 export default function ProfileSelectionPage() {
     const router = useRouter();
     const { user, loading, activeRole, setActiveRole } = useAuth();
+    const [isInitialRedirect, setIsInitialRedirect] = React.useState(true);
 
     React.useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
+            return;
         }
-        // If a role is already selected, redirect to the corresponding page
-        // This prevents the user from coming back to this page to change roles
-        if (!loading && user && sessionStorage.getItem('activeRole')) {
-            const role = sessionStorage.getItem('activeRole') as UserRole;
-            router.push(roleToPathMap[role] || '/');
+        
+        // On initial load, if a role is already set in localStorage, redirect immediately.
+        // We add a flag `isInitialRedirect` to prevent this from firing after the user
+        // explicitly navigated here (e.g., via "Change Profile").
+        const savedRole = localStorage.getItem('activeRole') as UserRole;
+        if (!loading && user && savedRole && isInitialRedirect) {
+            router.push(roleToPathMap[savedRole] || '/');
+        } else {
+            // Allow the page to render if the user is here intentionally
+            setIsInitialRedirect(false);
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, isInitialRedirect]);
 
     const handleProfileSelect = (role: UserRole, path: string) => {
         setActiveRole(role);
         router.push(path);
     };
     
-    if (loading || !user) {
-        return (
-            <div className="flex h-full w-full items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-primary" />
-            </div>
-        )
-    }
-    
-    // Render the page only if no role has been selected yet.
-    // This check is an extra safeguard.
-    if (sessionStorage.getItem('activeRole')) {
+    // Show a loader while the initial redirect check is happening
+    if (loading || isInitialRedirect) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
@@ -54,7 +52,7 @@ export default function ProfileSelectionPage() {
     }
 
     return (
-        <div className="flex h-full flex-col items-center justify-center text-center">
+        <div className="flex h-full flex-col items-center justify-center text-center p-4">
             <h1 className="text-4xl font-headline text-primary mb-4">Quel type de profil souhaitez-vous utiliser ?</h1>
             <p className="text-muted-foreground mb-12 max-w-2xl">
                 Choisissez le profil qui correspond à votre utilisation de Yakro Go. Vous pourrez explorer les fonctionnalités correspondantes.

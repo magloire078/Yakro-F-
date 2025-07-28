@@ -20,7 +20,7 @@ const getInitialRole = (): UserRole => {
     if (typeof window === 'undefined') {
         return 'customer';
     }
-    return (sessionStorage.getItem('activeRole') as UserRole) || 'customer';
+    return (localStorage.getItem('activeRole') as UserRole) || 'customer';
 };
 
 
@@ -33,18 +33,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (!user) {
-          // Clear role on logout
-          sessionStorage.removeItem('activeRole');
-          setActiveRoleState('customer');
+          // Keep role on logout for better UX on re-login, but you could clear it if needed
+          // localStorage.removeItem('activeRole');
+          // setActiveRoleState('customer');
       }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Listen for changes from other tabs
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'activeRole') {
+            setActiveRoleState((event.newValue as UserRole) || 'customer');
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        unsubscribe();
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const setActiveRole = (role: UserRole) => {
-      sessionStorage.setItem('activeRole', role);
+      localStorage.setItem('activeRole', role);
       setActiveRoleState(role);
   }
 
