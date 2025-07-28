@@ -17,6 +17,7 @@ import { generateImage } from '@/ai/flows/generate-image-flow';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import NextImage from 'next/image';
+import Link from 'next/link';
 
 type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
 
@@ -165,7 +166,9 @@ export default function DashboardPage() {
                         <CardDescription className="text-base">
                             Il semble que vous n'ayez pas encore de restaurant. Pour commencer à créer des plats avec notre IA, vous devez d'abord enregistrer votre établissement.
                         </CardDescription>
-                        <Button className="mt-6" disabled>Créer mon premier restaurant (bientôt disponible)</Button>
+                         <Button className="mt-6" asChild>
+                           <Link href="/dashboard/new-restaurant">Créer mon premier restaurant</Link>
+                        </Button>
                     </CardContent>
                 </Card>
             </div>
@@ -271,5 +274,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    

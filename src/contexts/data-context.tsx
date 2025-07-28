@@ -17,6 +17,7 @@ interface DataState {
   isGenerating: boolean;
   isLoading: boolean;
   fetchData: () => Promise<void>;
+  addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
@@ -51,7 +52,16 @@ const useDataStore = create<DataState>((set, get) => ({
     }
   },
   
-   addMenuItem: async (item) => {
+  addRestaurant: async (restaurant) => {
+    try {
+      await addDoc(collection(db, "restaurants"), restaurant);
+    } catch (e) {
+      console.error("Error adding restaurant: ", e);
+      throw e;
+    }
+  },
+
+  addMenuItem: async (item) => {
     try {
       await addDoc(collection(db, "menuItems"), item);
     } catch (e) {
