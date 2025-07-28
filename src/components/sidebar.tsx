@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -51,12 +52,6 @@ export function Sidebar() {
              <Link href="/orders">
               <History className="mr-2 h-5 w-5" />
               Historique
-            </Link>
-          </Button>
-           <Button variant="ghost" className="justify-start text-lg" asChild>
-             <Link href="/reviews">
-              <Star className="mr-2 h-5 w-5" />
-              Avis
             </Link>
           </Button>
           {user && (
