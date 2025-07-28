@@ -109,13 +109,11 @@ export function Sidebar() {
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Panier
                   {cartCount > 0 && (
-                    <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
-                      {cartCount}
-                    </span>
+                    <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">{cartCount}</span>
                   )}
                 </Button>
-              </CartSheet>
-           </div>
+               </CartSheet>
+            </div>
         </div>
     </aside>
   );
