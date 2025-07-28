@@ -12,21 +12,15 @@ import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-
 
 export function Sidebar() {
   const { cartCount } = useCart();
-  const { user, loading, activeRole } = useAuth();
+  const { user, loading, activeRole, setActiveRole } = useAuth();
   const router = useRouter();
   
   const handleSignOut = async () => {
     sessionStorage.removeItem('activeRole');
+    setActiveRole('customer'); // Reset role on sign out
     await signOut(auth);
     router.push('/login');
   }
@@ -44,7 +38,7 @@ export function Sidebar() {
         </Link>
         <nav className="flex flex-col gap-4">
            {/* Customer Links */}
-          {user && activeRole === 'customer' && (
+          {activeRole === 'customer' && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/">
@@ -68,7 +62,7 @@ export function Sidebar() {
           )}
           
           {/* Restaurateur Links */}
-          {user && activeRole === 'restaurateur' && (
+          {activeRole === 'restaurateur' && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/dashboard">
@@ -92,7 +86,7 @@ export function Sidebar() {
           )}
 
           {/* Livreur Links */}
-           {user && activeRole === 'livreur' && (
+           {activeRole === 'livreur' && (
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/delivery">
                   <Bike className="mr-2 h-5 w-5" />
