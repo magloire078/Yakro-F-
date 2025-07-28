@@ -25,7 +25,7 @@ export default function RestaurantPage() {
     const restaurant = getRestaurant(params.id as string);
 
     const [reviews, setReviews] = React.useState<Review[]>([]);
-    const [loadingReviews, setLoadingReviews] = React.useState(true);
+    const [loadingReviews, setLoadingReviews] = React.useState(false);
     const [audioUrl, setAudioUrl] = React.useState<string | null>(null);
     const [isGeneratingAudio, setIsGeneratingAudio] = React.useState(false);
     const { toast } = useToast();
@@ -34,7 +34,11 @@ export default function RestaurantPage() {
         if (!restaurant) return;
         setLoadingReviews(true);
         setAudioUrl(null);
-        setReviews([]);
+        setReviews([]); // Clear existing reviews before generating new ones
+        toast({
+            title: 'Génération des avis en cours...',
+            description: 'L\'IA imagine des expériences clients pour vous.'
+        });
         try {
           const result = await generateReviews({
             restaurantName: restaurant.name,
@@ -51,19 +55,14 @@ export default function RestaurantPage() {
           console.error('Failed to generate reviews:', error);
           toast({
             variant: 'destructive',
-            title: 'Erreur',
-            description: "Impossible de générer les avis pour le moment.",
+            title: 'Erreur de génération',
+            description: "Impossible de générer les avis. Le quota de l'API est peut-être atteint.",
           });
         } finally {
           setLoadingReviews(false);
         }
     }, [restaurant, toast]);
 
-    React.useEffect(() => {
-        if (restaurant) {
-            handleGenerateReviews();
-        }
-    }, [restaurant, handleGenerateReviews]);
 
      const handleGenerateAudio = React.useCallback(async () => {
         if (reviews.length === 0) return;
@@ -204,6 +203,7 @@ export default function RestaurantPage() {
                             )}
                         </div>
                         <Button onClick={handleGenerateReviews} disabled={loadingReviews}>
+                            {loadingReviews ? <Loader className="animate-spin mr-2" /> : null}
                             {loadingReviews ? 'Génération...' : 'Régénérer les avis'}
                         </Button>
                     </div>
@@ -233,7 +233,7 @@ export default function RestaurantPage() {
                     {!loadingReviews && reviews.length > 0 && reviews.map(review => (
                       <ReviewCard key={review.id} review={review} />
                     ))}
-                    {!loadingReviews && reviews.length === 0 && <p className="text-muted-foreground">Aucun avis pour ce restaurant. Soyez le premier !</p>}
+                    {!loadingReviews && reviews.length === 0 && <p className="text-muted-foreground">Aucun avis pour ce restaurant. Soyez le premier à en laisser un, ou générez-en avec l'IA.</p>}
                   </div>
 
                   <div className="lg:col-span-1 space-y-8">
