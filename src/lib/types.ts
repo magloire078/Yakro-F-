@@ -55,4 +55,4 @@ export interface UserProfile {
     role: 'customer' | 'restaurateur' | 'livreur' | 'admin';
 }
 
-export type UserRole = 'customer' | 'restaurateur' | 'livreur' | 'admin';
+export type UserRole = 'customer' | 'restaurateur' | 'livreur';
