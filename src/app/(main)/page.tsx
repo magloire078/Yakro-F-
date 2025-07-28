@@ -219,7 +219,7 @@ export default function Home() {
   
   const renderSkeletons = (count: number, type: 'restaurant' | 'menu') => (
     Array.from({ length: count }).map((_, i) => (
-      <div key={i} className="flex flex-col space-y-3">
+      <div key={`skeleton-${type}-${i}`} className="flex flex-col space-y-3">
         <Skeleton className={`w-full ${type === 'restaurant' ? 'h-[160px]' : 'h-[120px]'} rounded-xl`} />
         <div className="space-y-2">
           <Skeleton className="h-4 w-[250px]" />
@@ -248,7 +248,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {isLoading ? renderSkeletons(3, 'restaurant') : filteredRestaurants.map(restaurant => (
-              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              <div key={restaurant.id}>
+                <RestaurantCard restaurant={restaurant} />
+              </div>
             ))}
           </div>
         </section>
@@ -266,7 +268,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
              {isLoading ? renderSkeletons(4, 'menu') : filteredMenuItems.map(item => (
-              <MenuItemCard key={item.id} item={item} />
+              <div key={item.id}>
+                <MenuItemCard item={item} />
+              </div>
             ))}
           </div>
         </section>
