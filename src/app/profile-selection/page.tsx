@@ -6,17 +6,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { User, ChefHat, Loader, Bike } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import Link from 'next/link';
+import type { UserRole } from '@/lib/types';
 
 export default function ProfileSelectionPage() {
     const router = useRouter();
-    const { user, loading } = useAuth();
+    const { user, loading, setActiveRole } = useAuth();
 
     React.useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
         }
     }, [user, loading, router]);
+
+    const handleProfileSelect = (role: UserRole, path: string) => {
+        setActiveRole(role);
+        router.push(path);
+    };
     
     if (loading || !user) {
         return (
@@ -33,47 +38,52 @@ export default function ProfileSelectionPage() {
                 Choisissez le profil qui correspond à votre utilisation de Yakro Go. Vous pourrez explorer les fonctionnalités correspondantes.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
-                <Link href="/" className="h-full">
-                    <Card className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl">
-                        <CardHeader>
-                            <User className="h-16 w-16 mx-auto text-primary" />
-                            <CardTitle className="mt-4 text-2xl">Je suis un Client</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CardDescription>
-                                Parcourez les restaurants, découvrez de nouveaux plats et passez vos commandes en quelques clics.
-                            </CardDescription>
-                        </CardContent>
-                    </Card>
-                </Link>
                 
-                <Link href="/dashboard" className="h-full">
-                    <Card className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl">
-                        <CardHeader>
-                            <ChefHat className="h-16 w-16 mx-auto text-primary" />
-                            <CardTitle className="mt-4 text-2xl">Je suis un Restaurateur</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CardDescription>
-                                Gérez votre menu, créez des plats avec l'IA et développez votre activité grâce à nos outils marketing.
-                            </CardDescription>
-                        </CardContent>
-                    </Card>
-                </Link>
+                <Card 
+                    onClick={() => handleProfileSelect('customer', '/')}
+                    className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl"
+                >
+                    <CardHeader>
+                        <User className="h-16 w-16 mx-auto text-primary" />
+                        <CardTitle className="mt-4 text-2xl">Je suis un Client</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <CardDescription>
+                            Parcourez les restaurants, découvrez de nouveaux plats et passez vos commandes en quelques clics.
+                        </CardDescription>
+                    </CardContent>
+                </Card>
+                
+                
+                <Card 
+                    onClick={() => handleProfileSelect('restaurateur', '/dashboard')}
+                    className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl"
+                >
+                    <CardHeader>
+                        <ChefHat className="h-16 w-16 mx-auto text-primary" />
+                        <CardTitle className="mt-4 text-2xl">Je suis un Restaurateur</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <CardDescription>
+                            Gérez votre menu, créez des plats avec l'IA et développez votre activité grâce à nos outils marketing.
+                        </CardDescription>
+                    </CardContent>
+                </Card>
 
-                <Link href="/delivery" className="h-full">
-                     <Card className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl">
-                        <CardHeader>
-                            <Bike className="h-16 w-16 mx-auto text-primary" />
-                            <CardTitle className="mt-4 text-2xl">Je suis un Livreur</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <CardDescription>
-                               Acceptez des courses, suivez vos livraisons et gérez vos revenus.
-                            </CardDescription>
-                        </CardContent>
-                    </Card>
-                </Link>
+                <Card 
+                    onClick={() => handleProfileSelect('livreur', '/delivery')}
+                    className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl"
+                >
+                    <CardHeader>
+                        <Bike className="h-16 w-16 mx-auto text-primary" />
+                        <CardTitle className="mt-4 text-2xl">Je suis un Livreur</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         <CardDescription>
+                           Acceptez des courses, suivez vos livraisons et gérez vos revenus.
+                        </CardDescription>
+                    </CardContent>
+                </Card>
 
             </div>
         </div>

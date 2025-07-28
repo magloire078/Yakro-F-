@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 export default function DashboardOrdersPage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
     const { orders, isLoading, updateOrderStatus } = useData();
     const { toast } = useToast();
@@ -23,8 +23,15 @@ export default function DashboardOrdersPage() {
     React.useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
+        } else if (!authLoading && user && activeRole !== 'restaurateur') {
+            toast({
+                variant: 'destructive',
+                title: 'Accès non autorisé',
+                description: 'Veuillez sélectionner le profil "Restaurateur" pour accéder à cette page.',
+            })
+            router.push('/profile-selection');
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, activeRole, toast]);
 
     const activeOrders = React.useMemo(() => {
         return orders
@@ -95,7 +102,7 @@ export default function DashboardOrdersPage() {
         </Card>
     );
 
-    if (authLoading || isLoading) {
+    if (authLoading || isLoading || activeRole !== 'restaurateur') {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 

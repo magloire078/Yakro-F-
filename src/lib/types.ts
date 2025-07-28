@@ -1,4 +1,5 @@
 
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -54,4 +55,4 @@ export interface UserProfile {
     role: 'customer' | 'restaurateur' | 'livreur' | 'admin';
 }
 
-export const SUPER_USER_EMAIL = 'magloire078@gmail.com';
+export type UserRole = 'customer' | 'restaurateur' | 'livreur' | 'admin';

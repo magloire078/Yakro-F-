@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 
 export default function DeliveryPage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
     const { orders, isLoading, updateOrderStatus } = useData();
     const [currentDelivery, setCurrentDelivery] = React.useState<Order | null>(null);
@@ -25,8 +25,15 @@ export default function DeliveryPage() {
     React.useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
+        } else if (!authLoading && user && activeRole !== 'livreur') {
+            toast({
+                variant: 'destructive',
+                title: 'Accès non autorisé',
+                description: 'Veuillez sélectionner le profil "Livreur" pour accéder à cette page.',
+            })
+            router.push('/profile-selection');
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, activeRole, toast]);
 
     const availableDeliveries = React.useMemo(() => {
         return orders.filter(o => o.status === 'En Préparation');
@@ -82,7 +89,7 @@ export default function DeliveryPage() {
         }
     }
 
-    if (authLoading || isLoading || !user) {
+    if (authLoading || isLoading || !user || activeRole !== 'livreur') {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />

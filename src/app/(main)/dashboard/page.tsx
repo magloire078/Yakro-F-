@@ -27,14 +27,21 @@ export default function DashboardPage() {
     const [loading, setLoading] = React.useState(false);
     const [generatedItem, setGeneratedItem] = React.useState<GeneratedMenuItem | null>(null);
     const { toast } = useToast();
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
 
     React.useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
+        } else if (!authLoading && user && activeRole !== 'restaurateur') {
+            toast({
+                variant: 'destructive',
+                title: 'Accès non autorisé',
+                description: 'Veuillez sélectionner le profil "Restaurateur" pour accéder à cette page.',
+            })
+            router.push('/profile-selection');
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, activeRole, toast]);
 
     React.useEffect(() => {
         if (!restaurants.length) return;
@@ -127,7 +134,7 @@ export default function DashboardPage() {
         }
     };
 
-    if (authLoading || !user) {
+    if (authLoading || !user || activeRole !== 'restaurateur') {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />

@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList } from 'lucide-react';
+import { Home, History, Star, Megaphone, ChefHat, Bike, LogIn, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Replace } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 
 export function Sidebar() {
   const { cartCount } = useCart();
-  const { user, loading } = useAuth();
+  const { user, loading, activeRole } = useAuth();
   const router = useRouter();
   
   const handleSignOut = async () => {
@@ -54,12 +54,14 @@ export function Sidebar() {
               Historique
             </Link>
           </Button>
-          {user && (
+          
+          {/* Restaurateur Links */}
+          {user && activeRole === 'restaurateur' && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/dashboard">
                   <ChefHat className="mr-2 h-5 w-5" />
-                  Profil Restaurateur
+                  Dashboard
                 </Link>
               </Button>
               <Button variant="ghost" className="justify-start text-lg" asChild>
@@ -74,14 +76,19 @@ export function Sidebar() {
                   Marketing IA
                 </Link>
               </Button>
+            </>
+          )}
+
+          {/* Livreur Links */}
+           {user && activeRole === 'livreur' && (
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/delivery">
                   <Bike className="mr-2 h-5 w-5" />
-                  Profil Livreur
+                  Espace Livreur
                 </Link>
               </Button>
-            </>
           )}
+
         </nav>
 
         <div className="mt-auto space-y-4">
@@ -95,12 +102,19 @@ export function Sidebar() {
            )}
            {!loading && user && (
             <div className="space-y-4">
+                <Button variant="ghost" className="w-full text-md" asChild>
+                    <Link href="/profile-selection">
+                        <Replace className="mr-2 h-5 w-5" />
+                        Changer de profil
+                    </Link>
+                </Button>
                 <div className="flex items-center gap-3 p-2 rounded-lg border">
                     <Avatar>
                         <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 overflow-hidden">
                         <p className="text-sm font-semibold truncate">{user.email || 'Utilisateur'}</p>
+                         <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
                     </div>
                 </div>
                 <Button variant="outline" className="w-full text-lg py-6" onClick={handleSignOut}>
