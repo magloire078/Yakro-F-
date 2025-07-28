@@ -13,7 +13,6 @@ import { useCart } from '@/contexts/cart-context';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { useToast } from '@/hooks/use-toast';
 import { useData, getRestaurantsForHistory, useOrders } from '@/contexts/data-context';
-import { pastOrders } from '@/lib/data';
 import type { Order } from '@/lib/types';
 import { SearchBar } from '@/components/search-bar';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
@@ -22,31 +21,35 @@ import { useAuth } from '@/contexts/auth-context';
 
 
 // Helper function to generate user history summary
-const generateUserHistorySummary = (orders: Order[]): string => {
+const generateUserHistorySummary = (orders: Order[], restaurants: any[]): string => {
+  if (orders.length === 0) {
+    return "L'utilisateur n'a pas encore d'historique de commandes.";
+  }
   const cuisineCount: { [key: string]: number } = {};
   const itemCount: { [key: string]: number } = {};
   let totalSpent = 0;
-  let deliveredOrders = 0;
 
   orders.forEach(order => {
-    if (order.status === 'Livrée') {
-      deliveredOrders++;
-      totalSpent += order.total;
-      order.items.forEach(item => {
-        // We need to find the restaurant to get the cuisine
-        const restaurant = getRestaurantsForHistory().find(r => r.id === item.restaurantId);
-        if (restaurant) {
-          cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
-        }
-        itemCount[item.name] = (itemCount[item.name] || 0) + item.quantity;
-      });
+    totalSpent += order.total;
+    const restaurant = restaurants.find(r => r.id === order.restaurantId);
+    if (restaurant) {
+      cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
     }
+    order.items.forEach(item => {
+      itemCount[item.name] = (itemCount[item.name] || 0) + item.quantity;
+    });
   });
   
-  const favoriteCuisine = Object.keys(cuisineCount).reduce((a, b) => cuisineCount[a] > cuisineCount[b] ? a : b, '');
-  const favoriteItems = Object.entries(itemCount).sort((a,b) => b[1] - a[1]).slice(0,3).map(item => item[0]);
+  const favoriteCuisine = Object.keys(cuisineCount).length > 0 
+    ? Object.keys(cuisineCount).reduce((a, b) => cuisineCount[a] > cuisineCount[b] ? a : b, '')
+    : 'inconnue';
+  
+  const favoriteItems = Object.entries(itemCount)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0,3)
+    .map(item => item[0]);
 
-  return `The user has placed ${deliveredOrders} orders. They have spent a total of ${totalSpent} FCFA. Their favorite cuisine seems to be ${favoriteCuisine}. They frequently order the following items: ${favoriteItems.join(', ')}.`;
+  return `L'utilisateur a passé ${orders.length} commandes pour un total de ${totalSpent.toLocaleString('fr-FR')} FCFA. Sa cuisine préférée semble être ${favoriteCuisine}. Il commande fréquemment les plats suivants : ${favoriteItems.join(', ')}.`;
 }
 
 
@@ -73,6 +76,11 @@ export default function Home() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
+  
+  const userOrders = React.useMemo(() => {
+    if (!user) return [];
+    return orders.filter(o => o.userId === user.uid && o.status === 'Livrée');
+  }, [orders, user]);
 
   // Check for active orders for the current user
   React.useEffect(() => {
@@ -90,24 +98,26 @@ export default function Home() {
 
 
   React.useEffect(() => {
-    const userHistorySummary = generateUserHistorySummary(pastOrders);
-    setLoadingRecommendations(true);
-    getPersonalizedRecommendations({
-      userHistory: userHistorySummary,
-      currentLocation: 'Abidjan, Ivory Coast',
-      timeOfDay: 'Diner',
-    })
-      .then(data => {
-        setRecommendations(data);
-      })
-      .catch(e => {
-        console.error("Error fetching recommendations:", e);
-        setRecommendations(null);
-      })
-      .finally(() => {
-        setLoadingRecommendations(false);
-      });
-  }, []);
+    const fetchRecommendations = async () => {
+        if (isLoading) return; // Wait for initial data to be loaded
+        setLoadingRecommendations(true);
+        const userHistorySummary = generateUserHistorySummary(userOrders, restaurants);
+        try {
+            const data = await getPersonalizedRecommendations({
+                userHistory: userHistorySummary,
+                currentLocation: 'Abidjan, Côte d\'Ivoire',
+                timeOfDay: 'Soirée',
+            });
+            setRecommendations(data);
+        } catch (e) {
+            console.error("Error fetching recommendations:", e);
+            setRecommendations(null);
+        } finally {
+            setLoadingRecommendations(false);
+        }
+    };
+    fetchRecommendations();
+  }, [userOrders, restaurants, isLoading]);
   
   React.useEffect(() => {
     // This is how we know an order was just placed from the cart
@@ -146,51 +156,63 @@ export default function Home() {
   };
 
   const filteredRestaurants = React.useMemo(() => {
-    if (!interpretedSearch) {
-       return restaurants.filter(restaurant => restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) || restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (!interpretedSearch && !searchQuery) return restaurants;
+    
+    let results = restaurants;
+    
+    if (searchQuery && !interpretedSearch) {
+        results = restaurants.filter(restaurant => restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) || restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase()));
     }
 
-    return restaurants.filter(restaurant => {
-        // AI-powered search filters
-        const matchesCuisine = interpretedSearch.cuisine?.length > 0 
-            ? interpretedSearch.cuisine.some(c => restaurant.cuisine.toLowerCase().includes(c.toLowerCase())) 
-            : true;
-        
-        const matchesRating = interpretedSearch.rating 
-            ? restaurant.rating >= interpretedSearch.rating 
-            : true;
+    if (interpretedSearch) {
+        results = restaurants.filter(restaurant => {
+            const matchesCuisine = interpretedSearch.cuisine?.length > 0 
+                ? interpretedSearch.cuisine.some(c => restaurant.cuisine.toLowerCase().includes(c.toLowerCase())) 
+                : true;
+            
+            const matchesRating = interpretedSearch.rating 
+                ? restaurant.rating >= interpretedSearch.rating 
+                : true;
 
-        const matchesDeliveryTime = interpretedSearch.deliveryTime
-            ? restaurant.deliveryTime <= interpretedSearch.deliveryTime
-            : true;
+            const matchesDeliveryTime = interpretedSearch.deliveryTime
+                ? restaurant.deliveryTime <= interpretedSearch.deliveryTime
+                : true;
 
-        return matchesCuisine && matchesRating && matchesDeliveryTime;
-    });
+            return matchesCuisine && matchesRating && matchesDeliveryTime;
+        });
+    }
+    return results;
   }, [restaurants, searchQuery, interpretedSearch]);
 
   const filteredMenuItems = React.useMemo(() => {
-     if (!interpretedSearch) {
-       return menuItems.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+     if (!interpretedSearch && !searchQuery) return menuItems;
+     
+     let results = menuItems;
+
+     if (searchQuery && !interpretedSearch) {
+        results = menuItems.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+     }
+
+    if (interpretedSearch) {
+        results = menuItems.filter(item => {
+            const allSearchTerms = [
+                ...(interpretedSearch.keywords || []),
+                ...(interpretedSearch.searchTerms || [])
+            ].map(t => t.toLowerCase());
+
+            const matchesSearchTerms = allSearchTerms.length > 0 ? allSearchTerms.some(term => 
+                item.name.toLowerCase().includes(term) ||
+                item.description.toLowerCase().includes(term)
+            ) : true;
+            
+            const matchesPrice = interpretedSearch.priceRange
+                ? (item.price >= (interpretedSearch.priceRange.min || 0)) && (item.price <= (interpretedSearch.priceRange.max || Infinity))
+                : true;
+
+            return matchesSearchTerms && matchesPrice;
+        });
     }
-
-    return menuItems.filter(item => {
-        // AI-powered search filters
-        const allSearchTerms = [
-            ...(interpretedSearch.keywords || []),
-            ...(interpretedSearch.searchTerms || [])
-        ].map(t => t.toLowerCase());
-
-        const matchesSearchTerms = allSearchTerms.length > 0 ? allSearchTerms.some(term => 
-            item.name.toLowerCase().includes(term) ||
-            item.description.toLowerCase().includes(term)
-        ) : true;
-        
-        const matchesPrice = interpretedSearch.priceRange
-            ? (item.price >= (interpretedSearch.priceRange.min || 0)) && (item.price <= (interpretedSearch.priceRange.max || Infinity))
-            : true;
-
-        return matchesSearchTerms && matchesPrice;
-    });
+    return results;
   }, [menuItems, searchQuery, interpretedSearch]);
 
 
@@ -255,3 +277,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
