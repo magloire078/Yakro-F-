@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { OrderStatus } from '@/components/order-status';
-import type { Order, Restaurant } from '@/lib/types';
+import type { Order, Restaurant, MenuItem } from '@/lib/types';
 import { Recommendations, RecommendationsSkeleton } from '../recommendations';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 
@@ -42,7 +42,7 @@ const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]):
 
 export default function CustomerHomePage() {
   const { user } = useAuth();
-  const { restaurants, orders, isLoading } = useData();
+  const { restaurants, menuItems, orders, isLoading } = useData();
   
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
@@ -58,15 +58,29 @@ export default function CustomerHomePage() {
 
   React.useEffect(() => {
     const fetchRecommendations = async () => {
-      if (!user) {
+      if (!user || menuItems.length === 0 || restaurants.length === 0) {
         setLoadingRecommendations(false);
         return;
       };
       setLoadingRecommendations(true);
       const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
+
+      const availableMenuItems = menuItems.map(item => {
+        const restaurant = restaurants.find(r => r.id === item.restaurantId);
+        return {
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          restaurantName: restaurant?.name || 'Restaurant inconnu',
+          cuisine: restaurant?.cuisine || 'Inconnue'
+        }
+      });
+      
       try {
         const data = await getPersonalizedRecommendations({
           userHistory: userHistorySummary,
+          availableMenuItems: availableMenuItems,
           currentLocation: 'Abidjan, Côte d\'Ivoire',
           timeOfDay: new Date().getHours() < 12 ? 'Matin' : (new Date().getHours() < 18 ? 'Après-midi' : 'Soir'),
         });
@@ -81,7 +95,7 @@ export default function CustomerHomePage() {
     if (!isLoading) {
       fetchRecommendations();
     }
-  }, [user, userDeliveredOrders, restaurants, isLoading]);
+  }, [user, userDeliveredOrders, restaurants, menuItems, isLoading]);
 
   React.useEffect(() => {
     if (user && orders.length > 0) {

@@ -13,8 +13,18 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const MenuItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  price: z.number(),
+  restaurantName: z.string(),
+  cuisine: z.string(),
+});
+
 const PersonalizedRecommendationsInputSchema = z.object({
-  userHistory: z.string().describe('The user history of orders and preferences.'),
+  userHistory: z.string().describe('A summary of the user\'s order history and preferences.'),
+  availableMenuItems: z.array(MenuItemSchema).describe('A list of all available menu items to choose from for recommendations.'),
   currentLocation: z.string().describe('The current location of the user.'),
   timeOfDay: z.string().describe('The time of day.'),
 });
@@ -24,7 +34,7 @@ const PersonalizedRecommendationsOutputSchema = z.object({
   recommendations: z.array(
     z.object({
       item: z.string().describe('The name of the recommended item.'),
-      description: z.string().describe('A short description of the item.'),
+      description: z.string().describe('A short description of the item, taken from the available menu items.'),
       restaurant: z.string().describe('The name of the restaurant offering the item.'),
       cuisine: z.string().describe('The type of cuisine.'),
     })
@@ -42,15 +52,26 @@ const prompt = ai.definePrompt({
   output: {schema: PersonalizedRecommendationsOutputSchema},
   prompt: `You are a personal recommendation system for a food delivery app.
 
-  Based on the user's order history, current location, and the time of day, you will provide personalized recommendations for restaurants, meals, or items.
+Your task is to provide personalized recommendations for meals. You MUST select items exclusively from the provided list of available menu items. Do NOT invent new items.
 
-  User History: {{{userHistory}}}
-  Current Location: {{{currentLocation}}}
-  Time of Day: {{{timeOfDay}}}
+Base your recommendations on the user's order history, their current location, and the time of day.
 
-  Recommendations should be tailored to the user's taste and preferences, and should be relevant to their current location and the time of day.
+User History: {{{userHistory}}}
+Current Location: {{{currentLocation}}}
+Time of Day: {{{timeOfDay}}}
 
-  Return the recommendations in JSON format.
+Here is the list of available menu items you can recommend from:
+{{#each availableMenuItems}}
+- Name: {{name}}
+  Description: {{description}}
+  Price: {{price}} FCFA
+  Restaurant: {{restaurantName}}
+  Cuisine: {{cuisine}}
+{{/each}}
+
+Select a few diverse items from the list above that would best suit the user. For each recommendation, provide the item's name, its original description, the restaurant name, and the cuisine type.
+
+Return the recommendations in JSON format.
   `
 });
 
