@@ -130,9 +130,11 @@ export function Sidebar() {
                 <DropdownMenuContent className="w-56 mb-2">
                     <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                        <User className="mr-2 h-4 w-4"/>
-                        Profil
+                    <DropdownMenuItem asChild>
+                        <Link href="/profile">
+                          <User className="mr-2 h-4 w-4"/>
+                          Profil
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <Settings className="mr-2 h-4 w-4"/>
