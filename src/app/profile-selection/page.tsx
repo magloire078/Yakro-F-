@@ -8,12 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import type { UserRole } from '@/lib/types';
 
-const roleToPathMap: Record<UserRole, string> = {
-    customer: '/',
-    restaurateur: '/dashboard',
-    livreur: '/delivery',
-}
-
 export default function ProfileSelectionPage() {
     const router = useRouter();
     const { user, loading, activeRole, setActiveRole } = useAuth();
@@ -25,28 +19,20 @@ export default function ProfileSelectionPage() {
             return;
         }
         
-        // On initial load, only redirect if a role is EXPLICITLY set in localStorage.
-        // This prevents new users from being auto-redirected before they can choose.
         const savedRole = localStorage.getItem('activeRole') as UserRole;
         if (!loading && user && savedRole && isInitialRedirect) {
-            if (roleToPathMap[savedRole]) {
-                router.push(roleToPathMap[savedRole]);
-            } else {
-                 router.push('/'); // Fallback to customer if role is invalid
-            }
+            // Always redirect to home page, it will handle the role display
+            router.push('/');
         } else {
-            // If no role is saved (new user) or if the user navigated here intentionally,
-            // stop the redirect logic and show the page.
             setIsInitialRedirect(false);
         }
     }, [user, loading, router, isInitialRedirect]);
 
-    const handleProfileSelect = (role: UserRole, path: string) => {
+    const handleProfileSelect = (role: UserRole) => {
         setActiveRole(role);
-        router.push(path);
+        router.push('/');
     };
     
-    // Show a loader while the initial auth check and redirect logic are running.
     if (loading || isInitialRedirect) {
         return (
             <div className="flex h-full w-full items-center justify-center">
@@ -64,7 +50,7 @@ export default function ProfileSelectionPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
                 
                 <Card 
-                    onClick={() => handleProfileSelect('customer', '/')}
+                    onClick={() => handleProfileSelect('customer')}
                     className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl"
                 >
                     <CardHeader>
@@ -80,7 +66,7 @@ export default function ProfileSelectionPage() {
                 
                 
                 <Card 
-                    onClick={() => handleProfileSelect('restaurateur', '/dashboard')}
+                    onClick={() => handleProfileSelect('restaurateur')}
                     className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl"
                 >
                     <CardHeader>
@@ -95,7 +81,7 @@ export default function ProfileSelectionPage() {
                 </Card>
 
                 <Card 
-                    onClick={() => handleProfileSelect('livreur', '/delivery')}
+                    onClick={() => handleProfileSelect('livreur')}
                     className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl"
                 >
                     <CardHeader>

@@ -20,15 +20,12 @@ export function Sidebar() {
   const router = useRouter();
   
   const handleSignOut = async () => {
-    // We don't clear localStorage here so the user's role is remembered for next login
     await signOut(auth);
     router.push('/login');
   }
 
   const handleChangeProfile = () => {
-    // Clear the role so the profile selection page doesn't auto-redirect
     localStorage.removeItem('activeRole');
-    // We set it to customer as a fallback before redirecting
     setActiveRole('customer');
     router.push('/profile-selection');
   }
@@ -45,15 +42,17 @@ export function Sidebar() {
           <span className="font-headline text-3xl font-bold text-primary">Yakro Go</span>
         </Link>
         <nav className="flex flex-col gap-4">
-           {/* Customer Links */}
-          {activeRole === 'customer' && (
-            <>
-              <Button variant="ghost" className="justify-start text-lg" asChild>
+           {/* Common Link */}
+           <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/">
                   <Home className="mr-2 h-5 w-5" />
                   Accueil
                 </Link>
-              </Button>
+           </Button>
+
+          {/* Customer Links */}
+          {activeRole === 'customer' && (
+            <>
                <Button variant="ghost" className="justify-start text-lg" asChild>
                  <Link href="/recommendations">
                   <Sparkles className="mr-2 h-5 w-5" />
@@ -73,9 +72,9 @@ export function Sidebar() {
           {activeRole === 'restaurateur' && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
-                <Link href="/dashboard">
+                <Link href="/dashboard/new-restaurant">
                   <ChefHat className="mr-2 h-5 w-5" />
-                  Création de plat
+                  Nouveau Restaurant
                 </Link>
               </Button>
               <Button variant="ghost" className="justify-start text-lg" asChild>
@@ -91,16 +90,6 @@ export function Sidebar() {
                 </Link>
               </Button>
             </>
-          )}
-
-          {/* Livreur Links */}
-           {activeRole === 'livreur' && (
-              <Button variant="ghost" className="justify-start text-lg" asChild>
-                <Link href="/delivery">
-                  <Bike className="mr-2 h-5 w-5" />
-                  Espace Livreur
-                </Link>
-              </Button>
           )}
 
         </nav>
