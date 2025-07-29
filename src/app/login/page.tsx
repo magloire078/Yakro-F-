@@ -6,10 +6,30 @@ import { UserAuthForm } from "@/components/user-auth-form";
 import { Icons } from "@/components/icons";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { Loader } from 'lucide-react';
 
 export default function LoginPage() {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    React.useEffect(() => {
+        if (!loading && user) {
+            router.push('/profile-selection');
+        }
+    }, [user, loading, router]);
+    
+    if(loading || user) {
+        return (
+             <div className="flex h-screen w-full items-center justify-center">
+                <Loader className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        )
+    }
+
     return (
-        <div className="flex h-full items-center justify-center">
+        <div className="flex h-screen items-center justify-center p-4">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
                 <Tabs defaultValue="login" className="w-full">
                     <Card className="p-6">
