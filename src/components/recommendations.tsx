@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from './ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Star } from 'lucide-react';
+import { Star, AlertTriangle } from 'lucide-react';
 import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Skeleton } from './ui/skeleton';
 import { useCart } from '@/contexts/cart-context';
@@ -15,21 +15,32 @@ import { useData } from '@/contexts/data-context';
 
 interface RecommendationsProps {
   recommendationsData: PersonalizedRecommendationsOutput | null;
+  hasError: boolean;
   isCarousel?: boolean;
 }
 
-export function Recommendations({ recommendationsData, isCarousel = true }: RecommendationsProps) {
+export function Recommendations({ recommendationsData, hasError, isCarousel = true }: RecommendationsProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const { menuItems, getMenuItem } = useData();
+  const { menuItems } = useData();
+
+  if (hasError) {
+    return (
+      <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg">
+        <AlertTriangle className="w-16 h-16"/>
+        <p className="text-lg font-medium">Erreur de l'IA</p>
+        <p>Le service de recommandations est surchargé. Veuillez réessayer plus tard.</p>
+      </div>
+    );
+  }
 
   if (!recommendationsData || recommendationsData.recommendations.length === 0) {
     return (
-        <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
-            <Star className="w-16 h-16"/>
-            <p className="text-lg font-medium">Pas de recommandations pour le moment</p>
-            <p>Commandez quelques plats pour que notre IA apprenne à vous connaître !</p>
-        </div>
+      <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
+        <Star className="w-16 h-16"/>
+        <p className="text-lg font-medium">Pas de recommandations pour le moment</p>
+        <p>Commandez quelques plats pour que notre IA apprenne à vous connaître !</p>
+      </div>
     );
   }
 

@@ -50,6 +50,7 @@ export default function CustomerHomePage() {
   const [showOrderStatus, setShowOrderStatus] = React.useState(false);
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
+  const [recommendationError, setRecommendationError] = React.useState(false);
 
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
@@ -63,6 +64,7 @@ export default function CustomerHomePage() {
         return;
       };
       setLoadingRecommendations(true);
+      setRecommendationError(false);
       const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
 
       const availableMenuItems = menuItems.map(item => {
@@ -87,6 +89,7 @@ export default function CustomerHomePage() {
         setRecommendations(data);
       } catch (e) {
         console.error("Error fetching recommendations:", e);
+        setRecommendationError(true);
         setRecommendations(null);
       } finally {
         setLoadingRecommendations(false);
@@ -172,7 +175,7 @@ export default function CustomerHomePage() {
         </div>
       </section>
 
-      {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} />}
+      {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} hasError={recommendationError} />}
 
       <section>
         <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Explorer par catégories</h2>

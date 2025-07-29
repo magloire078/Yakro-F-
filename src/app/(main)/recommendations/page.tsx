@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -50,6 +49,7 @@ export default function RecommendationsPage() {
 
     const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
     const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
+    const [hasError, setHasError] = React.useState(false);
     
     const userDeliveredOrders = React.useMemo(() => {
         if (!user) return [];
@@ -64,6 +64,7 @@ export default function RecommendationsPage() {
             };
             
             setLoadingRecommendations(true);
+            setHasError(false);
             const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
             
             const availableMenuItems = menuItems.map(item => {
@@ -88,6 +89,7 @@ export default function RecommendationsPage() {
                 setRecommendations(data);
             } catch (e) {
                 console.error("Error fetching recommendations:", e);
+                setHasError(true);
                 setRecommendations(null);
             } finally {
                 setLoadingRecommendations(false);
@@ -127,7 +129,7 @@ export default function RecommendationsPage() {
                 <h1 className="text-3xl md:text-4xl font-headline text-primary">Spécialement Pour Vous</h1>
                 <p className="text-muted-foreground mt-2">Des plats et restaurants choisis par notre IA, juste pour vos papilles.</p>
             </div>
-            {loadingRecommendations ? <RecommendationsSkeleton /> : <RecommendationsComponent recommendationsData={recommendations} isCarousel={false} />}
+            {loadingRecommendations ? <RecommendationsSkeleton /> : <RecommendationsComponent recommendationsData={recommendations} hasError={hasError} isCarousel={false} />}
         </div>
     );
 }
