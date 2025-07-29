@@ -16,7 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 export default function DashboardOrdersPage() {
     const { user, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
-    const { orders, isLoading, updateOrderStatus } = useData();
+    const { orders, restaurants, isLoading, updateOrderStatus } = useData();
     const { toast } = useToast();
     const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
 
@@ -33,17 +33,27 @@ export default function DashboardOrdersPage() {
         }
     }, [user, authLoading, router, activeRole, toast]);
 
+    const myRestaurantIds = React.useMemo(() => {
+        if (activeRole !== 'restaurateur' || !user) return [];
+        return restaurants.map(r => r.id);
+    }, [restaurants, activeRole, user]);
+
+    const myOrders = React.useMemo(() => {
+        if (myRestaurantIds.length === 0) return [];
+        return orders.filter(o => myRestaurantIds.includes(o.restaurantId));
+    }, [orders, myRestaurantIds]);
+
     const newOrders = React.useMemo(() => {
-        return orders
+        return myOrders
             .filter(o => o.status === 'Placée')
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [orders]);
+    }, [myOrders]);
     
     const preparingOrders = React.useMemo(() => {
-        return orders
+        return myOrders
             .filter(o => o.status === 'En Préparation')
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [orders]);
+    }, [myOrders]);
 
 
     const handleAcceptOrder = async (orderId: string) => {
