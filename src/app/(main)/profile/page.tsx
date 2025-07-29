@@ -95,10 +95,6 @@ export default function ProfilePage() {
                   {user.email}
                 </CardDescription>
               </div>
-              <Button variant="outline" disabled>
-                <Edit className="mr-2 h-4 w-4" />
-                Modifier
-              </Button>
             </CardContent>
           </Card>
 
