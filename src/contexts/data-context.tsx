@@ -107,15 +107,32 @@ function useRealtimeData() {
         useDataStore.setState({ isLoading: true });
 
         // Restaurants Listener
-        const unsubRestaurants = onSnapshot(collection(db, "restaurants"), (snapshot) => {
-            const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-            useDataStore.setState({ restaurants: restaurantList, isLoading: false });
-        }, (error) => {
-             console.error("Error on restaurants snapshot listener:", error);
-             useDataStore.setState({ isLoading: false });
-        });
+        let unsubRestaurants: Unsubscribe | null = null;
+        const restaurantsCollection = collection(db, "restaurants");
 
-        // Menu Items Listener
+        if (user && activeRole === 'restaurateur') {
+            // Restaurateur sees only their own restaurants
+            const q = query(restaurantsCollection, where("ownerId", "==", user.uid));
+            unsubRestaurants = onSnapshot(q, (snapshot) => {
+                const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
+                useDataStore.setState({ restaurants: restaurantList, isLoading: false });
+            }, (error) => {
+                 console.error("Error on restaurateur's restaurants snapshot listener:", error);
+                 useDataStore.setState({ isLoading: false });
+            });
+        } else {
+            // Other roles see all restaurants
+            unsubRestaurants = onSnapshot(restaurantsCollection, (snapshot) => {
+                const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
+                useDataStore.setState({ restaurants: restaurantList, isLoading: false });
+            }, (error) => {
+                 console.error("Error on all restaurants snapshot listener:", error);
+                 useDataStore.setState({ isLoading: false });
+            });
+        }
+        
+
+        // Menu Items Listener - shows all menu items for simplicity
         const unsubMenuItems = onSnapshot(collection(db, "menuItems"), (snapshot) => {
             const menuList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
             useDataStore.setState({ menuItems: menuList });
@@ -153,8 +170,8 @@ function useRealtimeData() {
             setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
             
             // If restaurateur, also get all orders placed at their restaurants.
-            // Note: This assumes the restaurateur manages ALL restaurants. 
-            // A real app would add a `ownerId` to restaurants.
+            // A more robust solution would query based on an array of the user's restaurant IDs.
+            // For now, we'll get all placed/preparing orders as a proxy.
             if (activeRole === 'restaurateur') {
                  setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation"])));
             }
@@ -171,7 +188,7 @@ function useRealtimeData() {
         }
 
         return () => {
-            unsubRestaurants();
+            if(unsubRestaurants) unsubRestaurants();
             unsubMenuItems();
             if (unsubOrders) unsubOrders();
         }; 

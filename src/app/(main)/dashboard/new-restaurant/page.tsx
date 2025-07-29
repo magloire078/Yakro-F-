@@ -59,6 +59,7 @@ export default function NewRestaurantPage() {
         try {
             const newRestaurant: Omit<Restaurant, 'id'> = {
                 ...data,
+                ownerId: user.uid,
                 // These are default values for a new restaurant
                 rating: 0,
                 image: `https://placehold.co/600x400.png`,
@@ -69,7 +70,7 @@ export default function NewRestaurantPage() {
                 title: 'Restaurant créé avec succès !',
                 description: `${data.name} a été ajouté à notre plateforme.`,
             });
-            router.push('/dashboard');
+            router.push('/');
         } catch (error) {
             console.error(error);
             toast({
