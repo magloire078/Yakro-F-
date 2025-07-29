@@ -92,6 +92,18 @@ export function Sidebar() {
             </>
           )}
 
+          {/* Livreur Links */}
+          {activeRole === 'livreur' && (
+            <>
+              <Button variant="ghost" className="justify-start text-lg" asChild>
+                <Link href="/delivery">
+                  <Bike className="mr-2 h-5 w-5" />
+                  Espace Livreur
+                </Link>
+              </Button>
+            </>
+          )}
+
         </nav>
 
         <div className="mt-auto space-y-4">
