@@ -37,8 +37,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (!user) {
-          // Keep role on logout for better UX on re-login.
-          // The login page will handle redirecting based on the stored role.
+          // When user logs out, we should not keep the role. 
+          // Resetting to client ensures no role-specific data is shown on login page.
+          localStorage.removeItem('activeRole');
+          setActiveRoleState('client');
       }
       setLoading(false);
     });

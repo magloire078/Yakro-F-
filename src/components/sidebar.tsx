@@ -21,13 +21,10 @@ export function Sidebar() {
   
   const handleSignOut = async () => {
     await signOut(auth);
-    router.push('/login');
-  }
-
-  const handleChangeProfile = () => {
+    // After sign out, clear the role and redirect to login
     localStorage.removeItem('activeRole');
-    setActiveRole('client');
-    router.push('/profile-selection');
+    setActiveRole('client'); 
+    router.push('/login');
   }
   
   const getInitials = (email: string | null | undefined) => {
@@ -96,7 +93,7 @@ export function Sidebar() {
           {activeRole === 'livreur' && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
-                <Link href="/delivery">
+                <Link href="/">
                   <Bike className="mr-2 h-5 w-5" />
                   Espace Livreur
                 </Link>
@@ -139,10 +136,6 @@ export function Sidebar() {
                     <DropdownMenuItem>
                         <Settings className="mr-2 h-4 w-4"/>
                         Paramètres
-                    </DropdownMenuItem>
-                     <DropdownMenuItem onClick={handleChangeProfile}>
-                        <Repeat className="mr-2 h-4 w-4"/>
-                        Changer de profil
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
