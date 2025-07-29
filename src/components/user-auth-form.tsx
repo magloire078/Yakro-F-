@@ -49,6 +49,9 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
             createdAt: serverTimestamp(),
         });
         
+        // Clear any stored role to force profile selection for a new user
+        localStorage.removeItem('activeRole');
+
         toast({
           title: "Compte créé avec succès",
           description: "Bienvenue sur Yakro Go ! Veuillez choisir un profil.",

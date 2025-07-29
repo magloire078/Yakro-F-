@@ -25,20 +25,18 @@ export default function ProfileSelectionPage() {
             return;
         }
         
-        // On initial load, if a role is already set in localStorage, redirect immediately.
-        // We add a flag `isInitialRedirect` to prevent this from firing after the user
-        // explicitly navigated here (e.g., via "Change Profile").
+        // On initial load, only redirect if a role is EXPLICITLY set in localStorage.
+        // This prevents new users from being auto-redirected before they can choose.
         const savedRole = localStorage.getItem('activeRole') as UserRole;
         if (!loading && user && savedRole && isInitialRedirect) {
-            // Check if the stored role is valid, otherwise default to customer
             if (roleToPathMap[savedRole]) {
                 router.push(roleToPathMap[savedRole]);
             } else {
-                 router.push('/');
+                 router.push('/'); // Fallback to customer if role is invalid
             }
         } else {
-            // Allow the page to render if the user is here intentionally
-            // or if no role was saved.
+            // If no role is saved (new user) or if the user navigated here intentionally,
+            // stop the redirect logic and show the page.
             setIsInitialRedirect(false);
         }
     }, [user, loading, router, isInitialRedirect]);
@@ -48,7 +46,7 @@ export default function ProfileSelectionPage() {
         router.push(path);
     };
     
-    // Show a loader while the initial redirect check is happening or auth is loading
+    // Show a loader while the initial auth check and redirect logic are running.
     if (loading || isInitialRedirect) {
         return (
             <div className="flex h-full w-full items-center justify-center">
