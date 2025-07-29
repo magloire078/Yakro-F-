@@ -10,34 +10,35 @@ import type { UserRole } from '@/lib/types';
 
 export default function ProfileSelectionPage() {
     const router = useRouter();
-    const { user, loading, setActiveRole } = useAuth();
-    const [isCheckingRole, setIsCheckingRole] = React.useState(true);
+    const { user, loading: authLoading, setActiveRole } = useAuth();
 
     React.useEffect(() => {
-        if (loading) {
-            return; // Wait until auth state is loaded
+        if (authLoading) {
+            return; // Attendre la fin du chargement de l'authentification
         }
+
         if (!user) {
-            router.push('/login');
+            router.push('/login'); // Si pas d'utilisateur, redirection vers la page de connexion
             return;
         }
         
-        // Check for a saved role. If it exists, redirect to home.
+        // Vérifier si un rôle est déjà sauvegardé dans le localStorage
         const savedRole = localStorage.getItem('activeRole') as UserRole;
         if (savedRole) {
-            router.push('/');
-        } else {
-            // If no role is saved, show the selection page.
-            setIsCheckingRole(false);
+            router.push('/'); // Si un rôle existe, l'utilisateur a déjà fait son choix, redirection vers l'accueil
         }
-    }, [user, loading, router]);
+        // Si aucun rôle n'est sauvegardé, la page reste affichée pour permettre la sélection.
+        
+    }, [user, authLoading, router]);
 
     const handleProfileSelect = (role: UserRole) => {
         setActiveRole(role);
         router.push('/');
     };
     
-    if (loading || isCheckingRole) {
+    // Afficher un loader tant que l'authentification est en cours ou si l'utilisateur est sur le point d'être redirigé.
+    // Ou si un rôle est déjà défini (car la redirection est imminente).
+    if (authLoading || !user || (typeof window !== 'undefined' && localStorage.getItem('activeRole'))) {
         return (
             <div className="flex h-screen w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
