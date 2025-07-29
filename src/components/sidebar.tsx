@@ -71,7 +71,7 @@ export function Sidebar() {
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/dashboard/menu">
                   <BookOpenCheck className="mr-2 h-5 w-5" />
-                  Mon Menu
+                  Mes Menus
                 </Link>
               </Button>
               <Button variant="ghost" className="justify-start text-lg" asChild>
