@@ -24,8 +24,9 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const handleReorder = () => {
     order.items.forEach(item => {
         const menuItem = getMenuItem(item.id);
+        const imageSrc = `https://placehold.co/100x100.png`;
         if (menuItem) {
-            addToCart(menuItem);
+            addToCart({...item, image: imageSrc });
         }
     });
     toast({
@@ -60,7 +61,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                     return (
                         <div key={item.id} className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
-                                <Image src={menuItem.image} alt={menuItem.name} width={40} height={40} className="rounded-md" data-ai-hint={menuItem.imageHint}/>
+                                <Image src={item.image} alt={menuItem.name} width={40} height={40} className="rounded-md" data-ai-hint={menuItem.imageHint}/>
                                 <div>
                                     <span>{item.quantity} x </span>
                                     <span className="font-medium">{item.name}</span>

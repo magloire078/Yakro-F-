@@ -5,7 +5,6 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
-  image: string;
   imageHint: string;
   restaurantId: string;
 }
@@ -24,6 +23,7 @@ export interface Restaurant {
 
 export interface CartItem extends MenuItem {
   quantity: number;
+  image: string; // Keep for cart display logic
 }
 
 export interface Order {

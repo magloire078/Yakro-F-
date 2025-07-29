@@ -13,12 +13,13 @@ interface MenuItemCardProps {
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
     const { addToCart } = useCart();
+    const imageSrc = `https://placehold.co/100x100.png`;
 
   return (
     <Card className="flex items-center p-4 gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 group">
       <div className="relative w-24 h-24 shrink-0">
         <Image
-          src={item.image}
+          src={imageSrc}
           alt={item.name}
           fill
           className="rounded-lg object-cover"
@@ -30,7 +31,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
         <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
         <div className="flex justify-between items-center mt-2">
           <p className="text-lg font-semibold text-primary">{item.price.toLocaleString('fr-FR')} FCFA</p>
-          <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => addToCart(item)}>
+          <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => addToCart({ ...item, image: imageSrc })}>
             <PlusCircle className="w-6 h-6" />
           </Button>
         </div>

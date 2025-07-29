@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Card, CardContent, CardHeader } from './ui/card';
@@ -10,7 +9,7 @@ import { Star } from 'lucide-react';
 import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Skeleton } from './ui/skeleton';
 import { useCart } from '@/contexts/cart-context';
-import type { MenuItem } from '@/lib/types';
+import type { CartItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
 
@@ -37,7 +36,12 @@ export function Recommendations({ recommendationsData, isCarousel = true }: Reco
   const handleAddToCart = (recommendedItemName: string) => {
     const menuItem = menuItems.find(item => item && item.name && item.name.toLowerCase() === recommendedItemName.toLowerCase());
     if (menuItem) {
-      addToCart(menuItem);
+      const cartItem: CartItem = {
+        ...menuItem,
+        quantity: 1,
+        image: `https://placehold.co/100x100.png`
+      };
+      addToCart(cartItem);
       toast({
         title: "Ajouté au panier",
         description: `${menuItem.name} a été ajouté à votre panier.`,
@@ -53,13 +57,13 @@ export function Recommendations({ recommendationsData, isCarousel = true }: Reco
   
   const RecommendationCard = ({ rec }: { rec: any}) => {
     const menuItem = menuItems.find(item => item && item.name && item.name.toLowerCase() === rec.item.toLowerCase());
-    const imageSrc = menuItem ? getMenuItem(menuItem.id)?.image : `https://placehold.co/600x400`;
+    const imageSrc = `https://placehold.co/600x400.png`;
     
     return (
         <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
             <CardHeader className="p-0">
               <Image
-                  src={imageSrc || 'https://placehold.co/600x400'}
+                  src={imageSrc}
                   alt={rec.item}
                   width={600}
                   height={400}

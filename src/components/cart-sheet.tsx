@@ -58,7 +58,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                     return (
                         <div key={item.id} className="flex items-center gap-4">
                             <Image
-                            src={menuItem.image}
+                            src={item.image}
                             alt={menuItem.name}
                             width={64}
                             height={64}

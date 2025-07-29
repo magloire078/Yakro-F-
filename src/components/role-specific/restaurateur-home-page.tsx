@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation';
 import NextImage from 'next/image';
 import Link from 'next/link';
 
-type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
+type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId' | 'image'>;
 
 export default function RestaurateurHomePage() {
     const { restaurants, addMenuItem, isLoading: isDataLoading } = useData();
@@ -73,7 +73,6 @@ export default function RestaurateurHomePage() {
                 name: itemDetails.name,
                 description: itemDetails.description,
                 price: itemDetails.price,
-                image: itemDetails.image,
                 imageHint: itemDetails.imageHint,
             };
 
@@ -154,7 +153,7 @@ export default function RestaurateurHomePage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Créateur de Plats par IA</CardTitle>
-                        <CardDescription>Décrivez simplement le plat que vous imaginez, et laissez l'IA créer un nom, une description, un prix et une image pour vous. Vous pouvez aussi pré-remplir certains champs pour guider l'IA.</CardDescription>
+                        <CardDescription>Décrivez simplement le plat que vous imaginez, et laissez l'IA créer un nom, une description, et un prix pour vous. Vous pouvez aussi pré-remplir certains champs pour guider l'IA.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -211,8 +210,9 @@ export default function RestaurateurHomePage() {
                             </div>
                         ) : generatedItem ? (
                             <form onSubmit={handleAddItemToMenu} className="w-full space-y-4">
-                                <div className="relative h-48 w-full rounded-lg overflow-hidden">
-                                     <NextImage src={generatedItem.image} alt={generatedItem.name} layout="fill" objectFit="cover" />
+                                <div className="relative h-48 w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                                     <ImageIcon className="h-16 w-16 text-muted-foreground" />
+                                     <p className="absolute bottom-2 text-xs text-muted-foreground">Aperçu de l'image non disponible</p>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="itemName">Nom du plat</Label>
