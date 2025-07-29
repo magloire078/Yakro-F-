@@ -3,15 +3,18 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { Loader } from 'lucide-react';
-import type { UserRole } from '@/lib/types';
+import type { UserRole, UserProfile } from '@/lib/types';
+import { doc, onSnapshot, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
+  updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -20,32 +23,29 @@ const getInitialRole = (): UserRole => {
     if (typeof window === 'undefined') {
         return 'client';
     }
-    // Use localStorage for persistence across sessions
     return (localStorage.getItem('activeRole') as UserRole) || 'client';
 };
 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null);
+  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [activeRole, setActiveRoleState] = React.useState<UserRole>('client');
 
   React.useEffect(() => {
-    // Set initial role from localStorage on the client side
     setActiveRoleState(getInitialRole());
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (!user) {
-          // When user logs out, we should not keep the role. 
-          // Resetting to client ensures no role-specific data is shown on login page.
+    const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
+      setUser(authUser);
+      if (!authUser) {
           localStorage.removeItem('activeRole');
           setActiveRoleState('client');
+          setUserProfile(null);
+          setLoading(false);
       }
-      setLoading(false);
     });
 
-    // Listen for changes from other tabs
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'activeRole') {
             setActiveRoleState((event.newValue as UserRole) || 'client');
@@ -54,27 +54,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
-        unsubscribe();
+        unsubscribeAuth();
         window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  React.useEffect(() => {
+      let unsubscribeProfile: (() => void) | undefined;
+      if (user) {
+          setLoading(true);
+          const userDocRef = doc(db, 'users', user.uid);
+          unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
+              if (docSnap.exists()) {
+                  setUserProfile({ uid: docSnap.id, ...docSnap.data() } as UserProfile);
+              } else {
+                  // This case happens for new sign-ups. Create a default profile.
+                   setDoc(userDocRef, {
+                      email: user.email,
+                      createdAt: serverTimestamp(),
+                      name: user.email?.split('@')[0] || '', // Default name
+                  });
+              }
+              setLoading(false);
+          }, (error) => {
+              console.error("Error fetching user profile:", error);
+              setLoading(false);
+          });
+      }
+      return () => {
+          if (unsubscribeProfile) {
+              unsubscribeProfile();
+          }
+      };
+  }, [user]);
 
   const setActiveRole = (role: UserRole) => {
       localStorage.setItem('activeRole', role);
       setActiveRoleState(role);
   }
+  
+  const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
+      const userDocRef = doc(db, 'users', uid);
+      await updateDoc(userDocRef, data);
+  };
 
-
-  if (loading) {
-    return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <Loader className="h-16 w-16 animate-spin text-primary" />
-        </div>
-    )
-  }
 
   return (
-    <AuthContext.Provider value={{ user, loading, activeRole, setActiveRole }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, activeRole, setActiveRole, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

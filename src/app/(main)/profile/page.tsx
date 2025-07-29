@@ -12,9 +12,10 @@ import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import type { Restaurant } from '@/lib/types';
+import Link from 'next/link';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, activeRole } = useAuth();
+  const { user, userProfile, loading: authLoading, activeRole } = useAuth();
   const { orders, restaurants, isLoading: dataLoading } = useData();
   const router = useRouter();
   const { toast } = useToast();
@@ -57,9 +58,13 @@ export default function ProfilePage() {
     };
   }, [userDeliveredOrders, restaurants]);
   
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return '?';
-    return email.substring(0, 2).toUpperCase();
+  const getInitials = (nameOrEmail: string | null | undefined) => {
+    if (!nameOrEmail) return '?';
+    const nameParts = nameOrEmail.split(' ');
+    if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
+        return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+    }
+    return nameOrEmail.substring(0, 2).toUpperCase();
   }
 
   if (authLoading || dataLoading || !user) {
@@ -68,13 +73,6 @@ export default function ProfilePage() {
         <Loader className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
-  }
-
-  // Mock data for now
-  const profile = {
-    name: "Aisha Koné",
-    phone: "07 01 02 03 04",
-    defaultAddress: "Yamoussoukro, Quartier des Lacs, Villa 24"
   }
 
   return (
@@ -86,15 +84,21 @@ export default function ProfilePage() {
           <Card>
             <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
               <Avatar className="h-24 w-24 text-3xl">
-                <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                <AvatarFallback>{getInitials(userProfile?.name || user.email)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 text-center sm:text-left">
-                <CardTitle className="text-3xl">{profile.name}</CardTitle>
+                <CardTitle className="text-3xl">{userProfile?.name || "Nom non défini"}</CardTitle>
                 <CardDescription className="text-lg flex items-center justify-center sm:justify-start gap-2 mt-1">
                   <Mail className="h-4 w-4" />
                   {user.email}
                 </CardDescription>
               </div>
+               <Button asChild>
+                  <Link href="/profile/edit">
+                    <Edit className="mr-2" />
+                    Modifier
+                  </Link>
+                </Button>
             </CardContent>
           </Card>
 
@@ -105,13 +109,13 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="flex items-center">
                 <Phone className="h-5 w-5 mr-4 text-muted-foreground" />
-                <span className="font-medium">{profile.phone}</span>
+                <span className="font-medium">{userProfile?.phone || "Non défini"}</span>
               </div>
               <Separator />
               <div className="flex items-start">
                 <MapPin className="h-5 w-5 mr-4 mt-1 text-muted-foreground" />
                 <div>
-                    <p className="font-medium">{profile.defaultAddress}</p>
+                    <p className="font-medium">{userProfile?.defaultAddress || "Non définie"}</p>
                     <p className="text-sm text-muted-foreground">Adresse par défaut</p>
                 </div>
               </div>

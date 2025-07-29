@@ -1,5 +1,4 @@
 
-
 export interface MenuItem {
   id: string;
   name: string;
@@ -53,6 +52,9 @@ export interface UserProfile {
     uid: string;
     email: string;
     createdAt: any; // Firestore Timestamp
+    name?: string;
+    phone?: string;
+    defaultAddress?: string;
 }
 
 export type UserRole = 'client' | 'restaurateur' | 'livreur';
