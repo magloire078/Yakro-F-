@@ -10,39 +10,43 @@ import type { UserRole } from '@/lib/types';
 
 export default function ProfileSelectionPage() {
     const router = useRouter();
-    const { user, loading, activeRole, setActiveRole } = useAuth();
-    const [isInitialRedirect, setIsInitialRedirect] = React.useState(true);
+    const { user, loading, setActiveRole } = useAuth();
+    const [isCheckingRole, setIsCheckingRole] = React.useState(true);
 
     React.useEffect(() => {
-        if (!loading && !user) {
+        if (loading) {
+            return; // Wait until auth state is loaded
+        }
+        if (!user) {
             router.push('/login');
             return;
         }
         
+        // Check for a saved role. If it exists, redirect to home.
         const savedRole = localStorage.getItem('activeRole') as UserRole;
-        if (!loading && user && savedRole && isInitialRedirect) {
-            // Always redirect to home page, it will handle the role display
+        if (savedRole) {
             router.push('/');
         } else {
-            setIsInitialRedirect(false);
+            // If no role is saved, show the selection page.
+            setIsCheckingRole(false);
         }
-    }, [user, loading, router, isInitialRedirect]);
+    }, [user, loading, router]);
 
     const handleProfileSelect = (role: UserRole) => {
         setActiveRole(role);
         router.push('/');
     };
     
-    if (loading || isInitialRedirect) {
+    if (loading || isCheckingRole) {
         return (
-            <div className="flex h-full w-full items-center justify-center">
+            <div className="flex h-screen w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
             </div>
         )
     }
 
     return (
-        <div className="flex h-full flex-col items-center justify-center text-center p-4">
+        <div className="flex h-screen flex-col items-center justify-center text-center p-4">
             <h1 className="text-4xl font-headline text-primary mb-4">Quel type de profil souhaitez-vous utiliser ?</h1>
             <p className="text-muted-foreground mb-12 max-w-2xl">
                 Choisissez le profil qui correspond à votre utilisation de Yakro Go. Vous pourrez explorer les fonctionnalités correspondantes.
