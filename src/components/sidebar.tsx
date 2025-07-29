@@ -26,7 +26,7 @@ export function Sidebar() {
 
   const handleChangeProfile = () => {
     localStorage.removeItem('activeRole');
-    setActiveRole('customer');
+    setActiveRole('client');
     router.push('/profile-selection');
   }
   
@@ -50,8 +50,8 @@ export function Sidebar() {
                 </Link>
            </Button>
 
-          {/* Customer Links */}
-          {activeRole === 'customer' && (
+          {/* Client Links */}
+          {activeRole === 'client' && (
             <>
                <Button variant="ghost" className="justify-start text-lg" asChild>
                  <Link href="/recommendations">
@@ -152,7 +152,7 @@ export function Sidebar() {
                 </DropdownMenuContent>
             </DropdownMenu>
            )}
-            {activeRole === 'customer' && (
+            {activeRole === 'client' && (
                <div className="hidden md:block">
                 <CartSheet>
                   <Button variant="default" className="w-full text-lg py-6">

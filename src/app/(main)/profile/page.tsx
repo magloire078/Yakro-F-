@@ -22,7 +22,7 @@ export default function ProfilePage() {
   React.useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
-    } else if (!authLoading && user && activeRole !== 'customer') {
+    } else if (!authLoading && user && activeRole !== 'client') {
       toast({
         variant: 'destructive',
         title: 'Accès non autorisé',

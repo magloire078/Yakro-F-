@@ -18,17 +18,17 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 const getInitialRole = (): UserRole => {
     if (typeof window === 'undefined') {
-        return 'customer';
+        return 'client';
     }
     // Use localStorage for persistence across sessions
-    return (localStorage.getItem('activeRole') as UserRole) || 'customer';
+    return (localStorage.getItem('activeRole') as UserRole) || 'client';
 };
 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [activeRole, setActiveRoleState] = React.useState<UserRole>('customer');
+  const [activeRole, setActiveRoleState] = React.useState<UserRole>('client');
 
   React.useEffect(() => {
     // Set initial role from localStorage on the client side
@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for changes from other tabs
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'activeRole') {
-            setActiveRoleState((event.newValue as UserRole) || 'customer');
+            setActiveRoleState((event.newValue as UserRole) || 'client');
         }
     };
     window.addEventListener('storage', handleStorageChange);

@@ -33,7 +33,7 @@ export function MobileHeader() {
             <Icons.logo className="h-8 w-8 text-primary" />
           </Link>
       </div>
-      {activeRole === 'customer' && (
+      {activeRole === 'client' && (
         <CartSheet>
               <Button variant="outline" size="icon" className="relative">
                 <Icons.cart className="h-5 w-5" />

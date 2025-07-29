@@ -54,4 +54,4 @@ export interface UserProfile {
     createdAt: any; // Firestore Timestamp
 }
 
-export type UserRole = 'customer' | 'restaurateur' | 'livreur';
+export type UserRole = 'client' | 'restaurateur' | 'livreur';

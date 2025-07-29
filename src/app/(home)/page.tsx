@@ -24,7 +24,7 @@ export default function HomePageSwitcher() {
       return <RestaurateurHomePage />;
     case 'livreur':
       return <LivreurHomePage />;
-    case 'customer':
+    case 'client':
     default:
       return <CustomerHomePage />;
   }

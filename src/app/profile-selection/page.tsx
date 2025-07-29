@@ -50,7 +50,7 @@ export default function ProfileSelectionPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
                 
                 <Card 
-                    onClick={() => handleProfileSelect('customer')}
+                    onClick={() => handleProfileSelect('client')}
                     className="h-full flex flex-col items-center justify-center p-8 text-center hover:bg-accent/50 hover:border-primary transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl"
                 >
                     <CardHeader>
