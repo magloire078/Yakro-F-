@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs, deleteDoc, or } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
@@ -128,12 +128,11 @@ function useRealtimeData() {
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
-        // Restaurants Listener
         let unsubRestaurants: Unsubscribe | null = null;
         const restaurantsCollection = collection(db, "restaurants");
+        const myRestaurantIds = useDataStore.getState().restaurants.map(r => r.id);
 
         if (user && activeRole === 'restaurateur') {
-            // Restaurateur sees only their own restaurants
             const q = query(restaurantsCollection, where("ownerId", "==", user.uid));
             unsubRestaurants = onSnapshot(q, (snapshot) => {
                 const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
@@ -143,7 +142,6 @@ function useRealtimeData() {
                  useDataStore.setState({ isLoading: false });
             });
         } else {
-            // Other roles see all restaurants
             unsubRestaurants = onSnapshot(restaurantsCollection, (snapshot) => {
                 const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
                 useDataStore.setState({ restaurants: restaurantList, isLoading: false });
@@ -153,8 +151,6 @@ function useRealtimeData() {
             });
         }
         
-
-        // Menu Items Listener - shows all menu items for simplicity
         const unsubMenuItems = onSnapshot(collection(db, "plats"), (snapshot) => {
             const menuList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
             useDataStore.setState({ menuItems: menuList });
@@ -162,54 +158,41 @@ function useRealtimeData() {
              console.error("Error on menuItems snapshot listener:", error);
         });
 
-        // Orders Listener
         let unsubOrders: Unsubscribe | null = null;
         if (user) {
             const ordersCollection = collection(db, 'commandes');
-            
-            const currentOrdersRef = new Map<string, Order>();
-            let orderUnsubscribes: Unsubscribe[] = [];
+            let q: Query | null = null;
 
-            const setupSubscription = (q: Query<DocumentData, DocumentData>) => {
-               const unsub = onSnapshot(q, (snapshot) => {
-                    snapshot.docChanges().forEach((change) => {
-                        const orderData = { id: change.doc.id, ...change.doc.data() } as Order;
-                        if (change.type === 'removed') {
-                            currentOrdersRef.delete(change.doc.id);
-                        } else {
-                            currentOrdersRef.set(change.doc.id, orderData);
-                        }
-                    });
-                    const sortedOrders = Array.from(currentOrdersRef.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            switch (activeRole) {
+                case 'client':
+                    q = query(ordersCollection, where("userId", "==", user.uid));
+                    break;
+                case 'restaurateur':
+                    if (myRestaurantIds.length > 0) {
+                        q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
+                    }
+                    break;
+                case 'livreur':
+                    q = query(ordersCollection, or(
+                        where("status", "==", "En Préparation"),
+                        where("delivererId", "==", user.uid)
+                    ));
+                    break;
+            }
+
+            if (q) {
+                unsubOrders = onSnapshot(q, (snapshot) => {
+                    const ordersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+                    const sortedOrders = ordersList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     useDataStore.setState({ orders: sortedOrders });
                 }, (error) => {
-                    console.error(`Error on orders snapshot listener:`, error);
+                    console.error("Error on orders snapshot listener:", error);
                 });
-                orderUnsubscribes.push(unsub);
+            } else {
+                useDataStore.setState({ orders: [] });
             }
-
-            // Always fetch orders for the logged-in user, regardless of role.
-            setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
-            
-            // If restaurateur, also get all orders placed at their restaurants.
-            // This logic assumes `myRestaurantIds` is available from another part of the state.
-            // A more robust implementation might fetch these IDs first.
-            if (activeRole === 'restaurateur') {
-                 // For simplicity, we get all Placed/Preparing orders. A production app would
-                 // query based on an array of the user's restaurant IDs.
-                 setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation"])));
-            }
-
-            // If livreur, get all orders ready for pickup and those they are delivering.
-            if (activeRole === 'livreur') {
-                setupSubscription(query(ordersCollection, where("status", "==", "En Préparation")));
-                setupSubscription(query(ordersCollection, where("delivererId", "==", user.uid)));
-            }
-            
-            unsubOrders = () => orderUnsubscribes.forEach(unsub => unsub());
-
         } else {
-            useDataStore.setState({ orders: [] }); // Clear orders on logout
+            useDataStore.setState({ orders: [] }); 
         }
 
         return () => {
@@ -221,3 +204,4 @@ function useRealtimeData() {
 }
 
 export const useData = useDataStore;
+
