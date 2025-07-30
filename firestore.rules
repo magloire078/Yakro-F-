@@ -3,57 +3,69 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check if a user is the owner of a restaurant
-    function isRestaurantOwner(restaurantId, userId) {
-      return get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.ownerId == userId;
-    }
-
-    // Users can only read and write their own profile
-    match /utilisateurs/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
-    }
-
-    // Anyone can read restaurants, but only owners can write
-    match /restaurants/{restaurantId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && isRestaurantOwner(restaurantId, request.auth.uid);
+    
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
     }
     
-    // Anyone can read menu items, but only restaurant owners can write them
-    match /plats/{platId} {
-        allow read: if request.auth != null;
-        allow create, update, delete: if request.auth != null && isRestaurantOwner(request.resource.data.restaurantId, request.auth.uid);
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function getRestaurantDoc(restaurantId) {
+      return get(/databases/$(database)/documents/restaurants/$(restaurantId));
+    }
+    
+    function isRestaurantOwner(restaurantId) {
+      return isSignedIn() && getRestaurantDoc(restaurantId).data.ownerId == request.auth.uid;
     }
 
-    // Rules for orders
+    // --- Collections Rules ---
+    
+    // USERS: Can only read/write their own profile
+    match /utilisateurs/{userId} {
+      allow read, update, delete: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn();
+    }
+    
+    // RESTAURANTS: Anyone signed in can read. Only owner can write.
+    match /restaurants/{restaurantId} {
+      allow read: if isSignedIn();
+      allow write: if isRestaurantOwner(restaurantId);
+    }
+    
+    // MENU ITEMS (PLATS): Anyone signed in can read. Only associated restaurant owner can write.
+    match /plats/{platId} {
+      allow read: if isSignedIn();
+      allow create: if isRestaurantOwner(request.resource.data.restaurantId);
+      allow update, delete: if isRestaurantOwner(get(/databases/$(database)/documents/plats/$(platId)).data.restaurantId);
+    }
+    
+    // ORDERS (COMMANDES)
     match /commandes/{commandeId} {
-      // A client can create their own order
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // READ: Users can read their own orders.
+      // Restaurateurs can read their restaurant's orders.
+      // Deliverers can read available orders or orders assigned to them.
+      allow read: if isSignedIn() && (
+        isOwner(resource.data.userId) ||
+        isRestaurantOwner(resource.data.restaurantId) ||
+        resource.data.status == 'En Préparation' ||
+        isOwner(resource.data.delivererId)
+      );
       
-      // A client can read their own orders
-      // A restaurateur can read orders for their restaurants
-      // A livreur can read orders assigned to them or available for delivery
-      allow read: if request.auth != null && 
-                  (
-                    resource.data.userId == request.auth.uid ||
-                    isRestaurantOwner(resource.data.restaurantId, request.auth.uid) ||
-                    (resource.data.delivererId == request.auth.uid || resource.data.status == 'En Préparation')
-                  );
+      // CREATE: Only the user placing the order can create it.
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
       
-      // A restaurateur can update status to 'En Préparation'
-      // A livreur can update status to 'En Route' or 'Livrée'
-      allow update: if request.auth != null &&
-                    (
-                      // Restaurateur accepts order
-                      (isRestaurantOwner(resource.data.restaurantId, request.auth.uid) && request.resource.data.status == 'En Préparation') ||
-                      // Livreur accepts order
-                      (request.resource.data.status == 'En Route' && request.resource.data.delivererId == request.auth.uid && resource.data.status == 'En Préparation') ||
-                      // Livreur completes order
-                      (request.resource.data.status == 'Livrée' && resource.data.delivererId == request.auth.uid && resource.data.status == 'En Route')
-                    );
+      // UPDATE: A command can be updated by:
+      // 1. The restaurateur who owns the restaurant associated with the order.
+      // 2. A deliverer who is assigning themselves to the order ('En Préparation' -> 'En Route').
+      // 3. The deliverer who is already assigned to the order.
+      allow update: if isSignedIn() && (
+        isRestaurantOwner(resource.data.restaurantId) ||
+        (resource.data.status == 'En Préparation' && request.resource.data.status == 'En Route' && isOwner(request.resource.data.delivererId)) ||
+        isOwner(resource.data.delivererId)
+      );
     }
   }
 }
