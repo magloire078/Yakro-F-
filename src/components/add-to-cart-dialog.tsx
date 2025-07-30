@@ -16,7 +16,7 @@ import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { useCart } from '@/contexts/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import type { MenuItem } from '@/lib/types';
+import type { MenuItem, MenuOption } from '@/lib/types';
 import Image from 'next/image';
 
 interface AddToCartDialogProps {
@@ -27,8 +27,8 @@ interface AddToCartDialogProps {
 
 export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [selectedSide, setSelectedSide] = React.useState<string | undefined>(undefined);
-  const [selectedDrink, setSelectedDrink] = React.useState<string | undefined>(undefined);
+  const [selectedSide, setSelectedSide] = React.useState<MenuOption | undefined>(undefined);
+  const [selectedDrink, setSelectedDrink] = React.useState<MenuOption | undefined>(undefined);
   const { addToCart } = useCart();
   const { toast } = useToast();
 
@@ -68,6 +68,16 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
     }
   }
 
+  const handleSideChange = (value: string) => {
+    const side = item.availableSides?.find(s => s.name === value);
+    setSelectedSide(side);
+  }
+
+  const handleDrinkChange = (value: string) => {
+    const drink = item.availableDrinks?.find(d => d.name === value);
+    setSelectedDrink(drink);
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild onClick={handleTriggerClick}>{children}</DialogTrigger>
@@ -89,11 +99,14 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
             {item.availableSides && item.availableSides.length > 0 && (
               <div className="space-y-2">
                 <Label className="font-semibold">Choisissez un accompagnement</Label>
-                <RadioGroup value={selectedSide} onValueChange={setSelectedSide}>
+                <RadioGroup value={selectedSide?.name} onValueChange={handleSideChange}>
                   {item.availableSides.map(side => (
-                    <div key={side} className="flex items-center space-x-2">
-                      <RadioGroupItem value={side} id={`side-${side}`} />
-                      <Label htmlFor={`side-${side}`}>{side}</Label>
+                    <div key={side.name} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={side.name} id={`side-${side.name}`} />
+                        <Label htmlFor={`side-${side.name}`}>{side.name}</Label>
+                      </div>
+                      <span className="text-sm text-muted-foreground">+{side.price.toLocaleString('fr-FR')} FCFA</span>
                     </div>
                   ))}
                 </RadioGroup>
@@ -102,11 +115,14 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
             {item.availableDrinks && item.availableDrinks.length > 0 && (
               <div className="space-y-2">
                 <Label className="font-semibold">Choisissez une boisson</Label>
-                <RadioGroup value={selectedDrink} onValueChange={setSelectedDrink}>
+                <RadioGroup value={selectedDrink?.name} onValueChange={handleDrinkChange}>
                   {item.availableDrinks.map(drink => (
-                    <div key={drink} className="flex items-center space-x-2">
-                      <RadioGroupItem value={drink} id={`drink-${drink}`} />
-                      <Label htmlFor={`drink-${drink}`}>{drink}</Label>
+                    <div key={drink.name} className="flex items-center justify-between">
+                       <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={drink.name} id={`drink-${drink.name}`} />
+                        <Label htmlFor={`drink-${drink.name}`}>{drink.name}</Label>
+                      </div>
+                      <span className="text-sm text-muted-foreground">+{drink.price.toLocaleString('fr-FR')} FCFA</span>
                     </div>
                   ))}
                 </RadioGroup>

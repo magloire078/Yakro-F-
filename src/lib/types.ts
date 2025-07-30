@@ -1,4 +1,9 @@
 
+export interface MenuOption {
+  name: string;
+  price: number;
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -6,8 +11,8 @@ export interface MenuItem {
   price: number;
   imageHint: string;
   restaurantId: string;
-  availableSides?: string[];
-  availableDrinks?: string[];
+  availableSides?: MenuOption[];
+  availableDrinks?: MenuOption[];
 }
 
 export interface Restaurant {
@@ -25,8 +30,8 @@ export interface Restaurant {
 export interface CartItem extends MenuItem {
   quantity: number;
   image: string; // Keep for cart display logic
-  selectedSide?: string;
-  selectedDrink?: string;
+  selectedSide?: MenuOption;
+  selectedDrink?: MenuOption;
 }
 
 export interface Order {

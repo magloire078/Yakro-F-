@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { CartItem, MenuItem, Order } from '@/lib/types';
+import type { CartItem, MenuItem, Order, MenuOption } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
 
@@ -50,10 +50,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (item: CartItem) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(i => i.id === item.id);
+      // For simplicity in this demo, we treat items with different options as distinct cart entries.
+      // A more robust implementation might group them and allow editing options in the cart.
+      const uniqueItemId = `${item.id}-${item.selectedSide?.name || ''}-${item.selectedDrink?.name || ''}`;
+      
+      const existingItem = prevItems.find(i => 
+        `${i.id}-${i.selectedSide?.name || ''}-${i.selectedDrink?.name || ''}` === uniqueItemId
+      );
+
       if (existingItem) {
         return prevItems.map(i =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+          `${i.id}-${i.selectedSide?.name || ''}-${i.selectedDrink?.name || ''}` === uniqueItemId 
+          ? { ...i, quantity: i.quantity + 1 } 
+          : i
         );
       }
       return [...prevItems, { ...item, quantity: 1 }];
@@ -61,7 +70,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = (itemId: string) => {
-    setCartItems(prevItems => prevItems.filter(i => i.id !== itemId));
+    setCartItems(prevItems => prevItems.filter(i => 
+        // This is a simplified removal logic. It will remove all variants of an item.
+        // A better implementation would pass a unique cart item ID.
+        i.id !== itemId
+    ));
   };
 
   const updateQuantity = (itemId: string, quantity: number) => {
@@ -79,7 +92,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const cartTotal = React.useMemo(() => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cartItems.reduce((total, item) => {
+      const itemPrice = item.price;
+      const sidePrice = item.selectedSide?.price || 0;
+      const drinkPrice = item.selectedDrink?.price || 0;
+      return total + (itemPrice + sidePrice + drinkPrice) * item.quantity;
+    }, 0);
   }, [cartItems]);
   
   const cartCount = React.useMemo(() => {

@@ -39,6 +39,13 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
         });
     }
   };
+  
+  const getCartItemPrice = (item: typeof cartItems[0]) => {
+      const itemPrice = item.price;
+      const sidePrice = item.selectedSide?.price || 0;
+      const drinkPrice = item.selectedDrink?.price || 0;
+      return (itemPrice + sidePrice + drinkPrice) * item.quantity;
+  }
 
   return (
     <Sheet>
@@ -52,11 +59,11 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
           <>
             <ScrollArea className="flex-1 pr-4">
               <div className="flex flex-col gap-4 py-4">
-                {cartItems.map(item => {
+                {cartItems.map((item, index) => {
                     const menuItem = getMenuItem(item.id);
                     if (!menuItem) return null;
                     return (
-                        <div key={item.id} className="flex items-start gap-4">
+                        <div key={`${item.id}-${index}`} className="flex items-start gap-4">
                             <Image
                             src={item.image}
                             alt={menuItem.name}
@@ -68,11 +75,11 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                             <div className="flex-1">
                                 <p className="font-semibold">{menuItem.name}</p>
                                 <div className="text-xs text-muted-foreground">
-                                    {item.selectedSide && <p>+ {item.selectedSide}</p>}
-                                    {item.selectedDrink && <p>+ {item.selectedDrink}</p>}
+                                    {item.selectedSide && <p>+ {item.selectedSide.name} ({item.selectedSide.price} F)</p>}
+                                    {item.selectedDrink && <p>+ {item.selectedDrink.name} ({item.selectedDrink.price} F)</p>}
                                 </div>
                                 <p className="text-sm font-semibold text-primary mt-1">
-                                    {(menuItem.price * item.quantity).toLocaleString('fr-FR')} FCFA
+                                    {getCartItemPrice(item).toLocaleString('fr-FR')} FCFA
                                 </p>
                                 <div className="flex items-center gap-2 mt-2">
                                     <Button

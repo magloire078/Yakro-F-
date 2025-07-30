@@ -20,7 +20,6 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const { toast } = useToast();
   const { getMenuItem } = useData();
 
-
   const handleReorder = () => {
     order.items.forEach(item => {
         const menuItem = getMenuItem(item.id);
@@ -33,6 +32,13 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
         title: "Commande ajoutée au panier",
         description: `Les articles de votre commande chez ${order.restaurantName} ont été ajoutés.`,
     });
+  }
+  
+  const getItemPrice = (item: typeof order.items[0]) => {
+      const itemPrice = item.price;
+      const sidePrice = item.selectedSide?.price || 0;
+      const drinkPrice = item.selectedDrink?.price || 0;
+      return (itemPrice + sidePrice + drinkPrice) * item.quantity;
   }
 
   return (
@@ -55,22 +61,22 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
           </AccordionTrigger>
           <AccordionContent className="p-6 pt-0">
             <div className="space-y-4">
-                {order.items.map(item => {
+                {order.items.map((item, index) => {
                     const menuItem = getMenuItem(item.id);
                     if (!menuItem) return null;
                     return (
-                        <div key={item.id} className="flex justify-between items-center">
+                        <div key={`${item.id}-${index}`} className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
                                 <Image src={item.image} alt={menuItem.name} width={40} height={40} className="rounded-md" data-ai-hint={menuItem.imageHint}/>
                                 <div>
                                     <span className="font-medium">{item.quantity}x {item.name}</span>
                                      <div className="text-xs text-muted-foreground">
-                                        {item.selectedSide && <p>+ {item.selectedSide}</p>}
-                                        {item.selectedDrink && <p>+ {item.selectedDrink}</p>}
+                                        {item.selectedSide && <p>+ {item.selectedSide.name} ({item.selectedSide.price} F)</p>}
+                                        {item.selectedDrink && <p>+ {item.selectedDrink.name} ({item.selectedDrink.price} F)</p>}
                                     </div>
                                 </div>
                             </div>
-                            <span>{(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>
+                            <span>{getItemPrice(item).toLocaleString('fr-FR')} FCFA</span>
                         </div>
                     )
                 })}

@@ -19,8 +19,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
-import type { MenuItem } from '@/lib/types';
-import { Loader, Trash } from 'lucide-react';
+import type { MenuItem, MenuOption } from '@/lib/types';
+import { Loader, Trash, Plus } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 interface EditMenuItemDialogProps {
@@ -29,12 +29,17 @@ interface EditMenuItemDialogProps {
   menuItem: MenuItem;
 }
 
+const optionSchema = z.object({
+  name: z.string().min(1, "Le nom ne peut être vide."),
+  price: z.coerce.number().min(0, "Le prix ne peut être négatif."),
+});
+
 const editMenuItemSchema = z.object({
   name: z.string().min(3, "Le nom doit contenir au moins 3 caractères."),
   description: z.string().min(10, "La description doit contenir au moins 10 caractères."),
   price: z.coerce.number().min(0, "Le prix ne peut pas être négatif."),
-  availableSides: z.array(z.object({ value: z.string() })).optional(),
-  availableDrinks: z.array(z.object({ value: z.string() })).optional(),
+  availableSides: z.array(optionSchema).optional(),
+  availableDrinks: z.array(optionSchema).optional(),
 });
 
 type EditMenuItemFormValues = z.infer<typeof editMenuItemSchema>;
@@ -50,8 +55,8 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
       name: menuItem.name,
       description: menuItem.description,
       price: menuItem.price,
-      availableSides: menuItem.availableSides?.map(s => ({ value: s })) || [],
-      availableDrinks: menuItem.availableDrinks?.map(d => ({ value: d })) || [],
+      availableSides: menuItem.availableSides || [],
+      availableDrinks: menuItem.availableDrinks || [],
     },
   });
 
@@ -65,15 +70,22 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
     name: "availableDrinks"
   });
 
+  React.useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        name: menuItem.name,
+        description: menuItem.description,
+        price: menuItem.price,
+        availableSides: menuItem.availableSides || [],
+        availableDrinks: menuItem.availableDrinks || [],
+      });
+    }
+  }, [isOpen, menuItem, form]);
+
   const onSubmit = async (data: EditMenuItemFormValues) => {
     setIsSubmitting(true);
     try {
-      const updateData = {
-          ...data,
-          availableSides: data.availableSides?.map(s => s.value),
-          availableDrinks: data.availableDrinks?.map(d => d.value),
-      }
-      await updateMenuItem(menuItem.id, updateData);
+      await updateMenuItem(menuItem.id, data);
       toast({
         title: 'Plat mis à jour',
         description: 'Les modifications ont été enregistrées.',
@@ -92,14 +104,14 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Modifier le plat</DialogTitle>
           <DialogDescription>
             Apportez des modifications à "{menuItem.name}". Cliquez sur enregistrer lorsque vous avez terminé.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
             <div>
                 <Label htmlFor="name">Nom du plat</Label>
                 <Input id="name" {...form.register('name')} />
@@ -120,25 +132,27 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
                 <Label>Accompagnements</Label>
                 {sideFields.map((field, index) => (
                     <div key={field.id} className="flex items-center gap-2">
-                        <Input {...form.register(`availableSides.${index}.value`)} />
+                        <Input {...form.register(`availableSides.${index}.name`)} placeholder="Nom" />
+                        <Input {...form.register(`availableSides.${index}.price`)} type="number" placeholder="Prix" className="w-24"/>
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeSide(index)}><Trash/></Button>
                     </div>
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ value: '' })}>Ajouter un accompagnement</Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ name: '', price: 0 })}><Plus /> Ajouter un accompagnement</Button>
             </div>
             
             <div className="space-y-2">
                 <Label>Boissons</Label>
                 {drinkFields.map((field, index) => (
                     <div key={field.id} className="flex items-center gap-2">
-                        <Input {...form.register(`availableDrinks.${index}.value`)} />
+                        <Input {...form.register(`availableDrinks.${index}.name`)} placeholder="Nom"/>
+                        <Input {...form.register(`availableDrinks.${index}.price`)} type="number" placeholder="Prix" className="w-24"/>
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeDrink(index)}><Trash/></Button>
                     </div>
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ value: '' })}>Ajouter une boisson</Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ name: '', price: 0 })}><Plus /> Ajouter une boisson</Button>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="sticky bottom-0 bg-background pt-4">
                 <Button type="button" variant="outline" onClick={onClose}>Annuler</Button>
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader className="animate-spin" />}

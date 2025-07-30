@@ -9,9 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, Image as ImageIcon, ChefHat, Trash } from 'lucide-react';
+import { Loader, Wand2, Image as ImageIcon, ChefHat, Trash, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type MenuItem, type Restaurant } from '@/lib/types';
+import { type MenuItem, type Restaurant, type MenuOption } from '@/lib/types';
 import { generateMenuItem, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
@@ -35,10 +35,10 @@ export default function RestaurateurHomePage() {
     const [price, setPrice] = React.useState('');
 
     // Form state for menu item options
-    const [sides, setSides] = React.useState<string[]>([]);
-    const [drinks, setDrinks] = React.useState<string[]>([]);
-    const [sideInput, setSideInput] = React.useState('');
-    const [drinkInput, setDrinkInput] = React.useState('');
+    const [sides, setSides] = React.useState<MenuOption[]>([]);
+    const [drinks, setDrinks] = React.useState<MenuOption[]>([]);
+    const [sideInput, setSideInput] = React.useState({ name: '', price: '' });
+    const [drinkInput, setDrinkInput] = React.useState({ name: '', price: '' });
 
 
     React.useEffect(() => {
@@ -139,13 +139,13 @@ export default function RestaurateurHomePage() {
     };
 
     const handleAddOption = (type: 'side' | 'drink') => {
-        if (type === 'side' && sideInput.trim()) {
-            setSides(prev => [...prev, sideInput.trim()]);
-            setSideInput('');
+        if (type === 'side' && sideInput.name.trim() && sideInput.price.trim()) {
+            setSides(prev => [...prev, { name: sideInput.name.trim(), price: Number(sideInput.price) }]);
+            setSideInput({ name: '', price: '' });
         }
-        if (type === 'drink' && drinkInput.trim()) {
-            setDrinks(prev => [...prev, drinkInput.trim()]);
-            setDrinkInput('');
+        if (type === 'drink' && drinkInput.name.trim() && drinkInput.price.trim()) {
+            setDrinks(prev => [...prev, { name: drinkInput.name.trim(), price: Number(drinkInput.price) }]);
+            setDrinkInput({ name: '', price: '' });
         }
     }
 
@@ -230,22 +230,24 @@ export default function RestaurateurHomePage() {
                          <div className="space-y-2">
                             <Label>Accompagnements (optionnel)</Label>
                              <div className="flex gap-2">
-                                <Input value={sideInput} onChange={e => setSideInput(e.target.value)} placeholder="Ex: Alloco, Frites"/>
-                                <Button type="button" onClick={() => handleAddOption('side')}>Ajouter</Button>
+                                <Input value={sideInput.name} onChange={e => setSideInput({...sideInput, name: e.target.value})} placeholder="Ex: Alloco"/>
+                                <Input value={sideInput.price} onChange={e => setSideInput({...sideInput, price: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
+                                <Button type="button" onClick={() => handleAddOption('side')} size="icon"><Plus /></Button>
                              </div>
                              <div className="flex flex-wrap gap-2">
-                                {sides.map((side, i) => <Badge key={i} variant="secondary">{side} <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('side', i)} /></Badge>)}
+                                {sides.map((side, i) => <Badge key={i} variant="secondary">{side.name} (+{side.price} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('side', i)} /></Badge>)}
                              </div>
                         </div>
 
                          <div className="space-y-2">
                             <Label>Boissons (optionnel)</Label>
                              <div className="flex gap-2">
-                                <Input value={drinkInput} onChange={e => setDrinkInput(e.target.value)} placeholder="Ex: Bissap, Coca-Cola"/>
-                                <Button type="button" onClick={() => handleAddOption('drink')}>Ajouter</Button>
+                                <Input value={drinkInput.name} onChange={e => setDrinkInput({...drinkInput, name: e.target.value})} placeholder="Ex: Bissap"/>
+                                <Input value={drinkInput.price} onChange={e => setDrinkInput({...drinkInput, price: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
+                                <Button type="button" onClick={() => handleAddOption('drink')} size="icon"><Plus /></Button>
                              </div>
                              <div className="flex flex-wrap gap-2">
-                                {drinks.map((drink, i) => <Badge key={i} variant="secondary">{drink} <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('drink', i)}/></Badge>)}
+                                {drinks.map((drink, i) => <Badge key={i} variant="secondary">{drink.name} (+{drink.price} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('drink', i)}/></Badge>)}
                              </div>
                         </div>
 
