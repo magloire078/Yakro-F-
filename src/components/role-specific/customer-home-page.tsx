@@ -47,7 +47,6 @@ export default function CustomerHomePage() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
   const [activeOrder, setActiveOrder] = React.useState<Order | null>(null);
-  const [showOrderStatus, setShowOrderStatus] = React.useState(false);
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
   const [recommendationError, setRecommendationError] = React.useState(false);
@@ -100,37 +99,24 @@ export default function CustomerHomePage() {
     }
   }, [user, userDeliveredOrders, restaurants, menuItems, isLoading]);
 
-  React.useEffect(() => {
-    if (user && orders.length > 0) {
-      const userOrders = orders.filter(o => o.userId === user.uid).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      const latestActiveOrder = userOrders.find(o => o.status !== 'Livrée' && o.status !== 'Annulée');
-      if (latestActiveOrder) {
-        setActiveOrder(latestActiveOrder);
-        setShowOrderStatus(true);
-      } else {
-        setActiveOrder(null);
-        setShowOrderStatus(false);
-      }
-    } else {
+  const handleNewOrder = () => {
       setActiveOrder(null);
-      setShowOrderStatus(false);
-    }
-  }, [orders, user]);
+  };
 
   React.useEffect(() => {
-    const handlePlaceOrder = () => {
-      setTimeout(() => {
-        if (user && orders.length > 0) {
-          const latestOrder = orders.filter(o => o.userId === user.uid).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-          if (latestOrder) {
-            setActiveOrder(latestOrder);
-            setShowOrderStatus(true);
-          }
-        }
-      }, 1000);
-    };
-    window.addEventListener('place-order', handlePlaceOrder);
-    return () => window.removeEventListener('place-order', handlePlaceOrder);
+    const findActiveOrder = () => {
+       if (user && orders.length > 0) {
+        const userOrders = orders.filter(o => o.userId === user.uid).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const latestActiveOrder = userOrders.find(o => o.status !== 'Livrée' && o.status !== 'Annulée');
+        setActiveOrder(latestActiveOrder || null);
+      } else {
+        setActiveOrder(null);
+      }
+    }
+    findActiveOrder();
+
+    window.addEventListener('place-order', findActiveOrder);
+    return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
 
   const filteredRestaurants = React.useMemo(() => {
@@ -158,22 +144,22 @@ export default function CustomerHomePage() {
       </div>
     </div>
   ));
-
-  if (showOrderStatus && activeOrder) {
-    return <OrderStatus order={activeOrder} onNewOrder={() => setShowOrderStatus(false)} />;
-  }
-
+  
   return (
     <div className="flex flex-col gap-12 md:gap-16">
-      <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-lg">
-        <h1 className="text-4xl md:text-6xl font-headline text-primary">Votre ville, livrée.</h1>
-        <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous. Simple, rapide et délicieux.
-        </p>
-        <div className="mt-8 max-w-xl mx-auto">
-          <SearchBar onSearchChange={setSearchQuery} onInterpretedSearchChange={setInterpretedSearch} />
-        </div>
-      </section>
+      {activeOrder ? (
+          <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
+      ) : (
+        <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-headline text-primary">Votre ville, livrée.</h1>
+          <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous. Simple, rapide et délicieux.
+          </p>
+          <div className="mt-8 max-w-xl mx-auto">
+            <SearchBar onSearchChange={setSearchQuery} onInterpretedSearchChange={setInterpretedSearch} />
+          </div>
+        </section>
+      )}
 
       {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} hasError={recommendationError} />}
 

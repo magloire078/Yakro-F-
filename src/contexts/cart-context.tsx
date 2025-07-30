@@ -131,9 +131,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     await addOrder(newOrder);
     clearCart();
-
-    // This is a simulation. In a real app, this would trigger the checkout flow.
-    // We fire a custom event that the main page can listen to.
     window.dispatchEvent(new CustomEvent('place-order'));
   };
 
