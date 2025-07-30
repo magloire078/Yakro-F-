@@ -4,7 +4,6 @@
 import { Sidebar } from '@/components/sidebar';
 import { MobileHeader } from '@/components/mobile-header';
 import { useData } from '@/contexts/data-context';
-import { useEffect } from 'react';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
@@ -15,7 +14,7 @@ export default function MainAppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { fetchData, isLoading } = useData();
+  const { isLoading } = useData();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -24,10 +23,6 @@ export default function MainAppLayout({
         router.push('/login');
     }
   }, [user, authLoading, router]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   if (isLoading || authLoading) {
     return (
