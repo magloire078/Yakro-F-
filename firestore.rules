@@ -3,30 +3,57 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+  
+    // Helper function to check if a user is the owner of a restaurant
+    function isRestaurantOwner(restaurantId, userId) {
+      return get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.ownerId == userId;
+    }
 
-    // Allow public read access to restaurants and menu items
+    // Users can only read and write their own profile
+    match /utilisateurs/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+
+    // Anyone can read restaurants, but only owners can write
     match /restaurants/{restaurantId} {
-      allow read: if true;
-      allow write: if request.auth != null; // Only authenticated users can create/update
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && isRestaurantOwner(restaurantId, request.auth.uid);
+    }
+    
+    // Anyone can read menu items, but only restaurant owners can write them
+    match /plats/{platId} {
+        allow read: if request.auth != null;
+        allow create, update, delete: if request.auth != null && isRestaurantOwner(request.resource.data.restaurantId, request.auth.uid);
     }
 
-    match /menuItems/{menuItemId} {
-      allow read: if true;
-      allow write: if request.auth != null; // Only authenticated users can create/update
-    }
-
-    // Orders can only be read/written by the user who owns them,
-    // or by a logged-in deliverer.
-    match /orders/{orderId} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.delivererId);
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow update: if request.auth != null; // Allow any authenticated user (e.g., deliverer) to update status
-    }
-
-    // Allow any other collection to be read/written by authenticated users.
-    // This is a fallback and can be tightened later.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Rules for orders
+    match /commandes/{commandeId} {
+      // A client can create their own order
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // A client can read their own orders
+      // A restaurateur can read orders for their restaurants
+      // A livreur can read orders assigned to them or available for delivery
+      allow read: if request.auth != null && 
+                  (
+                    resource.data.userId == request.auth.uid ||
+                    isRestaurantOwner(resource.data.restaurantId, request.auth.uid) ||
+                    (resource.data.delivererId == request.auth.uid || resource.data.status == 'En Préparation')
+                  );
+      
+      // A restaurateur can update status to 'En Préparation'
+      // A livreur can update status to 'En Route' or 'Livrée'
+      allow update: if request.auth != null &&
+                    (
+                      // Restaurateur accepts order
+                      (isRestaurantOwner(resource.data.restaurantId, request.auth.uid) && request.resource.data.status == 'En Préparation') ||
+                      // Livreur accepts order
+                      (request.resource.data.status == 'En Route' && request.resource.data.delivererId == request.auth.uid && resource.data.status == 'En Préparation') ||
+                      // Livreur completes order
+                      (request.resource.data.status == 'Livrée' && resource.data.delivererId == request.auth.uid && resource.data.status == 'En Route')
+                    );
     }
   }
 }
