@@ -52,7 +52,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
   addMenuItem: async (item) => {
     try {
-      await addDoc(collection(db, "menuItems"), item);
+      await addDoc(collection(db, "plats"), item);
     } catch (e) {
       console.error("Error adding menu item: ", e);
       throw e;
@@ -60,7 +60,7 @@ const useDataStore = create<DataState>((set, get) => ({
   },
   
   updateMenuItem: async (itemId, data) => {
-    const itemDocRef = doc(db, 'menuItems', itemId);
+    const itemDocRef = doc(db, 'plats', itemId);
     try {
       await updateDoc(itemDocRef, data);
     } catch (e) {
@@ -70,7 +70,7 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 
   deleteMenuItem: async (itemId) => {
-    const itemDocRef = doc(db, 'menuItems', itemId);
+    const itemDocRef = doc(db, 'plats', itemId);
     try {
       await deleteDoc(itemDocRef);
     } catch (e) {
@@ -81,7 +81,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
   addOrder: async (order) => {
     try {
-      await addDoc(collection(db, "orders"), order);
+      await addDoc(collection(db, "commandes"), order);
     } catch (e) {
       console.error("Error adding order: ", e);
       throw e;
@@ -89,7 +89,7 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 
   updateOrderStatus: async (orderId: string, status: Order['status'], delivererId?: string) => {
-    const orderDocRef = doc(db, 'orders', orderId);
+    const orderDocRef = doc(db, 'commandes', orderId);
     try {
         const updateData: {status: Order['status'], delivererId?: string} = { status };
         if (delivererId) {
@@ -155,7 +155,7 @@ function useRealtimeData() {
         
 
         // Menu Items Listener - shows all menu items for simplicity
-        const unsubMenuItems = onSnapshot(collection(db, "menuItems"), (snapshot) => {
+        const unsubMenuItems = onSnapshot(collection(db, "plats"), (snapshot) => {
             const menuList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
             useDataStore.setState({ menuItems: menuList });
         }, (error) => {
@@ -165,7 +165,7 @@ function useRealtimeData() {
         // Orders Listener
         let unsubOrders: Unsubscribe | null = null;
         if (user) {
-            const ordersCollection = collection(db, 'orders');
+            const ordersCollection = collection(db, 'commandes');
             
             const currentOrdersRef = new Map<string, Order>();
             let orderUnsubscribes: Unsubscribe[] = [];

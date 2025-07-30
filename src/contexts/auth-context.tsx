@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let unsubscribeProfile: (() => void) | undefined;
       if (user) {
           setLoading(true);
-          const userDocRef = doc(db, 'users', user.uid);
+          const userDocRef = doc(db, 'utilisateurs', user.uid);
           unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
               if (docSnap.exists()) {
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-      const userDocRef = doc(db, 'users', uid);
+      const userDocRef = doc(db, 'utilisateurs', uid);
       await updateDoc(userDocRef, data);
   };
 

@@ -44,7 +44,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
         const user = userCredential.user;
         
         // Create a user document in Firestore
-        await setDoc(doc(db, "users", user.uid), {
+        await setDoc(doc(db, "utilisateurs", user.uid), {
             email: user.email,
             createdAt: serverTimestamp(),
         });
