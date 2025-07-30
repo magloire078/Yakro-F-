@@ -1,11 +1,11 @@
 
 'use server';
 /**
- * @fileOverview Un flux pour générer une narration audio à partir des avis de restaurant.
+ * @fileOverview A flow to generate audio narration from restaurant reviews.
  *
- * - generateAudioReview - Une fonction qui génère un fichier audio à partir des avis.
- * - GenerateAudioReviewInput - Le type d'entrée pour la fonction generateAudioReview.
- * - GenerateAudioReviewOutput - Le type de retour pour la fonction generateAudioReview.
+ * - generateAudioReview - A function that generates an audio file from reviews.
+ * - GenerateAudioReviewInput - The input type for the generateAudioReview function.
+ * - GenerateAudioReviewOutput - The return type for the generateAudioReview function.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
@@ -19,13 +19,13 @@ const GenerateAudioReviewInputSchema = z.object({
             rating: z.number(),
             comment: z.string(),
         })
-    ).describe("Un tableau d'objets d'avis à convertir en audio.")
+    ).describe("An array of review objects to be converted to audio.")
 });
 
 export type GenerateAudioReviewInput = z.infer<typeof GenerateAudioReviewInputSchema>;
 
 const GenerateAudioReviewOutputSchema = z.object({
-    audioDataUri: z.string().describe("L'URI de données du fichier audio WAV généré."),
+    audioDataUri: z.string().describe("The data URI of the generated WAV audio file."),
 });
 export type GenerateAudioReviewOutput = z.infer<typeof GenerateAudioReviewOutputSchema>;
 
@@ -69,9 +69,9 @@ const generateAudioReviewFlow = ai.defineFlow(
         outputSchema: GenerateAudioReviewOutputSchema,
     },
     async ({ reviews }) => {
-        // Crée un script pour la synthèse vocale multi-locuteurs
+        // Create a script for multi-speaker TTS
         const script = reviews.map((review, index) => {
-            const speaker = `Speaker${(index % 2) + 1}`; // Alterne entre Speaker1 et Speaker2
+            const speaker = `Speaker${(index % 2) + 1}`; // Alternate between Speaker1 and Speaker2
             return `${speaker}: "${review.comment}"`;
         }).join('\n');
         
@@ -98,7 +98,7 @@ const generateAudioReviewFlow = ai.defineFlow(
         });
 
         if (!media) {
-            throw new Error('La génération audio a échoué.');
+            throw new Error('Audio generation failed.');
         }
 
         const audioBuffer = Buffer.from(
@@ -113,3 +113,5 @@ const generateAudioReviewFlow = ai.defineFlow(
         };
     }
 );
+
+    

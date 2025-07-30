@@ -35,3 +35,5 @@ export function RatingsChart({ data }: RatingsChartProps) {
      </Card>
   );
 }
+
+    
