@@ -19,11 +19,11 @@ interface AuthContextType {
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-const getInitialRole = (): UserRole => {
+const getRoleFromStorage = (): UserRole | null => {
     if (typeof window === 'undefined') {
-        return 'client';
+        return null;
     }
-    return (localStorage.getItem('activeRole') as UserRole) || 'client';
+    return (localStorage.getItem('activeRole') as UserRole) || null;
 };
 
 
@@ -34,7 +34,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeRole, setActiveRoleState] = React.useState<UserRole>('client');
 
   React.useEffect(() => {
-    setActiveRoleState(getInitialRole());
+    // Set initial role from localStorage for faster UI response
+    const storedRole = getRoleFromStorage();
+    if (storedRole) {
+        setActiveRoleState(storedRole);
+    }
 
     const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
       setUser(authUser);
@@ -66,7 +70,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const userDocRef = doc(db, 'users', user.uid);
           unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
               if (docSnap.exists()) {
-                  setUserProfile({ uid: docSnap.id, ...docSnap.data() } as UserProfile);
+                  const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
+                  setUserProfile(profileData);
+                  // Set active role from Firestore profile if it exists
+                  if (profileData.role) {
+                      setActiveRole(profileData.role);
+                  }
               } else {
                   // This case happens for new sign-ups. Create a default profile.
                    setDoc(userDocRef, {

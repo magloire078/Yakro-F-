@@ -10,35 +10,48 @@ import type { UserRole } from '@/lib/types';
 
 export default function ProfileSelectionPage() {
     const router = useRouter();
-    const { user, loading: authLoading, setActiveRole } = useAuth();
+    const { user, userProfile, loading: authLoading, setActiveRole, updateUserProfile } = useAuth();
+    const [isRedirecting, setIsRedirecting] = React.useState(true);
 
     React.useEffect(() => {
         if (authLoading) {
-            return; // Attendre la fin du chargement de l'authentification
+            return;
         }
 
         if (!user) {
-            router.push('/login'); // Si pas d'utilisateur, redirection vers la page de connexion
+            router.push('/login');
             return;
         }
         
-        // Vérifier si un rôle est déjà sauvegardé dans le localStorage
-        const savedRole = localStorage.getItem('activeRole') as UserRole;
-        if (savedRole) {
-            router.push('/'); // Si un rôle existe, l'utilisateur a déjà fait son choix, redirection vers l'accueil
+        // If the user profile from DB has a role, redirect immediately
+        if (userProfile?.role) {
+            setActiveRole(userProfile.role);
+            router.push('/');
+        } else {
+            // No role in DB, so let the user choose.
+            setIsRedirecting(false);
         }
-        // Si aucun rôle n'est sauvegardé, la page reste affichée pour permettre la sélection.
         
-    }, [user, authLoading, router]);
+    }, [user, userProfile, authLoading, router, setActiveRole]);
 
-    const handleProfileSelect = (role: UserRole) => {
-        setActiveRole(role);
-        router.push('/');
+    const handleProfileSelect = async (role: UserRole) => {
+        if (!user) return;
+        setIsRedirecting(true); // Show loader while we save and redirect
+        try {
+            // First, save the role to localStorage and React state for immediate UI update
+            setActiveRole(role);
+            // Then, save the role to Firestore for persistence
+            await updateUserProfile(user.uid, { role: role });
+            // Finally, redirect to the home page
+            router.push('/');
+        } catch (error) {
+            console.error("Failed to save user role:", error);
+            setIsRedirecting(false); // Stop loading on error
+        }
     };
     
-    // Afficher un loader tant que l'authentification est en cours ou si l'utilisateur est sur le point d'être redirigé.
-    // Ou si un rôle est déjà défini (car la redirection est imminente).
-    if (authLoading || !user || (typeof window !== 'undefined' && localStorage.getItem('activeRole'))) {
+    // Show a loader during initial auth check, redirection, or while saving the role.
+    if (authLoading || isRedirecting) {
         return (
             <div className="flex h-screen w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />

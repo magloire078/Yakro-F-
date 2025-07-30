@@ -57,6 +57,8 @@ export interface Review {
   comment: string;
 }
 
+export type UserRole = 'client' | 'restaurateur' | 'livreur';
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -64,6 +66,5 @@ export interface UserProfile {
     name?: string;
     phone?: string;
     defaultAddress?: string;
+    role?: UserRole;
 }
-
-export type UserRole = 'client' | 'restaurateur' | 'livreur';
