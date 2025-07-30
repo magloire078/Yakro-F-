@@ -13,12 +13,29 @@ import Image from 'next/image';
 import type { Restaurant, MenuItem } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { EditMenuItemDialog } from '@/components/edit-menu-item-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 export default function DashboardMenuPage() {
     const { user, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
-    const { restaurants, menuItems, isLoading } = useData();
+    const { restaurants, menuItems, isLoading, deleteMenuItem } = useData();
     const { toast } = useToast();
+    const [isDeleting, setIsDeleting] = React.useState(false);
+
+    // State for dialogs
+    const [editingItem, setEditingItem] = React.useState<MenuItem | null>(null);
 
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -50,6 +67,25 @@ export default function DashboardMenuPage() {
     const getRestaurantName = (restaurantId: string) => {
         return restaurants.find(r => r.id === restaurantId)?.name || 'Restaurant inconnu';
     };
+
+    const handleDeleteItem = async (itemId: string) => {
+        setIsDeleting(true);
+        try {
+            await deleteMenuItem(itemId);
+            toast({
+                title: 'Plat supprimé',
+                description: 'Le plat a été retiré de votre menu.',
+            })
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Erreur',
+                description: 'Impossible de supprimer le plat.',
+            })
+        } finally {
+            setIsDeleting(false);
+        }
+    }
 
     return (
         <div className="container mx-auto">
@@ -97,14 +133,33 @@ export default function DashboardMenuPage() {
                                 <p className="text-lg font-bold text-primary mt-3">{item.price.toLocaleString('fr-FR')} FCFA</p>
                             </CardContent>
                             <CardFooter className="flex gap-2">
-                                <Button variant="outline" className="w-full" disabled>
+                                <Button variant="outline" className="w-full" onClick={() => setEditingItem(item)}>
                                     <Edit />
                                     Modifier
                                 </Button>
-                                <Button variant="destructive" className="w-full" disabled>
-                                    <Trash2 />
-                                    Supprimer
-                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" className="w-full">
+                                            <Trash2 />
+                                            Supprimer
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Cette action est irréversible. Le plat "{item.name}" sera définitivement supprimé.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteItem(item.id)} disabled={isDeleting}>
+                                            {isDeleting && <Loader className="animate-spin" />}
+                                            Confirmer
+                                        </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </CardFooter>
                         </Card>
                     ))}
@@ -119,6 +174,14 @@ export default function DashboardMenuPage() {
                         <Link href="/">Ajouter un plat</Link>
                      </Button>
                 </Card>
+            )}
+
+            {editingItem && (
+                <EditMenuItemDialog
+                    isOpen={!!editingItem}
+                    onClose={() => setEditingItem(null)}
+                    menuItem={editingItem}
+                />
             )}
         </div>
     );

@@ -56,7 +56,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                     const menuItem = getMenuItem(item.id);
                     if (!menuItem) return null;
                     return (
-                        <div key={item.id} className="flex items-center gap-4">
+                        <div key={item.id} className="flex items-start gap-4">
                             <Image
                             src={item.image}
                             alt={menuItem.name}
@@ -66,29 +66,33 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                             data-ai-hint={menuItem.imageHint}
                             />
                             <div className="flex-1">
-                            <p className="font-semibold">{menuItem.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                                {(menuItem.price * item.quantity).toLocaleString('fr-FR')} FCFA
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                                <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                >
-                                <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="w-6 text-center">{item.quantity}</span>
-                                <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                >
-                                <Plus className="h-3 w-3" />
-                                </Button>
-                            </div>
+                                <p className="font-semibold">{menuItem.name}</p>
+                                <div className="text-xs text-muted-foreground">
+                                    {item.selectedSide && <p>+ {item.selectedSide}</p>}
+                                    {item.selectedDrink && <p>+ {item.selectedDrink}</p>}
+                                </div>
+                                <p className="text-sm font-semibold text-primary mt-1">
+                                    {(menuItem.price * item.quantity).toLocaleString('fr-FR')} FCFA
+                                </p>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                    >
+                                    <Minus className="h-3 w-3" />
+                                    </Button>
+                                    <span className="w-6 text-center">{item.quantity}</span>
+                                    <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                    >
+                                    <Plus className="h-3 w-3" />
+                                    </Button>
+                                </div>
                             </div>
                             <Button
                             variant="ghost"

@@ -6,6 +6,8 @@ export interface MenuItem {
   price: number;
   imageHint: string;
   restaurantId: string;
+  availableSides?: string[];
+  availableDrinks?: string[];
 }
 
 export interface Restaurant {
@@ -23,6 +25,8 @@ export interface Restaurant {
 export interface CartItem extends MenuItem {
   quantity: number;
   image: string; // Keep for cart display logic
+  selectedSide?: string;
+  selectedDrink?: string;
 }
 
 export interface Order {

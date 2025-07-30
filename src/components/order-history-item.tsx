@@ -63,8 +63,11 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                             <div className="flex items-center gap-4">
                                 <Image src={item.image} alt={menuItem.name} width={40} height={40} className="rounded-md" data-ai-hint={menuItem.imageHint}/>
                                 <div>
-                                    <span>{item.quantity} x </span>
-                                    <span className="font-medium">{item.name}</span>
+                                    <span className="font-medium">{item.quantity}x {item.name}</span>
+                                     <div className="text-xs text-muted-foreground">
+                                        {item.selectedSide && <p>+ {item.selectedSide}</p>}
+                                        {item.selectedDrink && <p>+ {item.selectedDrink}</p>}
+                                    </div>
                                 </div>
                             </div>
                             <span>{(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>

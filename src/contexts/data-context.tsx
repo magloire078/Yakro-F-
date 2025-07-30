@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
@@ -17,6 +17,8 @@ interface DataState {
   fetchData: () => Promise<void>;
   addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
+  updateMenuItem: (itemId: string, data: Partial<MenuItem>) => Promise<void>;
+  deleteMenuItem: (itemId: string) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
@@ -53,6 +55,26 @@ const useDataStore = create<DataState>((set, get) => ({
       await addDoc(collection(db, "menuItems"), item);
     } catch (e) {
       console.error("Error adding menu item: ", e);
+      throw e;
+    }
+  },
+  
+  updateMenuItem: async (itemId, data) => {
+    const itemDocRef = doc(db, 'menuItems', itemId);
+    try {
+      await updateDoc(itemDocRef, data);
+    } catch (e) {
+      console.error("Error updating menu item: ", e);
+      throw e;
+    }
+  },
+
+  deleteMenuItem: async (itemId) => {
+    const itemDocRef = doc(db, 'menuItems', itemId);
+    try {
+      await deleteDoc(itemDocRef);
+    } catch (e) {
+      console.error("Error deleting menu item: ", e);
       throw e;
     }
   },
@@ -170,15 +192,18 @@ function useRealtimeData() {
             setupSubscription(query(ordersCollection, where("userId", "==", user.uid)));
             
             // If restaurateur, also get all orders placed at their restaurants.
-            // A more robust solution would query based on an array of the user's restaurant IDs.
-            // For now, we'll get all placed/preparing orders as a proxy.
+            // This logic assumes `myRestaurantIds` is available from another part of the state.
+            // A more robust implementation might fetch these IDs first.
             if (activeRole === 'restaurateur') {
+                 // For simplicity, we get all Placed/Preparing orders. A production app would
+                 // query based on an array of the user's restaurant IDs.
                  setupSubscription(query(ordersCollection, where("status", "in", ["Placée", "En Préparation"])));
             }
 
-            // If livreur, get all orders ready for pickup.
+            // If livreur, get all orders ready for pickup and those they are delivering.
             if (activeRole === 'livreur') {
                 setupSubscription(query(ordersCollection, where("status", "==", "En Préparation")));
+                setupSubscription(query(ordersCollection, where("delivererId", "==", user.uid)));
             }
             
             unsubOrders = () => orderUnsubscribes.forEach(unsub => unsub());

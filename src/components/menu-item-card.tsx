@@ -6,14 +6,15 @@ import { Button } from './ui/button';
 import { PlusCircle } from 'lucide-react';
 import type { MenuItem } from '@/lib/types';
 import { useCart } from '@/contexts/cart-context';
+import { AddToCartDialog } from './add-to-cart-dialog';
+import * as React from 'react';
 
 interface MenuItemCardProps {
   item: MenuItem;
 }
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
-    const { addToCart } = useCart();
-    const imageSrc = `https://placehold.co/100x100.png`;
+  const imageSrc = `https://placehold.co/100x100.png`;
 
   return (
     <Card className="flex items-center p-4 gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 group">
@@ -31,9 +32,11 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
         <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
         <div className="flex justify-between items-center mt-2">
           <p className="text-lg font-semibold text-primary">{item.price.toLocaleString('fr-FR')} FCFA</p>
-          <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => addToCart({ ...item, image: imageSrc })}>
-            <PlusCircle className="w-6 h-6" />
-          </Button>
+          <AddToCartDialog item={item} imageSrc={imageSrc}>
+            <Button variant="ghost" size="icon" className="text-primary hover:text-primary">
+              <PlusCircle className="w-6 h-6" />
+            </Button>
+          </AddToCartDialog>
         </div>
       </div>
     </Card>
