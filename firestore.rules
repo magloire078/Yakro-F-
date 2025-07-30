@@ -1,71 +1,85 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- Helper Functions ---
-    function isSignedIn() {
-      return request.auth != null;
+  
+    // Helper Functions
+    function isUser(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
     
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    function getRestaurantDoc(restaurantId) {
-      return get(/databases/$(database)/documents/restaurants/$(restaurantId));
-    }
-    
-    function isRestaurantOwner(restaurantId) {
-      return isSignedIn() && getRestaurantDoc(restaurantId).data.ownerId == request.auth.uid;
+    function isRestaurateur() {
+      return request.auth != null && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.role == 'restaurateur';
     }
 
-    // --- Collections Rules ---
-    
-    // USERS: Can only read/write their own profile
+    function isLivreur() {
+       return request.auth != null && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.role == 'livreur';
+    }
+
+    function isOwner(doc) {
+      return request.auth.uid == doc.data.ownerId;
+    }
+
+    // =================================
+    // Collection Rules
+    // =================================
+
+    // Utilisateurs
     match /utilisateurs/{userId} {
-      allow read, update, delete: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn();
+      // Un utilisateur ne peut lire et mettre à jour que son propre profil.
+      allow read, update: if isUser(userId);
+      // Personne ne peut supprimer un profil, et la création est gérée par l'authentification.
+      allow create: if request.auth != null;
+      allow delete: if false;
     }
     
-    // RESTAURANTS: Anyone signed in can read. Only owner can write.
+    // Restaurants
     match /restaurants/{restaurantId} {
-      allow read: if isSignedIn();
-      allow write: if isRestaurantOwner(restaurantId);
+      // Tout le monde peut voir les restaurants.
+      allow read: if true;
+      // Seuls les restaurateurs peuvent créer, modifier et supprimer LEURS propres restaurants.
+      allow create: if isRestaurateur();
+      allow update, delete: if isRestaurateur() && isOwner(resource);
     }
     
-    // MENU ITEMS (PLATS): Anyone signed in can read. Only associated restaurant owner can write.
+    // Plats
     match /plats/{platId} {
-      allow read: if isSignedIn();
-      allow create: if isRestaurantOwner(request.resource.data.restaurantId);
-      allow update, delete: if isRestaurantOwner(get(/databases/$(database)/documents/plats/$(platId)).data.restaurantId);
+      // Tout le monde peut voir les plats.
+      allow read: if true;
+      
+      // Seul le propriétaire du restaurant peut créer un plat pour son restaurant.
+      allow create: if isRestaurateur() && request.auth.uid == get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.ownerId;
+      
+      // Seul le propriétaire du restaurant peut mettre à jour un plat existant.
+      // On vérifie sur les données existantes (resource.data) plutôt que sur les nouvelles (request.resource.data).
+      allow update: if isRestaurateur() && request.auth.uid == get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.ownerId;
+      
+      // Seul le propriétaire du restaurant peut supprimer un plat existant.
+      allow delete: if isRestaurateur() && request.auth.uid == get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.ownerId;
     }
-    
-    // ORDERS (COMMANDES)
-    match /commandes/{commandeId} {
-      // READ: Users can read their own orders.
-      // Restaurateurs can read their restaurant's orders.
-      // Deliverers can read available orders or orders assigned to them.
-      allow read: if isSignedIn() && (
-        isOwner(resource.data.userId) ||
-        isRestaurantOwner(resource.data.restaurantId) ||
-        resource.data.status == 'En Préparation' ||
-        isOwner(resource.data.delivererId)
-      );
-      
-      // CREATE: Only the user placing the order can create it.
-      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
-      
-      // UPDATE: A command can be updated by:
-      // 1. The restaurateur who owns the restaurant associated with the order.
-      // 2. A deliverer who is assigning themselves to the order ('En Préparation' -> 'En Route').
-      // 3. The deliverer who is already assigned to the order.
-      allow update: if isSignedIn() && (
-        isRestaurantOwner(resource.data.restaurantId) ||
-        (resource.data.status == 'En Préparation' && request.resource.data.status == 'En Route' && isOwner(request.resource.data.delivererId)) ||
-        isOwner(resource.data.delivererId)
-      );
+
+    // Commandes
+    match /commandes/{orderId} {
+      // Une seule règle de lecture complexe :
+      allow read: if 
+                  // Les clients peuvent lire leurs propres commandes
+                  (isUser(resource.data.userId)) || 
+                  // Les restaurateurs peuvent lire les commandes de leurs restaurants
+                  (isRestaurateur() && request.auth.uid == get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.ownerId) ||
+                  // Les livreurs peuvent lire les commandes prêtes ou celles qui leur sont assignées
+                  (isLivreur() && (resource.data.status == 'En Préparation' || resource.data.delivererId == request.auth.uid));
+
+      // Les clients peuvent créer des commandes.
+      allow create: if isUser(request.resource.data.userId);
+
+      // La mise à jour du statut est complexe :
+      allow update: if 
+                  // Un restaurateur peut changer le statut à 'En Préparation'.
+                  (isRestaurateur() && request.auth.uid == get(/databases/$(database)/documents/restaurants/$(resource.data.restaurantId)).data.ownerId && request.resource.data.status == 'En Préparation') ||
+                  // Un livreur peut s'assigner une commande et changer son statut à 'En Route'.
+                  (isLivreur() && resource.data.status == 'En Préparation' && request.resource.data.status == 'En Route' && request.resource.data.delivererId == request.auth.uid) ||
+                  // Le livreur assigné peut changer le statut à 'Livrée'.
+                  (isLivreur() && resource.data.delivererId == request.auth.uid && request.resource.data.status == 'Livrée');
     }
   }
 }
