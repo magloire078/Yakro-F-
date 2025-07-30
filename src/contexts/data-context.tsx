@@ -12,9 +12,11 @@ interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
   orders: Order[];
-  isGenerating: boolean;
-  isLoading: boolean;
-  fetchData: () => Promise<void>;
+  isLoading: {
+    restaurants: boolean;
+    menuItems: boolean;
+    orders: boolean;
+  };
   addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>) => Promise<void>;
@@ -29,18 +31,12 @@ const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
-  isGenerating: false,
-  isLoading: true,
-
-  fetchData: async () => {
-    if (!get().isLoading) return;
-    try {
-      await getDocs(collection(db, 'restaurants'));
-    } catch (error) {
-      console.error("Error connecting to Firestore: ", error);
-    }
+  isLoading: {
+    restaurants: true,
+    menuItems: true,
+    orders: true,
   },
-  
+
   addRestaurant: async (restaurant) => {
     try {
       await addDoc(collection(db, "restaurants"), restaurant);
@@ -110,98 +106,114 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
+// This provider is a dummy for initial load, the real logic is in useRealtimeData
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { fetchData } = useDataStore();
-  
-  React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   useRealtimeData();
-
   return <>{children}</>;
 };
 
+// This hook manages all realtime subscriptions
 function useRealtimeData() {
     const { user, activeRole } = useAuth();
+    const myRestaurants = useDataStore((state) => state.restaurants);
 
+    // Subscribe to Restaurants
     React.useEffect(() => {
-        useDataStore.setState({ isLoading: true });
-
-        let unsubRestaurants: Unsubscribe | null = null;
-        const restaurantsCollection = collection(db, "restaurants");
-        const myRestaurantIds = useDataStore.getState().restaurants.map(r => r.id);
-
-        if (user && activeRole === 'restaurateur') {
-            const q = query(restaurantsCollection, where("ownerId", "==", user.uid));
-            unsubRestaurants = onSnapshot(q, (snapshot) => {
-                const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-                useDataStore.setState({ restaurants: restaurantList, isLoading: false });
-            }, (error) => {
-                 console.error("Error on restaurateur's restaurants snapshot listener:", error);
-                 useDataStore.setState({ isLoading: false });
+        useDataStore.setState(state => ({ isLoading: { ...state.isLoading, restaurants: true } }));
+        const q = collection(db, "restaurants");
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
+            useDataStore.setState({ 
+                restaurants: restaurantList,
+                isLoading: { ...useDataStore.getState().isLoading, restaurants: false } 
             });
-        } else {
-            unsubRestaurants = onSnapshot(restaurantsCollection, (snapshot) => {
-                const restaurantList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Restaurant));
-                useDataStore.setState({ restaurants: restaurantList, isLoading: false });
-            }, (error) => {
-                 console.error("Error on all restaurants snapshot listener:", error);
-                 useDataStore.setState({ isLoading: false });
-            });
-        }
-        
-        const unsubMenuItems = onSnapshot(collection(db, "plats"), (snapshot) => {
-            const menuList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
-            useDataStore.setState({ menuItems: menuList });
         }, (error) => {
-             console.error("Error on menuItems snapshot listener:", error);
+            console.error("Error on restaurants snapshot listener:", error);
+            useDataStore.setState(state => ({ isLoading: { ...state.isLoading, restaurants: false } }));
         });
 
-        let unsubOrders: Unsubscribe | null = null;
+        return () => unsubscribe();
+    }, []);
+
+    // Subscribe to Menu Items
+    React.useEffect(() => {
+        useDataStore.setState(state => ({ isLoading: { ...state.isLoading, menuItems: true } }));
+        const q = collection(db, "plats");
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const menuList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
+            useDataStore.setState({ 
+                menuItems: menuList,
+                isLoading: { ...useDataStore.getState().isLoading, menuItems: false } 
+            });
+        }, (error) => {
+            console.error("Error on menuItems snapshot listener:", error);
+            useDataStore.setState(state => ({ isLoading: { ...state.isLoading, menuItems: false } }));
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    // Subscribe to Orders (dependent on user and role)
+    React.useEffect(() => {
+        let unsubscribe: Unsubscribe | null = null;
+        useDataStore.setState(state => ({ isLoading: { ...state.isLoading, orders: true } }));
+
         if (user) {
             const ordersCollection = collection(db, 'commandes');
             let q: Query | null = null;
 
-            switch (activeRole) {
-                case 'client':
-                    q = query(ordersCollection, where("userId", "==", user.uid));
-                    break;
-                case 'restaurateur':
-                    if (myRestaurantIds.length > 0) {
-                        q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
-                    }
-                    break;
-                case 'livreur':
-                    q = query(ordersCollection, or(
-                        where("status", "==", "En Préparation"),
-                        where("delivererId", "==", user.uid)
-                    ));
-                    break;
-            }
+            if (activeRole === 'client') {
+                q = query(ordersCollection, where("userId", "==", user.uid));
+            } else if (activeRole === 'restaurateur') {
+                const myRestaurantIds = myRestaurants
+                    .filter(r => r.ownerId === user.uid)
+                    .map(r => r.id);
 
+                if (myRestaurantIds.length > 0) {
+                    q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
+                }
+            } else if (activeRole === 'livreur') {
+                q = query(ordersCollection, or(
+                    where("status", "==", "En Préparation"),
+                    where("delivererId", "==", user.uid)
+                ));
+            }
+            
             if (q) {
-                unsubOrders = onSnapshot(q, (snapshot) => {
+                unsubscribe = onSnapshot(q, (snapshot) => {
                     const ordersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
                     const sortedOrders = ordersList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                    useDataStore.setState({ orders: sortedOrders });
+                    useDataStore.setState({ 
+                        orders: sortedOrders,
+                        isLoading: { ...useDataStore.getState().isLoading, orders: false }
+                    });
                 }, (error) => {
                     console.error("Error on orders snapshot listener:", error);
+                    useDataStore.setState(state => ({ isLoading: { ...state.isLoading, orders: false } }));
                 });
             } else {
-                useDataStore.setState({ orders: [] });
+                 useDataStore.setState({ orders: [], isLoading: { ...useDataStore.getState().isLoading, orders: false } });
             }
         } else {
-            useDataStore.setState({ orders: [] }); 
+            useDataStore.setState({ orders: [], isLoading: { ...useDataStore.getState().isLoading, orders: false } });
         }
 
         return () => {
-            if(unsubRestaurants) unsubRestaurants();
-            unsubMenuItems();
-            if (unsubOrders) unsubOrders();
-        }; 
-    }, [user, activeRole]);
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [user, activeRole, myRestaurants]); // Dependency on myRestaurants is crucial
 }
 
-export const useData = useDataStore;
+const useCombinedLoadingState = () => {
+    const { restaurants, menuItems, orders } = useDataStore(state => state.isLoading);
+    return restaurants || menuItems || orders;
+}
 
+// Custom hook to use in components, combines loading state
+export const useData = () => {
+    const store = useDataStore();
+    const combinedIsLoading = useCombinedLoadingState();
+    return { ...store, isLoading: combinedIsLoading };
+}
