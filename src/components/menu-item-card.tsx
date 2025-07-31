@@ -14,7 +14,7 @@ interface MenuItemCardProps {
 }
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
-  const imageSrc = `https://placehold.co/100x100.png`;
+  const imageSrc = item.image || `https://placehold.co/100x100.png`;
 
   return (
     <Card className="flex items-center p-4 gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 group">

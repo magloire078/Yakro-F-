@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, Image as ImageIcon, ChefHat, Trash, Plus } from 'lucide-react';
+import { Loader, Wand2, Image as ImageIcon, ChefHat, Trash, Plus, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type MenuItem, type Restaurant, type MenuOption } from '@/lib/types';
 import { generateMenuItem, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
@@ -17,8 +17,9 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
+import Image from 'next/image';
 
-type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId' | 'image'>;
+type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
 
 export default function RestaurateurHomePage() {
     const { restaurants, addMenuItem, isLoading: isDataLoading } = useData();
@@ -33,6 +34,9 @@ export default function RestaurateurHomePage() {
     const [description, setDescription] = React.useState('');
     const [name, setName] = React.useState('');
     const [price, setPrice] = React.useState('');
+    const [imageFile, setImageFile] = React.useState<File | null>(null);
+    const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+
 
     // Form state for menu item options
     const [sides, setSides] = React.useState<MenuOption[]>([]);
@@ -49,6 +53,19 @@ export default function RestaurateurHomePage() {
             setSelectedRestaurant(null);
         }
     }, [restaurants, selectedRestaurant]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
 
     const handleGenerateItem = async () => {
         if (!selectedRestaurant || !description) {
@@ -105,16 +122,21 @@ export default function RestaurateurHomePage() {
 
         setLoading(true);
         try {
-            await addMenuItem({ 
-              ...generatedItem, 
-              restaurantId: selectedRestaurant.id,
-              availableSides: sides,
-              availableDrinks: drinks,
-            });
+            await addMenuItem(
+                { 
+                    ...generatedItem, 
+                    restaurantId: selectedRestaurant.id,
+                    availableSides: sides,
+                    availableDrinks: drinks,
+                }, 
+                imageFile
+            );
             setGeneratedItem(null);
             setDescription('');
             setName('');
             setPrice('');
+            setImageFile(null);
+            setImagePreview(null);
             setSides([]);
             setDrinks([]);
             toast({
@@ -185,8 +207,8 @@ export default function RestaurateurHomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Créateur de Plats par IA</CardTitle>
-                        <CardDescription>Décrivez un plat, et laissez l'IA créer un nom, une description, et un prix. Vous pouvez aussi pré-remplir certains champs pour guider l'IA, et ajouter des options.</CardDescription>
+                        <CardTitle>Créateur de Plats</CardTitle>
+                        <CardDescription>Décrivez un plat et laissez l'IA créer les détails, ou remplissez tout manuellement. Ajoutez une photo pour attirer les clients.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -205,24 +227,30 @@ export default function RestaurateurHomePage() {
                                 </SelectContent>
                             </Select>
                         </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="image-upload" className="cursor-pointer flex items-center gap-2">
+                                <Upload /> Télécharger une image (optionnel)
+                            </Label>
+                             <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                            {imagePreview && <Image src={imagePreview} alt="Aperçu" width={100} height={100} className="rounded-md object-cover"/>}
+                        </div>
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description simple du plat (obligatoire)</Label>
+                            <Label htmlFor="description">Description simple du plat (obligatoire pour l'IA)</Label>
                             <Textarea
                                 id="description"
                                 placeholder="Ex: Un plat de riz traditionnel avec du poulet mariné..."
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
                                 rows={3}
-                                required
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Nom du plat (optionnel)</Label>
+                                <Label htmlFor="name">Nom du plat</Label>
                                 <Input id="name" placeholder="Ex: Poulet Yassa" value={name} onChange={e => setName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="price">Prix (optionnel)</Label>
+                                <Label htmlFor="price">Prix</Label>
                                 <Input id="price" type="number" placeholder="Ex: 3500" value={price} onChange={e => setPrice(e.target.value)} />
                             </div>
                         </div>
@@ -252,16 +280,16 @@ export default function RestaurateurHomePage() {
                         </div>
 
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
-                            {loading ? <Loader className="animate-spin" /> : <Wand2 className="mr-2" />}
-                            {loading ? 'Génération en cours...' : 'Générer le plat'}
+                            <Wand2 className="mr-2" />
+                            Générer avec l'IA
                         </Button>
                     </CardContent>
                 </Card>
 
                 <div>
-                    <h2 className="text-2xl font-headline mb-4">Résultat de la génération</h2>
+                    <h2 className="text-2xl font-headline mb-4">Aperçu du plat</h2>
                     <div className="p-4 border-2 border-dashed rounded-lg min-h-[400px] flex items-center justify-center bg-card">
-                        {loading && !generatedItem ? (
+                        {loading ? (
                             <div className="text-center text-muted-foreground animate-pulse">
                                 <Wand2 className="h-12 w-12 mx-auto mb-4 text-primary" />
                                 <p>L'IA est en cuisine...</p>
@@ -269,8 +297,10 @@ export default function RestaurateurHomePage() {
                         ) : generatedItem ? (
                             <form onSubmit={handleAddItemToMenu} className="w-full space-y-4">
                                 <div className="relative h-48 w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                                     <ImageIcon className="h-16 w-16 text-muted-foreground" />
-                                     <p className="absolute bottom-2 text-xs text-muted-foreground">Image générée à l'ajout</p>
+                                     {imagePreview ? 
+                                        <Image src={imagePreview} alt="Aperçu du plat" fill className="object-cover" /> :
+                                        <ImageIcon className="h-16 w-16 text-muted-foreground" />
+                                     }
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="itemName">Nom du plat</Label>
@@ -295,7 +325,7 @@ export default function RestaurateurHomePage() {
                         ) : (
                              <div className="text-center text-muted-foreground">
                                 <ImageIcon className="h-12 w-12 mx-auto mb-4" />
-                                <p>Le plat que vous générez apparaîtra ici.</p>
+                                <p>Le plat apparaîtra ici après génération ou saisie manuelle.</p>
                              </div>
                         )}
                     </div>

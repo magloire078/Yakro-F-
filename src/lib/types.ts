@@ -10,6 +10,7 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
+  image?: string; // URL de l'image stockée
   imageHint: string;
   restaurantId: string;
   availableSides?: MenuOption[];
@@ -31,7 +32,7 @@ export interface Restaurant {
 
 export interface CartItem extends MenuItem {
   quantity: number;
-  image: string; // Keep for cart display logic
+  image: string; // Garde une URL pour l'affichage, même si c'est un placeholder
   selectedSide?: MenuOption;
   selectedDrink?: MenuOption;
 }

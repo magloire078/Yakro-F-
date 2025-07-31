@@ -18,9 +18,10 @@ import { ScrollArea } from './ui/scroll-area';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
+import { type CartItem } from '@/lib/types';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
-  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder, clearCart } = useCart();
   const { getMenuItem } = useData();
   const { toast } = useToast();
 
@@ -31,16 +32,21 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             title: 'Commande passée !',
             description: 'Votre commande a été envoyée au restaurant.',
         });
-    } catch(e) {
+        // Sheet will be closed by the SheetClose component
+    } catch(e: any) {
         toast({
             variant: 'destructive',
             title: 'Erreur',
-            description: 'Impossible de passer la commande pour le moment.',
+            description: e.message || 'Impossible de passer la commande pour le moment.',
         });
     }
   };
-  
-  const getCartItemPrice = (item: typeof cartItems[0]) => {
+
+  // Check if all items are from the same restaurant
+  const firstRestaurantId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
+  const restaurantName = firstRestaurantId ? useData().getRestaurant(firstRestaurantId)?.name : '';
+
+  const getCartItemPrice = (item: CartItem) => {
       const itemPrice = item.price;
       const sidePrice = item.selectedSide?.price || 0;
       const drinkPrice = item.selectedDrink?.price || 0;
@@ -53,6 +59,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle>Panier ({cartCount})</SheetTitle>
+          {restaurantName && <p className="text-sm text-muted-foreground">Commande chez {restaurantName}</p>}
         </SheetHeader>
         <Separator />
         {cartItems.length > 0 ? (
@@ -60,20 +67,18 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <ScrollArea className="flex-1 pr-4">
               <div className="flex flex-col gap-4 py-4">
                 {cartItems.map((item, index) => {
-                    const menuItem = getMenuItem(item.id);
-                    if (!menuItem) return null;
                     return (
-                        <div key={`${item.id}-${index}`} className="flex items-start gap-4">
+                        <div key={`${item.id}-${item.selectedSide?.name}-${item.selectedDrink?.name}-${index}`} className="flex items-start gap-4">
                             <Image
-                            src={item.image}
-                            alt={menuItem.name}
+                            src={item.image || `https://placehold.co/100x100.png`}
+                            alt={item.name}
                             width={64}
                             height={64}
                             className="rounded-md object-cover"
-                            data-ai-hint={menuItem.imageHint}
+                            data-ai-hint={item.imageHint}
                             />
                             <div className="flex-1">
-                                <p className="font-semibold">{menuItem.name}</p>
+                                <p className="font-semibold">{item.name}</p>
                                 <div className="text-xs text-muted-foreground">
                                     {item.selectedSide && <p>+ {item.selectedSide.name} ({item.selectedSide.price} F)</p>}
                                     {item.selectedDrink && <p>+ {item.selectedDrink.name} ({item.selectedDrink.price} F)</p>}
@@ -86,7 +91,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                                     variant="outline"
                                     size="icon"
                                     className="h-6 w-6"
-                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                    onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSide?.name, item.selectedDrink?.name)}
                                     >
                                     <Minus className="h-3 w-3" />
                                     </Button>
@@ -95,7 +100,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                                     variant="outline"
                                     size="icon"
                                     className="h-6 w-6"
-                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                    onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSide?.name, item.selectedDrink?.name)}
                                     >
                                     <Plus className="h-3 w-3" />
                                     </Button>
@@ -105,7 +110,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                             variant="ghost"
                             size="icon"
                             className="text-muted-foreground hover:text-destructive"
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={() => removeFromCart(item.id, item.selectedSide?.name, item.selectedDrink?.name)}
                             >
                             <Trash2 className="h-4 w-4" />
                             </Button>

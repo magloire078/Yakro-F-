@@ -24,7 +24,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const handleReorder = () => {
     order.items.forEach(item => {
         const menuItem = getMenuItem(item.id);
-        const imageSrc = `https://placehold.co/100x100.png`;
+        const imageSrc = item.image || `https://placehold.co/100x100.png`;
         if (menuItem) {
             addToCart({...item, image: imageSrc });
         }
@@ -68,7 +68,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                     return (
                         <div key={`${item.id}-${index}`} className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
-                                <Image src={item.image} alt={menuItem.name} width={40} height={40} className="rounded-md" data-ai-hint={menuItem.imageHint}/>
+                                <Image src={item.image || `https://placehold.co/100x100.png`} alt={item.name} width={40} height={40} className="rounded-md" data-ai-hint={item.imageHint}/>
                                 <div>
                                     <span className="font-medium">{item.quantity}x {item.name}</span>
                                      <div className="text-xs text-muted-foreground">

@@ -5,8 +5,17 @@ import * as React from 'react';
 import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { create } from 'zustand';
 import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs, deleteDoc, or } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from './auth-context';
+
+// Helper function for uploading images
+const uploadImage = async (file: File, path: string): Promise<string> => {
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+};
 
 interface DataState {
   restaurants: Restaurant[];
@@ -18,8 +27,8 @@ interface DataState {
     orders: boolean;
   };
   addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
-  addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<void>;
-  updateMenuItem: (itemId: string, data: Partial<MenuItem>) => Promise<void>;
+  addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
+  updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
   deleteMenuItem: (itemId: string) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
@@ -46,19 +55,33 @@ const useDataStore = create<DataState>((set, get) => ({
     }
   },
 
-  addMenuItem: async (item) => {
+  addMenuItem: async (item, imageFile) => {
     try {
-      await addDoc(collection(db, "plats"), item);
+      const itemToAdd: Omit<MenuItem, 'id'> = { ...item };
+      
+      const docRef = await addDoc(collection(db, "plats"), itemToAdd);
+      const itemId = docRef.id;
+
+      if (imageFile) {
+        const imageUrl = await uploadImage(imageFile, `plats/${itemId}`);
+        await updateDoc(doc(db, "plats", itemId), { image: imageUrl });
+      }
+
     } catch (e) {
       console.error("Error adding menu item: ", e);
       throw e;
     }
   },
   
-  updateMenuItem: async (itemId, data) => {
+  updateMenuItem: async (itemId, data, imageFile) => {
     const itemDocRef = doc(db, 'plats', itemId);
     try {
-      await updateDoc(itemDocRef, data);
+      const updateData = { ...data };
+      if (imageFile) {
+        const imageUrl = await uploadImage(imageFile, `plats/${itemId}`);
+        updateData.image = imageUrl;
+      }
+      await updateDoc(itemDocRef, updateData);
     } catch (e) {
       console.error("Error updating menu item: ", e);
       throw e;
@@ -68,6 +91,7 @@ const useDataStore = create<DataState>((set, get) => ({
   deleteMenuItem: async (itemId) => {
     const itemDocRef = doc(db, 'plats', itemId);
     try {
+      // TODO: Delete image from storage as well
       await deleteDoc(itemDocRef);
     } catch (e) {
       console.error("Error deleting menu item: ", e);

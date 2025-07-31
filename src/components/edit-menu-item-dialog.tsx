@@ -20,8 +20,8 @@ import * as z from 'zod';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuItem, MenuOption } from '@/lib/types';
-import { Loader, Trash, Plus } from 'lucide-react';
-import { Badge } from './ui/badge';
+import { Loader, Trash, Plus, Upload } from 'lucide-react';
+import Image from 'next/image';
 
 interface EditMenuItemDialogProps {
   isOpen: boolean;
@@ -48,6 +48,9 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
   const { updateMenuItem } = useData();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [imageFile, setImageFile] = React.useState<File | null>(null);
+  const [imagePreview, setImagePreview] = React.useState<string | null>(menuItem.image || null);
+
 
   const form = useForm<EditMenuItemFormValues>({
     resolver: zodResolver(editMenuItemSchema),
@@ -79,13 +82,27 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
         availableSides: menuItem.availableSides || [],
         availableDrinks: menuItem.availableDrinks || [],
       });
+      setImagePreview(menuItem.image || null);
+      setImageFile(null);
     }
   }, [isOpen, menuItem, form]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmit = async (data: EditMenuItemFormValues) => {
     setIsSubmitting(true);
     try {
-      await updateMenuItem(menuItem.id, data);
+      await updateMenuItem(menuItem.id, data, imageFile);
       toast({
         title: 'Plat mis à jour',
         description: 'Les modifications ont été enregistrées.',
@@ -111,7 +128,22 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
             Apportez des modifications à "{menuItem.name}". Cliquez sur enregistrer lorsque vous avez terminé.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1 pr-4">
+             <div>
+                <Label htmlFor="image-upload-edit" className="cursor-pointer">
+                    <div className="relative w-full h-40 rounded-md border border-dashed flex items-center justify-center text-muted-foreground hover:bg-muted/50">
+                        {imagePreview ? (
+                            <Image src={imagePreview} alt="Aperçu" fill className="object-cover rounded-md" />
+                        ) : (
+                           <div className="text-center">
+                             <Upload />
+                             <p>Changer l'image</p>
+                           </div>
+                        )}
+                    </div>
+                </Label>
+                <Input id="image-upload-edit" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+             </div>
             <div>
                 <Label htmlFor="name">Nom du plat</Label>
                 <Input id="name" {...form.register('name')} />

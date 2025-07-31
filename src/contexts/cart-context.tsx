@@ -10,8 +10,8 @@ import { useAuth } from './auth-context';
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  removeFromCart: (itemId: string, side?: string, drink?: string) => void;
+  updateQuantity: (itemId: string, quantity: number, side?: string, drink?: string) => void;
   clearCart: () => void;
   placeOrder: () => Promise<void>;
   cartSubtotal: number;
@@ -41,7 +41,7 @@ const COMMISSION_RATE = 0.15; // 15% commission
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
   const { addOrder, getRestaurant } = useData();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
 
 
   React.useEffect(() => {
@@ -56,44 +56,47 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addToCart = (item: CartItem) => {
     // If cart is not empty and new item is from a different restaurant, clear the cart.
     if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
-        clearCart();
-        // Use a timeout to ensure the state updates before adding the new item
-        setTimeout(() => {
-             setCartItems([{ ...item, quantity: 1 }]);
-        }, 0)
+        setCartItems([{ ...item, quantity: 1 }]);
         return;
     }
 
     setCartItems(prevItems => {
-      const uniqueItemId = `${item.id}-${item.selectedSide?.name || ''}-${item.selectedDrink?.name || ''}`;
+      // Create a unique key for an item based on its ID and selected options
+      const uniqueItemKey = `${item.id}-${item.selectedSide?.name || 'none'}-${item.selectedDrink?.name || 'none'}`;
       
       const existingItem = prevItems.find(i => 
-        `${i.id}-${i.selectedSide?.name || ''}-${i.selectedDrink?.name || ''}` === uniqueItemId
+        `${i.id}-${i.selectedSide?.name || 'none'}-${i.selectedDrink?.name || 'none'}` === uniqueItemKey
       );
 
       if (existingItem) {
         return prevItems.map(i =>
-          `${i.id}-${i.selectedSide?.name || ''}-${i.selectedDrink?.name || ''}` === uniqueItemId 
-          ? { ...i, quantity: i.quantity + 1 } 
+          `${i.id}-${i.selectedSide?.name || 'none'}-${i.selectedDrink?.name || 'none'}` === uniqueItemKey 
+          ? { ...i, quantity: i.quantity + item.quantity } 
           : i
         );
       }
-      return [...prevItems, { ...item, quantity: 1 }];
+      return [...prevItems, item];
     });
   };
 
-  const removeFromCart = (itemId: string) => {
+  const getUniqueKey = (itemId: string, side?: string, drink?: string) => {
+    return `${itemId}-${side || 'none'}-${drink || 'none'}`;
+  }
+
+  const removeFromCart = (itemId: string, side?: string, drink?: string) => {
+    const keyToRemove = getUniqueKey(itemId, side, drink);
     setCartItems(prevItems => prevItems.filter(i => 
-        i.id !== itemId
+        getUniqueKey(i.id, i.selectedSide?.name, i.selectedDrink?.name) !== keyToRemove
     ));
   };
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = (itemId: string, quantity: number, side?: string, drink?: string) => {
+    const keyToUpdate = getUniqueKey(itemId, side, drink);
     if (quantity <= 0) {
-      removeFromCart(itemId);
+      removeFromCart(itemId, side, drink);
     } else {
       setCartItems(prevItems =>
-        prevItems.map(i => (i.id === itemId ? { ...i, quantity } : i))
+        prevItems.map(i => (getUniqueKey(i.id, i.selectedSide?.name, i.selectedDrink?.name) === keyToUpdate ? { ...i, quantity } : i))
       );
     }
   };
@@ -127,9 +130,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cartItems]);
 
   const placeOrder = async () => {
-    if (!user || cartItems.length === 0) {
+    if (!user || !userProfile || cartItems.length === 0) {
         console.error("User not logged in or cart is empty");
-        return;
+        throw new Error("User not logged in or cart is empty");
     }
     
     const restaurantId = cartItems[0].restaurantId;
@@ -152,9 +155,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         restaurantName: restaurant?.name || 'Restaurant inconnu',
         restaurantId: restaurantId,
         status: 'Placée',
-        customerAddress: 'Angré 7ème Tranche, Villa 123',
-        restaurantAddress: restaurant?.address || 'Rue des Jardins, Cocody',
-        customerPhone: '07 01 02 03 04',
+        customerAddress: userProfile.defaultAddress || 'Adresse non spécifiée',
+        restaurantAddress: restaurant?.address || 'Adresse du restaurant non spécifiée',
+        customerPhone: userProfile.phone || 'Numéro non spécifié',
     };
 
     await addOrder(newOrder);
