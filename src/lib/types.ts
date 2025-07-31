@@ -1,4 +1,5 @@
 
+
 export interface MenuOption {
   name: string;
   price: number;
@@ -39,6 +40,9 @@ export interface Order {
   userId: string;
   items: CartItem[];
   total: number;
+  commissionRate: number;
+  commissionAmount: number;
+  netRevenue: number;
   date: string;
   restaurantName: string;
   restaurantId: string;

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -24,13 +25,15 @@ const getInitialCart = (): CartItem[] => {
         return [];
     }
     try {
-        const item = window.localStorage.getItem('yakro-fe-cart');
+        const item = window.localStorage.getItem('yakro-go-cart');
         return item ? JSON.parse(item) : [];
     } catch (error) {
         console.warn('Error reading localStorage cart', error);
         return [];
     }
 };
+
+const COMMISSION_RATE = 0.15; // 15% commission
 
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -41,7 +44,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   React.useEffect(() => {
     try {
-        window.localStorage.setItem('yakro-fe-cart', JSON.stringify(cartItems));
+        window.localStorage.setItem('yakro-go-cart', JSON.stringify(cartItems));
     } catch (error) {
         console.warn('Error writing to localStorage cart', error);
     }
@@ -115,10 +118,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
 
+    const commissionAmount = cartTotal * COMMISSION_RATE;
+    const netRevenue = cartTotal - commissionAmount;
+
     const newOrder: Omit<Order, 'id'> = {
         userId: user.uid,
         items: cartItems,
         total: cartTotal,
+        commissionRate: COMMISSION_RATE,
+        commissionAmount: commissionAmount,
+        netRevenue: netRevenue,
         date: new Date().toISOString(),
         restaurantName: restaurant?.name || 'Restaurant inconnu',
         restaurantId: restaurantId,

@@ -95,9 +95,19 @@ export default function DashboardOrdersPage() {
                                     <span>{(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>
                                 </div>
                             ))}
-                            <div className="font-bold border-t pt-2 mt-2 flex justify-between">
-                                <span>Total</span>
-                                <span>{order.total.toLocaleString('fr-FR')} FCFA</span>
+                             <div className="border-t pt-2 mt-2 space-y-1">
+                                <div className="flex justify-between">
+                                    <span>Total</span>
+                                    <span className="font-semibold">{order.total.toLocaleString('fr-FR')} FCFA</span>
+                                </div>
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Commission ({order.commissionRate * 100}%)</span>
+                                    <span>- {order.commissionAmount.toLocaleString('fr-FR')} FCFA</span>
+                                </div>
+                                <div className="flex justify-between font-bold text-primary">
+                                    <span>Revenu Net</span>
+                                    <span>{order.netRevenue.toLocaleString('fr-FR')} FCFA</span>
+                                </div>
                             </div>
                         </AccordionContent>
                     </AccordionItem>
