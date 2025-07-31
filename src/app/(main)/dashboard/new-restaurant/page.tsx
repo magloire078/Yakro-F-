@@ -29,6 +29,7 @@ const restaurantFormSchema = z.object({
   cuisine: z.string().min(3, { message: "Le type de cuisine doit contenir au moins 3 caractères." }),
   address: z.string().min(10, { message: "L'adresse doit contenir au moins 10 caractères." }),
   deliveryTime: z.coerce.number().min(5, { message: "Le temps de livraison doit être d'au moins 5 minutes."}),
+  deliveryFee: z.coerce.number().min(0, { message: "Les frais de livraison ne peuvent être négatifs."}),
 });
 
 type RestaurantFormValues = z.infer<typeof restaurantFormSchema>;
@@ -47,6 +48,7 @@ export default function NewRestaurantPage() {
             cuisine: '',
             address: '',
             deliveryTime: 30,
+            deliveryFee: 1000,
         },
     });
 
@@ -141,19 +143,34 @@ export default function NewRestaurantPage() {
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="deliveryTime"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Temps de livraison moyen (en minutes)</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="deliveryTime"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Temps de livraison (min)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                 <FormField
+                                    control={form.control}
+                                    name="deliveryFee"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Frais de livraison (FCFA)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                             <Button type="submit" disabled={isLoading} className="w-full">
                                 {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                                 Enregistrer mon restaurant

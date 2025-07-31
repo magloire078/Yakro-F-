@@ -6,7 +6,7 @@ import * as React from 'react';
 import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/data-context";
-import { Clock, Star, Loader, Ear } from "lucide-react";
+import { Clock, Star, Loader, Ear, Bike } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -167,7 +167,7 @@ export default function RestaurantPage() {
             </div>
 
             <div className="py-8">
-                <div className="flex items-center gap-6 mb-8">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8">
                      <Badge variant="outline" className="flex items-center gap-1 text-base p-2">
                         <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                         <span className="font-semibold">{restaurant.rating}</span>
@@ -175,6 +175,10 @@ export default function RestaurantPage() {
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="w-5 h-5" />
                         <span className="text-base">{restaurant.deliveryTime} min</span>
+                    </div>
+                     <div className="flex items-center gap-2 text-muted-foreground">
+                        <Bike className="w-5 h-5" />
+                        <span className="text-base">{restaurant.deliveryFee > 0 ? `${restaurant.deliveryFee.toLocaleString('fr-FR')} FCFA` : 'Livraison gratuite'}</span>
                     </div>
                 </div>
 

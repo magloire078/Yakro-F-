@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
-import { Star, Clock } from 'lucide-react';
+import { Star, Clock, Bike } from 'lucide-react';
 import type { Restaurant } from '@/lib/types';
 
 interface RestaurantCardProps {
@@ -34,6 +34,10 @@ export function RestaurantCard({ restaurant }: RestaurantCardProps) {
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="w-4 h-4" />
               <span>{restaurant.deliveryTime} min</span>
+            </div>
+             <div className="flex items-center gap-1 text-muted-foreground">
+              <Bike className="w-4 h-4" />
+              <span>{restaurant.deliveryFee > 0 ? `${restaurant.deliveryFee.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</span>
             </div>
           </div>
         </CardContent>

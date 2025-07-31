@@ -16,6 +16,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         cuisine: 'Ivoirienne',
         rating: 4.5,
         deliveryTime: 35,
+        deliveryFee: 1000,
         image: 'https://placehold.co/600x400.png',
         imageHint: 'maquis restaurant african',
         address: 'Quartier 2000, Yamoussoukro'
@@ -26,6 +27,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         cuisine: 'Française',
         rating: 4.8,
         deliveryTime: 45,
+        deliveryFee: 1500,
         image: 'https://placehold.co/600x400.png',
         imageHint: 'french bistro fine dining',
         address: 'Rue des Lacs, Yamoussoukro'
@@ -36,6 +38,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         cuisine: 'Pizzeria',
         rating: 4.2,
         deliveryTime: 30,
+        deliveryFee: 500,
         image: 'https://placehold.co/600x400.png',
         imageHint: 'pizza oven italy',
         address: 'Centre-ville, près du marché'
@@ -46,6 +49,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         cuisine: 'Grillades',
         rating: 4.6,
         deliveryTime: 40,
+        deliveryFee: 1000,
         image: 'https://placehold.co/600x400.png',
         imageHint: 'grilled chicken barbecue',
         address: 'Route de l\'aéroport, Yamoussoukro'
@@ -56,6 +60,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         cuisine: 'Pâtisserie',
         rating: 4.9,
         deliveryTime: 25,
+        deliveryFee: 500,
         image: 'https://placehold.co/600x400.png',
         imageHint: 'french pastries cakes',
         address: 'Quartier Millionnaire, Yamoussoukro'

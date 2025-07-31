@@ -10,6 +10,7 @@ import { useCart } from '@/contexts/cart-context';
 import { Card } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
+import { Separator } from './ui/separator';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -80,6 +81,21 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                         </div>
                     )
                 })}
+            </div>
+            <Separator className="my-4"/>
+             <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                    <span>Sous-total</span>
+                    <span>{order.subtotal.toLocaleString('fr-FR')} FCFA</span>
+                </div>
+                    <div className="flex justify-between">
+                    <span>Frais de livraison</span>
+                    <span>{order.deliveryFee.toLocaleString('fr-FR')} FCFA</span>
+                </div>
+                <div className="flex justify-between font-semibold text-base">
+                    <span>Total</span>
+                    <span>{order.total.toLocaleString('fr-FR')} FCFA</span>
+                </div>
             </div>
              {order.status === 'Livrée' && (
               <div className="mt-6 flex justify-end">

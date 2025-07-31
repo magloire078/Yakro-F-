@@ -20,7 +20,7 @@ import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
-  const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount, placeOrder } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder } = useCart();
   const { getMenuItem } = useData();
   const { toast } = useToast();
 
@@ -117,6 +117,17 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <Separator />
             <SheetFooter className="mt-4">
               <div className="flex flex-col w-full gap-4">
+                 <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                        <span>Sous-total</span>
+                        <span>{cartSubtotal.toLocaleString('fr-FR')} FCFA</span>
+                    </div>
+                     <div className="flex justify-between">
+                        <span>Frais de livraison</span>
+                        <span>{cartDeliveryFee.toLocaleString('fr-FR')} FCFA</span>
+                    </div>
+                 </div>
+                 <Separator />
                  <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
                     <span>{cartTotal.toLocaleString('fr-FR')} FCFA</span>

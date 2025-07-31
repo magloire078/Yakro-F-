@@ -14,6 +14,8 @@ interface CartContextType {
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   placeOrder: () => Promise<void>;
+  cartSubtotal: number;
+  cartDeliveryFee: number;
   cartTotal: number;
   cartCount: number;
 }
@@ -52,9 +54,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   const addToCart = (item: CartItem) => {
+    // If cart is not empty and new item is from a different restaurant, clear the cart.
+    if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
+        clearCart();
+        // Use a timeout to ensure the state updates before adding the new item
+        setTimeout(() => {
+             setCartItems([{ ...item, quantity: 1 }]);
+        }, 0)
+        return;
+    }
+
     setCartItems(prevItems => {
-      // For simplicity in this demo, we treat items with different options as distinct cart entries.
-      // A more robust implementation might group them and allow editing options in the cart.
       const uniqueItemId = `${item.id}-${item.selectedSide?.name || ''}-${item.selectedDrink?.name || ''}`;
       
       const existingItem = prevItems.find(i => 
@@ -74,8 +84,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeFromCart = (itemId: string) => {
     setCartItems(prevItems => prevItems.filter(i => 
-        // This is a simplified removal logic. It will remove all variants of an item.
-        // A better implementation would pass a unique cart item ID.
         i.id !== itemId
     ));
   };
@@ -94,7 +102,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems([]);
   };
 
-  const cartTotal = React.useMemo(() => {
+  const cartSubtotal = React.useMemo(() => {
     return cartItems.reduce((total, item) => {
       const itemPrice = item.price;
       const sidePrice = item.selectedSide?.price || 0;
@@ -102,6 +110,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return total + (itemPrice + sidePrice + drinkPrice) * item.quantity;
     }, 0);
   }, [cartItems]);
+
+  const cartDeliveryFee = React.useMemo(() => {
+      if (cartItems.length === 0) return 0;
+      const restaurantId = cartItems[0].restaurantId;
+      const restaurant = getRestaurant(restaurantId);
+      return restaurant?.deliveryFee || 0;
+  }, [cartItems, getRestaurant]);
+
+  const cartTotal = React.useMemo(() => {
+    return cartSubtotal + cartDeliveryFee;
+  }, [cartSubtotal, cartDeliveryFee]);
   
   const cartCount = React.useMemo(() => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
@@ -109,21 +128,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const placeOrder = async () => {
     if (!user || cartItems.length === 0) {
-        // In a real app, you'd show an error message
         console.error("User not logged in or cart is empty");
         return;
     }
     
-    // Assume all items in cart are from the same restaurant for this demo
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
-
-    const commissionAmount = cartTotal * COMMISSION_RATE;
-    const netRevenue = cartTotal - commissionAmount;
+    
+    // Commission is calculated on the subtotal (food items only), not on the delivery fee.
+    const commissionAmount = cartSubtotal * COMMISSION_RATE;
+    const netRevenue = cartSubtotal - commissionAmount;
 
     const newOrder: Omit<Order, 'id'> = {
         userId: user.uid,
         items: cartItems,
+        subtotal: cartSubtotal,
+        deliveryFee: cartDeliveryFee,
         total: cartTotal,
         commissionRate: COMMISSION_RATE,
         commissionAmount: commissionAmount,
@@ -131,8 +151,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         date: new Date().toISOString(),
         restaurantName: restaurant?.name || 'Restaurant inconnu',
         restaurantId: restaurantId,
-        status: 'Placée', // Initial status
-        // Add mock data for delivery details
+        status: 'Placée',
         customerAddress: 'Angré 7ème Tranche, Villa 123',
         restaurantAddress: restaurant?.address || 'Rue des Jardins, Cocody',
         customerPhone: '07 01 02 03 04',
@@ -144,7 +163,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, placeOrder }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder }}>
       {children}
     </CartContext.Provider>
   );

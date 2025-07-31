@@ -23,6 +23,7 @@ export interface Restaurant {
   cuisine: string;
   rating: number;
   deliveryTime: number;
+  deliveryFee: number;
   image: string;
   imageHint: string;
   address?: string;
@@ -39,6 +40,8 @@ export interface Order {
   id: string;
   userId: string;
   items: CartItem[];
+  subtotal: number;
+  deliveryFee: number;
   total: number;
   commissionRate: number;
   commissionAmount: number;
