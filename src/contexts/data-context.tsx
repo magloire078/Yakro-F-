@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -27,6 +28,7 @@ interface DataState {
     orders: boolean;
   };
   addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
+  updateRestaurant: (restaurantId: string, data: Partial<Restaurant>) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
   deleteMenuItem: (itemId: string) => Promise<void>;
@@ -51,6 +53,16 @@ const useDataStore = create<DataState>((set, get) => ({
       await addDoc(collection(db, "restaurants"), restaurant);
     } catch (e) {
       console.error("Error adding restaurant: ", e);
+      throw e;
+    }
+  },
+
+  updateRestaurant: async (restaurantId: string, data: Partial<Restaurant>) => {
+    const restaurantDocRef = doc(db, 'restaurants', restaurantId);
+    try {
+      await updateDoc(restaurantDocRef, data);
+    } catch (e) {
+      console.error("Error updating restaurant: ", e);
       throw e;
     }
   },

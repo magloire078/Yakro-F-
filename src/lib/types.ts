@@ -28,6 +28,7 @@ export interface Restaurant {
   image: string;
   imageHint: string;
   address?: string;
+  isFeatured?: boolean;
 }
 
 export interface CartItem extends MenuItem {

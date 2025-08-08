@@ -39,7 +39,7 @@ export default function MainAppLayout({
         </div>
         <div className="flex-1 flex flex-col">
           <MobileHeader />
-          <main className="flex-1 p-4 md:p-8 bg-muted/30">{children}</main>
+          <main className="flex-1 p-4 md:p-8 bg-background">{children}</main>
         </div>
       </div>
   );

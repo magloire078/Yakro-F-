@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Pizza, Drumstick, Salad, Soup } from 'lucide-react';
+import { Pizza, Drumstick, Salad, Soup, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
 import { useData } from '@/contexts/data-context';
@@ -16,6 +16,7 @@ import { OrderStatus } from '@/components/order-status';
 import type { Order, Restaurant, MenuItem } from '@/lib/types';
 import { Recommendations, RecommendationsSkeleton } from '../recommendations';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
+import { Badge } from '../ui/badge';
 
 interface Category {
     name: string;
@@ -118,22 +119,31 @@ export default function CustomerHomePage() {
     window.addEventListener('place-order', findActiveOrder);
     return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
-
-  const filteredRestaurants = React.useMemo(() => {
-    let results = restaurants;
+  
+  const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
+    const baseRestaurants = [...restaurants];
+    let filteredNormal = baseRestaurants;
+    
     if (searchQuery && !interpretedSearch) {
-      return restaurants.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.cuisine.toLowerCase().includes(searchQuery.toLowerCase()));
+        filteredNormal = baseRestaurants.filter(r => 
+            r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    } else if (interpretedSearch) {
+        filteredNormal = baseRestaurants.filter(r => {
+            const matchesCuisine = interpretedSearch.cuisine?.length > 0 ? interpretedSearch.cuisine.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())) : true;
+            const matchesRating = interpretedSearch.rating ? r.rating >= interpretedSearch.rating : true;
+            const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.deliveryTime <= interpretedSearch.deliveryTime : true;
+            return matchesCuisine && matchesRating && matchesDeliveryTime;
+        });
     }
-    if (interpretedSearch) {
-      return restaurants.filter(r => {
-        const matchesCuisine = interpretedSearch.cuisine?.length > 0 ? interpretedSearch.cuisine.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())) : true;
-        const matchesRating = interpretedSearch.rating ? r.rating >= interpretedSearch.rating : true;
-        const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.deliveryTime <= interpretedSearch.deliveryTime : true;
-        return matchesCuisine && matchesRating && matchesDeliveryTime;
-      });
-    }
-    return results;
-  }, [restaurants, searchQuery, interpretedSearch]);
+
+    return {
+        featuredRestaurants: baseRestaurants.filter(r => r.isFeatured),
+        normalRestaurants: filteredNormal.filter(r => !r.isFeatured),
+    };
+}, [restaurants, searchQuery, interpretedSearch]);
+
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
     <div key={`skeleton-resto-${i}`} className="flex flex-col space-y-3">
@@ -162,6 +172,21 @@ export default function CustomerHomePage() {
       )}
 
       {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} hasError={recommendationError} />}
+      
+      {featuredRestaurants.length > 0 && !searchQuery && !interpretedSearch && (
+          <section>
+             <div className="flex items-center gap-4 mb-6">
+                <Star className="text-primary fill-primary" />
+                <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants en vedette</h2>
+             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {isLoading ? renderSkeletons(3) : featuredRestaurants.map(restaurant => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
+              ))}
+            </div>
+          </section>
+      )}
+
 
       <section>
         <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Explorer par catégories</h2>
@@ -177,14 +202,18 @@ export default function CustomerHomePage() {
 
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants</h2>
-          <Button variant="link" className="text-primary hidden sm:block">Voir tout</Button>
+          <h2 className="text-2xl md:text-3xl font-headline text-foreground">
+            {searchQuery || interpretedSearch ? 'Résultats de la recherche' : 'Tous les Restaurants'}
+          </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {isLoading ? renderSkeletons(6) : filteredRestaurants.map(restaurant => (
+          {isLoading ? renderSkeletons(6) : normalRestaurants.map(restaurant => (
             <RestaurantCard key={restaurant.id} restaurant={restaurant} />
           ))}
         </div>
+         {normalRestaurants.length === 0 && !isLoading && (
+            <p className="text-muted-foreground text-center col-span-full">Aucun restaurant ne correspond à votre recherche.</p>
+        )}
       </section>
 
       <section>
