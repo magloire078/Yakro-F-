@@ -14,7 +14,7 @@ interface AuthContextType {
   loading: boolean;
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
-  updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
+  updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);

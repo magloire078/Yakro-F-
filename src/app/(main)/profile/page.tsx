@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
 import type { Restaurant } from '@/lib/types';
 import Link from 'next/link';
 
