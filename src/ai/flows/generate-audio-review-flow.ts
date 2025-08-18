@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import wav from 'wav';
-import type { Review } from '@/lib/types';
+import { googleAI } from '@genkit-ai/googleai';
 
 const GenerateAudioReviewInputSchema = z.object({
     reviews: z.array(
@@ -76,7 +76,7 @@ const generateAudioReviewFlow = ai.defineFlow(
         }).join('\n');
         
         const { media } = await ai.generate({
-            model: 'googleai/gemini-2.5-flash-preview-tts',
+            model: googleAI.model('gemini-2.5-flash-preview-tts'),
             config: {
                 responseModalities: ['AUDIO'],
                 speechConfig: {
