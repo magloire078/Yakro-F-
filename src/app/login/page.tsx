@@ -30,24 +30,16 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="relative flex h-screen items-center justify-center p-4">
-            <Image
-                src="https://placehold.co/1920x1080.png"
-                alt="Yakro Go background"
-                fill
-                className="object-cover -z-10"
-                data-ai-hint="dark food background"
-            />
-            <div className="absolute inset-0 bg-black/60 -z-10" />
+        <div className="relative flex h-screen items-center justify-center p-4 bg-background">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
                 <Tabs defaultValue="login" className="w-full">
-                    <Card className="bg-card/80 backdrop-blur-sm border-white/10">
+                    <Card>
                         <CardHeader className="text-center">
                             <Icons.logo className="mx-auto h-12 w-12 text-primary" />
                              <h1 className="text-2xl font-headline text-primary mt-4">Yakro Go</h1>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <TabsList className="grid w-full grid-cols-2 mt-4 bg-muted/50">
+                            <TabsList className="grid w-full grid-cols-2 mt-4">
                                 <TabsTrigger value="login">Se connecter</TabsTrigger>
                                 <TabsTrigger value="signup">S'inscrire</TabsTrigger>
                             </TabsList>
