@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const withPWA = require('@ducanh2912/next-pwa').default({
@@ -23,6 +24,12 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb', // Default is 1mb, might be needed for image uploads
+      serverActionsBodySizeLimit: '2mb',
+    }
   },
 };
 

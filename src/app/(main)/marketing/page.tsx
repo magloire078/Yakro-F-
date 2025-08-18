@@ -29,7 +29,8 @@ async function toDataURL(url: string): Promise<string> {
 
 
 export default function MarketingPage() {
-  const { restaurants, getRestaurant } = useData();
+  const { restaurants, getRestaurant, isLoading: dataLoading } = useData();
+  const [myRestaurants, setMyRestaurants] = React.useState<Restaurant[]>([]);
   const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -46,15 +47,19 @@ export default function MarketingPage() {
             title: 'Accès non autorisé',
             description: 'Veuillez sélectionner le profil "Restaurateur" pour accéder à cette page.',
         })
-        router.push('/profile-selection');
+        router.push('/');
     }
   }, [user, authLoading, router, activeRole, toast]);
 
-  React.useEffect(() => {
-    if(restaurants.length > 0 && !selectedRestaurant) {
-      setSelectedRestaurant(restaurants[0]);
+   React.useEffect(() => {
+    if (user && activeRole === 'restaurateur') {
+      const filtered = restaurants.filter(r => r.ownerId === user.uid);
+      setMyRestaurants(filtered);
+      if(filtered.length > 0 && !selectedRestaurant) {
+        setSelectedRestaurant(filtered[0]);
+      }
     }
-  }, [restaurants, selectedRestaurant]);
+  }, [restaurants, user, activeRole, selectedRestaurant]);
 
   const restaurantImage = selectedRestaurant ? getRestaurant(selectedRestaurant.id)?.image : null;
 
@@ -120,7 +125,7 @@ export default function MarketingPage() {
     }
   };
   
-  if (authLoading || !user || activeRole !== 'restaurateur') {
+  if (authLoading || dataLoading || !user || activeRole !== 'restaurateur') {
     return (
         <div className="flex h-full w-full items-center justify-center">
             <Loader className="h-16 w-16 animate-spin text-primary" />
@@ -144,16 +149,16 @@ export default function MarketingPage() {
               <label className="font-medium">1. Sélectionnez un restaurant</label>
               <Select
                 onValueChange={value => {
-                  setSelectedRestaurant(restaurants.find(r => r.id === value) || null);
+                  setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null);
                   setVideoUrl(null);
                 }}
                 value={selectedRestaurant?.id || ''}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choisissez un restaurant" />
+                  <SelectValue placeholder="Choisissez un de vos restaurants" />
                 </SelectTrigger>
                 <SelectContent>
-                  {restaurants.map(r => (
+                  {myRestaurants.map(r => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.name}
                     </SelectItem>
@@ -171,6 +176,7 @@ export default function MarketingPage() {
                     <p className="text-sm text-muted-foreground">L'image du restaurant apparaîtra ici.</p>
                    )}
                 </div>
+                <p className="text-xs text-muted-foreground">L'IA animera cette image ou s'en inspirera. Si aucune image n'est disponible, l'IA créera une vidéo de A à Z.</p>
             </div>
 
             <Button onClick={handleGenerateVideo} disabled={loading || !selectedRestaurant} className="w-full" size="lg">

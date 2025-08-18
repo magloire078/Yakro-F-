@@ -16,7 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 
 export function Sidebar() {
   const { cartCount } = useCart();
-  const { user, loading, activeRole, setActiveRole } = useAuth();
+  const { user, loading, activeRole, setActiveRole, userProfile } = useAuth();
   const router = useRouter();
   
   const handleSignOut = async () => {
@@ -27,9 +27,13 @@ export function Sidebar() {
     router.push('/login');
   }
   
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return '?';
-    return email.substring(0, 2).toUpperCase();
+  const getInitials = (nameOrEmail: string | null | undefined) => {
+    if (!nameOrEmail) return '?';
+    const nameParts = nameOrEmail.split(' ');
+    if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
+        return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+    }
+    return nameOrEmail.substring(0, 2).toUpperCase();
   }
 
   return (
@@ -128,16 +132,16 @@ export function Sidebar() {
                 <DropdownMenuTrigger asChild>
                     <div className="flex items-center gap-3 p-2 rounded-lg border cursor-pointer hover:bg-muted">
                         <Avatar>
-                            <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                            <AvatarFallback>{getInitials(userProfile?.name || user.email)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-semibold truncate">{user.email || 'Utilisateur'}</p>
+                            <p className="text-sm font-semibold truncate">{userProfile?.name || user.email}</p>
                             <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 mb-2">
-                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                    <DropdownMenuLabel>{userProfile?.name || user.email}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                         <Link href="/profile">
