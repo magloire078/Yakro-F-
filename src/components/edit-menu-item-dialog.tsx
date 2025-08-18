@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { MenuItem, MenuOption } from '@/lib/types';
 import { Loader, Trash, Plus, Upload } from 'lucide-react';
 import Image from 'next/image';
+import { Badge } from './ui/badge';
 
 interface EditMenuItemDialogProps {
   isOpen: boolean;
@@ -162,29 +163,43 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
             
             <div className="space-y-2">
                 <Label>Accompagnements</Label>
-                {sideFields.map((field, index) => (
-                    <div key={field.id} className="flex items-center gap-2">
-                        <Input {...form.register(`availableSides.${index}.name`)} placeholder="Nom" />
-                        <Input {...form.register(`availableSides.${index}.price`)} type="number" placeholder="Prix" className="w-24"/>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeSide(index)}><Trash/></Button>
-                    </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ name: '', price: 0 })}><Plus /> Ajouter un accompagnement</Button>
+                 <div className="flex flex-wrap gap-1 mb-2">
+                  {sideFields.map((field, index) => (
+                      <Badge key={field.id} variant="secondary" className="flex items-center gap-1.5">
+                          {field.name} (+{field.price} F)
+                          <Trash className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeSide(index)} />
+                      </Badge>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                    <Input {...form.register(`availableSides.${sideFields.length}.name`)} placeholder="Nom (Ex: Alloco)" />
+                    <Input {...form.register(`availableSides.${sideFields.length}.price`)} type="number" placeholder="Prix" className="w-32"/>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ name: '', price: 0 })}>
+                        <Plus /> Ajouter
+                    </Button>
+                </div>
             </div>
             
             <div className="space-y-2">
                 <Label>Boissons</Label>
-                {drinkFields.map((field, index) => (
-                    <div key={field.id} className="flex items-center gap-2">
-                        <Input {...form.register(`availableDrinks.${index}.name`)} placeholder="Nom"/>
-                        <Input {...form.register(`availableDrinks.${index}.price`)} type="number" placeholder="Prix" className="w-24"/>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeDrink(index)}><Trash/></Button>
-                    </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ name: '', price: 0 })}><Plus /> Ajouter une boisson</Button>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {drinkFields.map((field, index) => (
+                      <Badge key={field.id} variant="secondary" className="flex items-center gap-1.5">
+                          {field.name} (+{field.price} F)
+                          <Trash className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeDrink(index)} />
+                      </Badge>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                    <Input {...form.register(`availableDrinks.${drinkFields.length}.name`)} placeholder="Nom (Ex: Bissap)"/>
+                    <Input {...form.register(`availableDrinks.${drinkFields.length}.price`)} type="number" placeholder="Prix" className="w-32"/>
+                     <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ name: '', price: 0 })}>
+                        <Plus /> Ajouter
+                    </Button>
+                </div>
             </div>
 
-            <DialogFooter className="sticky bottom-0 bg-background pt-4">
+            <DialogFooter className="sticky bottom-0 bg-background pt-4 -mx-1 -mb-1 px-1 pb-1">
                 <Button type="button" variant="outline" onClick={onClose}>Annuler</Button>
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader className="animate-spin" />}

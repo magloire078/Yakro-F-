@@ -38,8 +38,14 @@ export default function NewRestaurantPage() {
     const { addRestaurant } = useData();
     const { toast } = useToast();
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, activeRole } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
+
+     React.useEffect(() => {
+        if (activeRole !== 'restaurateur') {
+            router.push('/');
+        }
+    }, [activeRole, router]);
 
     const form = useForm<RestaurantFormValues>({
         resolver: zodResolver(restaurantFormSchema),

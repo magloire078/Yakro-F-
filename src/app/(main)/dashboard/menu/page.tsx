@@ -32,7 +32,7 @@ export default function DashboardMenuPage() {
     const router = useRouter();
     const { restaurants, menuItems, isLoading, deleteMenuItem } = useData();
     const { toast } = useToast();
-    const [isDeleting, setIsDeleting] = React.useState(false);
+    const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
 
     // State for dialogs
     const [editingItem, setEditingItem] = React.useState<MenuItem | null>(null);
@@ -46,7 +46,7 @@ export default function DashboardMenuPage() {
                 title: 'Accès non autorisé',
                 description: 'Veuillez sélectionner le profil "Restaurateur" pour accéder à cette page.',
             });
-            router.push('/profile-selection');
+            router.push('/');
         }
     }, [user, authLoading, router, activeRole, toast]);
 
@@ -69,7 +69,7 @@ export default function DashboardMenuPage() {
     };
 
     const handleDeleteItem = async (itemId: string) => {
-        setIsDeleting(true);
+        setIsDeleting(itemId);
         try {
             await deleteMenuItem(itemId);
             toast({
@@ -83,7 +83,7 @@ export default function DashboardMenuPage() {
                 description: 'Impossible de supprimer le plat.',
             })
         } finally {
-            setIsDeleting(false);
+            setIsDeleting(null);
         }
     }
 
@@ -139,8 +139,8 @@ export default function DashboardMenuPage() {
                                 </Button>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" className="w-full">
-                                            <Trash2 />
+                                        <Button variant="destructive" className="w-full" disabled={isDeleting === item.id}>
+                                            {isDeleting === item.id ? <Loader className="animate-spin"/> : <Trash2 />}
                                             Supprimer
                                         </Button>
                                     </AlertDialogTrigger>
@@ -153,8 +153,8 @@ export default function DashboardMenuPage() {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteItem(item.id)} disabled={isDeleting}>
-                                            {isDeleting && <Loader className="animate-spin" />}
+                                        <AlertDialogAction onClick={() => handleDeleteItem(item.id)} disabled={!!isDeleting}>
+                                            {isDeleting === item.id && <Loader className="animate-spin" />}
                                             Confirmer
                                         </AlertDialogAction>
                                         </AlertDialogFooter>
