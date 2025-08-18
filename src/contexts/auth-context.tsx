@@ -73,8 +73,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
                   setUserProfile(profileData);
                   // Set active role from Firestore profile if it exists
-                  if (profileData.role) {
+                  const storedRole = getRoleFromStorage();
+                  if (profileData.role && !storedRole) {
                       setActiveRole(profileData.role);
+                  } else if (storedRole) {
+                    setActiveRoleState(storedRole);
                   }
               } else {
                   // This case happens for new sign-ups. Create a default profile.

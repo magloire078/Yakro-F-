@@ -18,20 +18,12 @@ export default function ProfilePage() {
   const { user, userProfile, loading: authLoading, activeRole } = useAuth();
   const { orders, restaurants, isLoading: dataLoading } = useData();
   const router = useRouter();
-  const { toast } = useToast();
 
   React.useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
-    } else if (!authLoading && user && activeRole !== 'client') {
-      toast({
-        variant: 'destructive',
-        title: 'Accès non autorisé',
-        description: 'La page de profil est uniquement disponible pour les clients.',
-      });
-      router.push('/');
     }
-  }, [user, authLoading, activeRole, router, toast]);
+  }, [user, authLoading, router]);
 
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
@@ -67,7 +59,7 @@ export default function ProfilePage() {
     return nameOrEmail.substring(0, 2).toUpperCase();
   }
 
-  if (authLoading || dataLoading || !user) {
+  if (authLoading || dataLoading || !user || !userProfile) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <Loader className="h-16 w-16 animate-spin text-primary" />
@@ -123,44 +115,46 @@ export default function ProfilePage() {
           </Card>
         </div>
 
-        {/* Right Column: Stats */}
-        <div className="lg:col-span-1">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Statistiques</CardTitle>
-                    <CardDescription>Votre activité sur Yakro Go.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 rounded-lg">
-                            <ShoppingBag className="h-6 w-6 text-primary"/>
+        {/* Right Column: Stats (only for clients) */}
+        {activeRole === 'client' && (
+            <div className="lg:col-span-1">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Statistiques Client</CardTitle>
+                        <CardDescription>Votre activité sur Yakro Go.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-primary/10 rounded-lg">
+                                <ShoppingBag className="h-6 w-6 text-primary"/>
+                            </div>
+                            <div>
+                                <p className="font-bold text-2xl">{stats.orderCount}</p>
+                                <p className="text-sm text-muted-foreground">Commandes passées</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="font-bold text-2xl">{stats.orderCount}</p>
-                            <p className="text-sm text-muted-foreground">Commandes passées</p>
+                         <div className="flex items-center gap-4">
+                            <div className="p-3 bg-green-500/10 rounded-lg">
+                                <BarChart className="h-6 w-6 text-green-600"/>
+                            </div>
+                            <div>
+                                <p className="font-bold text-2xl">{stats.totalSpent} FCFA</p>
+                                <p className="text-sm text-muted-foreground">Dépenses totales</p>
+                            </div>
                         </div>
-                    </div>
-                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-green-500/10 rounded-lg">
-                            <BarChart className="h-6 w-6 text-green-600"/>
+                         <div className="flex items-center gap-4">
+                            <div className="p-3 bg-red-500/10 rounded-lg">
+                                <Heart className="h-6 w-6 text-red-600"/>
+                            </div>
+                            <div>
+                                <p className="font-bold text-lg">{stats.favoriteRestaurant?.name || 'Indéfini'}</p>
+                                <p className="text-sm text-muted-foreground">Restaurant favori</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="font-bold text-2xl">{stats.totalSpent} FCFA</p>
-                            <p className="text-sm text-muted-foreground">Dépenses totales</p>
-                        </div>
-                    </div>
-                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-red-500/10 rounded-lg">
-                            <Heart className="h-6 w-6 text-red-600"/>
-                        </div>
-                        <div>
-                            <p className="font-bold text-lg">{stats.favoriteRestaurant?.name || 'Indéfini'}</p>
-                            <p className="text-sm text-muted-foreground">Restaurant favori</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )}
       </div>
     </div>
   );

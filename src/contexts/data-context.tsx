@@ -219,6 +219,8 @@ function useRealtimeData() {
                     where("status", "==", "En Préparation"),
                     where("delivererId", "==", user.uid)
                 ));
+            } else {
+                 q = query(ordersCollection);
             }
             
             if (q) {
