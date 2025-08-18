@@ -69,7 +69,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
   addMenuItem: async (item, imageFile) => {
     try {
-      const itemToAdd: Omit<MenuItem, 'id'> = { ...item };
+      const itemToAdd: Omit<MenuItem, 'id' | 'image'> = { ...item };
       
       const docRef = await addDoc(collection(db, "plats"), itemToAdd);
       const itemId = docRef.id;
@@ -88,7 +88,7 @@ const useDataStore = create<DataState>((set, get) => ({
   updateMenuItem: async (itemId, data, imageFile) => {
     const itemDocRef = doc(db, 'plats', itemId);
     try {
-      const updateData = { ...data };
+      const updateData: Partial<MenuItem> = { ...data };
       if (imageFile) {
         const imageUrl = await uploadImage(imageFile, `plats/${itemId}`);
         updateData.image = imageUrl;
