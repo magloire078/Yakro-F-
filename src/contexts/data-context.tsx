@@ -158,8 +158,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 // This hook manages all realtime subscriptions
 function useRealtimeData() {
     const { user, activeRole } = useAuth();
-    const myRestaurants = useDataStore((state) => state.restaurants.filter(r => r.ownerId === user?.uid));
+    const allRestaurants = useDataStore((state) => state.restaurants);
 
+    // Memoize the list of restaurant IDs owned by the user to prevent re-renders
+    const myRestaurantIds = React.useMemo(() => {
+        if (!user || activeRole !== 'restaurateur') return [];
+        return allRestaurants
+            .filter(r => r.ownerId === user.uid)
+            .map(r => r.id);
+    }, [allRestaurants, user, activeRole]);
 
     // Subscribe to Restaurants
     React.useEffect(() => {
@@ -209,10 +216,6 @@ function useRealtimeData() {
             if (activeRole === 'client') {
                 q = query(ordersCollection, where("userId", "==", user.uid));
             } else if (activeRole === 'restaurateur') {
-                const myRestaurantIds = myRestaurants
-                    .filter(r => r.ownerId === user.uid)
-                    .map(r => r.id);
-
                 if (myRestaurantIds.length > 0) {
                     q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
                 }
@@ -248,7 +251,7 @@ function useRealtimeData() {
                 unsubscribe();
             }
         };
-    }, [user, activeRole, myRestaurants]); // Dependency on myRestaurants is crucial
+    }, [user, activeRole, myRestaurantIds]); // Dependency on myRestaurantIds is now stable
 }
 
 const useCombinedLoadingState = () => {
