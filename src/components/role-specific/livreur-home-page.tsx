@@ -131,7 +131,10 @@ export default function LivreurHomePage() {
         <div className="container mx-auto">
             <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Courses disponibles</h1>
             <div className="space-y-4">
-                {availableDeliveries.length > 0 ? availableDeliveries.map(delivery => (
+                {isLoading && (
+                    <div className="flex justify-center items-center p-8"><Loader className="animate-spin text-primary" /></div>
+                )}
+                {!isLoading && availableDeliveries.length > 0 ? availableDeliveries.map(delivery => (
                     <Card key={delivery.id}>
                         <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
                            <div className="md:col-span-1">
@@ -140,9 +143,9 @@ export default function LivreurHomePage() {
                              <p className="text-sm text-muted-foreground">À: {delivery.customerAddress}</p>
                            </div>
                            <div className="md:col-span-1 flex flex-row md:flex-col items-start md:items-center justify-between gap-2 text-sm">
-                                <Badge variant="secondary" className="text-base font-bold">{delivery.total.toLocaleString('fr-FR')} FCFA</Badge>
+                                <Badge variant="secondary" className="text-base font-bold">{delivery.deliveryFee.toLocaleString('fr-FR')} FCFA</Badge>
                                 <div className="flex items-center gap-2">
-                                    <span>{delivery.items.length} article(s)</span>
+                                    <span>{delivery.items.reduce((acc, i) => acc + i.quantity, 0)} article(s)</span>
                                 </div>
                            </div>
                            <div className="md:col-span-1 flex justify-start md:justify-end">
@@ -154,7 +157,7 @@ export default function LivreurHomePage() {
                         </CardContent>
                     </Card>
                 )) : null}
-                 {availableDeliveries.length === 0 && !currentDelivery && (
+                 {!isLoading && availableDeliveries.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
                         <Bike className="w-16 h-16"/>
                         <p className="text-lg font-medium">Aucune course disponible pour le moment</p>
