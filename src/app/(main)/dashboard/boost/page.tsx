@@ -11,17 +11,25 @@ import { Label } from '@/components/ui/label';
 import { Loader, Rocket, PartyPopper } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Restaurant } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 export default function BoostPage() {
-    const { user, activeRole } = useAuth();
+    const { user, loading: authLoading, activeRole } = useAuth();
     const { restaurants, updateRestaurant, isLoading } = useData();
     const { toast } = useToast();
     const [updatingId, setUpdatingId] = React.useState<string | null>(null);
+    const router = useRouter();
 
     const myRestaurants = React.useMemo(() => {
         if (!user || activeRole !== 'restaurateur') return [];
         return restaurants.filter(r => r.ownerId === user.uid);
     }, [restaurants, user, activeRole]);
+
+     React.useEffect(() => {
+        if (!authLoading && user && activeRole !== 'restaurateur') {
+            router.push('/');
+        }
+    }, [user, authLoading, activeRole, router]);
     
     const handleBoostToggle = async (restaurant: Restaurant) => {
         setUpdatingId(restaurant.id);
@@ -43,7 +51,7 @@ export default function BoostPage() {
         }
     };
     
-    if (isLoading) {
+    if (isLoading || authLoading) {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 
