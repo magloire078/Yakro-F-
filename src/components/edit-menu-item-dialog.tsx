@@ -23,6 +23,14 @@ import type { MenuItem, MenuOption } from '@/lib/types';
 import { Loader, Trash, Plus, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from './ui/badge';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+
 
 interface EditMenuItemDialogProps {
   isOpen: boolean;
@@ -129,85 +137,92 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
             Apportez des modifications à "{menuItem.name}". Cliquez sur enregistrer lorsque vous avez terminé.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1 pr-4">
-             <div>
-                <Label htmlFor="image-upload-edit" className="cursor-pointer">
-                    <div className="relative w-full h-40 rounded-md border border-dashed flex items-center justify-center text-muted-foreground hover:bg-muted/50">
-                        {imagePreview ? (
-                            <Image src={imagePreview} alt="Aperçu" fill className="object-cover rounded-md" />
-                        ) : (
-                           <div className="text-center">
-                             <Upload />
-                             <p>Changer l'image</p>
-                           </div>
-                        )}
-                    </div>
-                </Label>
-                <Input id="image-upload-edit" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-             </div>
-            <div>
-                <Label htmlFor="name">Nom du plat</Label>
-                <Input id="name" {...form.register('name')} />
-                {form.formState.errors.name && <p className="text-destructive text-sm mt-1">{form.formState.errors.name.message}</p>}
-            </div>
-            <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea id="description" {...form.register('description')} />
-                {form.formState.errors.description && <p className="text-destructive text-sm mt-1">{form.formState.errors.description.message}</p>}
-            </div>
-            <div>
-                <Label htmlFor="price">Prix (FCFA)</Label>
-                <Input id="price" type="number" {...form.register('price')} />
-                {form.formState.errors.price && <p className="text-destructive text-sm mt-1">{form.formState.errors.price.message}</p>}
-            </div>
-            
-            <div className="space-y-2">
-                <Label>Accompagnements</Label>
-                 <div className="flex flex-wrap gap-1 mb-2">
-                  {sideFields.map((field, index) => (
-                      <Badge key={field.id} variant="secondary" className="flex items-center gap-1.5">
-                          {field.name} (+{field.price} F)
-                          <Trash className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeSide(index)} />
-                      </Badge>
-                  ))}
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1 pr-4">
+                <div>
+                    <Label htmlFor="image-upload-edit" className="cursor-pointer">
+                        <div className="relative w-full h-40 rounded-md border border-dashed flex items-center justify-center text-muted-foreground hover:bg-muted/50">
+                            {imagePreview ? (
+                                <Image src={imagePreview} alt="Aperçu" fill className="object-cover rounded-md" />
+                            ) : (
+                            <div className="text-center">
+                                <Upload />
+                                <p>Changer l'image</p>
+                            </div>
+                            )}
+                        </div>
+                    </Label>
+                    <Input id="image-upload-edit" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                 </div>
-                <div className="flex items-center gap-2">
-                    <Input {...form.register(`availableSides.${sideFields.length}.name`)} placeholder="Nom (Ex: Alloco)" />
-                    <Input {...form.register(`availableSides.${sideFields.length}.price`)} type="number" placeholder="Prix" className="w-32"/>
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ name: '', price: 0 })}>
-                        <Plus /> Ajouter
-                    </Button>
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Nom du plat</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl><Textarea {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Prix (FCFA)</FormLabel>
+                            <FormControl><Input type="number" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                
+                <div className="space-y-2">
+                    <Label>Accompagnements</Label>
+                    {sideFields.map((field, index) => (
+                        <div key={field.id} className="flex items-center gap-2">
+                            <Input {...form.register(`availableSides.${index}.name`)} placeholder="Nom" />
+                            <Input {...form.register(`availableSides.${index}.price`)} type="number" placeholder="Prix" className="w-32"/>
+                            <Button type="button" variant="outline" size="icon" onClick={() => removeSide(index)}><Trash /></Button>
+                        </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ name: '', price: 0 })}><Plus /> Ajouter un accompagnement</Button>
                 </div>
-            </div>
-            
-            <div className="space-y-2">
-                <Label>Boissons</Label>
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {drinkFields.map((field, index) => (
-                      <Badge key={field.id} variant="secondary" className="flex items-center gap-1.5">
-                          {field.name} (+{field.price} F)
-                          <Trash className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => removeDrink(index)} />
-                      </Badge>
-                  ))}
+                
+                <div className="space-y-2">
+                    <Label>Boissons</Label>
+                     {drinkFields.map((field, index) => (
+                        <div key={field.id} className="flex items-center gap-2">
+                            <Input {...form.register(`availableDrinks.${index}.name`)} placeholder="Nom"/>
+                            <Input {...form.register(`availableDrinks.${index}.price`)} type="number" placeholder="Prix" className="w-32"/>
+                            <Button type="button" variant="outline" size="icon" onClick={() => removeDrink(index)}><Trash /></Button>
+                        </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ name: '', price: 0 })}><Plus /> Ajouter une boisson</Button>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Input {...form.register(`availableDrinks.${drinkFields.length}.name`)} placeholder="Nom (Ex: Bissap)"/>
-                    <Input {...form.register(`availableDrinks.${drinkFields.length}.price`)} type="number" placeholder="Prix" className="w-32"/>
-                     <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ name: '', price: 0 })}>
-                        <Plus /> Ajouter
-                    </Button>
-                </div>
-            </div>
 
-            <DialogFooter className="sticky bottom-0 bg-background pt-4 -mx-1 -mb-1 px-1 pb-1">
-                <Button type="button" variant="outline" onClick={onClose}>Annuler</Button>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader className="animate-spin" />}
-                    Enregistrer
-                </Button>
-            </DialogFooter>
-        </form>
+                <DialogFooter className="sticky bottom-0 bg-background pt-4 -mx-1 -mb-1 px-1 pb-1">
+                    <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader className="animate-spin" />}
+                        Enregistrer les modifications
+                    </Button>
+                </DialogFooter>
+            </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
 }
+

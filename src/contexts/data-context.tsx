@@ -233,7 +233,7 @@ function useRealtimeData() {
                     });
                 }, (error) => {
                     console.error("Error on orders snapshot listener:", error);
-                    useDataStore.setState(state => ({ isLoading: { ...state.isLoading, orders: false } }));
+                    useDataStore.setState(state => ({ isLoading: { ...useDataStore.getState().isLoading, orders: false } }));
                 });
             } else {
                  useDataStore.setState({ orders: [], isLoading: { ...useDataStore.getState().isLoading, orders: false } });
