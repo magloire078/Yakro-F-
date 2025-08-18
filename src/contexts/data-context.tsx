@@ -72,12 +72,6 @@ const useDataStore = create<DataState>((set, get) => ({
       // Create a mutable copy of the item
       const itemToAdd: any = { ...item };
       
-      // If there's an image file, we don't store the preview URL in Firestore.
-      // We will upload it and get a real URL later.
-      if (imageFile) {
-        delete itemToAdd.image;
-      }
-      
       const docRef = await addDoc(collection(db, "plats"), itemToAdd);
       const itemId = docRef.id;
 
