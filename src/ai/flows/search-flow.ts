@@ -18,8 +18,8 @@ const IntelligentSearchInputSchema = z.object({
 export type IntelligentSearchInput = z.infer<typeof IntelligentSearchInputSchema>;
 
 const IntelligentSearchOutputSchema = z.object({
-  keywords: z.array(z.string()).describe('A list of keywords extracted from the query.'),
-  cuisine: z.array(z.string()).describe('The type of cuisine mentioned.'),
+  keywords: z.array(z.string()).describe('A list of general keywords from the query (e.g., "pas cher", "rapide").'),
+  cuisine: z.array(z.string()).describe('Any cuisine types mentioned (e.g., Ivoirienne, Pizza, Africaine, Grillades).'),
   priceRange: z
     .object({
       min: z.number().optional(),
@@ -29,7 +29,7 @@ const IntelligentSearchOutputSchema = z.object({
     .describe('The price range mentioned.'),
   deliveryTime: z.number().optional().describe('The maximum delivery time in minutes.'),
   rating: z.number().optional().describe('The minimum rating mentioned.'),
-  searchTerms: z.array(z.string()).describe('The list of dishes mentioned in the query.'),
+  searchTerms: z.array(z.string()).describe('A list of specific dishes or restaurant names mentioned in the query. This is the most important field for direct searching.'),
 });
 export type IntelligentSearchOutput = z.infer<typeof IntelligentSearchOutputSchema>;
 
@@ -41,17 +41,20 @@ const prompt = ai.definePrompt({
   name: 'intelligentSearchPrompt',
   input: { schema: IntelligentSearchInputSchema },
   output: { schema: IntelligentSearchOutputSchema },
-  prompt: `You are an intelligent search assistant for a food delivery app. Your task is to analyze the user's search query and extract structured information from it.
+  prompt: `You are an intelligent search assistant for a food delivery app. Your task is to analyze the user's search query and extract structured information from it. The primary goal is to identify specific dishes or restaurants the user is looking for.
 
 User Query: "{{{query}}}"
 
 Analyze the query and extract the following information:
-- Keywords: General terms from the query.
-- Cuisine: Identify any mentioned cuisines (e.g., Ivoirienne, Pizza, Africaine, Grillades).
-- Price Range: Identify any price constraints. For "pas cher" or "bon marché" consider a max of 4000. For "moins de X", set max to X.
-- Delivery Time: Note any constraints on delivery time (e.g., "rapide", "en moins de 30 minutes"). "Rapide" should be interpreted as under 30 minutes.
-- Rating: Note any preference for ratings (e.g., "bien noté", "le meilleur"). "Bien noté" or "le meilleur" should be interpreted as a minimum rating of 4.
-- Search Terms: List any specific dishes mentioned in the query.
+- searchTerms: This is the most important. Extract any specific dish names (e.g., "Poulet Yassa", "Pizza", "Foutou Banane") or restaurant names mentioned. Be specific.
+- cuisine: Identify any general cuisine types mentioned (e.g., Ivoirienne, Africaine, Grillades).
+- keywords: Extract general keywords describing qualities (e.g., "rapide", "pas cher", "bien noté").
+- priceRange: Identify any price constraints. For "pas cher" or "bon marché", consider a max of 4000. For "moins de X", set max to X.
+- deliveryTime: Note any constraints on delivery time. "Rapide" or "livraison rapide" should be interpreted as under 30 minutes.
+- rating: Note any preference for ratings. "Bien noté", "le meilleur", or "4 étoiles" should be interpreted as a minimum rating of 4.
+
+Example: "Je veux du poulet yassa pas cher" -> searchTerms: ["poulet yassa"], priceRange: { max: 4000 }.
+Example: "pizza rapide" -> searchTerms: ["pizza"], deliveryTime: 30.
 
 Return the result in JSON format.
 `,

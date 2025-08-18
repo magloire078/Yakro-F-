@@ -122,27 +122,65 @@ export default function CustomerHomePage() {
   
   const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
     const baseRestaurants = [...restaurants];
-    let filteredNormal = baseRestaurants;
     
+    let filteredRestaurantIds = new Set<string>();
+    let matchReasons = new Map<string, string>();
+
     if (searchQuery && !interpretedSearch) {
-        filteredNormal = baseRestaurants.filter(r => 
-            r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+      // Simple text search on restaurant name, cuisine, and menu items
+      const lowercasedQuery = searchQuery.toLowerCase();
+      baseRestaurants.forEach(r => {
+        if (r.name.toLowerCase().includes(lowercasedQuery) || r.cuisine.toLowerCase().includes(lowercasedQuery)) {
+          filteredRestaurantIds.add(r.id);
+        }
+      });
+      menuItems.forEach(item => {
+        if (item.name.toLowerCase().includes(lowercasedQuery)) {
+          filteredRestaurantIds.add(item.restaurantId);
+          matchReasons.set(item.restaurantId, `Propose "${item.name}"`);
+        }
+      });
     } else if (interpretedSearch) {
-        filteredNormal = baseRestaurants.filter(r => {
-            const matchesCuisine = interpretedSearch.cuisine?.length > 0 ? interpretedSearch.cuisine.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())) : true;
-            const matchesRating = interpretedSearch.rating ? r.rating >= interpretedSearch.rating : true;
-            const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.deliveryTime <= interpretedSearch.deliveryTime : true;
-            return matchesCuisine && matchesRating && matchesDeliveryTime;
-        });
+      // AI-interpreted search
+      const searchTerms = [
+        ...(interpretedSearch.keywords || []),
+        ...(interpretedSearch.searchTerms || [])
+      ].map(t => t.toLowerCase());
+
+      baseRestaurants.forEach(r => {
+        const matchesCuisine = interpretedSearch.cuisine?.length > 0 ? interpretedSearch.cuisine.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())) : false;
+        const matchesRating = interpretedSearch.rating ? r.rating >= interpretedSearch.rating : true;
+        const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.deliveryTime <= interpretedSearch.deliveryTime : true;
+        const matchesName = searchTerms.length > 0 ? searchTerms.some(term => r.name.toLowerCase().includes(term)) : false;
+
+        if ((matchesCuisine || matchesName) && matchesRating && matchesDeliveryTime) {
+          filteredRestaurantIds.add(r.id);
+        }
+      });
+      
+      if (searchTerms.length > 0) {
+          menuItems.forEach(item => {
+              if (searchTerms.some(term => item.name.toLowerCase().includes(term))) {
+                  filteredRestaurantIds.add(item.restaurantId);
+                  matchReasons.set(item.restaurantId, `Propose "${item.name}"`);
+              }
+          });
+      }
+    } else {
+      // No search query, show all
+      baseRestaurants.forEach(r => filteredRestaurantIds.add(r.id));
     }
+    
+    const filtered = Array.from(filteredRestaurantIds).map(id => {
+      const restaurant = baseRestaurants.find(r => r.id === id)!;
+      return { ...restaurant, matchReason: matchReasons.get(id) };
+    });
 
     return {
         featuredRestaurants: baseRestaurants.filter(r => r.isFeatured),
-        normalRestaurants: filteredNormal.filter(r => !r.isFeatured),
+        normalRestaurants: filtered.filter(r => !r.isFeatured),
     };
-}, [restaurants, searchQuery, interpretedSearch]);
+}, [restaurants, menuItems, searchQuery, interpretedSearch]);
 
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
@@ -208,7 +246,7 @@ export default function CustomerHomePage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {isLoading ? renderSkeletons(6) : normalRestaurants.map(restaurant => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={(restaurant as any).matchReason} />
           ))}
         </div>
          {normalRestaurants.length === 0 && !isLoading && (

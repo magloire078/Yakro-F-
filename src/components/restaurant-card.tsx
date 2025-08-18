@@ -9,13 +9,14 @@ import { cn } from '@/lib/utils';
 interface RestaurantCardProps {
   restaurant: Restaurant;
   featured?: boolean;
+  matchReason?: string;
 }
 
-export function RestaurantCard({ restaurant, featured = false }: RestaurantCardProps) {
+export function RestaurantCard({ restaurant, featured = false, matchReason }: RestaurantCardProps) {
   return (
     <Link href={`/restaurants/${restaurant.id}`}>
       <Card className={cn(
-        "overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer group h-full",
+        "overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer group h-full flex flex-col",
         featured && "border-2 border-primary/50 bg-primary/5"
       )}>
         <CardHeader className="p-0 relative h-40">
@@ -29,10 +30,15 @@ export function RestaurantCard({ restaurant, featured = false }: RestaurantCardP
           />
            {featured && <Badge className="absolute top-2 right-2" variant="default">En vedette</Badge>}
         </CardHeader>
-        <CardContent className="p-4">
-          <h3 className="text-lg font-bold font-headline truncate">{restaurant.name}</h3>
-          <p className="text-sm text-muted-foreground">{restaurant.cuisine}</p>
-          <div className="flex justify-between items-center mt-3 text-sm">
+        <CardContent className="p-4 flex-grow flex flex-col">
+          <div className="flex-grow">
+            <h3 className="text-lg font-bold font-headline truncate">{restaurant.name}</h3>
+            <p className="text-sm text-muted-foreground">{restaurant.cuisine}</p>
+            {matchReason && (
+              <p className="text-xs text-primary font-semibold mt-1 italic">{matchReason}</p>
+            )}
+          </div>
+          <div className="flex justify-between items-center mt-3 text-sm pt-2 border-t">
             <Badge variant="outline" className="flex items-center gap-1">
               <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
               <span className="font-semibold">{restaurant.rating}</span>
