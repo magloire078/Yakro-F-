@@ -208,7 +208,7 @@ export default function RestaurateurHomePage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Créateur de Plats</CardTitle>
-                        <CardDescription>Décrivez un plat et laissez l'IA créer les détails, ou remplissez tout manuellement. Ajoutez une photo pour attirer les clients.</CardDescription>
+                        <CardDescription>Décrivez un plat et laissez l'IA créer les détails. Fournissez un nom ou un prix pour guider l'IA, ou laissez-la faire tout le travail !</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -246,11 +246,11 @@ export default function RestaurateurHomePage() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Nom du plat</Label>
+                                <Label htmlFor="name">Nom du plat (optionnel)</Label>
                                 <Input id="name" placeholder="Ex: Poulet Yassa" value={name} onChange={e => setName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="price">Prix</Label>
+                                <Label htmlFor="price">Prix (optionnel)</Label>
                                 <Input id="price" type="number" placeholder="Ex: 3500" value={price} onChange={e => setPrice(e.target.value)} />
                             </div>
                         </div>
@@ -325,7 +325,7 @@ export default function RestaurateurHomePage() {
                         ) : (
                              <div className="text-center text-muted-foreground">
                                 <ImageIcon className="h-12 w-12 mx-auto mb-4" />
-                                <p>Le plat apparaîtra ici après génération ou saisie manuelle.</p>
+                                <p>Le plat généré par l'IA apparaîtra ici.</p>
                              </div>
                         )}
                     </div>
