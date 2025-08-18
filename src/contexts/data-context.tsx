@@ -209,6 +209,7 @@ function useRealtimeData() {
                     q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
                 }
             } else if (activeRole === 'livreur') {
+                // Livreur sees available orders, and any order assigned to them (active or completed)
                 q = query(ordersCollection, or(
                     where("status", "==", "En Préparation"),
                     where("delivererId", "==", user.uid)

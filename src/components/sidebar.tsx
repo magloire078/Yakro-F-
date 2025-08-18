@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -105,9 +105,9 @@ export function Sidebar() {
           {activeRole === 'livreur' && (
             <>
               <Button variant="ghost" className="justify-start text-lg" asChild>
-                <Link href="/">
-                  <Bike className="mr-2 h-5 w-5" />
-                  Espace Livreur
+                <Link href="/dashboard/earnings">
+                  <DollarSign className="mr-2 h-5 w-5" />
+                  Mes Gains
                 </Link>
               </Button>
             </>
