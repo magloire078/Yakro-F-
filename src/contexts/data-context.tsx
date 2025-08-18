@@ -69,7 +69,14 @@ const useDataStore = create<DataState>((set, get) => ({
 
   addMenuItem: async (item, imageFile) => {
     try {
-      const itemToAdd: Omit<MenuItem, 'id' | 'image'> = { ...item };
+      // Create a mutable copy of the item
+      const itemToAdd: any = { ...item };
+      
+      // If there's an image file, we don't store the preview URL in Firestore.
+      // We will upload it and get a real URL later.
+      if (imageFile) {
+        delete itemToAdd.image;
+      }
       
       const docRef = await addDoc(collection(db, "plats"), itemToAdd);
       const itemId = docRef.id;
@@ -93,7 +100,7 @@ const useDataStore = create<DataState>((set, get) => ({
         const imageUrl = await uploadImage(imageFile, `plats/${itemId}`);
         updateData.image = imageUrl;
       }
-      await updateDoc(itemDocRef, updateData);
+      await updateDoc(itemDocRef, updateData as DocumentData);
     } catch (e) {
       console.error("Error updating menu item: ", e);
       throw e;
@@ -151,7 +158,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 // This hook manages all realtime subscriptions
 function useRealtimeData() {
     const { user, activeRole } = useAuth();
-    const myRestaurants = useDataStore((state) => state.restaurants);
+    const myRestaurants = useDataStore((state) => state.restaurants.filter(r => r.ownerId === user?.uid));
+
 
     // Subscribe to Restaurants
     React.useEffect(() => {
@@ -196,7 +204,7 @@ function useRealtimeData() {
 
         if (user) {
             const ordersCollection = collection(db, 'commandes');
-            let q: Query | null = null;
+            let q: Query<DocumentData> | null = null;
 
             if (activeRole === 'client') {
                 q = query(ordersCollection, where("userId", "==", user.uid));

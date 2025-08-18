@@ -52,7 +52,7 @@ export default function DashboardMenuPage() {
 
     const myRestaurantIds = React.useMemo(() => {
         if (!user || activeRole !== 'restaurateur') return [];
-        return restaurants.map(r => r.id);
+        return restaurants.filter(r => r.ownerId === user.uid).map(r => r.id);
     }, [restaurants, user, activeRole]);
 
     const myMenuItems = React.useMemo(() => {
@@ -118,7 +118,7 @@ export default function DashboardMenuPage() {
                             <CardHeader>
                                 <div className="relative h-40 w-full rounded-lg overflow-hidden bg-muted">
                                     <Image
-                                        src={`https://placehold.co/400x300.png`}
+                                        src={item.image || `https://placehold.co/400x300.png`}
                                         alt={item.name}
                                         fill
                                         className="object-cover"
