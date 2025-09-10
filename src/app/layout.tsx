@@ -7,7 +7,7 @@ import { DataProvider } from '@/contexts/data-context';
 import { CartProvider } from '@/contexts/cart-context';
 
 export const metadata: Metadata = {
-  title: 'Yakro Go',
+  title: 'Yakro Fê',
   description: 'Votre ville, livrée.',
   manifest: '/manifest.json',
 };

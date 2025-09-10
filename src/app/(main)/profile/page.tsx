@@ -120,7 +120,7 @@ export default function ProfilePage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Statistiques Client</CardTitle>
-                        <CardDescription>Votre activité sur Yakro Go.</CardDescription>
+                        <CardDescription>Votre activité sur Yakro Fê.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex items-center gap-4">

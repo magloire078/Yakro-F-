@@ -100,7 +100,7 @@ export default function NewRestaurantPage() {
                         <ChefHat className="h-8 w-8 text-primary"/>
                         <div>
                             <CardTitle className="text-2xl">Enregistrer votre restaurant</CardTitle>
-                            <CardDescription>Remplissez les informations ci-dessous pour ajouter votre établissement à Yakro Go.</CardDescription>
+                            <CardDescription>Remplissez les informations ci-dessous pour ajouter votre établissement à Yakro Fê.</CardDescription>
                         </div>
                     </div>
                 </CardHeader>

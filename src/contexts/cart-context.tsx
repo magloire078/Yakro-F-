@@ -27,7 +27,7 @@ const getInitialCart = (): CartItem[] => {
         return [];
     }
     try {
-        const item = window.localStorage.getItem('yakro-go-cart');
+        const item = window.localStorage.getItem('yakro-fe-cart');
         return item ? JSON.parse(item) : [];
     } catch (error) {
         console.warn('Error reading localStorage cart', error);
@@ -46,7 +46,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   React.useEffect(() => {
     try {
-        window.localStorage.setItem('yakro-go-cart', JSON.stringify(cartItems));
+        window.localStorage.setItem('yakro-fe-cart', JSON.stringify(cartItems));
     } catch (error) {
         console.warn('Error writing to localStorage cart', error);
     }

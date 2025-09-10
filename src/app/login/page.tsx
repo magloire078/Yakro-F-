@@ -36,7 +36,7 @@ export default function LoginPage() {
                     <Card>
                         <CardHeader className="text-center">
                             <Icons.logo className="mx-auto h-12 w-12 text-primary" />
-                             <h1 className="text-2xl font-headline text-primary mt-4">Yakro Go</h1>
+                             <h1 className="text-2xl font-headline text-primary mt-4">Yakro Fê</h1>
                         </CardHeader>
                         <CardContent className="pt-0">
                             <TabsList className="grid w-full grid-cols-2 mt-4">

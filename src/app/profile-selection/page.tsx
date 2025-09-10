@@ -63,7 +63,7 @@ export default function ProfileSelectionPage() {
         <div className="flex h-screen flex-col items-center justify-center text-center p-4">
             <h1 className="text-4xl font-headline text-primary mb-4">Quel type de profil souhaitez-vous utiliser ?</h1>
             <p className="text-muted-foreground mb-12 max-w-2xl">
-                Choisissez le profil qui correspond à votre utilisation de Yakro Go. Vous pourrez explorer les fonctionnalités correspondantes.
+                Choisissez le profil qui correspond à votre utilisation de Yakro Fê. Vous pourrez explorer les fonctionnalités correspondantes.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
                 

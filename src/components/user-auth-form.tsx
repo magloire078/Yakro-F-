@@ -54,7 +54,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
 
         toast({
           title: "Compte créé avec succès",
-          description: "Bienvenue sur Yakro Go ! Veuillez choisir un profil.",
+          description: "Bienvenue sur Yakro Fê ! Veuillez choisir un profil.",
         });
         // Redirect to profile selection after sign up
         router.push('/profile-selection');
