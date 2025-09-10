@@ -198,12 +198,12 @@ export default function CustomerHomePage() {
       {activeOrder ? (
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
-        <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-lg">
-          <h1 className="text-4xl md:text-6xl font-headline text-primary">Votre ville, livrée.</h1>
-          <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous. Simple, rapide et délicieux.
+        <section className="text-center bg-card p-6 md:p-12 rounded-2xl shadow-lg">
+          <h1 className="text-3xl md:text-5xl font-headline text-primary">Votre ville, livrée.</h1>
+          <p className="mt-2 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+            Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous.
           </p>
-          <div className="mt-8 max-w-xl mx-auto">
+          <div className="mt-6 max-w-xl mx-auto">
             <SearchBar onSearchChange={setSearchQuery} onInterpretedSearchChange={setInterpretedSearch} />
           </div>
         </section>

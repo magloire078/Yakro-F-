@@ -8,6 +8,7 @@ import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
+import { BottomNavBar } from '@/components/bottom-nav-bar';
 
 export default function MainAppLayout({
   children,
@@ -39,7 +40,8 @@ export default function MainAppLayout({
         </div>
         <div className="flex-1 flex flex-col">
           <MobileHeader />
-          <main className="flex-1 p-4 md:p-8 bg-background">{children}</main>
+          <main className="flex-1 p-4 md:p-8 bg-background pb-24 md:pb-8">{children}</main>
+          <BottomNavBar />
         </div>
       </div>
   );
