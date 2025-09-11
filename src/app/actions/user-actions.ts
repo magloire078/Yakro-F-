@@ -35,44 +35,38 @@ async function verifySuperAdmin(): Promise<string> {
 
 
 /**
- * Server action to get all users from Firebase Authentication and merge with Firestore profiles.
+ * Server action to get all users from the Firestore 'utilisateurs' collection.
  * This action is protected and can only be executed by a SuperAdmin.
  */
 export async function getAllUsersAction(): Promise<UserProfile[]> {
     try {
         await verifySuperAdmin(); // Protect the action
         
-        // Get all users from Firebase Auth
-        const listUsersResult = await adminAuth().listUsers();
-        const authUsers = listUsersResult.users;
-
         // Get all user profiles from Firestore
         const usersCollectionRef = collection(firestore(), 'utilisateurs');
         const usersSnapshot = await getDocs(usersCollectionRef);
-        const firestoreProfiles = new Map(usersSnapshot.docs.map(doc => [doc.id, doc.data()]));
 
-        // Merge Auth users with Firestore profiles
-        const mergedUsers: UserProfile[] = authUsers.map((authUser: UserRecord) => {
-            const firestoreProfile = firestoreProfiles.get(authUser.uid);
-            
+        const usersList: UserProfile[] = usersSnapshot.docs.map(doc => {
+            const data = doc.data();
             return {
-                uid: authUser.uid,
-                email: authUser.email || 'N/A',
-                createdAt: authUser.metadata.creationTime,
-                name: firestoreProfile?.name || authUser.displayName,
-                phone: firestoreProfile?.phone,
-                defaultAddress: firestoreProfile?.defaultAddress,
-                role: firestoreProfile?.role,
-                systemRole: firestoreProfile?.systemRole || 'User',
-                allowedRoles: firestoreProfile?.allowedRoles || ['client'],
+                uid: doc.id,
+                email: data.email || 'N/A',
+                createdAt: data.createdAt,
+                name: data.name || 'Non défini',
+                phone: data.phone,
+                defaultAddress: data.defaultAddress,
+                role: data.role,
+                systemRole: data.systemRole || 'User',
+                allowedRoles: data.allowedRoles || ['client'],
             };
         });
 
-        return mergedUsers;
+        return usersList;
 
     } catch (error) {
         console.error("Error in getAllUsersAction:", error);
         // On error, return an empty array to prevent crashing the client.
+        // This is often a permissions issue if the server environment isn't set up correctly.
         return [];
     }
 }
