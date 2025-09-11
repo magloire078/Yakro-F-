@@ -47,30 +47,27 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
   const router = useRouter();
   const [resetEmail, setResetEmail] = React.useState('');
   const [isResetting, setIsResetting] = React.useState(false);
-
-  const emailForReset = watch('email');
-
-  React.useEffect(() => {
-    setResetEmail(emailForReset || '');
-  }, [emailForReset]);
+  const [isResetDialogOpen, setIsResetDialogOpen] = React.useState(false);
 
 
   const handlePasswordReset = async () => {
-      if (!resetEmail) {
+      const emailValue = watch('email');
+      if (!emailValue) {
           toast({
               variant: "destructive",
               title: "Adresse e-mail manquante",
-              description: "Veuillez entrer une adresse e-mail.",
+              description: "Veuillez d'abord entrer votre adresse e-mail dans le champ prévu.",
           });
           return;
       }
       setIsResetting(true);
       try {
-          await sendPasswordResetEmail(auth, resetEmail);
+          await sendPasswordResetEmail(auth, emailValue);
           toast({
               title: "E-mail de réinitialisation envoyé",
               description: "Veuillez consulter votre boîte de réception pour réinitialiser votre mot de passe.",
           });
+          setIsResetDialogOpen(false);
       } catch (error: any) {
           toast({
               variant: "destructive",
@@ -166,29 +163,19 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
                   Mot de passe
                 </Label>
                  {mode === 'login' && (
-                    <AlertDialog>
+                    <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
                         <AlertDialogTrigger asChild>
-                             <span className="text-sm font-medium text-primary hover:underline cursor-pointer">
+                             <button type="button" className="text-sm font-medium text-primary hover:underline cursor-pointer">
                                 Mot de passe oublié ?
-                            </span>
+                            </button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Réinitialiser le mot de passe</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Entrez votre adresse e-mail pour recevoir un lien de réinitialisation.
+                                    Nous enverrons un lien de réinitialisation à l'adresse e-mail que vous avez saisie dans le formulaire de connexion.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <div className="py-4">
-                               <Input
-                                  id="reset-email"
-                                  placeholder="nom@exemple.com"
-                                  type="email"
-                                  value={resetEmail}
-                                  onChange={(e) => setResetEmail(e.target.value)}
-                                  disabled={isResetting}
-                                />
-                            </div>
                             <AlertDialogFooter>
                                 <AlertDialogCancel disabled={isResetting}>Annuler</AlertDialogCancel>
                                 <AlertDialogAction onClick={handlePasswordReset} disabled={isResetting}>
