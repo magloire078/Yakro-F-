@@ -120,20 +120,16 @@ export default function CustomerHomePage() {
     return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
 
-
   const getFilteredRestaurants = () => {
-    if (!restaurants || restaurants.length === 0) {
-      return { featured: [], normal: [] };
-    }
-  
     let allRestaurants = [...restaurants];
-  
+    let results: (Restaurant & { matchReason?: string })[] = [];
+
     if (!searchQuery && !interpretedSearch) {
-      const featured = allRestaurants.filter(r => r && r.enVedette);
-      const normal = allRestaurants.filter(r => r && !r.enVedette);
-      return { featured, normal };
+        const featured = allRestaurants.filter(r => r?.enVedette);
+        const normal = allRestaurants.filter(r => r && !r.enVedette);
+        return { featured, normal };
     }
-  
+
     const matchReasons = new Map<string, string>();
     let filteredRestaurantIds = new Set<string>();
 
@@ -177,13 +173,14 @@ export default function CustomerHomePage() {
         });
     }
 
-    const results = allRestaurants
+    results = allRestaurants
       .filter(r => r && filteredRestaurantIds.has(r.id))
       .map(r => ({
           ...r,
           matchReason: matchReasons.get(r.id),
       }));
 
+    // In a search context, we don't separate featured from normal.
     return { featured: [], normal: results };
   };
 
