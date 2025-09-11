@@ -30,7 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <DataProvider>
             <CartProvider>
-                {children}
+              {children}
               <Toaster />
             </CartProvider>
           </DataProvider>

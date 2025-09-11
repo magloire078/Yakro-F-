@@ -15,6 +15,7 @@ interface AuthContextType {
   activeRole: AppRole;
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => Promise<void>;
+  updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -124,14 +125,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
   }
   
-  const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
+  const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => {
+      const userDocRef = doc(db, 'utilisateurs', uid);
+      await updateDoc(userDocRef, data);
+  };
+  
+  const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
       await updateDoc(userDocRef, data);
   };
 
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, activeRole, setActiveRole, updateUserProfile }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
@@ -140,4 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = React.useContext(AuthContext);
   if (context === undefined) {
-    
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
