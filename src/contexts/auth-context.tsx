@@ -5,8 +5,7 @@ import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { updateUserAction } from '@/app/actions/update-user-action';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { Loader } from 'lucide-react';
 
 interface AuthContextType {
@@ -87,10 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setActiveRole('client');
                   }
 
-                   // Check if the user should be a super admin and promote them if necessary
                    if (user.email === 'magloire078@gmail.com' && profileData.roleSysteme !== 'SuperAdmin') {
-                       console.log("Promoting magloire078@gmail.com to SuperAdmin...");
-                       updateUserAction(user.uid, { 
+                       const userDocRef = doc(db, 'utilisateurs', user.uid);
+                       updateDoc(userDocRef, {
                            roleSysteme: 'SuperAdmin',
                            rolesAutorises: ['client', 'restaurateur', 'livreur']
                        }).catch(e => console.error("Failed to promote super admin:", e));
@@ -129,13 +127,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
-      await updateUserAction(uid, data);
+      const userDocRef = doc(db, 'utilisateurs', uid);
+      await updateDoc(userDocRef, data);
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-      // This now calls the simplified, less secure action.
-      // In a real app, this would require robust server-side permission checks.
-      await updateUserAction(uid, data);
+      const userDocRef = doc(db, 'utilisateurs', uid);
+      await updateDoc(userDocRef, data);
   };
 
 
