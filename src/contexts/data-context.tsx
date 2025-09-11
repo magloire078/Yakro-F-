@@ -1,11 +1,10 @@
 
-
 'use client';
 
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, where, Unsubscribe, DocumentData, Query, or } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, Unsubscribe, DocumentData, Query, or, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
@@ -13,7 +12,6 @@ import { useAuth } from './auth-context';
 import { addRestaurantAction, updateRestaurant as updateRestaurantAction } from '@/app/actions/restaurant-actions';
 import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
-import { getAllUsersAction } from '@/app/actions/user-actions';
 
 
 interface DataState {
@@ -29,6 +27,7 @@ interface DataState {
   deleteMenuItem: (itemId: string) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
+  fetchAllUsers: () => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
 }
@@ -79,6 +78,18 @@ const useDataStore = create<DataState>((set, get) => ({
     await updateOrderStatusAction({ orderId, status, delivererId });
   },
 
+  fetchAllUsers: async () => {
+      try {
+        const usersSnapshot = await getDocs(collection(db, "utilisateurs"));
+        const usersList = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+        set({ allUsers: usersList });
+      } catch (error) {
+        console.error("Error fetching all users:", error);
+        // This will likely be a permissions error if the rules are not set up correctly.
+        // The UI should handle an empty `allUsers` array gracefully.
+      }
+  },
+
   getMenuItem: (id: string) => {
     return get().menuItems.find(i => i.id === id);
   },
@@ -90,6 +101,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, userProfile, activeRole } = useAuth();
+    const fetchAllUsers = useDataStore((state) => state.fetchAllUsers);
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
@@ -180,27 +192,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Fetch all users for SuperAdmin via a server action
     React.useEffect(() => {
-        const fetchUsers = async () => {
-            if (userProfile?.systemRole === 'SuperAdmin') {
-                try {
-                    const usersList = await getAllUsersAction();
-                    useDataStore.setState({ allUsers: usersList });
-                } catch (error) {
-                    console.error("Error fetching all users via server action:", error);
-                    useDataStore.setState({ allUsers: [] });
-                }
-            } else {
-                useDataStore.setState({ allUsers: [] });
-            }
-        };
-
-        fetchUsers();
-        
-        // Optionally, refetch periodically if real-time updates are desired for the admin panel
-        const interval = setInterval(fetchUsers, 60000); // Refetch every 60 seconds
-        return () => clearInterval(interval);
-
-    }, [userProfile?.systemRole]);
+        if (userProfile?.systemRole === 'SuperAdmin') {
+            fetchAllUsers();
+        } else {
+             useDataStore.setState({ allUsers: [] });
+        }
+    }, [userProfile?.systemRole, fetchAllUsers]);
 
   return <>{children}</>;
 };
