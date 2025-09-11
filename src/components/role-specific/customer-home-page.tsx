@@ -120,48 +120,51 @@ export default function CustomerHomePage() {
     return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
 
-  const allRestaurants = restaurants || [];
-  let featuredRestaurants: (Restaurant & { matchReason?: string })[] = [];
-  let normalRestaurants: (Restaurant & { matchReason?: string })[] = [];
-  
-  if (!searchQuery && !interpretedSearch) {
-    featuredRestaurants = allRestaurants.filter(r => r && r.enVedette);
-    normalRestaurants = allRestaurants.filter(r => r && !r.enVedette);
-  } else {
-    const matchReasons = new Map<string, string>();
-    let filteredRestaurantIds = new Set<string>();
+  const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
+    if (!restaurants) {
+        return { featuredRestaurants: [], normalRestaurants: [] };
+    }
 
-    const searchTerms = [
-      ...(interpretedSearch?.keywords || []), 
-      ...(interpretedSearch?.searchTerms || []),
-      searchQuery
-    ].map(t => t.toLowerCase()).filter(Boolean);
+    let results: (Restaurant & { matchReason?: string })[] = [];
 
-    const lowerCuisines = (interpretedSearch?.cuisine || []).map(c => c.toLowerCase());
+    if (!searchQuery && !interpretedSearch) {
+        results = restaurants;
+    } else {
+        const searchTerms = [
+            ...(interpretedSearch?.keywords || []),
+            ...(interpretedSearch?.searchTerms || []),
+            searchQuery
+        ].map(t => t.toLowerCase()).filter(Boolean);
+
+        const lowerCuisines = (interpretedSearch?.cuisine || []).map(c => c.toLowerCase());
+        const matchReasons = new Map<string, string>();
+
+        results = restaurants.filter(r => {
+            if (!r) return false;
+
+            const matchesCuisine = lowerCuisines.length > 0 && lowerCuisines.some(c => r.cuisine.toLowerCase().includes(c));
+            const matchesRating = interpretedSearch?.rating ? r.note >= interpretedSearch.rating : true;
+            const matchesDeliveryTime = interpretedSearch?.deliveryTime ? r.tempsDeLivraison <= interpretedSearch.deliveryTime : true;
+            const matchesNameOrQuery = searchTerms.length > 0 && searchTerms.some(term => r.nom.toLowerCase().includes(term) || r.cuisine.toLowerCase().includes(term));
+            
+            const itemMatch = menuItems
+                .filter(item => item && item.restaurantId === r.id)
+                .find(item => searchTerms.some(term => item.nom.toLowerCase().includes(term)));
+            
+            if (itemMatch) {
+                matchReasons.set(r.id, `Propose "${itemMatch.nom}"`);
+                return true;
+            }
+            
+            return (matchesCuisine || matchesNameOrQuery) && matchesRating && matchesDeliveryTime;
+        }).map(r => ({ ...r, matchReason: matchReasons.get(r.id) }));
+    }
     
-    // Filter restaurants
-    const filtered = allRestaurants.filter(r => {
-      if (!r) return false;
-
-      const matchesCuisine = lowerCuisines.length > 0 && lowerCuisines.some(c => r.cuisine.toLowerCase().includes(c));
-      const matchesRating = interpretedSearch?.rating ? r.note >= interpretedSearch.rating : true;
-      const matchesDeliveryTime = interpretedSearch?.deliveryTime ? r.tempsDeLivraison <= interpretedSearch.deliveryTime : true;
-      const matchesNameOrQuery = searchTerms.length > 0 && searchTerms.some(term => r.nom.toLowerCase().includes(term) || r.cuisine.toLowerCase().includes(term));
-      
-      const itemMatch = menuItems
-        .filter(item => item && item.restaurantId === r.id)
-        .find(item => searchTerms.some(term => item.nom.toLowerCase().includes(term)));
-      
-      if (itemMatch) {
-        matchReasons.set(r.id, `Propose "${itemMatch.nom}"`);
-        return true;
-      }
-      
-      return (matchesCuisine || matchesNameOrQuery) && matchesRating && matchesDeliveryTime;
-    });
-
-    normalRestaurants = filtered.map(r => ({ ...r, matchReason: matchReasons.get(r.id) }));
-  }
+    return {
+        featuredRestaurants: results.filter(r => r && r.enVedette),
+        normalRestaurants: results.filter(r => r && !r.enVedette),
+    };
+}, [restaurants, menuItems, searchQuery, interpretedSearch]);
 
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
@@ -192,14 +195,14 @@ export default function CustomerHomePage() {
 
       {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} hasError={recommendationError} />}
       
-      {featuredRestaurants.length > 0 && (
+      {featuredRestaurants && featuredRestaurants.length > 0 && (
           <section>
              <div className="flex items-center gap-4 mb-6">
                 <Star className="text-primary fill-primary" />
                 <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants en vedette</h2>
              </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {isLoading ? renderSkeletons(3) : featuredRestaurants.map(restaurant => (
+              {isLoading ? renderSkeletons(3) : featuredRestaurants.filter(Boolean).map(restaurant => (
                 <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
               ))}
             </div>
@@ -226,11 +229,11 @@ export default function CustomerHomePage() {
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {isLoading ? renderSkeletons(6) : normalRestaurants.map(restaurant => (
-            restaurant && <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} />
+          {isLoading ? renderSkeletons(6) : normalRestaurants.filter(Boolean).map(restaurant => (
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} />
           ))}
         </div>
-         {normalRestaurants.length === 0 && !isLoading && (
+         {normalRestaurants && normalRestaurants.length === 0 && !isLoading && (
             <p className="text-muted-foreground text-center col-span-full">Aucun restaurant ne correspond à votre recherche.</p>
         )}
       </section>
