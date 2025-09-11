@@ -2,16 +2,27 @@
 'use server';
 
 import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { db, storage } from '@/lib/firebase';
 import type { MenuItem } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { generateImage } from '@/ai/flows/generate-image-flow';
 
 // Helper function for uploading images
-const uploadImage = async (file: File, path: string): Promise<string> => {
+const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
     const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    let downloadURL: string;
+
+    if (typeof fileOrDataUrl === 'string') {
+        // It's a data URL from AI generation
+        const snapshot = await uploadString(storageRef, fileOrDataUrl, 'data_url');
+        downloadURL = await getDownloadURL(snapshot.ref);
+    } else {
+        // It's a File object from user upload
+        const snapshot = await uploadString(storageRef, await fileOrDataUrl.arrayBuffer() as any, 'data_url');
+        downloadURL = await getDownloadURL(snapshot.ref);
+    }
+    
     return downloadURL;
 };
 
@@ -21,14 +32,35 @@ export async function addMenuItemAction(formData: FormData) {
     const item = JSON.parse(itemJSON) as Omit<MenuItem, 'id'>;
 
     try {
-        const docRef = await addDoc(collection(db, "plats"), item);
+        let imageUrl: string | undefined = undefined;
+
+        // If no image is provided by user, generate one with AI
+        if (!imageFile && item.indiceImage) {
+            try {
+                const generatedImage = await generateImage({ prompt: item.indiceImage });
+                if (generatedImage.imageDataUri) {
+                    imageUrl = generatedImage.imageDataUri;
+                }
+            } catch (aiError) {
+                console.error("AI image generation failed:", aiError);
+                // Continue without an image if AI fails
+            }
+        }
+        
+        // Add the base item data to Firestore first to get an ID
+        const itemData: Omit<MenuItem, 'id' | 'image'> = { ...item };
+        const docRef = await addDoc(collection(db, "plats"), itemData);
         const itemId = docRef.id;
 
-        if (imageFile) {
-            const imageUrl = await uploadImage(imageFile, `plats/${itemId}`);
-            await updateDoc(doc(db, "plats", itemId), { image: imageUrl });
+        // Now, handle the image upload (either from user or AI)
+        const imageToUpload = imageFile || imageUrl;
+        if (imageToUpload) {
+            const finalImageUrl = await uploadImage(imageToUpload, `plats/${itemId}`);
+            await updateDoc(doc(db, "plats", itemId), { image: finalImageUrl });
         }
+        
         revalidatePath('/dashboard/menu');
+
     } catch (e) {
         console.error("Error adding menu item: ", e);
         throw new Error("Failed to add menu item.");
