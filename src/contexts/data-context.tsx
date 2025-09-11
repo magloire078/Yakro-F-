@@ -149,12 +149,6 @@ const useDataStore = create<DataState>((set, get) => ({
 
 // This provider is a dummy for initial load, the real logic is in useRealtimeData
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  useRealtimeData();
-  return <>{children}</>;
-};
-
-// This hook manages all realtime subscriptions
-function useRealtimeData() {
     const { user, userProfile, activeRole } = useAuth();
     const allRestaurants = useDataStore((state) => state.restaurants);
 
@@ -196,7 +190,7 @@ function useRealtimeData() {
             });
         }, (error) => {
             console.error("Error on menuItems snapshot listener:", error);
-            useDataStore.setState(state => ({ isLoading: { ...useDataStore.getState().isLoading, menuItems: false } }));
+            useDataStore.setState(state => ({ isLoading: { ...state.isLoading, menuItems: false } }));
         });
 
         return () => unsubscribe();
@@ -278,7 +272,8 @@ function useRealtimeData() {
             }
         };
     }, [userProfile?.systemRole]);
-}
+  return <>{children}</>;
+};
 
 const useCombinedLoadingState = () => {
     const { restaurants, menuItems, orders, allUsers } = useDataStore(state => state.isLoading);
