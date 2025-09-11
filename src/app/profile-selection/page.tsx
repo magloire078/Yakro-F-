@@ -10,11 +10,10 @@ import type { AppRole } from '@/lib/types';
 export default function ProfileSelectionPage() {
     const router = useRouter();
     const { user, userProfile, loading: authLoading, setActiveRole, updateUserProfile } = useAuth();
-    const [isProcessing, setIsProcessing] = React.useState(true);
-
+    
     React.useEffect(() => {
         if (authLoading) {
-            return; // Wait for authentication to be resolved
+            return; // Attendre la fin du chargement
         }
 
         if (!user) {
@@ -22,40 +21,26 @@ export default function ProfileSelectionPage() {
             return;
         }
 
-        const processUserRole = async () => {
-            // If the user already has a role in their profile, use it.
-            if (userProfile?.role) {
-                setActiveRole(userProfile.role);
-                router.push('/');
-            } else {
-                // If the user is new and has no role, assign 'client' by default.
-                const defaultRole: AppRole = 'client';
-                try {
-                    // Set the role in state and local storage for immediate redirection
-                    setActiveRole(defaultRole);
-                    // Save the default role to their Firestore profile for persistence
-                    if (user.uid) {
-                       await updateUserProfile(user.uid, { role: defaultRole });
-                    }
-                    // Redirect to the homepage
-                    router.push('/');
-                } catch (error) {
-                    console.error("Failed to set default user role:", error);
-                    // Handle error, maybe show a message
-                    setIsProcessing(false);
-                }
-            }
-        };
+        if (userProfile) {
+            const roleToSet = userProfile.role || userProfile.allowedRoles?.[0] || 'client';
+            setActiveRole(roleToSet);
 
-        processUserRole();
+            // Si le profil n'a pas de rôle principal défini, on le met à jour
+            if (!userProfile.role) {
+                updateUserProfile(user.uid, { role: roleToSet });
+            }
+            
+            router.push('/');
+        }
+        // Si userProfile n'est pas encore là, le useEffect dans auth-context s'en chargera
 
     }, [user, userProfile, authLoading, router, setActiveRole, updateUserProfile]);
     
-    // Show a loader while processing authentication and role assignment.
+    // Afficher un chargeur pendant le traitement
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
             <Loader className="h-16 w-16 animate-spin text-primary" />
-            <p className="text-muted-foreground">Configuration de votre profil...</p>
+            <p className="text-muted-foreground">Configuration de votre session...</p>
         </div>
     )
 }
