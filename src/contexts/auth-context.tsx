@@ -72,20 +72,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(true);
           const userDocRef = doc(db, 'utilisateurs', user.uid);
 
-          const checkAndPromoteSuperAdmin = async () => {
-             if (user.email === 'magloire078@gmail.com') {
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists() && docSnap.data().systemRole !== 'SuperAdmin') {
-                    await updateDoc(userDocRef, {
-                        systemRole: 'SuperAdmin',
-                        allowedRoles: ['client', 'restaurateur', 'livreur']
-                    });
-                }
-             }
-          };
-
-          checkAndPromoteSuperAdmin();
-
           unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
               if (docSnap.exists()) {
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
@@ -102,6 +88,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setActiveRole('client');
                   }
               } else {
+                   // This part handles auto-creation of a user profile document on first sign-in.
+                   // The security rules must allow this specific `create` operation.
                    const isSuperAdmin = user.email === 'magloire078@gmail.com';
                    const defaultProfile: Omit<UserProfile, 'uid'> = {
                       email: user.email!,
@@ -111,7 +99,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                       systemRole: isSuperAdmin ? 'SuperAdmin' : 'User',
                       allowedRoles: isSuperAdmin ? ['client', 'restaurateur', 'livreur'] : ['client'],
                   };
-                   setDoc(userDocRef, defaultProfile);
+                   setDoc(userDocRef, defaultProfile).catch(err => {
+                       console.error("Error creating user profile, this may be a permissions issue:", err)
+                   });
               }
               setLoading(false);
           }, (error) => {
