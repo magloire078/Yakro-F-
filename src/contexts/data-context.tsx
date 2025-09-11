@@ -5,24 +5,21 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs, deleteDoc, or } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, onSnapshot, query, where, Unsubscribe, DocumentData, Query, or } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
-// Helper function for uploading images
-const uploadImage = async (file: File, path: string): Promise<string> => {
-    const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
-};
+// Import server actions
+import { addRestaurantAction } from '@/app/actions/restaurant-actions';
+import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
+import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
+
 
 interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
   orders: Order[];
-  allUsers: UserProfile[]; // New state for all users
+  allUsers: UserProfile[];
   isLoading: boolean;
   addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>) => Promise<void>;
@@ -43,90 +40,46 @@ const useDataStore = create<DataState>((set, get) => ({
   isLoading: true,
 
   addRestaurant: async (restaurant) => {
-    try {
-      await addDoc(collection(db, "restaurants"), restaurant);
-    } catch (e) {
-      console.error("Error adding restaurant: ", e);
-      throw e;
-    }
+    await addRestaurantAction(restaurant);
   },
 
-  updateRestaurant: async (restaurantId: string, data: Partial<Restaurant>) => {
-    const restaurantDocRef = doc(db, 'restaurants', restaurantId);
-    try {
-      await updateDoc(restaurantDocRef, data);
-    } catch (e) {
-      console.error("Error updating restaurant: ", e);
-      throw e;
-    }
+  updateRestaurant: async (restaurantId, data) => {
+    // This function is not fully implemented with a server action yet.
+    // Placeholder for future implementation if needed.
+    console.warn("updateRestaurant is not fully implemented with server actions yet.");
+    const { updateRestaurant } = await import('@/app/actions/restaurant-actions');
+    await updateRestaurant(restaurantId, data);
   },
 
   addMenuItem: async (item, imageFile) => {
-    try {
-      // Create a mutable copy of the item
-      const itemToAdd: any = { ...item };
-      
-      const docRef = await addDoc(collection(db, "plats"), itemToAdd);
-      const itemId = docRef.id;
-
-      if (imageFile) {
-        const imageUrl = await uploadImage(imageFile, `plats/${itemId}`);
-        await updateDoc(doc(db, "plats", itemId), { image: imageUrl });
-      }
-
-    } catch (e) {
-      console.error("Error adding menu item: ", e);
-      throw e;
+    const formData = new FormData();
+    formData.append('item', JSON.stringify(item));
+    if (imageFile) {
+      formData.append('image', imageFile);
     }
+    await addMenuItemAction(formData);
   },
   
   updateMenuItem: async (itemId, data, imageFile) => {
-    const itemDocRef = doc(db, 'plats', itemId);
-    try {
-      const updateData: Partial<MenuItem> = { ...data };
-      if (imageFile) {
-        const imageUrl = await uploadImage(imageFile, `plats/${itemId}`);
-        updateData.image = imageUrl;
-      }
-      await updateDoc(itemDocRef, updateData as DocumentData);
-    } catch (e) {
-      console.error("Error updating menu item: ", e);
-      throw e;
+    const formData = new FormData();
+    formData.append('itemId', itemId);
+    formData.append('data', JSON.stringify(data));
+    if (imageFile) {
+        formData.append('image', imageFile);
     }
+    await updateMenuItemAction(formData);
   },
 
   deleteMenuItem: async (itemId) => {
-    const itemDocRef = doc(db, 'plats', itemId);
-    try {
-      // TODO: Delete image from storage as well
-      await deleteDoc(itemDocRef);
-    } catch (e) {
-      console.error("Error deleting menu item: ", e);
-      throw e;
-    }
+    await deleteMenuItemAction(itemId);
   },
 
   addOrder: async (order) => {
-    try {
-      await addDoc(collection(db, "commandes"), order);
-    } catch (e) {
-      console.error("Error adding order: ", e);
-      throw e;
-    }
+    await addOrderAction(order);
   },
 
-  updateOrderStatus: async (orderId: string, status: Order['status'], delivererId?: string) => {
-    const orderDocRef = doc(db, 'commandes', orderId);
-    try {
-        const updateData: {status: Order['status'], delivererId?: string} = { status };
-        if (delivererId) {
-            updateData.delivererId = delivererId;
-        }
-      await updateDoc(orderDocRef, updateData);
-    } catch (e) {
-      console.error("Error updating order status: ", e);
-      throw e;
-    }
+  updateOrderStatus: async (orderId, status, delivererId) => {
+    await updateOrderStatusAction({ orderId, status, delivererId });
   },
 
   getMenuItem: (id: string) => {

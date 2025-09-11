@@ -1,10 +1,7 @@
 
 import type { Metadata } from 'next';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/contexts/auth-context';
-import { DataProvider } from '@/contexts/data-context';
-import { CartProvider } from '@/contexts/cart-context';
+import { Providers } from '@/contexts/providers';
 
 export const metadata: Metadata = {
   title: 'Yakro Fê',
@@ -27,14 +24,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#FF8C00" />
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-          <DataProvider>
-            <CartProvider>
-              {children}
-              <Toaster />
-            </CartProvider>
-          </DataProvider>
-        </AuthProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
