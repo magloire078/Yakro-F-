@@ -13,6 +13,7 @@ import { useAuth } from './auth-context';
 import { addRestaurantAction, updateRestaurant as updateRestaurantAction } from '@/app/actions/restaurant-actions';
 import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
+import { getAllUsersAction } from '@/app/actions/user-actions';
 
 
 interface DataState {
@@ -177,27 +178,28 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [user, activeRole, userProfile?.systemRole, useDataStore.getState().restaurants]);
 
 
-    // Subscribe to all users for SuperAdmin
+    // Fetch all users for SuperAdmin via a server action
     React.useEffect(() => {
-        let unsubscribe: Unsubscribe | null = null;
-
-        if (userProfile?.systemRole === 'SuperAdmin') {
-            const q = collection(db, 'utilisateurs');
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const usersList = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-                useDataStore.setState({ allUsers: usersList });
-            }, (error) => {
-                console.error("Error on allUsers snapshot listener:", error);
-            });
-        } else {
-            useDataStore.setState({ allUsers: [] });
-        }
-        
-        return () => {
-            if (unsubscribe) {
-                unsubscribe();
+        const fetchUsers = async () => {
+            if (userProfile?.systemRole === 'SuperAdmin') {
+                try {
+                    const usersList = await getAllUsersAction();
+                    useDataStore.setState({ allUsers: usersList });
+                } catch (error) {
+                    console.error("Error fetching all users via server action:", error);
+                    useDataStore.setState({ allUsers: [] });
+                }
+            } else {
+                useDataStore.setState({ allUsers: [] });
             }
         };
+
+        fetchUsers();
+        
+        // Optionally, refetch periodically if real-time updates are desired for the admin panel
+        const interval = setInterval(fetchUsers, 60000); // Refetch every 60 seconds
+        return () => clearInterval(interval);
+
     }, [userProfile?.systemRole]);
 
   return <>{children}</>;
