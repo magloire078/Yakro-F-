@@ -11,9 +11,20 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 const userAuthSchema = z.object({
@@ -28,12 +39,48 @@ interface UserAuthFormProps {
 }
 
 export function UserAuthForm({ mode }: UserAuthFormProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<FormData>({
     resolver: zodResolver(userAuthSchema),
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
   const router = useRouter();
+  const [resetEmail, setResetEmail] = React.useState('');
+  const [isResetting, setIsResetting] = React.useState(false);
+
+  const emailForReset = watch('email');
+
+  React.useEffect(() => {
+    setResetEmail(emailForReset || '');
+  }, [emailForReset]);
+
+
+  const handlePasswordReset = async () => {
+      if (!resetEmail) {
+          toast({
+              variant: "destructive",
+              title: "Adresse e-mail manquante",
+              description: "Veuillez entrer une adresse e-mail.",
+          });
+          return;
+      }
+      setIsResetting(true);
+      try {
+          await sendPasswordResetEmail(auth, resetEmail);
+          toast({
+              title: "E-mail de réinitialisation envoyé",
+              description: "Veuillez consulter votre boîte de réception pour réinitialiser votre mot de passe.",
+          });
+      } catch (error: any) {
+          toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible d'envoyer l'e-mail. Vérifiez que l'adresse est correcte.",
+          });
+      } finally {
+          setIsResetting(false);
+      }
+  }
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
@@ -43,11 +90,10 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
         const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
         const user = userCredential.user;
         
-        // Create a user document in Firestore with default roles
         await setDoc(doc(db, "utilisateurs", user.uid), {
             email: user.email,
             dateCreation: serverTimestamp(),
-            nom: user.email?.split('@')[0] || 'Nouvel utilisateur', // Default name
+            nom: user.email?.split('@')[0] || 'Nouvel utilisateur',
             roleSysteme: 'User',
             role: 'client',
             rolesAutorises: ['client'],
@@ -55,14 +101,12 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
             adresseParDefaut: '',
         });
         
-        // Clear any stored role to force profile selection for a new user
         localStorage.removeItem('activeRole');
 
         toast({
           title: "Compte créé avec succès",
           description: "Bienvenue sur Yakro Fê ! Veuillez choisir un profil.",
         });
-        // Redirect to profile selection after sign up
         router.push('/profile-selection');
       } catch (error: any) {
         toast({
@@ -78,7 +122,6 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
           title: "Connexion réussie",
           description: "Heureux de vous revoir !",
         });
-        // Redirect to profile selection, which will handle routing based on saved role.
         router.push('/profile-selection');
 
       } catch (error: any) {
@@ -118,9 +161,44 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
             )}
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="password">
-              Mot de passe
-            </Label>
+            <div className="flex items-center justify-between">
+                <Label htmlFor="password">
+                  Mot de passe
+                </Label>
+                 {mode === 'login' && (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                             <span className="text-sm font-medium text-primary hover:underline cursor-pointer">
+                                Mot de passe oublié ?
+                            </span>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Réinitialiser le mot de passe</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Entrez votre adresse e-mail pour recevoir un lien de réinitialisation.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="py-4">
+                               <Input
+                                  id="reset-email"
+                                  placeholder="nom@exemple.com"
+                                  type="email"
+                                  value={resetEmail}
+                                  onChange={(e) => setResetEmail(e.target.value)}
+                                  disabled={isResetting}
+                                />
+                            </div>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel disabled={isResetting}>Annuler</AlertDialogCancel>
+                                <AlertDialogAction onClick={handlePasswordReset} disabled={isResetting}>
+                                    {isResetting ? <Loader className="animate-spin" /> : "Envoyer le lien"}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
+            </div>
             <Input
               id="password"
               placeholder="********"
