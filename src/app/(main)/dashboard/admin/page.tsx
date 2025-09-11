@@ -135,4 +135,13 @@ export default function AdminPage() {
                                                 ))}
                                             </div>
                                         </TableCell>
-                                    
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
