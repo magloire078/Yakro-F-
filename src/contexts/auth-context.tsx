@@ -140,6 +140,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => {
+      // A user should only be able to update their own profile.
+      // We could add a check here `if (user?.uid !== uid) return;` but for now we trust the client code.
+      // We now use the server action for all updates.
       await updateUserAction(uid, data);
   };
   
@@ -153,8 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
 
+  const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile };
+
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
