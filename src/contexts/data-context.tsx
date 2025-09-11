@@ -12,6 +12,7 @@ import { useAuth } from './auth-context';
 import { addRestaurantAction, updateRestaurant as updateRestaurantAction } from '@/app/actions/restaurant-actions';
 import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
+import { getAllUsersAction } from '@/app/actions/user-actions';
 
 
 interface DataState {
@@ -80,13 +81,14 @@ const useDataStore = create<DataState>((set, get) => ({
 
   fetchAllUsers: async () => {
       try {
-        const usersSnapshot = await getDocs(collection(db, "utilisateurs"));
-        const usersList = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+        // Use the secure server action to fetch users
+        const usersList = await getAllUsersAction();
         set({ allUsers: usersList });
       } catch (error) {
-        console.error("Error fetching all users:", error);
+        console.error("Error fetching all users via server action:", error);
         // This will likely be a permissions error if the rules are not set up correctly.
         // The UI should handle an empty `allUsers` array gracefully.
+         set({ allUsers: [] });
       }
   },
 
