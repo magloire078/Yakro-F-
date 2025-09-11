@@ -37,7 +37,7 @@ export async function updateUserAction(uid: string, data: Partial<UserProfile>) 
   let isSuperAdmin = false;
   try {
     const currentUserDoc = await getDoc(doc(db, 'utilisateurs', currentUserId));
-    if (currentUserDoc.exists() && currentUserDoc.data().systemRole === 'SuperAdmin') {
+    if (currentUserDoc.exists() && currentUserDoc.data().roleSysteme === 'SuperAdmin') {
         isSuperAdmin = true;
     }
   } catch(e) {
@@ -56,8 +56,8 @@ export async function updateUserAction(uid: string, data: Partial<UserProfile>) 
     const sanitizedData = { ...data };
     if (!isSuperAdmin) {
         delete sanitizedData.role; // This field is deprecated, but good to keep for safety
-        delete sanitizedData.allowedRoles;
-        delete sanitizedData.systemRole;
+        delete sanitizedData.rolesAutorises;
+        delete sanitizedData.roleSysteme;
     }
     
     await updateDoc(userDocRef, sanitizedData);

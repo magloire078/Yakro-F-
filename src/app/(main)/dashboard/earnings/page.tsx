@@ -24,11 +24,11 @@ export default function EarningsPage() {
     
     const myCompletedDeliveries = React.useMemo(() => {
         if (!user || activeRole !== 'livreur') return [];
-        return orders.filter(o => o.delivererId === user.uid && o.status === 'Livrée');
+        return orders.filter(o => o.livreurId === user.uid && o.statut === 'Livrée');
     }, [orders, user, activeRole]);
 
     const stats = React.useMemo(() => {
-        const totalEarnings = myCompletedDeliveries.reduce((sum, order) => sum + order.deliveryFee, 0);
+        const totalEarnings = myCompletedDeliveries.reduce((sum, order) => sum + order.fraisDeLivraison, 0);
         const completedCount = myCompletedDeliveries.length;
         const averageEarning = completedCount > 0 ? totalEarnings / completedCount : 0;
         
@@ -103,11 +103,11 @@ export default function EarningsPage() {
                                 {myCompletedDeliveries.map(order => (
                                     <TableRow key={order.id}>
                                         <TableCell className="font-medium">{new Date(order.date).toLocaleDateString('fr-FR')}</TableCell>
-                                        <TableCell>{order.restaurantName}</TableCell>
+                                        <TableCell>{order.nomRestaurant}</TableCell>
                                         <TableCell>
-                                            <Badge variant="default" className="bg-green-600">{order.status}</Badge>
+                                            <Badge variant="default" className="bg-green-600">{order.statut}</Badge>
                                         </TableCell>
-                                        <TableCell className="text-right font-semibold text-primary">{order.deliveryFee.toLocaleString('fr-FR')} FCFA</TableCell>
+                                        <TableCell className="text-right font-semibold text-primary">{order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

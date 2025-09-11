@@ -1,69 +1,69 @@
 
 
 export interface MenuOption {
-  name: string;
-  price: number;
+  nom: string;
+  prix: number;
 }
 
 export interface MenuItem {
   id: string;
-  name: string;
+  nom: string;
   description: string;
-  price: number;
+  prix: number;
   image?: string; // URL de l'image stockée
-  imageHint: string;
+  indiceImage: string;
   restaurantId: string;
-  availableSides?: MenuOption[];
-  availableDrinks?: MenuOption[];
+  accompagnementsDisponibles?: MenuOption[];
+  boissonsDisponibles?: MenuOption[];
 }
 
 export interface Restaurant {
   id: string;
-  ownerId: string;
-  name: string;
+  proprietaireId: string;
+  nom: string;
   cuisine: string;
-  rating: number;
-  deliveryTime: number;
-  deliveryFee: number;
+  note: number;
+  tempsDeLivraison: number;
+  fraisDeLivraison: number;
   image: string;
-  imageHint: string;
-  address?: string;
-  isFeatured?: boolean;
+  indiceImage: string;
+  adresse?: string;
+  enVedette?: boolean;
 }
 
 export interface CartItem extends MenuItem {
-  quantity: number;
+  quantite: number;
   image: string; // Garde une URL pour l'affichage, même si c'est un placeholder
-  selectedSide?: MenuOption;
-  selectedDrink?: MenuOption;
+  accompagnementSelectionne?: MenuOption;
+  boissonSelectionnee?: MenuOption;
 }
 
 export interface Order {
   id: string;
   userId: string;
-  items: CartItem[];
-  subtotal: number;
-  deliveryFee: number;
+  plats: CartItem[];
+  sousTotal: number;
+  fraisDeLivraison: number;
   total: number;
-  commissionRate: number;
-  commissionAmount: number;
-  netRevenue: number;
+  tauxCommission: number;
+  montantCommission: number;
+  revenuNet: number;
   date: string;
-  restaurantName: string;
+  nomRestaurant: string;
   restaurantId: string;
-  status: 'Placée' | 'En Préparation' | 'En Route' | 'Livrée' | 'Annulée';
-  delivererId?: string;
-  customerAddress: string;
-  restaurantAddress: string;
-  customerPhone: string;
+  statut: 'Placée' | 'En Préparation' | 'En Route' | 'Livrée' | 'Annulée';
+  livreurId?: string;
+  adresseClient: string;
+  adresseRestaurant: string;
+  telephoneClient: string;
 }
 
 export interface Review {
   id: string;
   restaurantId: string;
-  userName:string;
-  rating: number;
-  comment: string;
+  nomUtilisateur:string;
+  note: number;
+  commentaire: string;
 }
 
 // AppRole defines the functional capabilities a user can have.
@@ -77,14 +77,14 @@ export type SystemRole = 'SuperAdmin' | 'Admin' | 'User';
 export interface UserProfile {
     uid: string;
     email: string;
-    createdAt: any; // Firestore Timestamp
-    name?: string;
-    phone?: string;
-    defaultAddress?: string;
+    dateCreation: any; // Firestore Timestamp
+    nom?: string;
+    telephone?: string;
+    adresseParDefaut?: string;
     // This is the functional role the user is currently using
     role?: AppRole;
     // This is the user's system-level permissions
-    systemRole?: SystemRole;
+    roleSysteme?: SystemRole;
     // The functional roles this user is allowed to access
-    allowedRoles?: AppRole[];
+    rolesAutorises?: AppRole[];
 }

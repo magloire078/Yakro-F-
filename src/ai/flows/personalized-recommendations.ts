@@ -15,10 +15,10 @@ import {z} from 'genkit';
 
 const MenuItemSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  nom: z.string(),
   description: z.string(),
-  price: z.number(),
-  restaurantName: z.string(),
+  prix: z.number(),
+  nomRestaurant: z.string(),
   cuisine: z.string(),
 });
 
@@ -62,10 +62,10 @@ Time of Day: {{{timeOfDay}}}
 
 Here is the list of available menu items you can recommend from:
 {{#each availableMenuItems}}
-- Name: {{name}}
+- Name: {{nom}}
   Description: {{description}}
-  Price: {{price}} FCFA
-  Restaurant: {{restaurantName}}
+  Price: {{prix}} FCFA
+  Restaurant: {{nomRestaurant}}
   Cuisine: {{cuisine}}
 {{/each}}
 

@@ -39,16 +39,16 @@ interface EditMenuItemDialogProps {
 }
 
 const optionSchema = z.object({
-  name: z.string().min(1, "Le nom ne peut être vide."),
-  price: z.coerce.number().min(0, "Le prix ne peut être négatif."),
+  nom: z.string().min(1, "Le nom ne peut être vide."),
+  prix: z.coerce.number().min(0, "Le prix ne peut être négatif."),
 });
 
 const editMenuItemSchema = z.object({
-  name: z.string().min(3, "Le nom doit contenir au moins 3 caractères."),
+  nom: z.string().min(3, "Le nom doit contenir au moins 3 caractères."),
   description: z.string().min(10, "La description doit contenir au moins 10 caractères."),
-  price: z.coerce.number().min(0, "Le prix ne peut pas être négatif."),
-  availableSides: z.array(optionSchema).optional(),
-  availableDrinks: z.array(optionSchema).optional(),
+  prix: z.coerce.number().min(0, "Le prix ne peut pas être négatif."),
+  accompagnementsDisponibles: z.array(optionSchema).optional(),
+  boissonsDisponibles: z.array(optionSchema).optional(),
 });
 
 type EditMenuItemFormValues = z.infer<typeof editMenuItemSchema>;
@@ -64,32 +64,32 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
   const form = useForm<EditMenuItemFormValues>({
     resolver: zodResolver(editMenuItemSchema),
     defaultValues: {
-      name: menuItem.name,
+      nom: menuItem.nom,
       description: menuItem.description,
-      price: menuItem.price,
-      availableSides: menuItem.availableSides || [],
-      availableDrinks: menuItem.availableDrinks || [],
+      prix: menuItem.prix,
+      accompagnementsDisponibles: menuItem.accompagnementsDisponibles || [],
+      boissonsDisponibles: menuItem.boissonsDisponibles || [],
     },
   });
 
   const { fields: sideFields, append: appendSide, remove: removeSide } = useFieldArray({
     control: form.control,
-    name: "availableSides"
+    name: "accompagnementsDisponibles"
   });
   
   const { fields: drinkFields, append: appendDrink, remove: removeDrink } = useFieldArray({
     control: form.control,
-    name: "availableDrinks"
+    name: "boissonsDisponibles"
   });
 
   React.useEffect(() => {
     if (isOpen) {
       form.reset({
-        name: menuItem.name,
+        nom: menuItem.nom,
         description: menuItem.description,
-        price: menuItem.price,
-        availableSides: menuItem.availableSides || [],
-        availableDrinks: menuItem.availableDrinks || [],
+        prix: menuItem.prix,
+        accompagnementsDisponibles: menuItem.accompagnementsDisponibles || [],
+        boissonsDisponibles: menuItem.boissonsDisponibles || [],
       });
       setImagePreview(menuItem.image || null);
       setImageFile(null);
@@ -134,7 +134,7 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
         <DialogHeader>
           <DialogTitle>Modifier le plat</DialogTitle>
           <DialogDescription>
-            Apportez des modifications à "{menuItem.name}". Cliquez sur enregistrer lorsque vous avez terminé.
+            Apportez des modifications à "{menuItem.nom}". Cliquez sur enregistrer lorsque vous avez terminé.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -156,7 +156,7 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
                 </div>
                 <FormField
                     control={form.control}
-                    name="name"
+                    name="nom"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Nom du plat</FormLabel>
@@ -178,7 +178,7 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
                 />
                  <FormField
                     control={form.control}
-                    name="price"
+                    name="prix"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Prix (FCFA)</FormLabel>
@@ -192,24 +192,24 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
                     <Label>Accompagnements</Label>
                     {sideFields.map((field, index) => (
                         <div key={field.id} className="flex items-center gap-2">
-                            <Input {...form.register(`availableSides.${index}.name`)} placeholder="Nom" />
-                            <Input {...form.register(`availableSides.${index}.price`)} type="number" placeholder="Prix" className="w-32"/>
+                            <Input {...form.register(`accompagnementsDisponibles.${index}.nom`)} placeholder="Nom" />
+                            <Input {...form.register(`accompagnementsDisponibles.${index}.prix`)} type="number" placeholder="Prix" className="w-32"/>
                             <Button type="button" variant="outline" size="icon" onClick={() => removeSide(index)}><Trash /></Button>
                         </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ name: '', price: 0 })}><Plus /> Ajouter un accompagnement</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ nom: '', prix: 0 })}><Plus /> Ajouter un accompagnement</Button>
                 </div>
                 
                 <div className="space-y-2">
                     <Label>Boissons</Label>
                      {drinkFields.map((field, index) => (
                         <div key={field.id} className="flex items-center gap-2">
-                            <Input {...form.register(`availableDrinks.${index}.name`)} placeholder="Nom"/>
-                            <Input {...form.register(`availableDrinks.${index}.price`)} type="number" placeholder="Prix" className="w-32"/>
+                            <Input {...form.register(`boissonsDisponibles.${index}.nom`)} placeholder="Nom"/>
+                            <Input {...form.register(`boissonsDisponibles.${index}.prix`)} type="number" placeholder="Prix" className="w-32"/>
                             <Button type="button" variant="outline" size="icon" onClick={() => removeDrink(index)}><Trash /></Button>
                         </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ name: '', price: 0 })}><Plus /> Ajouter une boisson</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ nom: '', prix: 0 })}><Plus /> Ajouter une boisson</Button>
                 </div>
 
                 <DialogFooter className="sticky bottom-0 bg-background pt-4 -mx-1 -mb-1 px-1 pb-1">
@@ -225,4 +225,3 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
     </Dialog>
   );
 }
-

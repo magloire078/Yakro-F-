@@ -46,13 +46,13 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
         // Create a user document in Firestore with default roles
         await setDoc(doc(db, "utilisateurs", user.uid), {
             email: user.email,
-            createdAt: serverTimestamp(),
-            name: user.email?.split('@')[0] || 'Nouvel utilisateur', // Default name
-            systemRole: 'User',
+            dateCreation: serverTimestamp(),
+            nom: user.email?.split('@')[0] || 'Nouvel utilisateur', // Default name
+            roleSysteme: 'User',
             role: 'client',
-            allowedRoles: ['client'],
-            phone: '',
-            defaultAddress: '',
+            rolesAutorises: ['client'],
+            telephone: '',
+            adresseParDefaut: '',
         });
         
         // Clear any stored role to force profile selection for a new user

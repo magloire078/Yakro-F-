@@ -5,7 +5,6 @@ import { auth as adminAuth, firestore } from '../../../firebase-admin-init';
 import { headers } from 'next/headers';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
-import type { UserRecord } from 'firebase-admin/auth';
 
 /**
  * Verifies if the current user is a SuperAdmin based on their session.
@@ -22,7 +21,7 @@ async function verifySuperAdmin(): Promise<string> {
         const userDocRef = doc(firestore(), 'utilisateurs', decodedClaims.uid);
         const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists() && userDoc.data().systemRole === 'SuperAdmin') {
+        if (userDoc.exists() && userDoc.data().roleSysteme === 'SuperAdmin') {
             return decodedClaims.uid;
         } else {
             throw new Error('Permission denied: User is not a SuperAdmin.');
@@ -51,13 +50,13 @@ export async function getAllUsersAction(): Promise<UserProfile[]> {
             return {
                 uid: doc.id,
                 email: data.email || 'N/A',
-                createdAt: data.createdAt,
-                name: data.name || 'Non défini',
-                phone: data.phone,
-                defaultAddress: data.defaultAddress,
+                dateCreation: data.dateCreation,
+                nom: data.nom || 'Non défini',
+                telephone: data.telephone,
+                adresseParDefaut: data.adresseParDefaut,
                 role: data.role,
-                systemRole: data.systemRole || 'User',
-                allowedRoles: data.allowedRoles || ['client'],
+                roleSysteme: data.roleSysteme || 'User',
+                rolesAutorises: data.rolesAutorises || ['client'],
             };
         });
 

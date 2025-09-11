@@ -22,7 +22,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const { getMenuItem } = useData();
 
   const handleReorder = () => {
-    order.items.forEach(item => {
+    order.plats.forEach(item => {
         const menuItem = getMenuItem(item.id);
         const imageSrc = item.image || `https://placehold.co/100x100.png`;
         if (menuItem) {
@@ -31,15 +31,15 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
     });
     toast({
         title: "Commande ajoutée au panier",
-        description: `Les articles de votre commande chez ${order.restaurantName} ont été ajoutés.`,
+        description: `Les articles de votre commande chez ${order.nomRestaurant} ont été ajoutés.`,
     });
   }
   
-  const getItemPrice = (item: typeof order.items[0]) => {
-      const itemPrice = item.price;
-      const sidePrice = item.selectedSide?.price || 0;
-      const drinkPrice = item.selectedDrink?.price || 0;
-      return (itemPrice + sidePrice + drinkPrice) * item.quantity;
+  const getItemPrice = (item: typeof order.plats[0]) => {
+      const itemPrice = item.prix;
+      const sidePrice = item.accompagnementSelectionne?.prix || 0;
+      const drinkPrice = item.boissonSelectionnee?.prix || 0;
+      return (itemPrice + sidePrice + drinkPrice) * item.quantite;
   }
 
   return (
@@ -49,31 +49,31 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
           <AccordionTrigger className="p-6 hover:no-underline">
             <div className="flex justify-between items-center w-full">
               <div className="text-left">
-                <p className="font-bold text-lg font-headline">{order.restaurantName}</p>
+                <p className="font-bold text-lg font-headline">{order.nomRestaurant}</p>
                 <p className="text-sm text-muted-foreground">{new Date(order.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-semibold text-lg text-primary">{order.total.toLocaleString('fr-FR')} FCFA</span>
-                <Badge variant={order.status === 'Livrée' ? 'default' : 'destructive'} className={order.status === 'Livrée' ? 'bg-green-600' : ''}>
-                    {order.status}
+                <Badge variant={order.statut === 'Livrée' ? 'default' : 'destructive'} className={order.statut === 'Livrée' ? 'bg-green-600' : ''}>
+                    {order.statut}
                 </Badge>
               </div>
             </div>
           </AccordionTrigger>
           <AccordionContent className="p-6 pt-0">
             <div className="space-y-4">
-                {order.items.map((item, index) => {
+                {order.plats.map((item, index) => {
                     const menuItem = getMenuItem(item.id);
                     if (!menuItem) return null;
                     return (
                         <div key={`${item.id}-${index}`} className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
-                                <Image src={item.image || `https://placehold.co/100x100.png`} alt={item.name} width={40} height={40} className="rounded-md" data-ai-hint={item.imageHint}/>
+                                <Image src={item.image || `https://placehold.co/100x100.png`} alt={item.nom} width={40} height={40} className="rounded-md" data-ai-hint={item.indiceImage}/>
                                 <div>
-                                    <span className="font-medium">{item.quantity}x {item.name}</span>
+                                    <span className="font-medium">{item.quantite}x {item.nom}</span>
                                      <div className="text-xs text-muted-foreground">
-                                        {item.selectedSide && <p>+ {item.selectedSide.name} ({item.selectedSide.price} F)</p>}
-                                        {item.selectedDrink && <p>+ {item.selectedDrink.name} ({item.selectedDrink.price} F)</p>}
+                                        {item.accompagnementSelectionne && <p>+ {item.accompagnementSelectionne.nom} ({item.accompagnementSelectionne.prix} F)</p>}
+                                        {item.boissonSelectionnee && <p>+ {item.boissonSelectionnee.nom} ({item.boissonSelectionnee.prix} F)</p>}
                                     </div>
                                 </div>
                             </div>
@@ -86,18 +86,18 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
              <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                     <span>Sous-total</span>
-                    <span>{order.subtotal.toLocaleString('fr-FR')} FCFA</span>
+                    <span>{order.sousTotal.toLocaleString('fr-FR')} FCFA</span>
                 </div>
                     <div className="flex justify-between">
                     <span>Frais de livraison</span>
-                    <span>{order.deliveryFee.toLocaleString('fr-FR')} FCFA</span>
+                    <span>{order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</span>
                 </div>
                 <div className="flex justify-between font-semibold text-base">
                     <span>Total</span>
                     <span>{order.total.toLocaleString('fr-FR')} FCFA</span>
                 </div>
             </div>
-             {order.status === 'Livrée' && (
+             {order.statut === 'Livrée' && (
               <div className="mt-6 flex justify-end">
                   <Button onClick={handleReorder}>Recommander</Button>
               </div>

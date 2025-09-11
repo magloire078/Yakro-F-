@@ -45,17 +45,17 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   }
 
   const handleAddToCart = (recommendedItemName: string) => {
-    const menuItem = menuItems.find(item => item && item.name && item.name.toLowerCase() === recommendedItemName.toLowerCase());
+    const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === recommendedItemName.toLowerCase());
     if (menuItem) {
       const cartItem: CartItem = {
         ...menuItem,
-        quantity: 1,
+        quantite: 1,
         image: `https://placehold.co/100x100.png`
       };
       addToCart(cartItem);
       toast({
         title: "Ajouté au panier",
-        description: `${menuItem.name} a été ajouté à votre panier.`,
+        description: `${menuItem.nom} a été ajouté à votre panier.`,
       });
     } else {
       toast({
@@ -67,7 +67,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   };
   
   const RecommendationCard = ({ rec }: { rec: any}) => {
-    const menuItem = menuItems.find(item => item && item.name && item.name.toLowerCase() === rec.item.toLowerCase());
+    const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === rec.item.toLowerCase());
     const imageSrc = `https://placehold.co/600x400.png`;
     
     return (
@@ -89,7 +89,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
               <div className="flex justify-between items-center mt-4">
                 <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
-                    <span className="text-sm font-bold">{menuItem?.price ? menuItem.price.toLocaleString('fr-FR') + ' FCFA' : 'N/A'}</span>
+                    <span className="text-sm font-bold">{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') + ' FCFA' : 'N/A'}</span>
                 </div>
                 <Button size="sm" variant="outline" className="text-primary border-primary" onClick={() => handleAddToCart(rec.item)}>Ajouter</Button>
               </div>

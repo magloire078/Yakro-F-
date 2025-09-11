@@ -36,9 +36,9 @@ interface EditUserDialogProps {
 }
 
 const editUserSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères.").optional().or(z.literal('')),
-  phone: z.string().optional(),
-  defaultAddress: z.string().optional(),
+  nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères.").optional().or(z.literal('')),
+  telephone: z.string().optional(),
+  adresseParDefaut: z.string().optional(),
 });
 
 type EditUserFormValues = z.infer<typeof editUserSchema>;
@@ -51,18 +51,18 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
   const form = useForm<EditUserFormValues>({
     resolver: zodResolver(editUserSchema),
     defaultValues: {
-      name: userProfile.name || '',
-      phone: userProfile.phone || '',
-      defaultAddress: userProfile.defaultAddress || '',
+      nom: userProfile.nom || '',
+      telephone: userProfile.telephone || '',
+      adresseParDefaut: userProfile.adresseParDefaut || '',
     },
   });
 
   React.useEffect(() => {
     if (isOpen) {
       form.reset({
-        name: userProfile.name || '',
-        phone: userProfile.phone || '',
-        defaultAddress: userProfile.defaultAddress || '',
+        nom: userProfile.nom || '',
+        telephone: userProfile.telephone || '',
+        adresseParDefaut: userProfile.adresseParDefaut || '',
       });
     }
   }, [isOpen, userProfile, form]);
@@ -91,7 +91,7 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Modifier le profil de {userProfile.name || userProfile.email}</DialogTitle>
+          <DialogTitle>Modifier le profil de {userProfile.nom || userProfile.email}</DialogTitle>
           <DialogDescription>
             Modifiez les informations de l'utilisateur.
           </DialogDescription>
@@ -100,7 +100,7 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                     control={form.control}
-                    name="name"
+                    name="nom"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Nom complet</FormLabel>
@@ -111,7 +111,7 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
                 />
                  <FormField
                     control={form.control}
-                    name="phone"
+                    name="telephone"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Téléphone</FormLabel>
@@ -122,7 +122,7 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
                 />
                  <FormField
                     control={form.control}
-                    name="defaultAddress"
+                    name="adresseParDefaut"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Adresse par défaut</FormLabel>

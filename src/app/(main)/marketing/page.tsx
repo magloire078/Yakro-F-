@@ -53,7 +53,7 @@ export default function MarketingPage() {
 
    React.useEffect(() => {
     if (user && activeRole === 'restaurateur') {
-      const filtered = restaurants.filter(r => r.ownerId === user.uid);
+      const filtered = restaurants.filter(r => r.proprietaireId === user.uid);
       setMyRestaurants(filtered);
       if(filtered.length > 0 && !selectedRestaurant) {
         setSelectedRestaurant(filtered[0]);
@@ -104,14 +104,14 @@ export default function MarketingPage() {
 
     try {
       const result = await generateVideo({
-        restaurantName: selectedRestaurant.name,
+        restaurantName: selectedRestaurant.nom,
         cuisine: selectedRestaurant.cuisine,
         imageDataUri: imageDataUri
       });
       setVideoUrl(result.videoUrl);
       toast({
         title: 'Vidéo générée avec succès !',
-        description: `Votre spot publicitaire pour ${selectedRestaurant.name} est prêt.`,
+        description: `Votre spot publicitaire pour ${selectedRestaurant.nom} est prêt.`,
       });
     } catch (error) {
       console.error('Failed to generate video:', error);
@@ -160,7 +160,7 @@ export default function MarketingPage() {
                 <SelectContent>
                   {myRestaurants.map(r => (
                     <SelectItem key={r.id} value={r.id}>
-                      {r.name}
+                      {r.nom}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -171,7 +171,7 @@ export default function MarketingPage() {
                 <label className="font-medium">2. Image de référence</label>
                 <div className="border rounded-lg p-2 bg-muted h-48 flex items-center justify-center">
                    {restaurantImage ? (
-                     <Image src={restaurantImage} alt={selectedRestaurant?.name || ""} width={300} height={150} className="object-contain rounded-md" />
+                     <Image src={restaurantImage} alt={selectedRestaurant?.nom || ""} width={300} height={150} className="object-contain rounded-md" />
                    ) : (
                     <p className="text-sm text-muted-foreground">L'image du restaurant apparaîtra ici.</p>
                    )}

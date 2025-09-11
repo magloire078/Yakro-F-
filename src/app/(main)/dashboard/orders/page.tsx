@@ -45,13 +45,13 @@ export default function DashboardOrdersPage() {
 
     const newOrders = React.useMemo(() => {
         return myOrders
-            .filter(o => o.status === 'Placée')
+            .filter(o => o.statut === 'Placée')
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [myOrders]);
     
     const preparingOrders = React.useMemo(() => {
         return myOrders
-            .filter(o => o.status === 'En Préparation')
+            .filter(o => o.statut === 'En Préparation')
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [myOrders]);
 
@@ -79,8 +79,8 @@ export default function DashboardOrdersPage() {
         <Card className="shadow-md">
             <CardHeader>
                 <CardTitle className="flex justify-between items-center text-lg">
-                    <span>{order.restaurantName}</span>
-                    <Badge variant={order.status === 'Placée' ? 'destructive' : 'default'}>{order.status}</Badge>
+                    <span>{order.nomRestaurant}</span>
+                    <Badge variant={order.statut === 'Placée' ? 'destructive' : 'default'}>{order.statut}</Badge>
                 </CardTitle>
                 <CardDescription>Commande n°{order.id.slice(0, 5)}... &bull; {new Date(order.date).toLocaleTimeString('fr-FR')}</CardDescription>
             </CardHeader>
@@ -89,10 +89,10 @@ export default function DashboardOrdersPage() {
                     <AccordionItem value="details" className="border-b-0">
                         <AccordionTrigger>Voir les détails</AccordionTrigger>
                         <AccordionContent className="space-y-2 text-sm">
-                            {order.items.map(item => (
+                            {order.plats.map(item => (
                                 <div key={item.id} className="flex justify-between">
-                                    <span>{item.quantity}x {item.name}</span>
-                                    <span>{(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</span>
+                                    <span>{item.quantite}x {item.nom}</span>
+                                    <span>{(item.prix * item.quantite).toLocaleString('fr-FR')} FCFA</span>
                                 </div>
                             ))}
                              <div className="border-t pt-2 mt-2 space-y-1">
@@ -101,18 +101,18 @@ export default function DashboardOrdersPage() {
                                     <span className="font-semibold">{order.total.toLocaleString('fr-FR')} FCFA</span>
                                 </div>
                                 <div className="flex justify-between text-muted-foreground">
-                                    <span>Commission ({order.commissionRate * 100}%)</span>
-                                    <span>- {order.commissionAmount.toLocaleString('fr-FR')} FCFA</span>
+                                    <span>Commission ({order.tauxCommission * 100}%)</span>
+                                    <span>- {order.montantCommission.toLocaleString('fr-FR')} FCFA</span>
                                 </div>
                                 <div className="flex justify-between font-bold text-primary">
                                     <span>Revenu Net</span>
-                                    <span>{order.netRevenue.toLocaleString('fr-FR')} FCFA</span>
+                                    <span>{order.revenuNet.toLocaleString('fr-FR')} FCFA</span>
                                 </div>
                             </div>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
-                {order.status === 'Placée' && (
+                {order.statut === 'Placée' && (
                     <Button 
                         onClick={() => handleAcceptOrder(order.id)} 
                         disabled={isUpdating === order.id} 

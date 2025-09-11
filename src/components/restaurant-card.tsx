@@ -22,17 +22,17 @@ export function RestaurantCard({ restaurant, featured = false, matchReason }: Re
         <CardHeader className="p-0 relative h-40">
           <Image
             src={restaurant.image}
-            alt={restaurant.name}
+            alt={restaurant.nom}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
-            data-ai-hint={restaurant.imageHint}
+            data-ai-hint={restaurant.indiceImage}
           />
            {featured && <Badge className="absolute top-2 right-2" variant="default">En vedette</Badge>}
         </CardHeader>
         <CardContent className="p-4 flex-grow flex flex-col">
           <div className="flex-grow">
-            <h3 className="text-lg font-bold font-headline truncate">{restaurant.name}</h3>
+            <h3 className="text-lg font-bold font-headline truncate">{restaurant.nom}</h3>
             <p className="text-sm text-muted-foreground">{restaurant.cuisine}</p>
             {matchReason && (
               <p className="text-xs text-primary font-semibold mt-1 italic">{matchReason}</p>
@@ -41,15 +41,15 @@ export function RestaurantCard({ restaurant, featured = false, matchReason }: Re
           <div className="flex justify-between items-center mt-3 text-sm pt-2 border-t">
             <Badge variant="outline" className="flex items-center gap-1">
               <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-              <span className="font-semibold">{restaurant.rating}</span>
+              <span className="font-semibold">{restaurant.note}</span>
             </Badge>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="w-4 h-4" />
-              <span>{restaurant.deliveryTime} min</span>
+              <span>{restaurant.tempsDeLivraison} min</span>
             </div>
              <div className="flex items-center gap-1 text-muted-foreground">
               <Bike className="w-4 h-4" />
-              <span>{restaurant.deliveryFee > 0 ? `${restaurant.deliveryFee.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</span>
+              <span>{restaurant.fraisDeLivraison > 0 ? `${restaurant.fraisDeLivraison.toLocaleString('fr-FR')} FCFA` : 'Gratuit'}</span>
             </div>
           </div>
         </CardContent>

@@ -20,7 +20,7 @@ const StarRating = ({ rating }: { rating: number }) => (
 );
 
 export function ReviewCard({ review }: ReviewCardProps) {
-  const initial = review.userName ? review.userName.charAt(0).toUpperCase() : '?';
+  const initial = review.nomUtilisateur ? review.nomUtilisateur.charAt(0).toUpperCase() : '?';
   
   return (
     <Card className="shadow-md">
@@ -31,10 +31,10 @@ export function ReviewCard({ review }: ReviewCardProps) {
           </Avatar>
           <div className="flex-1">
             <div className="flex justify-between items-center mb-2">
-              <p className="font-bold font-headline">{review.userName}</p>
-              <StarRating rating={review.rating} />
+              <p className="font-bold font-headline">{review.nomUtilisateur}</p>
+              <StarRating rating={review.note} />
             </div>
-            <p className="text-muted-foreground">{review.comment}</p>
+            <p className="text-muted-foreground">{review.commentaire}</p>
           </div>
         </div>
       </CardContent>

@@ -56,22 +56,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addToCart = (item: CartItem) => {
     // If cart is not empty and new item is from a different restaurant, clear the cart.
     if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
-        setCartItems([{ ...item, quantity: 1 }]);
+        setCartItems([{ ...item, quantite: 1 }]);
         return;
     }
 
     setCartItems(prevItems => {
       // Create a unique key for an item based on its ID and selected options
-      const uniqueItemKey = `${item.id}-${item.selectedSide?.name || 'none'}-${item.selectedDrink?.name || 'none'}`;
+      const uniqueItemKey = `${item.id}-${item.accompagnementSelectionne?.nom || 'none'}-${item.boissonSelectionnee?.nom || 'none'}`;
       
       const existingItem = prevItems.find(i => 
-        `${i.id}-${i.selectedSide?.name || 'none'}-${i.selectedDrink?.name || 'none'}` === uniqueItemKey
+        `${i.id}-${i.accompagnementSelectionne?.nom || 'none'}-${i.boissonSelectionnee?.nom || 'none'}` === uniqueItemKey
       );
 
       if (existingItem) {
         return prevItems.map(i =>
-          `${i.id}-${i.selectedSide?.name || 'none'}-${i.selectedDrink?.name || 'none'}` === uniqueItemKey 
-          ? { ...i, quantity: i.quantity + item.quantity } 
+          `${i.id}-${i.accompagnementSelectionne?.nom || 'none'}-${i.boissonSelectionnee?.nom || 'none'}` === uniqueItemKey 
+          ? { ...i, quantite: i.quantite + item.quantite } 
           : i
         );
       }
@@ -86,7 +86,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeFromCart = (itemId: string, side?: string, drink?: string) => {
     const keyToRemove = getUniqueKey(itemId, side, drink);
     setCartItems(prevItems => prevItems.filter(i => 
-        getUniqueKey(i.id, i.selectedSide?.name, i.selectedDrink?.name) !== keyToRemove
+        getUniqueKey(i.id, i.accompagnementSelectionne?.nom, i.boissonSelectionnee?.nom) !== keyToRemove
     ));
   };
 
@@ -96,7 +96,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       removeFromCart(itemId, side, drink);
     } else {
       setCartItems(prevItems =>
-        prevItems.map(i => (getUniqueKey(i.id, i.selectedSide?.name, i.selectedDrink?.name) === keyToUpdate ? { ...i, quantity } : i))
+        prevItems.map(i => (getUniqueKey(i.id, i.accompagnementSelectionne?.nom, i.boissonSelectionnee?.nom) === keyToUpdate ? { ...i, quantite: quantity } : i))
       );
     }
   };
@@ -107,10 +107,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const cartSubtotal = React.useMemo(() => {
     return cartItems.reduce((total, item) => {
-      const itemPrice = item.price;
-      const sidePrice = item.selectedSide?.price || 0;
-      const drinkPrice = item.selectedDrink?.price || 0;
-      return total + (itemPrice + sidePrice + drinkPrice) * item.quantity;
+      const itemPrice = item.prix;
+      const sidePrice = item.accompagnementSelectionne?.prix || 0;
+      const drinkPrice = item.boissonSelectionnee?.prix || 0;
+      return total + (itemPrice + sidePrice + drinkPrice) * item.quantite;
     }, 0);
   }, [cartItems]);
 
@@ -118,7 +118,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (cartItems.length === 0) return 0;
       const restaurantId = cartItems[0].restaurantId;
       const restaurant = getRestaurant(restaurantId);
-      return restaurant?.deliveryFee || 0;
+      return restaurant?.fraisDeLivraison || 0;
   }, [cartItems, getRestaurant]);
 
   const cartTotal = React.useMemo(() => {
@@ -126,7 +126,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cartSubtotal, cartDeliveryFee]);
   
   const cartCount = React.useMemo(() => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0);
+    return cartItems.reduce((count, item) => count + item.quantite, 0);
   }, [cartItems]);
 
   const placeOrder = async () => {
@@ -144,20 +144,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const newOrder: Omit<Order, 'id'> = {
         userId: user.uid,
-        items: cartItems,
-        subtotal: cartSubtotal,
-        deliveryFee: cartDeliveryFee,
+        plats: cartItems,
+        sousTotal: cartSubtotal,
+        fraisDeLivraison: cartDeliveryFee,
         total: cartTotal,
-        commissionRate: COMMISSION_RATE,
-        commissionAmount: commissionAmount,
-        netRevenue: netRevenue,
+        tauxCommission: COMMISSION_RATE,
+        montantCommission: commissionAmount,
+        revenuNet: netRevenue,
         date: new Date().toISOString(),
-        restaurantName: restaurant?.name || 'Restaurant inconnu',
+        nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
         restaurantId: restaurantId,
-        status: 'Placée',
-        customerAddress: userProfile.defaultAddress || 'Adresse non spécifiée',
-        restaurantAddress: restaurant?.address || 'Adresse du restaurant non spécifiée',
-        customerPhone: userProfile.phone || 'Numéro non spécifié',
+        statut: 'Placée',
+        adresseClient: userProfile.adresseParDefaut || 'Adresse non spécifiée',
+        adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
+        telephoneClient: userProfile.telephone || 'Numéro non spécifié',
     };
 
     await addOrder(newOrder);

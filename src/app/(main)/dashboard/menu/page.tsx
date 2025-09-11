@@ -52,7 +52,7 @@ export default function DashboardMenuPage() {
 
     const myRestaurantIds = React.useMemo(() => {
         if (!user || activeRole !== 'restaurateur') return [];
-        return restaurants.filter(r => r.ownerId === user.uid).map(r => r.id);
+        return restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
     }, [restaurants, user, activeRole]);
 
     const myMenuItems = React.useMemo(() => {
@@ -65,7 +65,7 @@ export default function DashboardMenuPage() {
     }
 
     const getRestaurantName = (restaurantId: string) => {
-        return restaurants.find(r => r.id === restaurantId)?.name || 'Restaurant inconnu';
+        return restaurants.find(r => r.id === restaurantId)?.nom || 'Restaurant inconnu';
     };
 
     const handleDeleteItem = async (itemId: string) => {
@@ -119,18 +119,18 @@ export default function DashboardMenuPage() {
                                 <div className="relative h-40 w-full rounded-lg overflow-hidden bg-muted">
                                     <Image
                                         src={item.image || `https://placehold.co/400x300.png`}
-                                        alt={item.name}
+                                        alt={item.nom}
                                         fill
                                         className="object-cover"
-                                        data-ai-hint={item.imageHint}
+                                        data-ai-hint={item.indiceImage}
                                     />
                                 </div>
                             </CardHeader>
                             <CardContent className="flex-grow">
                                 <Badge variant="secondary" className="mb-2">{getRestaurantName(item.restaurantId)}</Badge>
-                                <CardTitle className="font-headline text-xl">{item.name}</CardTitle>
+                                <CardTitle className="font-headline text-xl">{item.nom}</CardTitle>
                                 <CardDescription className="mt-1 h-12 overflow-hidden">{item.description}</CardDescription>
-                                <p className="text-lg font-bold text-primary mt-3">{item.price.toLocaleString('fr-FR')} FCFA</p>
+                                <p className="text-lg font-bold text-primary mt-3">{item.prix.toLocaleString('fr-FR')} FCFA</p>
                             </CardContent>
                             <CardFooter className="flex gap-2">
                                 <Button variant="outline" className="w-full" onClick={() => setEditingItem(item)}>
@@ -148,7 +148,7 @@ export default function DashboardMenuPage() {
                                         <AlertDialogHeader>
                                         <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Cette action est irréversible. Le plat "{item.name}" sera définitivement supprimé.
+                                            Cette action est irréversible. Le plat "{item.nom}" sera définitivement supprimé.
                                         </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>

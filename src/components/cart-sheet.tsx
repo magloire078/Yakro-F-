@@ -44,13 +44,13 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
 
   // Check if all items are from the same restaurant
   const firstRestaurantId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
-  const restaurantName = firstRestaurantId ? useData().getRestaurant(firstRestaurantId)?.name : '';
+  const restaurantName = firstRestaurantId ? useData().getRestaurant(firstRestaurantId)?.nom : '';
 
   const getCartItemPrice = (item: CartItem) => {
-      const itemPrice = item.price;
-      const sidePrice = item.selectedSide?.price || 0;
-      const drinkPrice = item.selectedDrink?.price || 0;
-      return (itemPrice + sidePrice + drinkPrice) * item.quantity;
+      const itemPrice = item.prix;
+      const sidePrice = item.accompagnementSelectionne?.prix || 0;
+      const drinkPrice = item.boissonSelectionnee?.prix || 0;
+      return (itemPrice + sidePrice + drinkPrice) * item.quantite;
   }
 
   return (
@@ -68,20 +68,20 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col gap-4 py-4">
                 {cartItems.map((item, index) => {
                     return (
-                        <div key={`${item.id}-${item.selectedSide?.name}-${item.selectedDrink?.name}-${index}`} className="flex items-start gap-4">
+                        <div key={`${item.id}-${item.accompagnementSelectionne?.nom}-${item.boissonSelectionnee?.nom}-${index}`} className="flex items-start gap-4">
                             <Image
                             src={item.image || `https://placehold.co/100x100.png`}
-                            alt={item.name}
+                            alt={item.nom}
                             width={64}
                             height={64}
                             className="rounded-md object-cover"
-                            data-ai-hint={item.imageHint}
+                            data-ai-hint={item.indiceImage}
                             />
                             <div className="flex-1">
-                                <p className="font-semibold">{item.name}</p>
+                                <p className="font-semibold">{item.nom}</p>
                                 <div className="text-xs text-muted-foreground">
-                                    {item.selectedSide && <p>+ {item.selectedSide.name} ({item.selectedSide.price} F)</p>}
-                                    {item.selectedDrink && <p>+ {item.selectedDrink.name} ({item.selectedDrink.price} F)</p>}
+                                    {item.accompagnementSelectionne && <p>+ {item.accompagnementSelectionne.nom} ({item.accompagnementSelectionne.prix} F)</p>}
+                                    {item.boissonSelectionnee && <p>+ {item.boissonSelectionnee.nom} ({item.boissonSelectionnee.prix} F)</p>}
                                 </div>
                                 <p className="text-sm font-semibold text-primary mt-1">
                                     {getCartItemPrice(item).toLocaleString('fr-FR')} FCFA
@@ -91,16 +91,16 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                                     variant="outline"
                                     size="icon"
                                     className="h-6 w-6"
-                                    onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSide?.name, item.selectedDrink?.name)}
+                                    onClick={() => updateQuantity(item.id, item.quantite - 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
                                     >
                                     <Minus className="h-3 w-3" />
                                     </Button>
-                                    <span className="w-6 text-center">{item.quantity}</span>
+                                    <span className="w-6 text-center">{item.quantite}</span>
                                     <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-6 w-6"
-                                    onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSide?.name, item.selectedDrink?.name)}
+                                    onClick={() => updateQuantity(item.id, item.quantite + 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
                                     >
                                     <Plus className="h-3 w-3" />
                                     </Button>
@@ -110,7 +110,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                             variant="ghost"
                             size="icon"
                             className="text-muted-foreground hover:text-destructive"
-                            onClick={() => removeFromCart(item.id, item.selectedSide?.name, item.selectedDrink?.name)}
+                            onClick={() => removeFromCart(item.id, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
                             >
                             <Trash2 className="h-4 w-4" />
                             </Button>

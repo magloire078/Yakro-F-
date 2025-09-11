@@ -7,16 +7,16 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea } from '@/componentsui/textarea';
 import type { Review } from '@/lib/types';
 import { useState } from 'react';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const reviewFormSchema = z.object({
-  userName: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères.' }).max(50),
-  comment: z.string().min(10, { message: 'Le commentaire doit contenir au moins 10 caractères.' }),
-  rating: z.number().min(1, { message: 'Veuillez sélectionner une note.'}),
+  nomUtilisateur: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères.' }).max(50),
+  commentaire: z.string().min(10, { message: 'Le commentaire doit contenir au moins 10 caractères.' }),
+  note: z.number().min(1, { message: 'Veuillez sélectionner une note.'}),
 });
 
 type ReviewFormValues = z.infer<typeof reviewFormSchema>;
@@ -53,9 +53,9 @@ export function ReviewForm({ onSubmit }: ReviewFormProps) {
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewFormSchema),
     defaultValues: {
-      userName: '',
-      comment: '',
-      rating: 0,
+      nomUtilisateur: '',
+      commentaire: '',
+      note: 0,
     },
   });
 
@@ -69,7 +69,7 @@ export function ReviewForm({ onSubmit }: ReviewFormProps) {
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-6 border rounded-lg bg-card">
         <FormField
           control={form.control}
-          name="userName"
+          name="nomUtilisateur"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Votre nom</FormLabel>
@@ -82,7 +82,7 @@ export function ReviewForm({ onSubmit }: ReviewFormProps) {
         />
         <FormField
           control={form.control}
-          name="comment"
+          name="commentaire"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Votre commentaire</FormLabel>
@@ -95,7 +95,7 @@ export function ReviewForm({ onSubmit }: ReviewFormProps) {
         />
         <FormField
             control={form.control}
-            name="rating"
+            name="note"
             render={({ field }) => (
                 <FormItem>
                     <FormLabel>Votre note</FormLabel>

@@ -23,10 +23,10 @@ interface OrderStatusProps {
 }
 
 export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
-  const currentStatus = statusConfig[order.status];
-  const isFinished = order.status === 'Livrée' || order.status === 'Annulée';
+  const currentStatus = statusConfig[order.statut];
+  const isFinished = order.statut === 'Livrée' || order.statut === 'Annulée';
   const allStatuses = Object.values(statusConfig).filter(s => s.name !== 'Annulée');
-  const statusIndex = allStatuses.findIndex(s => s.name === order.status);
+  const statusIndex = allStatuses.findIndex(s => s.name === order.statut);
 
   useEffect(() => {
       if(isFinished) {
@@ -43,7 +43,7 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
         <Card className="w-full bg-primary/5 border-primary/20 shadow-lg">
             <CardHeader className="text-center">
                  <h2 className="text-2xl font-headline text-primary">Suivi de votre commande</h2>
-                 <p className="text-muted-foreground">Votre commande de <span className="font-semibold text-foreground">{order.restaurantName}</span></p>
+                 <p className="text-muted-foreground">Votre commande de <span className="font-semibold text-foreground">{order.nomRestaurant}</span></p>
             </CardHeader>
             <CardContent className="flex flex-col items-center text-center">
                 <div className={`mb-4 p-3 rounded-full transition-colors duration-500 text-primary ${!isFinished ? 'animate-pulse' : ''}`}>

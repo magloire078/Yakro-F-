@@ -22,7 +22,7 @@ export default function ProfileSelectionPage() {
         }
 
         if (userProfile) {
-            const roleToSet = userProfile.role || userProfile.allowedRoles?.[0] || 'client';
+            const roleToSet = userProfile.role || userProfile.rolesAutorises?.[0] || 'client';
             setActiveRole(roleToSet);
 
             // Si le profil n'a pas de rôle principal défini, on le met à jour

@@ -21,9 +21,9 @@ export type GenerateReviewsInput = z.infer<typeof GenerateReviewsInputSchema>;
 const GenerateReviewsOutputSchema = z.object({
   reviews: z.array(
     z.object({
-      userName: z.string().describe("The name of the user leaving the review. Should be a realistic African-sounding name."),
-      rating: z.number().min(1).max(5).describe('The star rating from 1 to 5.'),
-      comment: z.string().describe('The review comment, between 20 and 50 words. Should be in French.'),
+      nomUtilisateur: z.string().describe("The name of the user leaving the review. Should be a realistic African-sounding name."),
+      note: z.number().min(1).max(5).describe('The star rating from 1 to 5.'),
+      commentaire: z.string().describe('The review comment, between 20 and 50 words. Should be in French.'),
     })
   ),
 });
@@ -58,4 +58,3 @@ const generateReviewsFlow = ai.defineFlow(
     return output!;
   }
 );
-    

@@ -22,7 +22,7 @@ export default function BoostPage() {
 
     const myRestaurants = React.useMemo(() => {
         if (!user || activeRole !== 'restaurateur') return [];
-        return restaurants.filter(r => r.ownerId === user.uid);
+        return restaurants.filter(r => r.proprietaireId === user.uid);
     }, [restaurants, user, activeRole]);
 
      React.useEffect(() => {
@@ -33,12 +33,12 @@ export default function BoostPage() {
     
     const handleBoostToggle = async (restaurant: Restaurant) => {
         setUpdatingId(restaurant.id);
-        const newStatus = !restaurant.isFeatured;
+        const newStatus = !restaurant.enVedette;
         try {
-            await updateRestaurant(restaurant.id, { isFeatured: newStatus });
+            await updateRestaurant(restaurant.id, { enVedette: newStatus });
             toast({
                 title: 'Mise à jour réussie !',
-                description: `${restaurant.name} est maintenant ${newStatus ? 'en vedette' : 'standard'}.`,
+                description: `${restaurant.nom} est maintenant ${newStatus ? 'en vedette' : 'standard'}.`,
             });
         } catch (error) {
             toast({
@@ -70,8 +70,8 @@ export default function BoostPage() {
                     myRestaurants.map(restaurant => (
                         <Card key={restaurant.id} className="shadow-md">
                             <CardHeader>
-                                <CardTitle>{restaurant.name}</CardTitle>
-                                <CardDescription>{restaurant.address}</CardDescription>
+                                <CardTitle>{restaurant.nom}</CardTitle>
+                                <CardDescription>{restaurant.adresse}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -85,7 +85,7 @@ export default function BoostPage() {
                                         {updatingId === restaurant.id && <Loader className="animate-spin" />}
                                         <Switch
                                             id={`boost-${restaurant.id}`}
-                                            checked={restaurant.isFeatured || false}
+                                            checked={restaurant.enVedette || false}
                                             onCheckedChange={() => handleBoostToggle(restaurant)}
                                             disabled={updatingId === restaurant.id}
                                         />

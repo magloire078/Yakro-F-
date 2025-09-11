@@ -23,13 +23,13 @@ export default function LivreurHomePage() {
     const [isCompleting, setIsCompleting] = React.useState(false);
     
     const availableDeliveries = React.useMemo(() => {
-        return orders.filter(o => o.status === 'En Préparation');
+        return orders.filter(o => o.statut === 'En Préparation');
     }, [orders]);
     
     // Check if the current user has an active delivery
     React.useEffect(() => {
         if (user) {
-            const activeOrder = orders.find(o => o.delivererId === user.uid && o.status === 'En Route');
+            const activeOrder = orders.find(o => o.livreurId === user.uid && o.statut === 'En Route');
             setCurrentDelivery(activeOrder || null);
         }
     }, [orders, user]);
@@ -39,10 +39,10 @@ export default function LivreurHomePage() {
         setIsAccepting(delivery.id);
         try {
             await updateOrderStatus(delivery.id, 'En Route', user.uid);
-            setCurrentDelivery({ ...delivery, status: 'En Route', delivererId: user.uid });
+            setCurrentDelivery({ ...delivery, statut: 'En Route', livreurId: user.uid });
             toast({
                 title: "Course acceptée !",
-                description: `Vous allez livrer la commande de ${delivery.restaurantName}.`,
+                description: `Vous allez livrer la commande de ${delivery.nomRestaurant}.`,
             });
         } catch(error) {
              toast({
@@ -93,25 +93,25 @@ export default function LivreurHomePage() {
                             <div className="flex items-start gap-4">
                                 <ChefHat className="text-primary mt-1"/>
                                 <div>
-                                    <p className="font-semibold text-lg">1. Récupérer chez {currentDelivery.restaurantName}</p>
-                                    <p className="text-muted-foreground">{currentDelivery.restaurantAddress}</p>
+                                    <p className="font-semibold text-lg">1. Récupérer chez {currentDelivery.nomRestaurant}</p>
+                                    <p className="text-muted-foreground">{currentDelivery.adresseRestaurant}</p>
                                 </div>
                             </div>
                              <div className="flex items-start gap-4">
                                 <Home className="text-green-500 mt-1"/>
                                 <div>
                                     <p className="font-semibold text-lg">2. Livrer à</p>
-                                    <p className="text-muted-foreground">{currentDelivery.customerAddress}</p>
+                                    <p className="text-muted-foreground">{currentDelivery.adresseClient}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="space-y-3">
                              <div className="flex items-center gap-4">
-                                <p>Contenu : {currentDelivery.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</p>
+                                <p>Contenu : {currentDelivery.plats.map(i => `${i.quantite}x ${i.nom}`).join(', ')}</p>
                             </div>
                              <div className="flex items-center gap-4">
                                 <Phone className="text-muted-foreground"/>
-                                <p>Client : {currentDelivery.customerPhone}</p>
+                                <p>Client : {currentDelivery.telephoneClient}</p>
                             </div>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
@@ -138,14 +138,14 @@ export default function LivreurHomePage() {
                     <Card key={delivery.id}>
                         <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
                            <div className="md:col-span-1">
-                             <p className="font-bold text-lg">{delivery.restaurantName}</p>
-                             <p className="text-sm text-muted-foreground">De: {delivery.restaurantAddress}</p>
-                             <p className="text-sm text-muted-foreground">À: {delivery.customerAddress}</p>
+                             <p className="font-bold text-lg">{delivery.nomRestaurant}</p>
+                             <p className="text-sm text-muted-foreground">De: {delivery.adresseRestaurant}</p>
+                             <p className="text-sm text-muted-foreground">À: {delivery.adresseClient}</p>
                            </div>
                            <div className="md:col-span-1 flex flex-row md:flex-col items-start md:items-center justify-between gap-2 text-sm">
-                                <Badge variant="secondary" className="text-base font-bold">{delivery.deliveryFee.toLocaleString('fr-FR')} FCFA</Badge>
+                                <Badge variant="secondary" className="text-base font-bold">{delivery.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</Badge>
                                 <div className="flex items-center gap-2">
-                                    <span>{delivery.items.reduce((acc, i) => acc + i.quantity, 0)} article(s)</span>
+                                    <span>{delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)</span>
                                 </div>
                            </div>
                            <div className="md:col-span-1 flex justify-start md:justify-end">

@@ -37,7 +37,7 @@ export function Sidebar() {
   }
   
   const handleRoleChange = (newRole: AppRole) => {
-    if (userProfile?.allowedRoles?.includes(newRole)) {
+    if (userProfile?.rolesAutorises?.includes(newRole)) {
       setActiveRole(newRole);
       // Depending on the role, you might want to navigate to a default page
       switch(newRole) {
@@ -70,14 +70,14 @@ export function Sidebar() {
           <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
         </Link>
         
-        {user && userProfile && userProfile.allowedRoles && userProfile.allowedRoles.length > 1 && (
+        {user && userProfile && userProfile.rolesAutorises && userProfile.rolesAutorises.length > 1 && (
           <div className="mb-8">
             <Select onValueChange={handleRoleChange} value={activeRole}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Changer de profil" />
               </SelectTrigger>
               <SelectContent>
-                {userProfile.allowedRoles.map(role => (
+                {userProfile.rolesAutorises.map(role => (
                   <SelectItem key={role} value={role} className="capitalize">{role}</SelectItem>
                 ))}
               </SelectContent>
@@ -161,7 +161,7 @@ export function Sidebar() {
           )}
 
           {/* Super Admin Link */}
-          {userProfile?.systemRole === 'SuperAdmin' && (
+          {userProfile?.roleSysteme === 'SuperAdmin' && (
             <Button variant="ghost" className="justify-start text-lg" asChild>
               <Link href="/dashboard/admin">
                 <ShieldCheck className="mr-2 h-5 w-5" />
@@ -185,16 +185,16 @@ export function Sidebar() {
                 <DropdownMenuTrigger asChild>
                     <div className="flex items-center gap-3 p-2 rounded-lg border cursor-pointer hover:bg-muted">
                         <Avatar>
-                            <AvatarFallback>{getInitials(userProfile?.name || user.email)}</AvatarFallback>
+                            <AvatarFallback>{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-semibold truncate">{userProfile?.name || user.email}</p>
+                            <p className="text-sm font-semibold truncate">{userProfile?.nom || user.email}</p>
                             <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 mb-2">
-                    <DropdownMenuLabel>{userProfile?.name || user.email}</DropdownMenuLabel>
+                    <DropdownMenuLabel>{userProfile?.nom || user.email}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                         <Link href="/profile">

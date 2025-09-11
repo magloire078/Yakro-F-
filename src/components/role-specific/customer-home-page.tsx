@@ -54,7 +54,7 @@ export default function CustomerHomePage() {
 
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
-    return orders.filter(o => o.userId === user.uid && o.status === 'Livrée');
+    return orders.filter(o => o.userId === user.uid && o.statut === 'Livrée');
   }, [orders, user]);
 
   React.useEffect(() => {
@@ -71,10 +71,10 @@ export default function CustomerHomePage() {
         const restaurant = restaurants.find(r => r.id === item.restaurantId);
         return {
           id: item.id,
-          name: item.name,
+          nom: item.nom,
           description: item.description,
-          price: item.price,
-          restaurantName: restaurant?.name || 'Restaurant inconnu',
+          prix: item.prix,
+          nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
           cuisine: restaurant?.cuisine || 'Inconnue'
         }
       });
@@ -108,7 +108,7 @@ export default function CustomerHomePage() {
     const findActiveOrder = () => {
        if (user && orders.length > 0) {
         const userOrders = orders.filter(o => o.userId === user.uid).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        const latestActiveOrder = userOrders.find(o => o.status !== 'Livrée' && o.status !== 'Annulée');
+        const latestActiveOrder = userOrders.find(o => o.statut !== 'Livrée' && o.statut !== 'Annulée');
         setActiveOrder(latestActiveOrder || null);
       } else {
         setActiveOrder(null);
@@ -130,14 +130,14 @@ export default function CustomerHomePage() {
       // Simple text search on restaurant name, cuisine, and menu items
       const lowercasedQuery = searchQuery.toLowerCase();
       baseRestaurants.forEach(r => {
-        if (r.name.toLowerCase().includes(lowercasedQuery) || r.cuisine.toLowerCase().includes(lowercasedQuery)) {
+        if (r.nom.toLowerCase().includes(lowercasedQuery) || r.cuisine.toLowerCase().includes(lowercasedQuery)) {
           filteredRestaurantIds.add(r.id);
         }
       });
       menuItems.forEach(item => {
-        if (item.name.toLowerCase().includes(lowercasedQuery)) {
+        if (item.nom.toLowerCase().includes(lowercasedQuery)) {
           filteredRestaurantIds.add(item.restaurantId);
-          matchReasons.set(item.restaurantId, `Propose "${item.name}"`);
+          matchReasons.set(item.restaurantId, `Propose "${item.nom}"`);
         }
       });
     } else if (interpretedSearch) {
@@ -149,9 +149,9 @@ export default function CustomerHomePage() {
 
       baseRestaurants.forEach(r => {
         const matchesCuisine = interpretedSearch.cuisine?.length > 0 ? interpretedSearch.cuisine.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())) : false;
-        const matchesRating = interpretedSearch.rating ? r.rating >= interpretedSearch.rating : true;
-        const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.deliveryTime <= interpretedSearch.deliveryTime : true;
-        const matchesName = searchTerms.length > 0 ? searchTerms.some(term => r.name.toLowerCase().includes(term)) : false;
+        const matchesRating = interpretedSearch.rating ? r.note >= interpretedSearch.rating : true;
+        const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.tempsDeLivraison <= interpretedSearch.deliveryTime : true;
+        const matchesName = searchTerms.length > 0 ? searchTerms.some(term => r.nom.toLowerCase().includes(term)) : false;
 
         if ((matchesCuisine || matchesName) && matchesRating && matchesDeliveryTime) {
           filteredRestaurantIds.add(r.id);
@@ -160,9 +160,9 @@ export default function CustomerHomePage() {
       
       if (searchTerms.length > 0) {
           menuItems.forEach(item => {
-              if (searchTerms.some(term => item.name.toLowerCase().includes(term))) {
+              if (searchTerms.some(term => item.nom.toLowerCase().includes(term))) {
                   filteredRestaurantIds.add(item.restaurantId);
-                  matchReasons.set(item.restaurantId, `Propose "${item.name}"`);
+                  matchReasons.set(item.restaurantId, `Propose "${item.nom}"`);
               }
           });
       }
@@ -177,8 +177,8 @@ export default function CustomerHomePage() {
     });
 
     return {
-        featuredRestaurants: baseRestaurants.filter(r => r.isFeatured),
-        normalRestaurants: filtered.filter(r => !r.isFeatured),
+        featuredRestaurants: baseRestaurants.filter(r => r.enVedette),
+        normalRestaurants: filtered.filter(r => !r.enVedette),
     };
 }, [restaurants, menuItems, searchQuery, interpretedSearch]);
 

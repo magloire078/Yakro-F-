@@ -18,12 +18,12 @@ export async function addOrderAction(order: Omit<Order, 'id'>) {
     }
 }
 
-export async function updateOrderStatusAction({ orderId, status, delivererId }: { orderId: string, status: Order['status'], delivererId?: string }) {
+export async function updateOrderStatusAction({ orderId, status, delivererId }: { orderId: string, status: Order['statut'], delivererId?: string }) {
     const orderDocRef = doc(db, 'commandes', orderId);
     try {
-        const updateData: {status: Order['status'], delivererId?: string} = { status };
+        const updateData: {statut: Order['statut'], livreurId?: string} = { statut: status };
         if (delivererId) {
-            updateData.delivererId = delivererId;
+            updateData.livreurId = delivererId;
         }
       await updateDoc(orderDocRef, updateData);
       revalidatePath('/');

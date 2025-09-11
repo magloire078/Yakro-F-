@@ -25,11 +25,11 @@ import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 
 const restaurantFormSchema = z.object({
-  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
+  nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
   cuisine: z.string().min(3, { message: "Le type de cuisine doit contenir au moins 3 caractères." }),
-  address: z.string().min(10, { message: "L'adresse doit contenir au moins 10 caractères." }),
-  deliveryTime: z.coerce.number().min(5, { message: "Le temps de livraison doit être d'au moins 5 minutes."}),
-  deliveryFee: z.coerce.number().min(0, { message: "Les frais de livraison ne peuvent être négatifs."}),
+  adresse: z.string().min(10, { message: "L'adresse doit contenir au moins 10 caractères." }),
+  tempsDeLivraison: z.coerce.number().min(5, { message: "Le temps de livraison doit être d'au moins 5 minutes."}),
+  fraisDeLivraison: z.coerce.number().min(0, { message: "Les frais de livraison ne peuvent être négatifs."}),
 });
 
 type RestaurantFormValues = z.infer<typeof restaurantFormSchema>;
@@ -50,11 +50,11 @@ export default function NewRestaurantPage() {
     const form = useForm<RestaurantFormValues>({
         resolver: zodResolver(restaurantFormSchema),
         defaultValues: {
-            name: '',
+            nom: '',
             cuisine: '',
-            address: '',
-            deliveryTime: 30,
-            deliveryFee: 1000,
+            adresse: '',
+            tempsDeLivraison: 30,
+            fraisDeLivraison: 1000,
         },
     });
 
@@ -67,16 +67,16 @@ export default function NewRestaurantPage() {
         try {
             const newRestaurant: Omit<Restaurant, 'id'> = {
                 ...data,
-                ownerId: user.uid,
+                proprietaireId: user.uid,
                 // These are default values for a new restaurant
-                rating: 0,
+                note: 0,
                 image: `https://placehold.co/600x400.png`,
-                imageHint: `${data.cuisine} restaurant`,
+                indiceImage: `${data.cuisine} restaurant`,
             };
             await addRestaurant(newRestaurant);
             toast({
                 title: 'Restaurant créé avec succès !',
-                description: `${data.name} a été ajouté à notre plateforme.`,
+                description: `${data.nom} a été ajouté à notre plateforme.`,
             });
             router.push('/');
         } catch (error) {
@@ -109,7 +109,7 @@ export default function NewRestaurantPage() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                             <FormField
                                 control={form.control}
-                                name="name"
+                                name="nom"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Nom du restaurant</FormLabel>
@@ -138,7 +138,7 @@ export default function NewRestaurantPage() {
                             />
                             <FormField
                                 control={form.control}
-                                name="address"
+                                name="adresse"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Adresse de récupération</FormLabel>
@@ -152,7 +152,7 @@ export default function NewRestaurantPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
-                                    name="deliveryTime"
+                                    name="tempsDeLivraison"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Temps de livraison (min)</FormLabel>
@@ -165,7 +165,7 @@ export default function NewRestaurantPage() {
                                 />
                                  <FormField
                                     control={form.control}
-                                    name="deliveryFee"
+                                    name="fraisDeLivraison"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Frais de livraison (FCFA)</FormLabel>

@@ -24,14 +24,14 @@ export default function AdminPage() {
     const [editingUser, setEditingUser] = React.useState<UserProfile | null>(null);
 
     React.useEffect(() => {
-        if (!authLoading && (!user || userProfile?.systemRole !== 'SuperAdmin')) {
+        if (!authLoading && (!user || userProfile?.roleSysteme !== 'SuperAdmin')) {
             toast({ variant: 'destructive', title: 'Accès non autorisé' });
             router.push('/');
         }
     }, [user, userProfile, authLoading, router, toast]);
 
     React.useEffect(() => {
-        if (userProfile?.systemRole === 'SuperAdmin') {
+        if (userProfile?.roleSysteme === 'SuperAdmin') {
             fetchAllUsers();
         }
     }, [userProfile, fetchAllUsers]);
@@ -39,7 +39,7 @@ export default function AdminPage() {
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);
         try {
-            await updateOtherUserProfile(userId, { systemRole: newRole });
+            await updateOtherUserProfile(userId, { roleSysteme: newRole });
             toast({ title: 'Rôle système mis à jour' });
         } catch (error) {
             toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de mettre à jour le rôle.' });
@@ -53,13 +53,13 @@ export default function AdminPage() {
         const targetUser = allUsers.find(u => u.uid === userId);
         if (!targetUser) return;
 
-        const currentRoles = targetUser.allowedRoles || [];
+        const currentRoles = targetUser.rolesAutorises || [];
         const newRoles = isChecked
             ? [...currentRoles, role]
             : currentRoles.filter(r => r !== role);
         
         try {
-            await updateOtherUserProfile(userId, { allowedRoles: newRoles });
+            await updateOtherUserProfile(userId, { rolesAutorises: newRoles });
             toast({ title: 'Permissions mises à jour' });
         } catch (error) {
             toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de mettre à jour les permissions.' });
@@ -68,7 +68,7 @@ export default function AdminPage() {
         }
     };
 
-    if (authLoading || dataLoading || userProfile?.systemRole !== 'SuperAdmin') {
+    if (authLoading || dataLoading || userProfile?.roleSysteme !== 'SuperAdmin') {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 
@@ -105,12 +105,12 @@ export default function AdminPage() {
                                     {allUsers.map(u => (
                                         <TableRow key={u.uid} className={updatingUserId === u.uid ? 'opacity-50' : ''}>
                                             <TableCell>
-                                                <div className="font-medium">{u.name || 'Non défini'}</div>
+                                                <div className="font-medium">{u.nom || 'Non défini'}</div>
                                                 <div className="text-sm text-muted-foreground">{u.email}</div>
                                             </TableCell>
                                             <TableCell>
                                                 <Select
-                                                    value={u.systemRole || 'User'}
+                                                    value={u.roleSysteme || 'User'}
                                                     onValueChange={(value: SystemRole) => handleSystemRoleChange(u.uid, value)}
                                                     disabled={updatingUserId === u.uid || u.uid === user?.uid}
                                                 >
@@ -130,9 +130,9 @@ export default function AdminPage() {
                                                         <div key={role} className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id={`${u.uid}-${role}`}
-                                                                checked={(u.allowedRoles || []).includes(role)}
+                                                                checked={(u.rolesAutorises || []).includes(role)}
                                                                 onCheckedChange={(checked) => handleAllowedRoleChange(u.uid, role, !!checked)}
-                                                                disabled={updatingUserId === u.uid || (u.systemRole === 'SuperAdmin' && u.uid === user?.uid)}
+                                                                disabled={updatingUserId === u.uid || (u.roleSysteme === 'SuperAdmin' && u.uid === user?.uid)}
                                                             />
                                                             <label
                                                                 htmlFor={`${u.uid}-${role}`}

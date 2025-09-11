@@ -24,16 +24,16 @@ export default function AnalyticsPage() {
 
     const myRestaurantIds = React.useMemo(() => {
         if (activeRole !== 'restaurateur' || !user) return [];
-        return restaurants.filter(r => r.ownerId === user.uid).map(r => r.id);
+        return restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
     }, [restaurants, activeRole, user]);
 
     const myOrders = React.useMemo(() => {
         if (myRestaurantIds.length === 0) return [];
-        return orders.filter(o => myRestaurantIds.includes(o.restaurantId) && o.status === 'Livrée');
+        return orders.filter(o => myRestaurantIds.includes(o.restaurantId) && o.statut === 'Livrée');
     }, [orders, myRestaurantIds]);
 
     const stats = React.useMemo(() => {
-        const totalRevenue = myOrders.reduce((sum, order) => sum + order.netRevenue, 0);
+        const totalRevenue = myOrders.reduce((sum, order) => sum + order.revenuNet, 0);
         const totalOrders = myOrders.length;
         const averageOrderValue = totalOrders > 0 ? myOrders.reduce((sum, order) => sum + order.total, 0) / totalOrders : 0;
 
@@ -49,9 +49,9 @@ export default function AnalyticsPage() {
           .filter(r => myRestaurantIds.includes(r.id))
           .map(restaurant => {
             const restaurantOrders = myOrders.filter(o => o.restaurantId === restaurant.id);
-            const revenue = restaurantOrders.reduce((sum, order) => sum + order.netRevenue, 0);
+            const revenue = restaurantOrders.reduce((sum, order) => sum + order.revenuNet, 0);
             return {
-                name: restaurant.name.length > 15 ? restaurant.name.substring(0, 15) + '...' : restaurant.name,
+                name: restaurant.nom.length > 15 ? restaurant.nom.substring(0, 15) + '...' : restaurant.nom,
                 revenue
             };
         });
@@ -62,13 +62,13 @@ export default function AnalyticsPage() {
         const itemMap: { [key: string]: { name: string; count: number; revenue: number } } = {};
 
         myOrders.forEach(order => {
-            order.items.forEach(item => {
+            order.plats.forEach(item => {
                 if (!itemMap[item.id]) {
-                    itemMap[item.id] = { name: item.name, count: 0, revenue: 0 };
+                    itemMap[item.id] = { name: item.nom, count: 0, revenue: 0 };
                 }
-                itemMap[item.id].count += item.quantity;
-                const itemPrice = item.price + (item.selectedSide?.price || 0) + (item.selectedDrink?.price || 0);
-                itemMap[item.id].revenue += itemPrice * item.quantity;
+                itemMap[item.id].count += item.quantite;
+                const itemPrice = item.prix + (item.accompagnementSelectionne?.prix || 0) + (item.boissonSelectionnee?.prix || 0);
+                itemMap[item.id].revenue += itemPrice * item.quantite;
             });
         });
 

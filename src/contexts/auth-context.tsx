@@ -16,7 +16,7 @@ interface AuthContextType {
   loading: boolean;
   activeRole: AppRole;
   setActiveRole: (role: AppRole) => void;
-  updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => Promise<void>;
+  updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => Promise<void>;
   updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   setUserProfile(profileData);
                   
                   const storedRole = getRoleFromStorage();
-                  const allowedRoles = profileData.allowedRoles || ['client'];
+                  const allowedRoles = profileData.rolesAutorises || ['client'];
 
                   if (storedRole && allowedRoles.includes(storedRole)) {
                     setActiveRoleState(storedRole);
@@ -89,11 +89,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   }
 
                    // Check if the user should be a super admin and promote them if necessary
-                   if (user.email === 'magloire078@gmail.com' && profileData.systemRole !== 'SuperAdmin') {
+                   if (user.email === 'magloire078@gmail.com' && profileData.roleSysteme !== 'SuperAdmin') {
                        console.log("Promoting magloire078@gmail.com to SuperAdmin...");
                        updateUserAction(user.uid, { 
-                           systemRole: 'SuperAdmin',
-                           allowedRoles: ['client', 'restaurateur', 'livreur']
+                           roleSysteme: 'SuperAdmin',
+                           rolesAutorises: ['client', 'restaurateur', 'livreur']
                        }).catch(e => console.error("Failed to promote super admin:", e));
                    }
 
@@ -118,11 +118,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const setActiveRole = (role: AppRole) => {
-      if (userProfile?.allowedRoles?.includes(role)) {
+      if (userProfile?.rolesAutorises?.includes(role)) {
         localStorage.setItem('activeRole', role);
         setActiveRoleState(role);
-      } else if (userProfile?.allowedRoles && userProfile.allowedRoles.length > 0) {
-        const firstAllowedRole = userProfile.allowedRoles[0];
+      } else if (userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 0) {
+        const firstAllowedRole = userProfile.rolesAutorises[0];
         localStorage.setItem('activeRole', firstAllowedRole);
         setActiveRoleState(firstAllowedRole);
       } else {
@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
   }
   
-  const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => {
+  const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
       await updateUserAction(uid, data);
   };
   

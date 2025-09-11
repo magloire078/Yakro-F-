@@ -15,16 +15,16 @@ const GenerateMenuItemInputSchema = z.object({
   restaurantName: z.string().describe('The name of the restaurant.'),
   cuisine: z.string().describe('The cuisine of the restaurant.'),
   description: z.string().describe("A simple description of the dish provided by the user. This is the primary input."),
-  name: z.string().optional().describe("An optional name for the dish. If provided, the AI should refine it or use it as inspiration."),
-  price: z.number().optional().describe("An optional price for the dish. If provided, the AI should use it or adjust it slightly if it seems unrealistic."),
+  nom: z.string().optional().describe("An optional name for the dish. If provided, the AI should refine it or use it as inspiration."),
+  prix: z.number().optional().describe("An optional price for the dish. If provided, the AI should use it or adjust it slightly if it seems unrealistic."),
 });
 export type GenerateMenuItemInput = z.infer<typeof GenerateMenuItemInputSchema>;
 
 const GenerateMenuItemOutputSchema = z.object({
-  name: z.string().describe('A creative and appealing name for the dish in French. If a name was provided in the input, refine or use it.'),
+  nom: z.string().describe('A creative and appealing name for the dish in French. If a name was provided in the input, refine or use it.'),
   description: z.string().describe('A delicious and enticing description of the dish in French, between 20 and 40 words, based on the user\'s simple description.'),
-  price: z.number().describe('A suggested price in West African CFA Franc (FCFA), should be a multiple of 50 or 100. If a price was provided, use or adjust it.'),
-  imageHint: z.string().describe("A 2-word hint for an image for alt text and future AI tasks."),
+  prix: z.number().describe('A suggested price in West African CFA Franc (FCFA), should be a multiple of 50 or 100. If a price was provided, use or adjust it.'),
+  indiceImage: z.string().describe("A 2-word hint for an image for alt text and future AI tasks."),
 });
 export type GenerateMenuItemOutput = z.infer<typeof GenerateMenuItemOutputSchema>;
 
@@ -44,8 +44,8 @@ const textGenerationPrompt = ai.definePrompt({
     
     User Input:
     - Description (required): "{{{description}}}"
-    {{#if name}}- Name (optional): "{{{name}}}"{{/if}}
-    {{#if price}}- Price (optional): "{{{price}}} FCFA"{{/if}}
+    {{#if nom}}- Name (optional): "{{{nom}}}"{{/if}}
+    {{#if prix}}- Price (optional): "{{{prix}}} FCFA"{{/if}}
 
     Based on the information provided, please generate the following, adhering to these rules:
     1.  **Name:** 

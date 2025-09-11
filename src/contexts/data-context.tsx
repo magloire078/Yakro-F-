@@ -27,7 +27,7 @@ interface DataState {
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
   deleteMenuItem: (itemId: string) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
-  updateOrderStatus: (orderId: string, status: Order['status'], delivererId?: string) => Promise<void>;
+  updateOrderStatus: (orderId: string, status: Order['statut'], delivererId?: string) => Promise<void>;
   fetchAllUsers: () => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
@@ -146,7 +146,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let unsubscribe: Unsubscribe | null = null;
         
         const myRestaurantIds = useDataStore.getState().restaurants
-          .filter(r => r.ownerId === user?.uid)
+          .filter(r => r.proprietaireId === user?.uid)
           .map(r => r.id);
 
         if (user) {
@@ -161,10 +161,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             } else if (activeRole === 'livreur') {
                 q = query(ordersCollection, or(
-                    where("status", "==", "En Préparation"),
-                    where("delivererId", "==", user.uid)
+                    where("statut", "==", "En Préparation"),
+                    where("livreurId", "==", user.uid)
                 ));
-            } else if (userProfile?.systemRole === 'SuperAdmin') {
+            } else if (userProfile?.roleSysteme === 'SuperAdmin') {
                 q = ordersCollection; // SuperAdmin sees all orders
             }
             
@@ -189,17 +189,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 unsubscribe();
             }
         };
-    }, [user, activeRole, userProfile?.systemRole, useDataStore.getState().restaurants]);
+    }, [user, activeRole, userProfile?.roleSysteme, useDataStore.getState().restaurants]);
 
 
     // Fetch all users for SuperAdmin via a server action
     React.useEffect(() => {
-        if (userProfile?.systemRole === 'SuperAdmin') {
+        if (userProfile?.roleSysteme === 'SuperAdmin') {
             fetchAllUsers();
         } else {
              useDataStore.setState({ allUsers: [] });
         }
-    }, [userProfile?.systemRole, fetchAllUsers]);
+    }, [userProfile?.roleSysteme, fetchAllUsers]);
 
   return <>{children}</>;
 };

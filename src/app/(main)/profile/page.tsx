@@ -26,7 +26,7 @@ export default function ProfilePage() {
 
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
-    return orders.filter(o => o.userId === user.uid && o.status === 'Livrée');
+    return orders.filter(o => o.userId === user.uid && o.statut === 'Livrée');
   }, [orders, user]);
 
   const stats = React.useMemo(() => {
@@ -75,10 +75,10 @@ export default function ProfilePage() {
           <Card>
             <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
               <Avatar className="h-24 w-24 text-3xl">
-                <AvatarFallback>{getInitials(userProfile?.name || user.email)}</AvatarFallback>
+                <AvatarFallback>{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 text-center sm:text-left">
-                <CardTitle className="text-3xl">{userProfile?.name || "Nom non défini"}</CardTitle>
+                <CardTitle className="text-3xl">{userProfile?.nom || "Nom non défini"}</CardTitle>
                 <CardDescription className="text-lg flex items-center justify-center sm:justify-start gap-2 mt-1">
                   <Mail className="h-4 w-4" />
                   {user.email}
@@ -100,13 +100,13 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="flex items-center">
                 <Phone className="h-5 w-5 mr-4 text-muted-foreground" />
-                <span className="font-medium">{userProfile?.phone || "Non défini"}</span>
+                <span className="font-medium">{userProfile?.telephone || "Non défini"}</span>
               </div>
               <Separator />
               <div className="flex items-start">
                 <MapPin className="h-5 w-5 mr-4 mt-1 text-muted-foreground" />
                 <div>
-                    <p className="font-medium">{userProfile?.defaultAddress || "Non définie"}</p>
+                    <p className="font-medium">{userProfile?.adresseParDefaut || "Non définie"}</p>
                     <p className="text-sm text-muted-foreground">Adresse par défaut</p>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
                                 <Heart className="h-6 w-6 text-red-600"/>
                             </div>
                             <div>
-                                <p className="font-bold text-lg">{stats.favoriteRestaurant?.name || 'Indéfini'}</p>
+                                <p className="font-bold text-lg">{stats.favoriteRestaurant?.nom || 'Indéfini'}</p>
                                 <p className="text-sm text-muted-foreground">Restaurant favori</p>
                             </div>
                         </div>

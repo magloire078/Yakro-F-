@@ -40,7 +40,7 @@ export default function RestaurantPage() {
         });
         try {
           const result = await generateReviews({
-            restaurantName: restaurant.name,
+            restaurantName: restaurant.nom,
             cuisine: restaurant.cuisine,
             count: 5,
           });
@@ -72,7 +72,7 @@ export default function RestaurantPage() {
         });
         try {
             const audioInput = {
-                reviews: reviews.map(r => ({ userName: r.userName, rating: r.rating, comment: r.comment }))
+                reviews: reviews.map(r => ({ nomUtilisateur: r.nomUtilisateur, note: r.note, commentaire: r.commentaire }))
             };
             const result = await generateAudioReview(audioInput);
             setAudioUrl(result.audioDataUri);
@@ -111,11 +111,11 @@ export default function RestaurantPage() {
             ] 
           };
         }
-        const total = reviews.reduce((acc, review) => acc + review.rating, 0);
+        const total = reviews.reduce((acc, review) => acc + review.note, 0);
         const average = (total / reviews.length).toFixed(1);
         const distribution = [5, 4, 3, 2, 1].map(star => ({
             rating: star,
-            count: reviews.filter(r => r.rating === star).length
+            count: reviews.filter(r => r.note === star).length
         }));
         return { averageRating: average, ratingsDistribution: distribution };
     }, [reviews]);
@@ -149,17 +149,17 @@ export default function RestaurantPage() {
             <div className="relative h-48 md:h-64 w-full -mx-4 md:-mx-8 -mt-4 md:-mt-8">
                 <Image 
                     src={restaurant.image}
-                    alt={restaurant.name}
+                    alt={restaurant.nom}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     style={{objectFit: 'cover'}}
-                    data-ai-hint={restaurant.imageHint}
+                    data-ai-hint={restaurant.indiceImage}
                     className="md:rounded-xl"
                     priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4 md:p-8 md:rounded-xl">
                     <div className="text-white">
-                        <h1 className="text-3xl md:text-5xl font-headline">{restaurant.name}</h1>
+                        <h1 className="text-3xl md:text-5xl font-headline">{restaurant.nom}</h1>
                         <p className="text-md md:text-lg">{restaurant.cuisine}</p>
                     </div>
                 </div>
@@ -169,15 +169,15 @@ export default function RestaurantPage() {
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8">
                      <Badge variant="outline" className="flex items-center gap-1 text-base p-2">
                         <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="font-semibold">{restaurant.rating}</span>
+                        <span className="font-semibold">{restaurant.note}</span>
                     </Badge>
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="w-5 h-5" />
-                        <span className="text-base">{restaurant.deliveryTime} min</span>
+                        <span className="text-base">{restaurant.tempsDeLivraison} min</span>
                     </div>
                      <div className="flex items-center gap-2 text-muted-foreground">
                         <Bike className="w-5 h-5" />
-                        <span className="text-base">{restaurant.deliveryFee > 0 ? `${restaurant.deliveryFee.toLocaleString('fr-FR')} FCFA` : 'Livraison gratuite'}</span>
+                        <span className="text-base">{restaurant.fraisDeLivraison > 0 ? `${restaurant.fraisDeLivraison.toLocaleString('fr-FR')} FCFA` : 'Livraison gratuite'}</span>
                     </div>
                 </div>
 
@@ -256,4 +256,3 @@ export default function RestaurantPage() {
         </div>
     )
 }
-    

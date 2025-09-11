@@ -15,9 +15,9 @@ import { googleAI } from '@genkit-ai/googleai';
 const GenerateAudioReviewInputSchema = z.object({
     reviews: z.array(
         z.object({
-            userName: z.string(),
-            rating: z.number(),
-            comment: z.string(),
+            nomUtilisateur: z.string(),
+            note: z.number(),
+            commentaire: z.string(),
         })
     ).describe("An array of review objects to be converted to audio.")
 });
@@ -72,7 +72,7 @@ const generateAudioReviewFlow = ai.defineFlow(
         // Create a script for multi-speaker TTS
         const script = reviews.map((review, index) => {
             const speaker = `Speaker${(index % 2) + 1}`; // Alternate between Speaker1 and Speaker2
-            return `${speaker}: "${review.comment}"`;
+            return `${speaker}: "${review.commentaire}"`;
         }).join('\n');
         
         const { media } = await ai.generate({
@@ -113,4 +113,3 @@ const generateAudioReviewFlow = ai.defineFlow(
         };
     }
 );
-    

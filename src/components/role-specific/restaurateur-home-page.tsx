@@ -41,8 +41,8 @@ export default function RestaurateurHomePage() {
     // Form state for menu item options
     const [sides, setSides] = React.useState<MenuOption[]>([]);
     const [drinks, setDrinks] = React.useState<MenuOption[]>([]);
-    const [sideInput, setSideInput] = React.useState({ name: '', price: '' });
-    const [drinkInput, setDrinkInput] = React.useState({ name: '', price: '' });
+    const [sideInput, setSideInput] = React.useState({ nom: '', prix: '' });
+    const [drinkInput, setDrinkInput] = React.useState({ nom: '', prix: '' });
 
 
     React.useEffect(() => {
@@ -85,18 +85,18 @@ export default function RestaurateurHomePage() {
 
         try {
             const itemDetails: GenerateMenuItemOutput = await generateMenuItem({
-                restaurantName: selectedRestaurant.name,
+                restaurantName: selectedRestaurant.nom,
                 cuisine: selectedRestaurant.cuisine,
                 description: description,
-                ...(name && { name }),
-                ...(price && { price: Number(price) }),
+                ...(name && { nom: name }),
+                ...(price && { prix: Number(price) }),
             });
 
             const newItem: GeneratedMenuItem = {
-                name: itemDetails.name,
+                nom: itemDetails.nom,
                 description: itemDetails.description,
-                price: itemDetails.price,
-                imageHint: itemDetails.imageHint,
+                prix: itemDetails.prix,
+                indiceImage: itemDetails.indiceImage,
             };
 
             setGeneratedItem(newItem);
@@ -126,8 +126,8 @@ export default function RestaurateurHomePage() {
                 { 
                     ...generatedItem, 
                     restaurantId: selectedRestaurant.id,
-                    availableSides: sides,
-                    availableDrinks: drinks,
+                    accompagnementsDisponibles: sides,
+                    boissonsDisponibles: drinks,
                 }, 
                 imageFile
             );
@@ -141,7 +141,7 @@ export default function RestaurateurHomePage() {
             setDrinks([]);
             toast({
                 title: 'Plat ajouté !',
-                description: `${generatedItem.name} est maintenant disponible dans votre menu.`,
+                description: `${generatedItem.nom} est maintenant disponible dans votre menu.`,
             });
         } catch (error) {
             toast({
@@ -161,13 +161,13 @@ export default function RestaurateurHomePage() {
     };
 
     const handleAddOption = (type: 'side' | 'drink') => {
-        if (type === 'side' && sideInput.name.trim() && sideInput.price.trim()) {
-            setSides(prev => [...prev, { name: sideInput.name.trim(), price: Number(sideInput.price) }]);
-            setSideInput({ name: '', price: '' });
+        if (type === 'side' && sideInput.nom.trim() && sideInput.prix.trim()) {
+            setSides(prev => [...prev, { nom: sideInput.nom.trim(), prix: Number(sideInput.prix) }]);
+            setSideInput({ nom: '', prix: '' });
         }
-        if (type === 'drink' && drinkInput.name.trim() && drinkInput.price.trim()) {
-            setDrinks(prev => [...prev, { name: drinkInput.name.trim(), price: Number(drinkInput.price) }]);
-            setDrinkInput({ name: '', price: '' });
+        if (type === 'drink' && drinkInput.nom.trim() && drinkInput.prix.trim()) {
+            setDrinks(prev => [...prev, { nom: drinkInput.nom.trim(), prix: Number(drinkInput.prix) }]);
+            setDrinkInput({ nom: '', prix: '' });
         }
     }
 
@@ -222,7 +222,7 @@ export default function RestaurateurHomePage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {restaurants.map(r => (
-                                        <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                                        <SelectItem key={r.id} value={r.id}>{r.nom}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -258,24 +258,24 @@ export default function RestaurateurHomePage() {
                          <div className="space-y-2">
                             <Label>Accompagnements (optionnel)</Label>
                              <div className="flex gap-2">
-                                <Input value={sideInput.name} onChange={e => setSideInput({...sideInput, name: e.target.value})} placeholder="Ex: Alloco"/>
-                                <Input value={sideInput.price} onChange={e => setSideInput({...sideInput, price: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
+                                <Input value={sideInput.nom} onChange={e => setSideInput({...sideInput, nom: e.target.value})} placeholder="Ex: Alloco"/>
+                                <Input value={sideInput.prix} onChange={e => setSideInput({...sideInput, prix: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
                                 <Button type="button" onClick={() => handleAddOption('side')} size="icon"><Plus /></Button>
                              </div>
                              <div className="flex flex-wrap gap-2">
-                                {sides.map((side, i) => <Badge key={i} variant="secondary">{side.name} (+{side.price} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('side', i)} /></Badge>)}
+                                {sides.map((side, i) => <Badge key={i} variant="secondary">{side.nom} (+{side.prix} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('side', i)} /></Badge>)}
                              </div>
                         </div>
 
                          <div className="space-y-2">
                             <Label>Boissons (optionnel)</Label>
                              <div className="flex gap-2">
-                                <Input value={drinkInput.name} onChange={e => setDrinkInput({...drinkInput, name: e.target.value})} placeholder="Ex: Bissap"/>
-                                <Input value={drinkInput.price} onChange={e => setDrinkInput({...drinkInput, price: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
+                                <Input value={drinkInput.nom} onChange={e => setDrinkInput({...drinkInput, nom: e.target.value})} placeholder="Ex: Bissap"/>
+                                <Input value={drinkInput.prix} onChange={e => setDrinkInput({...drinkInput, prix: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
                                 <Button type="button" onClick={() => handleAddOption('drink')} size="icon"><Plus /></Button>
                              </div>
                              <div className="flex flex-wrap gap-2">
-                                {drinks.map((drink, i) => <Badge key={i} variant="secondary">{drink.name} (+{drink.price} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('drink', i)}/></Badge>)}
+                                {drinks.map((drink, i) => <Badge key={i} variant="secondary">{drink.nom} (+{drink.prix} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('drink', i)}/></Badge>)}
                              </div>
                         </div>
 
@@ -304,15 +304,15 @@ export default function RestaurateurHomePage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="itemName">Nom du plat</Label>
-                                    <Input id="itemName" value={generatedItem.name} onChange={(e) => handleItemChange('name', e.target.value)} />
+                                    <Input id="itemName" value={generatedItem.nom} onChange={(e) => handleItemChange('nom' as keyof GeneratedMenuItem, e.target.value)} />
                                 </div>
                                  <div className="space-y-2">
                                     <Label htmlFor="itemDescription">Description</Label>
-                                    <Textarea id="itemDescription" value={generatedItem.description} onChange={(e) => handleItemChange('description', e.target.value)} rows={3} />
+                                    <Textarea id="itemDescription" value={generatedItem.description} onChange={(e) => handleItemChange('description' as keyof GeneratedMenuItem, e.target.value)} rows={3} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="itemPrice">Prix (FCFA)</Label>
-                                    <Input id="itemPrice" type="number" value={generatedItem.price} onChange={(e) => handleItemChange('price', Number(e.target.value))} />
+                                    <Input id="itemPrice" type="number" value={generatedItem.prix} onChange={(e) => handleItemChange('prix' as keyof GeneratedMenuItem, Number(e.target.value))} />
                                 </div>
                                 <div className="mt-4 flex justify-end gap-2">
                                     <Button variant="outline" type="button" onClick={() => setGeneratedItem(null)}>Rejeter</Button>

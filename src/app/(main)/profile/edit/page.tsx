@@ -23,9 +23,9 @@ import { Loader, User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 const profileFormSchema = z.object({
-  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
-  phone: z.string().optional(),
-  defaultAddress: z.string().optional(),
+  nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
+  telephone: z.string().optional(),
+  adresseParDefaut: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -39,9 +39,9 @@ export default function EditProfilePage() {
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
-            name: '',
-            phone: '',
-            defaultAddress: '',
+            nom: '',
+            telephone: '',
+            adresseParDefaut: '',
         },
     });
 
@@ -51,9 +51,9 @@ export default function EditProfilePage() {
         }
         if (userProfile) {
             form.reset({
-                name: userProfile.name || '',
-                phone: userProfile.phone || '',
-                defaultAddress: userProfile.defaultAddress || '',
+                nom: userProfile.nom || '',
+                telephone: userProfile.telephone || '',
+                adresseParDefaut: userProfile.adresseParDefaut || '',
             });
         }
     }, [user, userProfile, authLoading, router, form]);
@@ -113,7 +113,7 @@ export default function EditProfilePage() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                             <FormField
                                 control={form.control}
-                                name="name"
+                                name="nom"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Nom complet</FormLabel>
@@ -126,7 +126,7 @@ export default function EditProfilePage() {
                             />
                              <FormField
                                 control={form.control}
-                                name="phone"
+                                name="telephone"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Numéro de téléphone</FormLabel>
@@ -139,7 +139,7 @@ export default function EditProfilePage() {
                             />
                             <FormField
                                 control={form.control}
-                                name="defaultAddress"
+                                name="adresseParDefaut"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Adresse par défaut</FormLabel>

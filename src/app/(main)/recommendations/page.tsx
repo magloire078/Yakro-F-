@@ -26,8 +26,8 @@ const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]):
     if (restaurant) {
       cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
     }
-    order.items.forEach(item => {
-      itemCount[item.name] = (itemCount[item.name] || 0) + item.quantity;
+    order.plats.forEach(item => {
+      itemCount[item.nom] = (itemCount[item.nom] || 0) + item.quantite;
     });
   });
   
@@ -53,7 +53,7 @@ export default function RecommendationsPage() {
     
     const userDeliveredOrders = React.useMemo(() => {
         if (!user) return [];
-        return orders.filter(o => o.userId === user.uid && o.status === 'Livrée');
+        return orders.filter(o => o.userId === user.uid && o.statut === 'Livrée');
     }, [orders, user]);
 
     React.useEffect(() => {
@@ -71,10 +71,10 @@ export default function RecommendationsPage() {
                 const restaurant = restaurants.find(r => r.id === item.restaurantId);
                 return {
                     id: item.id,
-                    name: item.name,
+                    nom: item.nom,
                     description: item.description,
-                    price: item.price,
-                    restaurantName: restaurant?.name || 'Restaurant inconnu',
+                    prix: item.prix,
+                    nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
                     cuisine: restaurant?.cuisine || 'Inconnue'
                 }
             });

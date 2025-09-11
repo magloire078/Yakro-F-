@@ -22,17 +22,17 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
       <div className="relative w-24 h-24 shrink-0">
         <Image
           src={imageSrc}
-          alt={item.name}
+          alt={item.nom}
           fill
           className="rounded-lg object-cover"
-          data-ai-hint={item.imageHint}
+          data-ai-hint={item.indiceImage}
         />
       </div>
       <div className="flex-1">
-        <h4 className="font-bold font-headline">{item.name}</h4>
+        <h4 className="font-bold font-headline">{item.nom}</h4>
         <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
         <div className="flex justify-between items-center mt-2">
-          <p className="text-lg font-semibold text-primary">{item.price.toLocaleString('fr-FR')} FCFA</p>
+          <p className="text-lg font-semibold text-primary">{item.prix.toLocaleString('fr-FR')} FCFA</p>
           <AddToCartDialog item={item} imageSrc={imageSrc}>
             <Button variant="ghost" size="icon" className="text-primary hover:text-primary">
               <PlusCircle className="w-6 h-6" />
