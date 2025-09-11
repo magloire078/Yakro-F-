@@ -8,6 +8,7 @@ import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { updateUserAction } from '@/app/actions/update-user-action';
+import { Loader } from 'lucide-react';
 
 interface AuthContextType {
   user: User | null;
@@ -131,14 +132,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => {
-      // A user should only be able to update their own profile.
-      // The server action will enforce this.
       await updateUserAction(uid, data);
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-      // For security, only SuperAdmins can call this. 
-      // The server action will verify the caller's privileges.
       await updateUserAction(uid, data);
   };
 
