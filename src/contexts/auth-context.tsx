@@ -6,7 +6,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Loader } from 'lucide-react';
 import type { AppRole, UserProfile } from '@/lib/types';
-import { doc, onSnapshot, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, serverTimestamp, updateDoc, getDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -69,6 +69,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
           setLoading(true);
           const userDocRef = doc(db, 'utilisateurs', user.uid);
+
+          const checkAndPromoteSuperAdmin = async () => {
+             if (user.email === 'magloire078@gmail.com') {
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists() && docSnap.data().systemRole !== 'SuperAdmin') {
+                    await updateDoc(userDocRef, {
+                        systemRole: 'SuperAdmin',
+                        allowedRoles: ['client', 'restaurateur', 'livreur']
+                    });
+                }
+             }
+          };
+
+          checkAndPromoteSuperAdmin();
+
           unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
               if (docSnap.exists()) {
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
@@ -85,13 +100,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setActiveRole('client');
                   }
               } else {
-                  // This case happens for new sign-ups. Create a default profile.
                    const isSuperAdmin = user.email === 'magloire078@gmail.com';
                    const defaultProfile: Omit<UserProfile, 'uid'> = {
                       email: user.email!,
                       createdAt: serverTimestamp(),
                       name: user.email?.split('@')[0] || '',
-                      role: isSuperAdmin ? 'client' : 'client',
+                      role: 'client',
                       systemRole: isSuperAdmin ? 'SuperAdmin' : 'User',
                       allowedRoles: isSuperAdmin ? ['client', 'restaurateur', 'livreur'] : ['client'],
                   };
@@ -111,17 +125,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const setActiveRole = (role: AppRole) => {
-      // Ensure the user is allowed to switch to this role
       if (userProfile?.allowedRoles?.includes(role)) {
         localStorage.setItem('activeRole', role);
         setActiveRoleState(role);
       } else if (userProfile?.allowedRoles && userProfile.allowedRoles.length > 0) {
-        // If the requested role is not allowed, default to the first allowed role
         const firstAllowedRole = userProfile.allowedRoles[0];
         localStorage.setItem('activeRole', firstAllowedRole);
         setActiveRoleState(firstAllowedRole);
       } else {
-        // Fallback for safety
         localStorage.setItem('activeRole', 'client');
         setActiveRoleState('client');
       }
