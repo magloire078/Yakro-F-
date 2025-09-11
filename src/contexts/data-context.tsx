@@ -122,7 +122,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }, (error) => {
                 console.error(`Error on ${collectionName} snapshot listener:`, error);
             });
-            unscribes.push(unsubscribe);
+            unsubscribes.push(unsubscribe);
         });
 
         // Combined loading state check
