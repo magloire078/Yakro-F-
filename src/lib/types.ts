@@ -66,7 +66,13 @@ export interface Review {
   comment: string;
 }
 
-export type UserRole = 'client' | 'restaurateur' | 'livreur';
+// AppRole defines the functional capabilities a user can have.
+// A user can switch between these roles if they have the rights.
+export type AppRole = 'client' | 'restaurateur' | 'livreur';
+
+// SystemRole defines the user's position in the system hierarchy.
+// This is typically assigned by an admin and is not user-switchable.
+export type SystemRole = 'SuperAdmin' | 'Admin' | 'User';
 
 export interface UserProfile {
     uid: string;
@@ -75,5 +81,10 @@ export interface UserProfile {
     name?: string;
     phone?: string;
     defaultAddress?: string;
-    role?: UserRole;
+    // This is the functional role the user is currently using
+    role?: AppRole;
+    // This is the user's system-level permissions
+    systemRole?: SystemRole;
+    // The functional roles this user is allowed to access
+    allowedRoles?: AppRole[];
 }

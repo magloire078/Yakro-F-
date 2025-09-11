@@ -5,25 +5,25 @@ import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { Loader } from 'lucide-react';
-import type { UserRole, UserProfile } from '@/lib/types';
+import type { AppRole, UserProfile } from '@/lib/types';
 import { doc, onSnapshot, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
   loading: boolean;
-  activeRole: UserRole;
-  setActiveRole: (role: UserRole) => void;
+  activeRole: AppRole;
+  setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-const getRoleFromStorage = (): UserRole | null => {
+const getRoleFromStorage = (): AppRole | null => {
     if (typeof window === 'undefined') {
         return null;
     }
-    return (localStorage.getItem('activeRole') as UserRole) || null;
+    return (localStorage.getItem('activeRole') as AppRole) || null;
 };
 
 
@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = React.useState<User | null>(null);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [activeRole, setActiveRoleState] = React.useState<UserRole>('client');
+  const [activeRole, setActiveRoleState] = React.useState<AppRole>('client');
 
   React.useEffect(() => {
     // Set initial role from localStorage for faster UI response
@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'activeRole') {
-            setActiveRoleState((event.newValue as UserRole) || 'client');
+            setActiveRoleState((event.newValue as AppRole) || 'client');
         }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -72,12 +72,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (docSnap.exists()) {
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
                   setUserProfile(profileData);
-                  // Set active role from Firestore profile if it exists
+                  // Set active role from what's in local storage, falling back to profile, then to client
                   const storedRole = getRoleFromStorage();
-                  if (profileData.role && !storedRole) {
-                      setActiveRole(profileData.role);
-                  } else if (storedRole) {
+                  if (storedRole) {
                     setActiveRoleState(storedRole);
+                  } else if (profileData.role) {
+                    setActiveRole(profileData.role);
+                  } else {
+                    setActiveRole('client');
                   }
               } else {
                   // This case happens for new sign-ups. Create a default profile.
@@ -85,6 +87,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                       email: user.email,
                       createdAt: serverTimestamp(),
                       name: user.email?.split('@')[0] || '', // Default name
+                      role: 'client', // Default functional role
+                      systemRole: 'User', // Default system role
+                      allowedRoles: ['client'], // Default allowed roles
                   });
               }
               setLoading(false);
@@ -100,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
   }, [user]);
 
-  const setActiveRole = (role: UserRole) => {
+  const setActiveRole = (role: AppRole) => {
       localStorage.setItem('activeRole', role);
       setActiveRoleState(role);
   }
