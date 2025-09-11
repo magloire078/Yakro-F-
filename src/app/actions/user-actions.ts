@@ -1,7 +1,7 @@
 
 'use server';
 
-import { firestore } from '@/lib/firebase-server';
+import { firestore } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 
