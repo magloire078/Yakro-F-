@@ -7,6 +7,7 @@ import { auth, db } from '@/lib/firebase';
 import { Loader } from 'lucide-react';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { doc, onSnapshot, setDoc, serverTimestamp, updateDoc, getDoc } from 'firebase/firestore';
+import { updateUserAction } from '@/app/actions/update-user-action';
 
 interface AuthContextType {
   user: User | null;
@@ -139,13 +140,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => {
-      const userDocRef = doc(db, 'utilisateurs', uid);
-      await updateDoc(userDocRef, data);
+      await updateUserAction(uid, data);
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-      const userDocRef = doc(db, 'utilisateurs', uid);
-      await updateDoc(userDocRef, data);
+      // For security, only SuperAdmins can call this. 
+      // The server action should also verify the caller's privileges.
+      if (userProfile?.systemRole !== 'SuperAdmin') {
+          throw new Error('You do not have permission to perform this action.');
+      }
+      await updateUserAction(uid, data);
   };
 
 
