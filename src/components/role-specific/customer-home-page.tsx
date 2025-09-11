@@ -120,14 +120,17 @@ export default function CustomerHomePage() {
     return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
 
-  const getFilteredRestaurants = () => {
-    let allRestaurants = [...restaurants];
-    let results: (Restaurant & { matchReason?: string })[] = [];
 
+  let featuredRestaurants: (Restaurant & { matchReason?: string })[] = [];
+  let normalRestaurants: (Restaurant & { matchReason?: string })[] = [];
+
+  const performFiltering = () => {
+    let allRestaurants = [...restaurants];
+    
     if (!searchQuery && !interpretedSearch) {
-        const featured = allRestaurants.filter(r => r?.enVedette);
-        const normal = allRestaurants.filter(r => r && !r.enVedette);
-        return { featured, normal };
+        featuredRestaurants = allRestaurants.filter(r => r?.enVedette);
+        normalRestaurants = allRestaurants.filter(r => r && !r.enVedette);
+        return;
     }
 
     const matchReasons = new Map<string, string>();
@@ -173,18 +176,21 @@ export default function CustomerHomePage() {
         });
     }
 
-    results = allRestaurants
+    // Assign to normalRestaurants directly, as featured separation is disabled during search.
+    normalRestaurants = allRestaurants
       .filter(r => r && filteredRestaurantIds.has(r.id))
       .map(r => ({
           ...r,
           matchReason: matchReasons.get(r.id),
       }));
+    
+    // Featured restaurants are empty during a search.
+    featuredRestaurants = [];
+  }
 
-    // In a search context, we don't separate featured from normal.
-    return { featured: [], normal: results };
-  };
+  // Call the filtering logic directly in the render body.
+  performFiltering();
 
-  const { featuredRestaurants, normalRestaurants } = getFilteredRestaurants();
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
     <div key={`skeleton-resto-${i}`} className="flex flex-col space-y-3">
@@ -222,7 +228,7 @@ export default function CustomerHomePage() {
              </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {isLoading ? renderSkeletons(3) : featuredRestaurants.map(restaurant => (
-                restaurant && <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
               ))}
             </div>
           </section>
@@ -249,7 +255,7 @@ export default function CustomerHomePage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {isLoading ? renderSkeletons(6) : normalRestaurants.map(restaurant => (
-            restaurant && <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} />
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} />
           ))}
         </div>
          {normalRestaurants.length === 0 && !isLoading && (
