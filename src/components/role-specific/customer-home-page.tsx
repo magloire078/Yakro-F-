@@ -120,68 +120,68 @@ export default function CustomerHomePage() {
     return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
   
- const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
-    let baseRestaurants = [...restaurants];
-    let matchReasons = new Map<string, string>();
-
-    // Initial population of featured restaurants before any filtering
-    const featured = baseRestaurants.filter(r => r.enVedette);
-    
-    // If there is a search query, filter the base restaurants
-    if (searchQuery || interpretedSearch) {
-        let filteredRestaurantIds = new Set<string>();
-
-        if (searchQuery && !interpretedSearch) {
-            const lowercasedQuery = searchQuery.toLowerCase();
-            baseRestaurants.forEach(r => {
-                if (r.nom.toLowerCase().includes(lowercasedQuery) || r.cuisine.toLowerCase().includes(lowercasedQuery)) {
-                    filteredRestaurantIds.add(r.id);
-                }
-            });
-            menuItems.forEach(item => {
-                if (item.nom.toLowerCase().includes(lowercasedQuery)) {
-                    filteredRestaurantIds.add(item.restaurantId);
-                    matchReasons.set(item.restaurantId, `Propose "${item.nom}"`);
-                }
-            });
-        } else if (interpretedSearch) {
-            const searchTerms = [...(interpretedSearch.keywords || []), ...(interpretedSearch.searchTerms || [])].map(t => t.toLowerCase());
-
-            baseRestaurants.forEach(r => {
-                const matchesCuisine = interpretedSearch.cuisine?.length > 0 ? interpretedSearch.cuisine.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())) : false;
-                const matchesRating = interpretedSearch.rating ? r.note >= interpretedSearch.rating : true;
-                const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.tempsDeLivraison <= interpretedSearch.deliveryTime : true;
-                const matchesName = searchTerms.length > 0 ? searchTerms.some(term => r.nom.toLowerCase().includes(term)) : false;
-
-                if ((matchesCuisine || matchesName) && matchesRating && matchesDeliveryTime) {
-                    filteredRestaurantIds.add(r.id);
-                }
-            });
-            
-            if (searchTerms.length > 0) {
-                menuItems.forEach(item => {
-                    if (searchTerms.some(term => item.nom.toLowerCase().includes(term))) {
-                        filteredRestaurantIds.add(item.restaurantId);
-                        matchReasons.set(item.restaurantId, `Propose "${item.nom}"`);
-                    }
-                });
-            }
-        }
-        
-        baseRestaurants = baseRestaurants.filter(r => filteredRestaurantIds.has(r.id));
+ const getFilteredRestaurants = () => {
+    if (!searchQuery && !interpretedSearch) {
+      return {
+        featured: restaurants.filter(r => r.enVedette),
+        normal: restaurants.filter(r => !r.enVedette),
+      };
     }
-    
-    const enrichedRestaurants = baseRestaurants.map(r => ({
-      ...r,
-      matchReason: matchReasons.get(r.id)
-    }));
+
+    const matchReasons = new Map<string, string>();
+    let filteredRestaurantIds = new Set<string>();
+
+    if (searchQuery && !interpretedSearch) {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      restaurants.forEach(r => {
+        if (r.nom.toLowerCase().includes(lowercasedQuery) || r.cuisine.toLowerCase().includes(lowercasedQuery)) {
+          filteredRestaurantIds.add(r.id);
+        }
+      });
+      menuItems.forEach(item => {
+        if (item.nom.toLowerCase().includes(lowercasedQuery)) {
+          filteredRestaurantIds.add(item.restaurantId);
+          matchReasons.set(item.restaurantId, `Propose "${item.nom}"`);
+        }
+      });
+    } else if (interpretedSearch) {
+      const searchTerms = [...(interpretedSearch.keywords || []), ...(interpretedSearch.searchTerms || [])].map(t => t.toLowerCase());
+
+      restaurants.forEach(r => {
+        const matchesCuisine = interpretedSearch.cuisine?.length > 0 ? interpretedSearch.cuisine.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())) : false;
+        const matchesRating = interpretedSearch.rating ? r.note >= interpretedSearch.rating : true;
+        const matchesDeliveryTime = interpretedSearch.deliveryTime ? r.tempsDeLivraison <= interpretedSearch.deliveryTime : true;
+        const matchesName = searchTerms.length > 0 ? searchTerms.some(term => r.nom.toLowerCase().includes(term)) : false;
+
+        if ((matchesCuisine || matchesName) && matchesRating && matchesDeliveryTime) {
+          filteredRestaurantIds.add(r.id);
+        }
+      });
+      
+      if (searchTerms.length > 0) {
+        menuItems.forEach(item => {
+          if (searchTerms.some(term => item.nom.toLowerCase().includes(term))) {
+            filteredRestaurantIds.add(item.restaurantId);
+            matchReasons.set(item.restaurantId, `Propose "${item.nom}"`);
+          }
+        });
+      }
+    }
+
+    const filtered = restaurants
+      .filter(r => filteredRestaurantIds.has(r.id))
+      .map(r => ({
+        ...r,
+        matchReason: matchReasons.get(r.id),
+      }));
 
     return {
-        featuredRestaurants: featured,
-        normalRestaurants: enrichedRestaurants.filter(r => !r.enVedette),
+      featured: [], // Do not show featured list on search results page
+      normal: filtered,
     };
-}, [restaurants, menuItems, searchQuery, interpretedSearch]);
+  };
 
+  const { featuredRestaurants, normalRestaurants } = getFilteredRestaurants();
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
     <div key={`skeleton-resto-${i}`} className="flex flex-col space-y-3">
@@ -211,7 +211,7 @@ export default function CustomerHomePage() {
 
       {loadingRecommendations ? <RecommendationsSkeleton /> : <Recommendations recommendationsData={recommendations} hasError={recommendationError} />}
       
-      {featuredRestaurants.length > 0 && !searchQuery && !interpretedSearch && (
+      {featuredRestaurants.length > 0 && (
           <section>
              <div className="flex items-center gap-4 mb-6">
                 <Star className="text-primary fill-primary" />
@@ -267,4 +267,5 @@ export default function CustomerHomePage() {
       </section>
     </div>
   );
-}
+
+    
