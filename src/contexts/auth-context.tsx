@@ -86,14 +86,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   }
               } else {
                   // This case happens for new sign-ups. Create a default profile.
-                   setDoc(userDocRef, {
-                      email: user.email,
+                   const isSuperAdmin = user.email === 'magloire078@gmail.com';
+                   const defaultProfile: Omit<UserProfile, 'uid'> = {
+                      email: user.email!,
                       createdAt: serverTimestamp(),
                       name: user.email?.split('@')[0] || '',
-                      role: 'client',
-                      systemRole: 'User',
-                      allowedRoles: ['client'],
-                  });
+                      role: isSuperAdmin ? 'client' : 'client',
+                      systemRole: isSuperAdmin ? 'SuperAdmin' : 'User',
+                      allowedRoles: isSuperAdmin ? ['client', 'restaurateur', 'livreur'] : ['client'],
+                  };
+                   setDoc(userDocRef, defaultProfile);
               }
               setLoading(false);
           }, (error) => {
