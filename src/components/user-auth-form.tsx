@@ -45,14 +45,13 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { toast } = useToast();
   const router = useRouter();
-  const [resetEmail, setResetEmail] = React.useState('');
   const [isResetting, setIsResetting] = React.useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = React.useState(false);
 
+  const emailForReset = watch('email');
 
   const handlePasswordReset = async () => {
-      const emailValue = watch('email');
-      if (!emailValue) {
+      if (!emailForReset) {
           toast({
               variant: "destructive",
               title: "Adresse e-mail manquante",
@@ -62,7 +61,7 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
       }
       setIsResetting(true);
       try {
-          await sendPasswordResetEmail(auth, emailValue);
+          await sendPasswordResetEmail(auth, emailForReset);
           toast({
               title: "E-mail de réinitialisation envoyé",
               description: "Veuillez consulter votre boîte de réception pour réinitialiser votre mot de passe.",
@@ -173,12 +172,12 @@ export function UserAuthForm({ mode }: UserAuthFormProps) {
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Réinitialiser le mot de passe</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Nous enverrons un lien de réinitialisation à l'adresse e-mail que vous avez saisie dans le formulaire de connexion.
+                                    Un lien de réinitialisation sera envoyé à l'adresse suivante : <span className="font-bold">{emailForReset || "Veuillez entrer une adresse e-mail."}</span>
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel disabled={isResetting}>Annuler</AlertDialogCancel>
-                                <AlertDialogAction onClick={handlePasswordReset} disabled={isResetting}>
+                                <AlertDialogAction onClick={handlePasswordReset} disabled={isResetting || !emailForReset}>
                                     {isResetting ? <Loader className="animate-spin" /> : "Envoyer le lien"}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
