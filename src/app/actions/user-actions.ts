@@ -1,9 +1,11 @@
+
 'use server';
 
 import { auth as adminAuth, firestore } from '../../../firebase-admin-init';
 import { headers } from 'next/headers';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import type { UserRecord } from 'firebase-admin/auth';
 
 /**
  * Verifies if the current user is a SuperAdmin based on their session.
@@ -33,26 +35,44 @@ async function verifySuperAdmin(): Promise<string> {
 
 
 /**
- * Server action to get all users from Firestore.
+ * Server action to get all users from Firebase Authentication and merge with Firestore profiles.
  * This action is protected and can only be executed by a SuperAdmin.
  */
 export async function getAllUsersAction(): Promise<UserProfile[]> {
     try {
         await verifySuperAdmin(); // Protect the action
         
+        // Get all users from Firebase Auth
+        const listUsersResult = await adminAuth().listUsers();
+        const authUsers = listUsersResult.users;
+
+        // Get all user profiles from Firestore
         const usersCollectionRef = collection(firestore(), 'utilisateurs');
         const usersSnapshot = await getDocs(usersCollectionRef);
-        
-        const usersList = usersSnapshot.docs.map(doc => ({
-            uid: doc.id,
-            ...doc.data()
-        } as UserProfile));
+        const firestoreProfiles = new Map(usersSnapshot.docs.map(doc => [doc.id, doc.data()]));
 
-        return usersList;
+        // Merge Auth users with Firestore profiles
+        const mergedUsers: UserProfile[] = authUsers.map((authUser: UserRecord) => {
+            const firestoreProfile = firestoreProfiles.get(authUser.uid);
+            
+            return {
+                uid: authUser.uid,
+                email: authUser.email || 'N/A',
+                createdAt: authUser.metadata.creationTime,
+                name: firestoreProfile?.name || authUser.displayName,
+                phone: firestoreProfile?.phone,
+                defaultAddress: firestoreProfile?.defaultAddress,
+                role: firestoreProfile?.role,
+                systemRole: firestoreProfile?.systemRole || 'User',
+                allowedRoles: firestoreProfile?.allowedRoles || ['client'],
+            };
+        });
+
+        return mergedUsers;
 
     } catch (error) {
         console.error("Error in getAllUsersAction:", error);
-        // Return an empty array or re-throw the error depending on desired client-side handling
+        // On error, return an empty array to prevent crashing the client.
         return [];
     }
 }
