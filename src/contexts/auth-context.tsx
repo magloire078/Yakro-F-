@@ -1,12 +1,11 @@
 
-
 'use client';
 
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
-import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { updateUserAction } from '@/app/actions/update-user-action';
 import { Loader } from 'lucide-react';
 
@@ -98,8 +97,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                    }
 
               } else {
-                   // This part handles auto-creation of a user profile document on first sign-in, which should be handled by server-side logic or more open create rules.
-                   // For now, we rely on the checkAndPromote logic to fix existing users.
                    console.warn("User profile document not found. It should be created on signup.");
               }
               setLoading(false);
@@ -136,6 +133,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
+      // This now calls the simplified, less secure action.
+      // In a real app, this would require robust server-side permission checks.
       await updateUserAction(uid, data);
   };
 

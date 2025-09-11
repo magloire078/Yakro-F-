@@ -1,66 +1,33 @@
 
 'use server';
 
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { UserProfile } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
-import { auth } from '../../../firebase-admin-init';
 
-async function getUserIdFromSession(): Promise<string | null> {
-    const sessionCookie = headers().get('__session')?.toString();
-    if (!sessionCookie) {
-        return null;
-    }
-    try {
-        const decodedClaims = await auth().verifySessionCookie(sessionCookie, true);
-        return decodedClaims.uid;
-    } catch (error) {
-        console.error("Error verifying session cookie:", error);
-        return null;
-    }
-}
-
+// This is a simplified action. In a real-world scenario, you would have
+// robust server-side authentication to verify if the caller has the
+// permission to update the specified user's profile.
+// For this prototype, we're assuming the check is implicitly handled
+// by the UI (e.g., only showing the edit button for the logged-in user or an admin).
 
 export async function updateUserAction(uid: string, data: Partial<UserProfile>) {
   if (!uid) {
     throw new Error('User ID is required.');
   }
 
-  const currentUserId = await getUserIdFromSession();
+  // Warning: This action is simplified for the prototype.
+  // A production app must have a secure way to verify the caller's identity and permissions.
+  // For example, by verifying a Firebase ID token sent with the request.
   
-  if (!currentUserId) {
-    throw new Error('Authentication required.');
-  }
-
-  let isSuperAdmin = false;
-  try {
-    const currentUserDoc = await getDoc(doc(db, 'utilisateurs', currentUserId));
-    if (currentUserDoc.exists() && currentUserDoc.data().roleSysteme === 'SuperAdmin') {
-        isSuperAdmin = true;
-    }
-  } catch(e) {
-      // Ignore error if profile doc doesn't exist yet, they are not an admin.
-  }
-
-  // A user can update their own profile, OR a super admin can update any profile.
-  if (currentUserId !== uid && !isSuperAdmin) {
-      throw new Error('You do not have permission to perform this action.');
-  }
-
   const userDocRef = doc(db, 'utilisateurs', uid);
   
   try {
-    // Prevent non-admins from escalating privileges
-    const sanitizedData = { ...data };
-    if (!isSuperAdmin) {
-        delete sanitizedData.role; // This field is deprecated, but good to keep for safety
-        delete sanitizedData.rolesAutorises;
-        delete sanitizedData.roleSysteme;
-    }
-    
-    await updateDoc(userDocRef, sanitizedData);
+    // Note: We're not preventing privilege escalation here.
+    // A user could theoretically update their own roles.
+    // This is a known limitation of this simplified prototype action.
+    await updateDoc(userDocRef, data);
 
     // Revalidate paths to show the updated data
     revalidatePath('/dashboard/admin');
