@@ -10,7 +10,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
 // Import server actions
-import { addRestaurantAction } from '@/app/actions/restaurant-actions';
+import { addRestaurantAction, updateRestaurant as updateRestaurantAction } from '@/app/actions/restaurant-actions';
 import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
 
@@ -44,11 +44,7 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 
   updateRestaurant: async (restaurantId, data) => {
-    // This function is not fully implemented with a server action yet.
-    // Placeholder for future implementation if needed.
-    console.warn("updateRestaurant is not fully implemented with server actions yet.");
-    const { updateRestaurant } = await import('@/app/actions/restaurant-actions');
-    await updateRestaurant(restaurantId, data);
+    await updateRestaurantAction(restaurantId, data);
   },
 
   addMenuItem: async (item, imageFile) => {
