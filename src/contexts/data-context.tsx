@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Restaurant, MenuItem, Order } from '@/lib/types';
+import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
 import { collection, addDoc, doc, updateDoc, onSnapshot, writeBatch, query, where, Unsubscribe, DocumentData, Query, getDocs, deleteDoc, or } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
@@ -22,10 +22,12 @@ interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
   orders: Order[];
+  allUsers: UserProfile[]; // New state for all users
   isLoading: {
     restaurants: boolean;
     menuItems: boolean;
     orders: boolean;
+    allUsers: boolean; // New loading state
   };
   addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>) => Promise<void>;
@@ -42,10 +44,12 @@ const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
+  allUsers: [],
   isLoading: {
     restaurants: true,
     menuItems: true,
     orders: true,
+    allUsers: true,
   },
 
   addRestaurant: async (restaurant) => {
@@ -151,7 +155,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 // This hook manages all realtime subscriptions
 function useRealtimeData() {
-    const { user, activeRole } = useAuth();
+    const { user, userProfile, activeRole } = useAuth();
     const allRestaurants = useDataStore((state) => state.restaurants);
 
     // Memoize the list of restaurant IDs owned by the user to prevent re-renders
@@ -192,7 +196,7 @@ function useRealtimeData() {
             });
         }, (error) => {
             console.error("Error on menuItems snapshot listener:", error);
-            useDataStore.setState(state => ({ isLoading: { ...state.isLoading, menuItems: false } }));
+            useDataStore.setState(state => ({ isLoading: { ...useDataStore.getState().isLoading, menuItems: false } }));
         });
 
         return () => unsubscribe();
@@ -214,13 +218,10 @@ function useRealtimeData() {
                     q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
                 }
             } else if (activeRole === 'livreur') {
-                // Livreur sees available orders, and any order assigned to them (active or completed)
                 q = query(ordersCollection, or(
                     where("status", "==", "En Préparation"),
                     where("delivererId", "==", user.uid)
                 ));
-            } else {
-                 q = query(ordersCollection);
             }
             
             if (q) {
@@ -235,7 +236,7 @@ function useRealtimeData() {
                     console.error("Error on orders snapshot listener:", error);
                     useDataStore.setState(state => ({ isLoading: { ...useDataStore.getState().isLoading, orders: false } }));
                 });
-            } else {
+            } else if (userProfile?.systemRole !== 'SuperAdmin') {
                  useDataStore.setState({ orders: [], isLoading: { ...useDataStore.getState().isLoading, orders: false } });
             }
         } else {
@@ -247,17 +248,47 @@ function useRealtimeData() {
                 unsubscribe();
             }
         };
-    }, [user, activeRole, myRestaurantIds]); // Dependency on myRestaurantIds is now stable
+    }, [user, activeRole, myRestaurantIds, userProfile?.systemRole]);
+
+
+    // Subscribe to all users for SuperAdmin
+    React.useEffect(() => {
+        let unsubscribe: Unsubscribe | null = null;
+
+        if (userProfile?.systemRole === 'SuperAdmin') {
+            useDataStore.setState(state => ({ isLoading: { ...state.isLoading, allUsers: true } }));
+            const q = collection(db, 'utilisateurs');
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const usersList = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+                useDataStore.setState({
+                    allUsers: usersList,
+                    isLoading: { ...useDataStore.getState().isLoading, allUsers: false }
+                });
+            }, (error) => {
+                console.error("Error on allUsers snapshot listener:", error);
+                useDataStore.setState(state => ({ isLoading: { ...useDataStore.getState().isLoading, allUsers: false } }));
+            });
+        } else {
+            useDataStore.setState({ allUsers: [], isLoading: { ...useDataStore.getState().isLoading, allUsers: false } });
+        }
+        
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [userProfile?.systemRole]);
 }
 
 const useCombinedLoadingState = () => {
-    const { restaurants, menuItems, orders } = useDataStore(state => state.isLoading);
-    return restaurants || menuItems || orders;
+    const { restaurants, menuItems, orders, allUsers } = useDataStore(state => state.isLoading);
+    return restaurants || menuItems || orders || allUsers;
 }
 
 // Custom hook to use in components, combines loading state
 export const useData = () => {
     const store = useDataStore();
     const combinedIsLoading = useCombinedLoadingState();
+    
     return { ...store, isLoading: combinedIsLoading };
-}
+};

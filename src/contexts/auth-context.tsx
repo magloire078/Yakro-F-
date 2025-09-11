@@ -72,12 +72,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (docSnap.exists()) {
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
                   setUserProfile(profileData);
-                  // Set active role from what's in local storage, falling back to profile, then to client
+                  
                   const storedRole = getRoleFromStorage();
-                  if (storedRole) {
+                  const allowedRoles = profileData.allowedRoles || ['client'];
+
+                  if (storedRole && allowedRoles.includes(storedRole)) {
                     setActiveRoleState(storedRole);
-                  } else if (profileData.role) {
-                    setActiveRole(profileData.role);
+                  } else if (allowedRoles.length > 0) {
+                    setActiveRole(allowedRoles[0]);
                   } else {
                     setActiveRole('client');
                   }
@@ -86,10 +88,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                    setDoc(userDocRef, {
                       email: user.email,
                       createdAt: serverTimestamp(),
-                      name: user.email?.split('@')[0] || '', // Default name
-                      role: 'client', // Default functional role
-                      systemRole: 'User', // Default system role
-                      allowedRoles: ['client'], // Default allowed roles
+                      name: user.email?.split('@')[0] || '',
+                      role: 'client',
+                      systemRole: 'User',
+                      allowedRoles: ['client'],
                   });
               }
               setLoading(false);
@@ -106,8 +108,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const setActiveRole = (role: AppRole) => {
-      localStorage.setItem('activeRole', role);
-      setActiveRoleState(role);
+      // Ensure the user is allowed to switch to this role
+      if (userProfile?.allowedRoles?.includes(role)) {
+        localStorage.setItem('activeRole', role);
+        setActiveRoleState(role);
+      } else if (userProfile?.allowedRoles && userProfile.allowedRoles.length > 0) {
+        // If the requested role is not allowed, default to the first allowed role
+        const firstAllowedRole = userProfile.allowedRoles[0];
+        localStorage.setItem('activeRole', firstAllowedRole);
+        setActiveRoleState(firstAllowedRole);
+      } else {
+        // Fallback for safety
+        localStorage.setItem('activeRole', 'client');
+        setActiveRoleState('client');
+      }
   }
   
   const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
@@ -126,7 +140,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = React.useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+    

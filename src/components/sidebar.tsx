@@ -6,13 +6,22 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { AppRole } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 
 export function Sidebar() {
   const { cartCount } = useCart();
@@ -27,6 +36,24 @@ export function Sidebar() {
     router.push('/login');
   }
   
+  const handleRoleChange = (newRole: AppRole) => {
+    if (userProfile?.allowedRoles?.includes(newRole)) {
+      setActiveRole(newRole);
+      // Depending on the role, you might want to navigate to a default page
+      switch(newRole) {
+        case 'restaurateur':
+        case 'livreur':
+          router.push('/');
+          break;
+        case 'client':
+          router.push('/');
+          break;
+        default:
+          router.push('/');
+      }
+    }
+  }
+
   const getInitials = (nameOrEmail: string | null | undefined) => {
     if (!nameOrEmail) return '?';
     const nameParts = nameOrEmail.split(' ');
@@ -38,10 +65,26 @@ export function Sidebar() {
 
   return (
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
-       <Link href="/" className="mb-12 flex items-center space-x-2">
+       <Link href="/" className="mb-8 flex items-center space-x-2">
           <Icons.logo className="h-10 w-10 text-primary" />
           <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
         </Link>
+        
+        {user && userProfile && userProfile.allowedRoles && userProfile.allowedRoles.length > 1 && (
+          <div className="mb-8">
+            <Select onValueChange={handleRoleChange} value={activeRole}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Changer de profil" />
+              </SelectTrigger>
+              <SelectContent>
+                {userProfile.allowedRoles.map(role => (
+                  <SelectItem key={role} value={role} className="capitalize">{role}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <nav className="flex flex-col gap-4">
            {/* Common Link */}
            <Button variant="ghost" className="justify-start text-lg" asChild>
@@ -115,6 +158,16 @@ export function Sidebar() {
                 </Link>
               </Button>
             </>
+          )}
+
+          {/* Super Admin Link */}
+          {userProfile?.systemRole === 'SuperAdmin' && (
+            <Button variant="ghost" className="justify-start text-lg" asChild>
+              <Link href="/dashboard/admin">
+                <ShieldCheck className="mr-2 h-5 w-5" />
+                Admin
+              </Link>
+            </Button>
           )}
 
         </nav>
