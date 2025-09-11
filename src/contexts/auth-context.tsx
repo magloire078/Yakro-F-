@@ -5,9 +5,8 @@
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { Loader } from 'lucide-react';
 import type { AppRole, UserProfile } from '@/lib/types';
-import { doc, onSnapshot, setDoc, serverTimestamp, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { updateUserAction } from '@/app/actions/update-user-action';
 
 interface AuthContextType {
@@ -87,27 +86,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   } else {
                     setActiveRole('client');
                   }
+
+                   // Check if the user should be a super admin and promote them if necessary
+                   if (user.email === 'magloire078@gmail.com' && profileData.systemRole !== 'SuperAdmin') {
+                       console.log("Promoting magloire078@gmail.com to SuperAdmin...");
+                       updateUserAction(user.uid, { 
+                           systemRole: 'SuperAdmin',
+                           allowedRoles: ['client', 'restaurateur', 'livreur']
+                       }).catch(e => console.error("Failed to promote super admin:", e));
+                   }
+
               } else {
-                   // This part handles auto-creation of a user profile document on first sign-in.
-                   // The security rules must allow this specific `create` operation.
-                   const isSuperAdmin = user.email === 'magloire078@gmail.com';
-                   const defaultProfile: Omit<UserProfile, 'uid'> = {
-                      email: user.email!,
-                      createdAt: serverTimestamp(),
-                      name: user.email?.split('@')[0] || '',
-                      role: 'client',
-                      systemRole: isSuperAdmin ? 'SuperAdmin' : 'User',
-                      allowedRoles: isSuperAdmin ? ['client', 'restaurateur', 'livreur'] : ['client'],
-                  };
-                   setDoc(userDocRef, defaultProfile).catch(err => {
-                       console.error("Error creating user profile, this may be a permissions issue:", err)
-                   });
+                   // This part handles auto-creation of a user profile document on first sign-in, which should be handled by server-side logic or more open create rules.
+                   // For now, we rely on the checkAndPromote logic to fix existing users.
+                   console.warn("User profile document not found. It should be created on signup.");
               }
               setLoading(false);
           }, (error) => {
               console.error("Error fetching user profile:", error);
               setLoading(false);
           });
+      } else {
+        setLoading(false);
       }
       return () => {
           if (unsubscribeProfile) {
@@ -132,22 +132,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'createdAt'>>) => {
       // A user should only be able to update their own profile.
-      // We could add a check here `if (user?.uid !== uid) return;` but for now we trust the client code.
-      // We now use the server action for all updates.
+      // The server action will enforce this.
       await updateUserAction(uid, data);
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
       // For security, only SuperAdmins can call this. 
-      // The server action should also verify the caller's privileges.
-      if (userProfile?.systemRole !== 'SuperAdmin') {
-          throw new Error('You do not have permission to perform this action.');
-      }
+      // The server action will verify the caller's privileges.
       await updateUserAction(uid, data);
   };
 
 
   const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile };
+
+  if (loading) {
+    return <div className="flex h-screen w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
+  }
 
   return (
     <AuthContext.Provider value={value}>
