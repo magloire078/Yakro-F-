@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -6,7 +5,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck, UtensilsCrossed } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -115,6 +114,12 @@ export function Sidebar() {
           {/* Restaurateur Links */}
           {activeRole === 'restaurateur' && (
             <>
+              <Button variant="ghost" className="justify-start text-lg" asChild>
+                <Link href="/dashboard/my-restaurants">
+                  <UtensilsCrossed className="mr-2 h-5 w-5" />
+                  Mes Restaurants
+                </Link>
+              </Button>
               <Button variant="ghost" className="justify-start text-lg" asChild>
                 <Link href="/dashboard/menu">
                   <BookOpenCheck className="mr-2 h-5 w-5" />
