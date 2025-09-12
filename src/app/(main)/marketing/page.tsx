@@ -14,22 +14,8 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 
-// Helper to convert image URL to data URI.
-// In a real app, you might want a more robust solution, but this works for demo purposes.
-async function toDataURL(url: string): Promise<string> {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-
 export default function MarketingPage() {
-  const { restaurants, getRestaurant, isLoading: dataLoading } = useData();
+  const { restaurants, isLoading: dataLoading } = useData();
   const [myRestaurants, setMyRestaurants] = React.useState<Restaurant[]>([]);
   const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
@@ -61,7 +47,7 @@ export default function MarketingPage() {
     }
   }, [restaurants, user, activeRole, selectedRestaurant]);
 
-  const restaurantImage = selectedRestaurant ? getRestaurant(selectedRestaurant.id)?.image : null;
+  const restaurantImage = selectedRestaurant?.image || null;
 
   const handleGenerateVideo = async () => {
     if (!selectedRestaurant) return;
@@ -69,44 +55,15 @@ export default function MarketingPage() {
     setLoading(true);
     setVideoUrl(null);
     toast({
-      title: 'Préparation de la génération...',
-      description: 'Cette opération peut prendre jusqu\'à une minute.',
-    });
-
-    let imageDataUri: string | null = null;
-    try {
-      if (restaurantImage) {
-        // Handle images that are already data URIs (from AI generation) and standard URLs (from initial data)
-        if (restaurantImage.startsWith('data:')) {
-            imageDataUri = restaurantImage;
-        } else if (restaurantImage.startsWith('http')) {
-             // Note: This conversion can fail due to CORS if the image host doesn't allow it.
-             // For placehold.co, it works, but a production app would need a server-side proxy or direct image uploads.
-             imageDataUri = await toDataURL(restaurantImage);
-        }
-      }
-    } catch (error) {
-        console.error("Failed to convert image to data URI:", error);
-        toast({
-            variant: "destructive",
-            title: "Erreur de préparation",
-            description: "Impossible de charger l'image de référence. L'hôte de l'image bloque peut-être la conversion."
-        });
-        setLoading(false);
-        return;
-    }
-
-
-    toast({
       title: 'Génération de la vidéo en cours...',
-      description: 'L\'IA réalise votre spot publicitaire. Veuillez patienter.',
+      description: 'L\'IA réalise votre spot publicitaire. Cette opération peut prendre jusqu\'à une minute, veuillez patienter.',
     });
 
     try {
       const result = await generateVideo({
         restaurantName: selectedRestaurant.nom,
         cuisine: selectedRestaurant.cuisine,
-        imageDataUri: imageDataUri
+        imageUrl: restaurantImage,
       });
       setVideoUrl(result.videoUrl);
       toast({
@@ -118,7 +75,7 @@ export default function MarketingPage() {
       toast({
         variant: 'destructive',
         title: 'Erreur de génération vidéo',
-        description: "Impossible de générer la vidéo. Le modèle est peut-être surchargé. Veuillez réessayer plus tard.",
+        description: "Impossible de générer la vidéo. Le modèle est peut-être surchargé ou l'URL de l'image est inaccessible. Veuillez réessayer plus tard.",
       });
     } finally {
       setLoading(false);

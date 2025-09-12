@@ -16,7 +16,7 @@ import type { MediaPart } from 'genkit';
 const GenerateVideoInputSchema = z.object({
   restaurantName: z.string().describe('The name of the restaurant.'),
   cuisine: z.string().describe('The cuisine of the restaurant.'),
-  imageDataUri: z.string().nullable().describe("An optional image of the restaurant or a dish, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
+  imageUrl: z.string().url().nullable().describe("An optional public URL to an image of the restaurant or a dish."),
 });
 export type GenerateVideoInput = z.infer<typeof GenerateVideoInputSchema>;
 
@@ -33,6 +33,19 @@ const GenerateVideoOperationSchema = z.object({
 export type GenerateVideoOperation = z.infer<
   typeof GenerateVideoOperationSchema
 >;
+
+async function imageUrlToDataUri(url: string): Promise<string> {
+    const fetch = (await import('node-fetch')).default;
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch image from ${url}: ${response.statusText}`);
+    }
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    return `data:${contentType};base64,${base64}`;
+}
+
 
 export async function generateVideo(
   input: GenerateVideoInput
@@ -88,12 +101,22 @@ const generateVideoFlow = ai.defineFlow(
     name: 'generateVideoFlow',
     inputSchema: GenerateVideoInputSchema,
   },
-  async ({ restaurantName, cuisine, imageDataUri }) => {
+  async ({ restaurantName, cuisine, imageUrl }) => {
     
     const textPrompt = `A cinematic, professional 5-second video advertisement for a restaurant named "${restaurantName}". The restaurant specializes in ${cuisine} cuisine. Show delicious, steaming food, a glimpse of a warm and inviting atmosphere. Food photography style.`;
     
     let prompt: (string | MediaPart)[] | string;
     
+    let imageDataUri: string | null = null;
+    if (imageUrl) {
+        try {
+            imageDataUri = await imageUrlToDataUri(imageUrl);
+        } catch (error) {
+            console.error("Failed to convert image URL to data URI:", error);
+            // If conversion fails, we'll proceed with text-only prompt
+        }
+    }
+
     if(imageDataUri) {
         prompt = [
             { text: `Animate this image in a subtle, elegant way. Make the food steam, add a gentle zoom or pan effect. The final video should feel like a premium food commercial for "${restaurantName}".` },
