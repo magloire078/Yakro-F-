@@ -46,9 +46,13 @@ export function BottomNavBar() {
 
     if (!activeRole) return null;
 
+    // Determine number of links to adjust grid columns
+    const navItemsCount = links.length + 1; // +1 for profile
+    const gridColsClass = `grid-cols-${navItemsCount}`;
+
     return (
         <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t md:hidden">
-            <div className="grid h-full grid-cols-4 mx-auto font-medium">
+            <div className={cn("grid h-full mx-auto font-medium", `grid-cols-${links.length + 1}`)}>
                 {links.map((link) => {
                      const isActive = pathname === link.href;
                      return (

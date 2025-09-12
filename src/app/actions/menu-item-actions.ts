@@ -19,7 +19,9 @@ const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<
         downloadURL = await getDownloadURL(snapshot.ref);
     } else {
         // It's a File object from user upload
-        const snapshot = await uploadString(storageRef, await fileOrDataUrl.arrayBuffer() as any, 'data_url');
+        // To upload a file, you need its buffer. Convert file to ArrayBuffer
+        const arrayBuffer = await fileOrDataUrl.arrayBuffer();
+        const snapshot = await uploadString(storageRef, arrayBuffer as any, 'data_url');
         downloadURL = await getDownloadURL(snapshot.ref);
     }
     
