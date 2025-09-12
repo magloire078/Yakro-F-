@@ -153,6 +153,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (activeRole === 'client') {
                 q = query(ordersCollection, where("userId", "==", user.uid));
+            } else if (activeRole === 'restaurateur' && userProfile?.roleSysteme === 'SuperAdmin') {
+                q = ordersCollection; // SuperAdmin restaurateur sees all orders for all restaurants
             } else if (activeRole === 'restaurateur') {
                 if (myRestaurantIds.length > 0) {
                     q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
@@ -162,9 +164,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     where("statut", "==", "En Préparation"),
                     where("livreurId", "==", user.uid)
                 ));
-            } else if (userProfile?.roleSysteme === 'SuperAdmin') {
-                q = ordersCollection; // SuperAdmin sees all orders
-            }
+            } 
             
             if (q) {
                 unsubscribe = onSnapshot(q, (snapshot) => {

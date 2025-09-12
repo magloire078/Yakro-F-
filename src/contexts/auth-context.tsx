@@ -4,8 +4,8 @@
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import type { AppRole, UserProfile } from '@/lib/types';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import type { AppRole, UserProfile, SystemRole } from '@/lib/types';
+import { doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
 import { Loader } from 'lucide-react';
 
 interface AuthContextType {
@@ -70,6 +70,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(true);
           const userDocRef = doc(db, 'utilisateurs', user.uid);
 
+          // Promote super admin on login if not already
+           if (user.email === 'magloire078@gmail.com') {
+              getDoc(userDocRef).then(docSnap => {
+                if(docSnap.exists() && docSnap.data().roleSysteme !== 'SuperAdmin') {
+                     updateDoc(userDocRef, {
+                       roleSysteme: 'SuperAdmin',
+                       rolesAutorises: ['client', 'restaurateur', 'livreur']
+                    }).catch(e => console.error("Failed to promote super admin:", e));
+                }
+              })
+           }
+
           unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
               if (docSnap.exists()) {
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
@@ -85,14 +97,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   } else {
                     setActiveRole('client');
                   }
-
-                   if (user.email === 'magloire078@gmail.com' && profileData.roleSysteme !== 'SuperAdmin') {
-                       const userDocRef = doc(db, 'utilisateurs', user.uid);
-                       updateDoc(userDocRef, {
-                           roleSysteme: 'SuperAdmin',
-                           rolesAutorises: ['client', 'restaurateur', 'livreur']
-                       }).catch(e => console.error("Failed to promote super admin:", e));
-                   }
 
               } else {
                    console.warn("User profile document not found. It should be created on signup.");
