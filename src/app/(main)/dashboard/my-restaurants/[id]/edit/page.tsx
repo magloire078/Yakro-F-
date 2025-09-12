@@ -24,6 +24,7 @@ import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Label } from '@/components/ui/label';
 
 const restaurantFormSchema = z.object({
   nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),

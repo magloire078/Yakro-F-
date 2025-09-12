@@ -21,7 +21,7 @@ interface DataState {
   allUsers: UserProfile[];
   isLoading: boolean;
   addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
-  updateRestaurant: (formData: FormData) => Promise<void>;
+  updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
   deleteMenuItem: (itemId: string) => Promise<void>;
@@ -43,7 +43,13 @@ const useDataStore = create<DataState>((set, get) => ({
     await addRestaurantAction(restaurant);
   },
 
-  updateRestaurant: async (formData) => {
+  updateRestaurant: async (restaurantId, data, imageFile) => {
+    const formData = new FormData();
+    formData.append('restaurantId', restaurantId);
+    formData.append('data', JSON.stringify(data));
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
     await updateRestaurantAction(formData);
   },
 
