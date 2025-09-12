@@ -11,20 +11,26 @@ import { Badge } from '@/components/ui/badge';
 import { useData } from '@/contexts/data-context';
 import { type Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 
 export default function LivreurHomePage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, userProfile, updateUserProfile, loading: authLoading } = useAuth();
     const router = useRouter();
     const { orders, isLoading, updateOrderStatus } = useData();
     const [currentDelivery, setCurrentDelivery] = React.useState<Order | null>(null);
     const { toast } = useToast();
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
     const [isCompleting, setIsCompleting] = React.useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
+
+    const isEnService = userProfile?.statutService === 'En service';
     
     const availableDeliveries = React.useMemo(() => {
+        if (!isEnService) return [];
         return orders.filter(o => o.statut === 'En Préparation');
-    }, [orders]);
+    }, [orders, isEnService]);
     
     // Check if the current user has an active delivery
     React.useEffect(() => {
@@ -73,6 +79,26 @@ export default function LivreurHomePage() {
             });
         } finally {
             setIsCompleting(false);
+        }
+    }
+
+    const handleStatusToggle = async (checked: boolean) => {
+        if (!user) return;
+        const newStatus = checked ? 'En service' : 'Hors service';
+        setIsUpdatingStatus(true);
+        try {
+            await updateUserProfile(user.uid, { statutService: newStatus });
+            toast({
+                title: `Vous êtes maintenant ${newStatus.toLowerCase()}.`
+            });
+        } catch(error) {
+            toast({
+                variant: 'destructive',
+                title: 'Erreur',
+                description: 'Impossible de changer votre statut pour le moment.'
+            });
+        } finally {
+            setIsUpdatingStatus(false);
         }
     }
 
@@ -129,12 +155,22 @@ export default function LivreurHomePage() {
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Courses disponibles</h1>
+             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                 <h1 className="text-3xl md:text-4xl font-headline text-primary">Courses disponibles</h1>
+                 <Card className="p-3">
+                     <div className="flex items-center space-x-2">
+                        <Switch id="service-status" checked={isEnService} onCheckedChange={handleStatusToggle} disabled={isUpdatingStatus}/>
+                        <Label htmlFor="service-status" className="text-lg">{isEnService ? 'En service' : 'Hors service'}</Label>
+                        {isUpdatingStatus && <Loader className="animate-spin text-primary" />}
+                    </div>
+                 </Card>
+            </div>
             <div className="space-y-4">
-                {isLoading && (
+                {isLoading && isEnService && (
                     <div className="flex justify-center items-center p-8"><Loader className="animate-spin text-primary" /></div>
                 )}
-                {!isLoading && availableDeliveries.length > 0 ? availableDeliveries.map(delivery => (
+                
+                {isEnService && !isLoading && availableDeliveries.length > 0 && availableDeliveries.map(delivery => (
                     <Card key={delivery.id}>
                         <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
                            <div className="md:col-span-1">
@@ -156,12 +192,21 @@ export default function LivreurHomePage() {
                            </div>
                         </CardContent>
                     </Card>
-                )) : null}
-                 {!isLoading && availableDeliveries.length === 0 && (
+                ))}
+
+                 {isEnService && !isLoading && availableDeliveries.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
                         <Bike className="w-16 h-16"/>
                         <p className="text-lg font-medium">Aucune course disponible pour le moment</p>
                         <p>Les commandes prêtes à être livrées apparaîtront ici.</p>
+                    </div>
+                )}
+
+                {!isEnService && (
+                    <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
+                        <Bike className="w-16 h-16"/>
+                        <p className="text-lg font-medium">Vous êtes hors service.</p>
+                        <p>Activez votre statut pour commencer à recevoir des propositions de courses.</p>
                     </div>
                 )}
             </div>

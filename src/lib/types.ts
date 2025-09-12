@@ -1,5 +1,4 @@
 
-
 export interface MenuOption {
   nom: string;
   prix: number;
@@ -87,4 +86,5 @@ export interface UserProfile {
     roleSysteme?: SystemRole;
     // The functional roles this user is allowed to access
     rolesAutorises?: AppRole[];
+    statutService?: 'En service' | 'Hors service';
 }
