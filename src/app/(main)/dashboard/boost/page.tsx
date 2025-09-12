@@ -36,7 +36,12 @@ export default function BoostPage() {
         setUpdatingId(restaurant.id);
         const newStatus = !restaurant.enVedette;
         try {
-            await updateRestaurant(restaurant.id, { enVedette: newStatus }, null);
+            // FormData is not needed when not uploading a file directly in the component
+            const formData = new FormData();
+            formData.append('restaurantId', restaurant.id);
+            formData.append('data', JSON.stringify({ enVedette: newStatus }));
+            await updateRestaurantAction(formData);
+
             toast({
                 title: 'Mise à jour réussie !',
                 description: `${restaurant.nom} est maintenant ${newStatus ? 'en vedette' : 'standard'}.`,
