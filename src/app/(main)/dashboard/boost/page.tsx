@@ -12,6 +12,7 @@ import { Loader, Rocket, PartyPopper } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Restaurant } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function BoostPage() {
     const { user, loading: authLoading, activeRole } = useAuth();
@@ -35,7 +36,7 @@ export default function BoostPage() {
         setUpdatingId(restaurant.id);
         const newStatus = !restaurant.enVedette;
         try {
-            await updateRestaurant(restaurant.id, { enVedette: newStatus });
+            await updateRestaurant(restaurant.id, { enVedette: newStatus }, null);
             toast({
                 title: 'Mise à jour réussie !',
                 description: `${restaurant.nom} est maintenant ${newStatus ? 'en vedette' : 'standard'}.`,
@@ -100,6 +101,9 @@ export default function BoostPage() {
                          <CardDescription className="mt-2 text-base">
                             Vous devez d'abord créer un restaurant avant de pouvoir booster sa visibilité.
                          </CardDescription>
+                         <Button asChild className="mt-4">
+                            <Link href="/dashboard/new-restaurant">Créer un restaurant</Link>
+                         </Button>
                     </Card>
                 )}
 
