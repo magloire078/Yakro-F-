@@ -5,15 +5,14 @@
       "match": "/databases/{database}/documents",
       "function isUserAuthenticated()": "return request.auth != null;",
       "function isUser(uid)": "return isUserAuthenticated() && request.auth.uid == uid;",
-      "function isSuperAdmin()": "return request.auth.token.roleSysteme == 'SuperAdmin';",
+      "function isSuperAdmin()": "return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';",
       "function isRestaurantOwner(restaurantId)": "return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);",
       
       "match": "/utilisateurs/{userId}",
       "allow read": "if isUser(userId) || isSuperAdmin();",
       "allow update": "if isUser(userId) || isSuperAdmin();",
       "allow create": "if isUserAuthenticated();",
-      "allow list": "if isSuperAdmin();"
-    },
+      "allow list": "if isSuperAdmin();",
     "match": "/restaurants/{restaurantId}",
     "allow read": "if true;",
     "allow create": "if isUser(request.resource.data.proprietaireId);",
