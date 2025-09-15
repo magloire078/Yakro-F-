@@ -35,80 +35,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeRole, setActiveRoleState] = React.useState<AppRole>('client');
 
   React.useEffect(() => {
-    // Set initial role from localStorage for faster UI response
     const storedRole = getRoleFromStorage();
     if (storedRole) {
         setActiveRoleState(storedRole);
     }
 
     const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
-      setUser(authUser);
-      if (!authUser) {
-          localStorage.removeItem('activeRole');
-          setActiveRoleState('client');
-          setUserProfile(null);
-          setLoading(false);
+      setLoading(true); // Set loading to true whenever auth state changes
+      if (authUser) {
+        setUser(authUser);
+      } else {
+        setUser(null);
+        setUserProfile(null);
+        localStorage.removeItem('activeRole');
+        setActiveRoleState('client');
+        setLoading(false);
       }
     });
-
-    const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'activeRole') {
-            setActiveRoleState((event.newValue as AppRole) || 'client');
-        }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-        unsubscribeAuth();
-        window.removeEventListener('storage', handleStorageChange);
-    };
+    
+    return () => unsubscribeAuth();
   }, []);
 
   React.useEffect(() => {
       let unsubscribeProfile: (() => void) | undefined;
+      
       if (user) {
-          setLoading(true);
           const userDocRef = doc(db, 'utilisateurs', user.uid);
-
-          // Promote super admin on login if not already
-           if (user.email === 'magloire078@gmail.com') {
-              getDoc(userDocRef).then(docSnap => {
-                if(docSnap.exists() && docSnap.data().roleSysteme !== 'SuperAdmin') {
-                     updateDoc(userDocRef, {
-                       roleSysteme: 'SuperAdmin',
-                       rolesAutorises: ['client', 'restaurateur', 'livreur']
-                    }).catch(e => console.error("Failed to promote super admin:", e));
-                }
-              })
-           }
-
+          
           unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
               if (docSnap.exists()) {
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
                   setUserProfile(profileData);
                   
+                  // This is the right place to set the role based on fresh profile data
                   const storedRole = getRoleFromStorage();
                   const allowedRoles = profileData.rolesAutorises || ['client'];
 
                   if (storedRole && allowedRoles.includes(storedRole)) {
                     setActiveRoleState(storedRole);
-                  } else if (allowedRoles.length > 0) {
-                    setActiveRole(allowedRoles[0]);
                   } else {
-                    setActiveRole('client');
+                    const bestRole = profileData.role || allowedRoles[0] || 'client';
+                    setActiveRole(bestRole); // This updates both state and localStorage
                   }
 
               } else {
-                   console.warn("User profile document not found. It should be created on signup.");
+                   console.warn("User profile document not found. This might be a new user.");
               }
-              setLoading(false);
+              setLoading(false); // Profile loaded or not found, we are done loading
           }, (error) => {
               console.error("Error fetching user profile:", error);
+              setUserProfile(null);
               setLoading(false);
           });
       } else {
         setLoading(false);
       }
+      
       return () => {
           if (unsubscribeProfile) {
               unsubscribeProfile();
@@ -117,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const setActiveRole = (role: AppRole) => {
-      if (userProfile?.rolesAutorises?.includes(role)) {
+      if (userProfile?.rolesAutorises?.includes(role) || !userProfile) { // Allow setting for not-yet-loaded profiles
         localStorage.setItem('activeRole', role);
         setActiveRoleState(role);
       } else if (userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 0) {
