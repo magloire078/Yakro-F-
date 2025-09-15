@@ -22,6 +22,12 @@ export default function ProfileSelectionPage() {
         }
 
         if (userProfile) {
+            // Special path for SuperAdmin
+            if (userProfile.roleSysteme === 'SuperAdmin') {
+                router.push('/dashboard/admin');
+                return;
+            }
+
             const roleToSet = userProfile.role || userProfile.rolesAutorises?.[0] || 'client';
             setActiveRole(roleToSet);
 

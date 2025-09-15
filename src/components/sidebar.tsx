@@ -70,7 +70,7 @@ export function Sidebar() {
           <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
         </Link>
         
-        {user && userProfile && userProfile.rolesAutorises && userProfile.rolesAutorises.length > 1 && (
+        {user && userProfile && userProfile.roleSysteme !== 'SuperAdmin' && userProfile.rolesAutorises && userProfile.rolesAutorises.length > 1 && (
           <div className="mb-8">
             <Select onValueChange={handleRoleChange} value={activeRole}>
               <SelectTrigger className="w-full">
@@ -195,7 +195,7 @@ export function Sidebar() {
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-semibold truncate">{userProfile?.nom || user.email}</p>
-                            <p className="text-xs text-muted-foreground capitalize">{activeRole}</p>
+                            <p className="text-xs text-muted-foreground capitalize">{userProfile?.roleSysteme === 'SuperAdmin' ? 'Super Admin' : activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>
