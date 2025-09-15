@@ -154,7 +154,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         let unsubscribe: Unsubscribe | null = null;
         
-        const myRestaurantIds = useDataStore.getState().restaurants
+        const allRestaurants = useDataStore.getState().restaurants;
+        const myRestaurantIds = allRestaurants
           .filter(r => r.proprietaireId === user?.uid)
           .map(r => r.id);
 
@@ -165,7 +166,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (activeRole === 'client') {
                 q = query(ordersCollection, where("userId", "==", user.uid));
             } else if (activeRole === 'restaurateur' && userProfile?.roleSysteme === 'SuperAdmin') {
-                q = ordersCollection; // SuperAdmin restaurateur sees all orders for all restaurants
+                // SuperAdmin restaurateur sees all orders, but only if restaurants exist
+                 if (allRestaurants.length > 0) {
+                    q = ordersCollection;
+                }
             } else if (activeRole === 'restaurateur') {
                 if (myRestaurantIds.length > 0) {
                     q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
