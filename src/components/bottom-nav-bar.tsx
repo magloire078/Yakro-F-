@@ -9,26 +9,26 @@ import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, 
 import * as React from 'react';
 
 const clientLinks = [
-    { href: '/', label: 'Accueil', icon: Home },
+    { href: '/auth/client', label: 'Accueil', icon: Home },
     { href: '/recommendations', label: 'Pour Vous', icon: Sparkles },
     { href: '/orders', label: 'Historique', icon: History },
 ];
 
 const restaurateurLinks = [
-    { href: '/', label: 'Dashboard', icon: Home },
+    { href: '/auth/restaurateur', label: 'Dashboard', icon: Home },
     { href: '/dashboard/menu', label: 'Menus', icon: BookOpenCheck },
     { href: '/dashboard/orders', label: 'Commandes', icon: ClipboardList },
     { href: '/dashboard/analytics', label: 'Stats', icon: BarChart },
 ];
 
 const livreurLinks = [
-    { href: '/', label: 'Courses', icon: Bike },
+    { href: '/auth/livreur', label: 'Courses', icon: Bike },
     { href: '/dashboard/earnings', label: 'Gains', icon: DollarSign },
 ];
 
 
 export function BottomNavBar() {
-    const { activeRole } = useAuth();
+    const { activeRole, userProfile } = useAuth();
     const pathname = usePathname();
 
     let links;
@@ -44,11 +44,7 @@ export function BottomNavBar() {
             links = clientLinks;
     }
 
-    if (!activeRole) return null;
-
-    // Determine number of links to adjust grid columns
-    const navItemsCount = links.length + 1; // +1 for profile
-    const gridColsClass = `grid-cols-${navItemsCount}`;
+    if (!activeRole || userProfile?.roleSysteme === 'SuperAdmin') return null;
 
     return (
         <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t md:hidden">

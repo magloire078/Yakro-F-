@@ -10,7 +10,7 @@ import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import type { AppRole } from '@/lib/types';
@@ -27,30 +27,18 @@ export function Sidebar() {
   const { cartCount } = useCart();
   const { user, loading, activeRole, setActiveRole, userProfile } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   
   const handleSignOut = async () => {
     await signOut(auth);
-    // After sign out, clear the role and redirect to login
     localStorage.removeItem('activeRole');
-    setActiveRole('client'); 
     router.push('/login');
   }
   
   const handleRoleChange = (newRole: AppRole) => {
     if (userProfile?.rolesAutorises?.includes(newRole)) {
       setActiveRole(newRole);
-      // Depending on the role, you might want to navigate to a default page
-      switch(newRole) {
-        case 'restaurateur':
-        case 'livreur':
-          router.push('/');
-          break;
-        case 'client':
-          router.push('/');
-          break;
-        default:
-          router.push('/');
-      }
+      router.push(`/auth/${newRole}`);
     }
   }
 
@@ -62,10 +50,17 @@ export function Sidebar() {
     }
     return nameOrEmail.substring(0, 2).toUpperCase();
   }
+  
+  const getHomeLink = () => {
+    if (!user) return "/login";
+    if (userProfile?.roleSysteme === 'SuperAdmin') return "/dashboard/admin";
+    return `/auth/${activeRole}`;
+  }
+
 
   return (
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
-       <Link href="/" className="mb-8 flex items-center space-x-2">
+       <Link href={getHomeLink()} className="mb-8 flex items-center space-x-2">
           <Icons.logo className="h-10 w-10 text-primary" />
           <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
         </Link>
@@ -87,8 +82,8 @@ export function Sidebar() {
 
         <nav className="flex flex-col gap-4">
            {/* Common Link */}
-           <Button variant="ghost" className="justify-start text-lg" asChild>
-                <Link href="/">
+           <Button variant={pathname === getHomeLink() ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+                <Link href={getHomeLink()}>
                   <Home className="mr-2 h-5 w-5" />
                   Accueil
                 </Link>
@@ -97,13 +92,13 @@ export function Sidebar() {
           {/* Client Links */}
           {activeRole === 'client' && (
             <>
-               <Button variant="ghost" className="justify-start text-lg" asChild>
+               <Button variant={pathname === '/recommendations' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                  <Link href="/recommendations">
                   <Sparkles className="mr-2 h-5 w-5" />
                   Pour Vous
                 </Link>
               </Button>
-              <Button variant="ghost" className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/orders' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                  <Link href="/orders">
                   <History className="mr-2 h-5 w-5" />
                   Historique
@@ -115,37 +110,37 @@ export function Sidebar() {
           {/* Restaurateur Links */}
           {activeRole === 'restaurateur' && (
             <>
-              <Button variant="ghost" className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/my-restaurants' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href="/dashboard/my-restaurants">
                   <UtensilsCrossed className="mr-2 h-5 w-5" />
                   Mes Restaurants
                 </Link>
               </Button>
-              <Button variant="ghost" className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/menu' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href="/dashboard/menu">
                   <BookOpenCheck className="mr-2 h-5 w-5" />
                   Mes Menus
                 </Link>
               </Button>
-              <Button variant="ghost" className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/orders' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href="/dashboard/orders">
                   <ClipboardList className="mr-2 h-5 w-5" />
                   Gérer les commandes
                 </Link>
               </Button>
-               <Button variant="ghost" className="justify-start text-lg" asChild>
+               <Button variant={pathname === '/dashboard/analytics' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href="/dashboard/analytics">
                   <BarChart className="mr-2 h-5 w-5" />
                   Statistiques
                 </Link>
               </Button>
-               <Button variant="ghost" className="justify-start text-lg" asChild>
+               <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href="/marketing">
                   <Megaphone className="mr-2 h-5 w-5" />
                   Marketing IA
                 </Link>
               </Button>
-              <Button variant="ghost" className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/boost' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href="/dashboard/boost">
                   <Rocket className="mr-2 h-5 w-5" />
                   Booster la visibilité
@@ -157,7 +152,7 @@ export function Sidebar() {
           {/* Livreur Links */}
           {activeRole === 'livreur' && (
             <>
-              <Button variant="ghost" className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/earnings' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href="/dashboard/earnings">
                   <DollarSign className="mr-2 h-5 w-5" />
                   Mes Gains
@@ -168,7 +163,7 @@ export function Sidebar() {
 
           {/* Super Admin Link */}
           {userProfile?.roleSysteme === 'SuperAdmin' && (
-            <Button variant="ghost" className="justify-start text-lg" asChild>
+            <Button variant={pathname === '/dashboard/admin' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
               <Link href="/dashboard/admin">
                 <ShieldCheck className="mr-2 h-5 w-5" />
                 Admin

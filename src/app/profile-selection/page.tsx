@@ -13,36 +13,49 @@ export default function ProfileSelectionPage() {
     
     React.useEffect(() => {
         if (authLoading) {
-            return; // Attendre la fin du chargement
+            return; // Wait until loading is finished
         }
 
         if (!user) {
-            router.push('/login');
+            router.replace('/login');
             return;
         }
 
         if (userProfile) {
             // Special path for SuperAdmin
             if (userProfile.roleSysteme === 'SuperAdmin') {
-                router.push('/dashboard/admin');
+                router.replace('/dashboard/admin');
                 return;
             }
 
-            const roleToSet = userProfile.role || userProfile.rolesAutorises?.[0] || 'client';
+            const allowedRoles = userProfile.rolesAutorises || ['client'];
+            const currentRole = userProfile.role;
+
+            let roleToSet: AppRole = 'client'; // Default role
+
+            if (currentRole && allowedRoles.includes(currentRole)) {
+                roleToSet = currentRole;
+            } else if (allowedRoles.length > 0) {
+                roleToSet = allowedRoles[0];
+            }
+            
             setActiveRole(roleToSet);
 
-            // Si le profil n'a pas de rôle principal défini, on le met à jour
-            if (!userProfile.role) {
+            // If the profile doesn't have a main role set, update it.
+            if (!currentRole) {
                 updateUserProfile(user.uid, { role: roleToSet });
             }
             
-            router.push('/');
+            // Redirect to the role-specific auth page
+            router.replace(`/auth/${roleToSet}`);
+        } else {
+            // If there's no profile yet (e.g., first login), just wait. 
+            // The AuthProvider will create it, and this useEffect will re-run.
         }
-        // Si userProfile n'est pas encore là, le useEffect dans auth-context s'en chargera
 
     }, [user, userProfile, authLoading, router, setActiveRole, updateUserProfile]);
     
-    // Afficher un chargeur pendant le traitement
+    // Display a loader while processing
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
             <Loader className="h-16 w-16 animate-spin text-primary" />

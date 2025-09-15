@@ -10,7 +10,7 @@ import * as React from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
 
-export default function HomeLayout({
+export default function AuthRoleLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -46,3 +46,4 @@ export default function HomeLayout({
       </div>
   );
 }
+
