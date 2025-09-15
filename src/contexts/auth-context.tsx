@@ -21,18 +21,18 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 // --- MOCK USER DATA FOR DEVELOPMENT ---
 const mockUser = {
-  uid: 'mock-client-user-uid',
-  email: 'client@example.com',
+  uid: 'mock-superadmin-user-uid',
+  email: 'superadmin@example.com',
   // Add other properties if your components expect them
 } as User;
 
 const mockUserProfile: UserProfile = {
-  uid: 'mock-client-user-uid',
-  email: 'client@example.com',
-  nom: 'Client de Démo',
-  role: 'client',
-  rolesAutorises: ['client'],
-  roleSysteme: 'User',
+  uid: 'mock-superadmin-user-uid',
+  email: 'superadmin@example.com',
+  nom: 'Super Administrateur',
+  role: undefined, // SuperAdmin may not have a functional role
+  rolesAutorises: ['client', 'restaurateur', 'livreur'], // Can see everything
+  roleSysteme: 'SuperAdmin',
   dateCreation: new Date().toISOString(),
 };
 // --- END MOCK USER DATA ---
