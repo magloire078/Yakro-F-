@@ -114,13 +114,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { user, userProfile, activeRole } = useAuth();
     const fetchAllUsers = useDataStore((state) => state.fetchAllUsers);
     
+    // Subscribe to public data (restaurants, menuItems)
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
         const collectionsToFetch = ['restaurants', 'plats'];
         const unsubscribes: Unsubscribe[] = [];
 
-        collectionsToFetch.forEach(collectionName => {
+        const promises = collectionsToFetch.map(collectionName => new Promise<void>((resolve, reject) => {
             const q = collection(db, collectionName);
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -130,21 +131,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } else if (collectionName === 'plats') {
                     useDataStore.setState({ menuItems: list as MenuItem[] });
                 }
+                resolve();
             }, (error) => {
                 console.error(`Error on ${collectionName} snapshot listener:`, error);
+                reject(error);
             });
             unsubscribes.push(unsubscribe);
+        }));
+
+        Promise.all(promises).catch(() => {
+             // If public data fails to load, we might still want to stop loading
+             // depending on the app's requirements. For now, orders will control the final loading state.
         });
-
-        // Combined loading state check
-        const checkLoading = () => {
-            const state = useDataStore.getState();
-            if (state.restaurants.length > 0 && state.menuItems.length > 0) {
-                 // The loading state will be properly handled by the orders subscription
-            }
-        };
-        checkLoading();
-
 
         return () => unsubscribes.forEach(unsub => unsub());
     }, []);
@@ -154,22 +152,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         let unsubscribe: Unsubscribe | null = null;
         
+        // Ensure restaurants data is available before proceeding for roles that depend on it
         const allRestaurants = useDataStore.getState().restaurants;
-        const myRestaurantIds = allRestaurants
-          .filter(r => r.proprietaireId === user?.uid)
-          .map(r => r.id);
 
-        if (user) {
+        if (user && userProfile) {
+             const myRestaurantIds = allRestaurants
+              .filter(r => r.proprietaireId === user.uid)
+              .map(r => r.id);
+
             const ordersCollection = collection(db, 'commandes');
             let q: Query<DocumentData> | null = null;
 
             if (activeRole === 'client') {
                 q = query(ordersCollection, where("userId", "==", user.uid));
             } else if (activeRole === 'restaurateur' && userProfile?.roleSysteme === 'SuperAdmin') {
-                // SuperAdmin restaurateur sees all orders, but only if restaurants exist
-                 if (allRestaurants.length > 0) {
-                    q = ordersCollection;
-                }
+                q = ordersCollection;
             } else if (activeRole === 'restaurateur') {
                 if (myRestaurantIds.length > 0) {
                     q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
@@ -202,7 +199,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 unsubscribe();
             }
         };
-    }, [user, activeRole, userProfile?.roleSysteme, useDataStore.getState().restaurants]);
+    }, [user, userProfile, activeRole, useDataStore.getState().restaurants]);
 
 
     // Fetch all users for SuperAdmin
