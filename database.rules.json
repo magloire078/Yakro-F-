@@ -7,10 +7,12 @@
       "function isUser(uid)": "return isUserAuthenticated() && request.auth.uid == uid;",
       "function isSuperAdmin()": "return request.auth.token.roleSysteme == 'SuperAdmin';",
       "function isRestaurantOwner(restaurantId)": "return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);",
+      
       "match": "/utilisateurs/{userId}",
       "allow read": "if isUser(userId) || isSuperAdmin();",
       "allow update": "if isUser(userId) || isSuperAdmin();",
-      "allow create": "if isUserAuthenticated();"
+      "allow create": "if isUserAuthenticated();",
+      "allow list": "if isSuperAdmin();"
     },
     "match": "/restaurants/{restaurantId}",
     "allow read": "if true;",
@@ -30,3 +32,4 @@
 }
 }
 }
+
