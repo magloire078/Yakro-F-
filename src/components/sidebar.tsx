@@ -54,13 +54,14 @@ export function Sidebar() {
   const getHomeLink = () => {
     if (!user) return "/login";
     if (userProfile?.roleSysteme === 'SuperAdmin') return "/dashboard/admin";
-    return `/auth/${activeRole}`;
+    return activeRole ? `/auth/${activeRole}` : '/';
   }
 
+  const homeLink = getHomeLink();
 
   return (
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
-       <Link href={getHomeLink()} className="mb-8 flex items-center space-x-2">
+       <Link href={homeLink} className="mb-8 flex items-center space-x-2">
           <Icons.logo className="h-10 w-10 text-primary" />
           <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
         </Link>
@@ -82,8 +83,8 @@ export function Sidebar() {
 
         <nav className="flex flex-col gap-4">
            {/* Common Link */}
-           <Button variant={pathname === getHomeLink() ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
-                <Link href={getHomeLink()}>
+           <Button variant={pathname === homeLink ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+                <Link href={homeLink}>
                   <Home className="mr-2 h-5 w-5" />
                   Accueil
                 </Link>
