@@ -41,15 +41,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const unsubscribeAuth = onAuthStateChanged(auth, (authUser) => {
-      setLoading(true); // Set loading to true whenever auth state changes
-      if (authUser) {
-        setUser(authUser);
-      } else {
-        setUser(null);
-        setUserProfile(null);
-        localStorage.removeItem('activeRole');
-        setActiveRoleState('client');
-        setLoading(false);
+      setUser(authUser);
+      if (!authUser) {
+          setUserProfile(null);
+          localStorage.removeItem('activeRole');
+          setActiveRoleState('client');
+          setLoading(false);
       }
     });
     
@@ -60,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let unsubscribeProfile: (() => void) | undefined;
       
       if (user) {
+          setLoading(true);
           const userDocRef = doc(db, 'utilisateurs', user.uid);
           
           unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
@@ -67,7 +65,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   const profileData = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
                   setUserProfile(profileData);
                   
-                  // This is the right place to set the role based on fresh profile data
                   const storedRole = getRoleFromStorage();
                   const allowedRoles = profileData.rolesAutorises || ['client'];
 
@@ -75,19 +72,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setActiveRoleState(storedRole);
                   } else {
                     const bestRole = profileData.role || allowedRoles[0] || 'client';
-                    setActiveRole(bestRole); // This updates both state and localStorage
+                    setActiveRole(bestRole);
                   }
 
               } else {
                    console.warn("User profile document not found. This might be a new user.");
+                   setUserProfile(null); // Explicitly set to null if not found
               }
-              setLoading(false); // Profile loaded or not found, we are done loading
+              setLoading(false);
           }, (error) => {
               console.error("Error fetching user profile:", error);
               setUserProfile(null);
               setLoading(false);
           });
       } else {
+        // If no user, not loading
         setLoading(false);
       }
       
@@ -99,17 +98,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const setActiveRole = (role: AppRole) => {
-      if (userProfile?.rolesAutorises?.includes(role) || !userProfile) { // Allow setting for not-yet-loaded profiles
+      if (typeof window !== 'undefined') {
         localStorage.setItem('activeRole', role);
-        setActiveRoleState(role);
-      } else if (userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 0) {
-        const firstAllowedRole = userProfile.rolesAutorises[0];
-        localStorage.setItem('activeRole', firstAllowedRole);
-        setActiveRoleState(firstAllowedRole);
-      } else {
-        localStorage.setItem('activeRole', 'client');
-        setActiveRoleState('client');
       }
+      setActiveRoleState(role);
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
