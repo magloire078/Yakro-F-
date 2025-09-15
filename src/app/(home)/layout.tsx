@@ -5,7 +5,6 @@ import { MobileHeader } from '@/components/mobile-header';
 import { useData } from '@/contexts/data-context';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
@@ -15,17 +14,10 @@ export default function HomeLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isLoading } = useData();
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-  
-  React.useEffect(() => {
-    if (!authLoading && !user) {
-        router.push('/login');
-    }
-  }, [user, authLoading, router]);
+  const { isLoading: dataLoading } = useData();
+  const { loading: authLoading } = useAuth();
 
-  if (isLoading || authLoading || !user) {
+  if (dataLoading || authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
           <Loader className="h-16 w-16 animate-spin text-primary" />
