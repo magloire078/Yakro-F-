@@ -1,9 +1,8 @@
 
-
 'use server';
 
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL, uploadBytes } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
@@ -18,11 +17,32 @@ const uploadImage = async (file: File, path: string): Promise<string> => {
 };
 
 
-export async function addRestaurantAction(restaurant: Omit<Restaurant, 'id'>) {
+export async function addRestaurantAction(formData: FormData) {
+    const dataJSON = formData.get('data') as string;
+    const imageFile = formData.get('image') as File | null;
+    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id'>;
+
     try {
-        await addDoc(collection(db, "restaurants"), restaurant);
+        const restaurantData: Omit<Restaurant, 'id' | 'image'> = {
+            ...data,
+            note: 0,
+            indiceImage: `${data.cuisine} restaurant`,
+        };
+
+        const docRef = await addDoc(collection(db, "restaurants"), restaurantData);
+        const restaurantId = docRef.id;
+
+        let imageUrl = `https://placehold.co/600x400.png`;
+
+        if (imageFile) {
+            imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+        }
+
+        await updateDoc(docRef, { image: imageUrl });
+
         revalidatePath('/');
         revalidatePath('/dashboard/new-restaurant');
+        revalidatePath('/dashboard/my-restaurants');
     } catch (e) {
         console.error("Error adding restaurant: ", e);
         throw new Error("Failed to add restaurant.");

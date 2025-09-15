@@ -20,9 +20,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { Loader, ChefHat } from 'lucide-react';
-import type { Restaurant } from '@/lib/types';
+import { Loader, ChefHat, Upload } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import Image from 'next/image';
+import { Label } from '@/components/ui/label';
 
 const restaurantFormSchema = z.object({
   nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
@@ -40,6 +41,8 @@ export default function NewRestaurantPage() {
     const router = useRouter();
     const { user, activeRole } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
+    const [imageFile, setImageFile] = React.useState<File | null>(null);
+    const [imagePreview, setImagePreview] = React.useState<string | null>(null);
 
      React.useEffect(() => {
         if (activeRole !== 'restaurateur') {
@@ -58,6 +61,19 @@ export default function NewRestaurantPage() {
         },
     });
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+
     const onSubmit = async (data: RestaurantFormValues) => {
         if(!user) {
             toast({ variant: 'destructive', title: 'Erreur', description: 'Vous devez être connecté pour créer un restaurant.' });
@@ -65,20 +81,15 @@ export default function NewRestaurantPage() {
         }
         setIsLoading(true);
         try {
-            const newRestaurant: Omit<Restaurant, 'id'> = {
-                ...data,
-                proprietaireId: user.uid,
-                // These are default values for a new restaurant
-                note: 0,
-                image: `https://placehold.co/600x400.png`,
-                indiceImage: `${data.cuisine} restaurant`,
-            };
-            await addRestaurant(newRestaurant);
+            await addRestaurant(
+                { ...data, proprietaireId: user.uid },
+                imageFile
+            );
             toast({
                 title: 'Restaurant créé avec succès !',
                 description: `${data.nom} a été ajouté à notre plateforme.`,
             });
-            router.push('/');
+            router.push('/dashboard/my-restaurants');
         } catch (error) {
             console.error(error);
             toast({
@@ -107,6 +118,22 @@ export default function NewRestaurantPage() {
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <div>
+                                <Label htmlFor="image-upload" className="cursor-pointer">
+                                    Image du restaurant (recommandé)
+                                    <div className="relative mt-2 w-full h-48 rounded-md border border-dashed flex items-center justify-center text-muted-foreground hover:bg-muted/50">
+                                        {imagePreview ? (
+                                            <Image src={imagePreview} alt="Aperçu" fill className="object-cover rounded-md" />
+                                        ) : (
+                                        <div className="text-center">
+                                            <Upload />
+                                            <p>Cliquer pour choisir une image</p>
+                                        </div>
+                                        )}
+                                    </div>
+                                </Label>
+                                <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                            </div>
                             <FormField
                                 control={form.control}
                                 name="nom"

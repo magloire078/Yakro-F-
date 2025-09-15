@@ -20,7 +20,7 @@ interface DataState {
   orders: Order[];
   allUsers: UserProfile[];
   isLoading: boolean;
-  addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -39,8 +39,13 @@ const useDataStore = create<DataState>((set, get) => ({
   allUsers: [],
   isLoading: true,
 
-  addRestaurant: async (restaurant) => {
-    await addRestaurantAction(restaurant);
+  addRestaurant: async (data, imageFile) => {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(data));
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    await addRestaurantAction(formData);
   },
 
   updateRestaurant: async (restaurantId, data, imageFile) => {
