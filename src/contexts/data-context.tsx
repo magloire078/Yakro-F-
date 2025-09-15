@@ -27,7 +27,7 @@ interface DataState {
   deleteMenuItem: (itemId: string) => Promise<void>;
   addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['statut'], delivererId?: string) => Promise<void>;
-  fetchAllUsers: () => Promise<void>;
+  fetchAllUsers: () => Unsubscribe;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
 }
@@ -89,16 +89,16 @@ const useDataStore = create<DataState>((set, get) => ({
     await updateOrderStatusAction({ orderId, status, delivererId });
   },
 
-  fetchAllUsers: async () => {
-      try {
-        const usersCollection = collection(db, 'utilisateurs');
-        const userSnapshot = await getDocs(usersCollection);
-        const usersList = userSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-        set({ allUsers: usersList });
-      } catch (error) {
-        console.error("Error fetching all users:", error);
-        set({ allUsers: [] });
-      }
+  fetchAllUsers: () => {
+      const usersCollection = collection(db, 'utilisateurs');
+      const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
+          const usersList = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+          set({ allUsers: usersList });
+      }, (error) => {
+          console.error("Error fetching all users:", error);
+          set({ allUsers: [] });
+      });
+      return unsubscribe;
   },
 
   getMenuItem: (id: string) => {
@@ -204,10 +204,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Fetch all users for SuperAdmin
     React.useEffect(() => {
+        let unsubscribe: Unsubscribe | null = null;
         if (userProfile?.roleSysteme === 'SuperAdmin') {
-            fetchAllUsers();
+            unsubscribe = fetchAllUsers();
         } else {
              useDataStore.setState({ allUsers: [] });
+        }
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
         }
     }, [userProfile?.roleSysteme, fetchAllUsers]);
 

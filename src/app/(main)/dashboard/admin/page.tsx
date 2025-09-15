@@ -17,7 +17,7 @@ import { EditUserDialog } from '@/components/edit-user-dialog';
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
-    const { allUsers, isLoading: dataLoading, fetchAllUsers } = useData();
+    const { allUsers, isLoading: dataLoading } = useData();
     const router = useRouter();
     const { toast } = useToast();
     const [updatingUserId, setUpdatingUserId] = React.useState<string | null>(null);
@@ -29,12 +29,6 @@ export default function AdminPage() {
             router.push('/');
         }
     }, [user, userProfile, authLoading, router, toast]);
-
-    React.useEffect(() => {
-        if (userProfile?.roleSysteme === 'SuperAdmin') {
-            fetchAllUsers();
-        }
-    }, [userProfile, fetchAllUsers]);
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);
