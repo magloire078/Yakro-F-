@@ -5,7 +5,7 @@ import * as React from 'react';
 import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/data-context";
-import { Clock, Star, Loader, Ear, Bike } from "lucide-react";
+import { Clock, Star, Loader, Ear, Bike, Wand2, Users } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,39 +17,43 @@ import { generateReviews } from '@/ai/flows/generate-reviews-flow';
 import { generateAudioReview } from '@/ai/flows/generate-audio-review-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function RestaurantPage() {
     const params = useParams();
     const { getRestaurant, menuItems, isLoading } = useData();
     const restaurant = getRestaurant(params.id as string);
 
-    const [reviews, setReviews] = React.useState<Review[]>([]);
-    const [loadingReviews, setLoadingReviews] = React.useState(false);
+    const [userReviews, setUserReviews] = React.useState<Review[]>([]);
+    const [aiReviews, setAiReviews] = React.useState<Review[]>([]);
+    const [loadingAiReviews, setLoadingAiReviews] = React.useState(false);
     const [audioUrl, setAudioUrl] = React.useState<string | null>(null);
     const [isGeneratingAudio, setIsGeneratingAudio] = React.useState(false);
     const { toast } = useToast();
+    
+    const allReviews = React.useMemo(() => [...userReviews, ...aiReviews], [userReviews, aiReviews]);
 
     const handleGenerateReviews = React.useCallback(async () => {
         if (!restaurant) return;
-        setLoadingReviews(true);
+        setLoadingAiReviews(true);
         setAudioUrl(null);
-        setReviews([]); // Clear existing reviews before generating new ones
+        setAiReviews([]); // Clear existing AI reviews before generating new ones
         toast({
-            title: 'Génération des avis en cours...',
+            title: 'Génération des avis IA en cours...',
             description: 'L\'IA imagine des expériences clients pour vous.'
         });
         try {
           const result = await generateReviews({
             restaurantName: restaurant.nom,
             cuisine: restaurant.cuisine,
-            count: 5,
+            count: 3,
           });
           const newReviews = result.reviews.map((review, index) => ({
             ...review,
-            id: `${restaurant.id}-review-${index}-${Date.now()}`,
+            id: `${restaurant.id}-aireview-${index}-${Date.now()}`,
             restaurantId: restaurant.id,
           }));
-          setReviews(newReviews);
+          setAiReviews(newReviews);
         } catch (error) {
           console.error('Failed to generate reviews:', error);
           toast({
@@ -58,13 +62,13 @@ export default function RestaurantPage() {
             description: "Impossible de générer les avis. Le quota de l'API est peut-être atteint.",
           });
         } finally {
-          setLoadingReviews(false);
+          setLoadingAiReviews(false);
         }
     }, [restaurant, toast]);
 
 
      const handleGenerateAudio = React.useCallback(async () => {
-        if (reviews.length === 0) return;
+        if (aiReviews.length === 0) return;
         setIsGeneratingAudio(true);
         toast({
             title: 'Génération Audio en cours...',
@@ -72,7 +76,7 @@ export default function RestaurantPage() {
         });
         try {
             const audioInput = {
-                reviews: reviews.map(r => ({ nomUtilisateur: r.nomUtilisateur, note: r.note, commentaire: r.commentaire }))
+                reviews: aiReviews.map(r => ({ nomUtilisateur: r.nomUtilisateur, note: r.note, commentaire: r.commentaire }))
             };
             const result = await generateAudioReview(audioInput);
             setAudioUrl(result.audioDataUri);
@@ -86,7 +90,7 @@ export default function RestaurantPage() {
         } finally {
             setIsGeneratingAudio(false);
         }
-    }, [reviews, toast]);
+    }, [aiReviews, toast]);
 
     const handleAddReview = (newReview: Omit<Review, 'id' | 'restaurantId'>) => {
         if (!restaurant) return;
@@ -95,7 +99,7 @@ export default function RestaurantPage() {
           id: `user-review-${Date.now()}`,
           restaurantId: restaurant.id,
         };
-        setReviews(prev => [fullReview, ...prev]);
+        setUserReviews(prev => [fullReview, ...prev]);
          toast({
           title: 'Avis ajouté !',
           description: 'Merci pour votre contribution.',
@@ -103,7 +107,8 @@ export default function RestaurantPage() {
     };
 
     const { averageRating, ratingsDistribution } = React.useMemo(() => {
-        if (reviews.length === 0) {
+        const reviewsToAnalyze = userReviews.length > 0 ? userReviews : allReviews;
+        if (reviewsToAnalyze.length === 0) {
           return { 
             averageRating: '0.0', 
             ratingsDistribution: [
@@ -111,14 +116,14 @@ export default function RestaurantPage() {
             ] 
           };
         }
-        const total = reviews.reduce((acc, review) => acc + review.note, 0);
-        const average = (total / reviews.length).toFixed(1);
+        const total = reviewsToAnalyze.reduce((acc, review) => acc + review.note, 0);
+        const average = (total / reviewsToAnalyze.length).toFixed(1);
         const distribution = [5, 4, 3, 2, 1].map(star => ({
             rating: star,
-            count: reviews.filter(r => r.note === star).length
+            count: reviewsToAnalyze.filter(r => r.note === star).length
         }));
         return { averageRating: average, ratingsDistribution: distribution };
-    }, [reviews]);
+    }, [userReviews, allReviews]);
 
 
     if (isLoading && !restaurant) {
@@ -193,50 +198,62 @@ export default function RestaurantPage() {
 
                 {/* Reviews Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                  <div className="lg:col-span-2 space-y-6">
-                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
-                        <div className="flex items-center gap-4">
-                            <h2 className="text-2xl md:text-3xl font-headline text-foreground">Avis des clients</h2>
-                            {reviews.length > 0 && (
-                                <div className="flex items-center gap-2 text-xl font-bold">
-                                    <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-                                    <span>{averageRating}</span>
-                                    <span className="text-sm text-muted-foreground font-normal">({reviews.length} avis)</span>
-                                </div>
-                            )}
-                        </div>
-                        <Button onClick={handleGenerateReviews} disabled={loadingReviews}>
-                            {loadingReviews ? <Loader className="animate-spin mr-2" /> : null}
-                            {loadingReviews ? 'Génération...' : 'Régénérer les avis'}
-                        </Button>
+                  <div className="lg:col-span-2">
+                    <div className="flex items-center gap-4 mb-6">
+                        <h2 className="text-2xl md:text-3xl font-headline text-foreground">Avis</h2>
+                        {allReviews.length > 0 && (
+                            <div className="flex items-center gap-2 text-xl font-bold">
+                                <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+                                <span>{averageRating}</span>
+                                <span className="text-sm text-muted-foreground font-normal">({userReviews.length > 0 ? userReviews.length : allReviews.length} avis)</span>
+                            </div>
+                        )}
                     </div>
                     
-                    {reviews.length > 0 && (
-                      <>
-                      {audioUrl ? (
-                          <audio controls src={audioUrl} className="w-full">
-                              Votre navigateur ne supporte pas l'élément audio.
-                          </audio>
-                      ) : (
-                          <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio || reviews.length === 0} variant="outline">
-                              <Ear className="mr-2" />
-                              {isGeneratingAudio ? 'Création Audio...' : 'Écouter les avis'}
-                          </Button>
-                      )}
-                      </>
-                    )}
-
-
-                    {loadingReviews && (
-                        <div className="space-y-6">
-                            <Skeleton className="w-full h-32 rounded-lg" />
-                            <Skeleton className="w-full h-32 rounded-lg" />
-                        </div>
-                    )}
-                    {!loadingReviews && reviews.length > 0 && reviews.map(review => (
-                      <ReviewCard key={review.id} review={review} />
-                    ))}
-                    {!loadingReviews && reviews.length === 0 && <p className="text-muted-foreground">Aucun avis pour ce restaurant. Soyez le premier à en laisser un, ou générez-en avec l'IA.</p>}
+                    <Tabs defaultValue="clients">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="clients"><Users className="mr-2"/>Avis des clients</TabsTrigger>
+                            <TabsTrigger value="ia"><Wand2 className="mr-2"/>Avis de l'IA</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="clients" className="mt-4 space-y-6">
+                            {userReviews.length > 0 ? userReviews.map(review => (
+                                <ReviewCard key={review.id} review={review} />
+                            )) : (
+                                <p className="text-muted-foreground text-center pt-8">Aucun avis de client pour le moment. Soyez le premier !</p>
+                            )}
+                        </TabsContent>
+                        <TabsContent value="ia" className="mt-4 space-y-6">
+                             <div className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg">
+                                <p className="text-sm text-muted-foreground flex-1">Générez des avis avec l'IA pour voir des exemples ou écoutez une narration audio.</p>
+                                <div className="flex gap-2">
+                                     <Button onClick={handleGenerateReviews} disabled={loadingAiReviews} variant="outline">
+                                        {loadingAiReviews ? <Loader className="animate-spin mr-2" /> : <Wand2 />}
+                                        {loadingAiReviews ? 'Génération...' : 'Générer avis'}
+                                    </Button>
+                                    <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio || aiReviews.length === 0} variant="outline">
+                                        <Ear className="mr-2" />
+                                        {isGeneratingAudio ? 'Création...' : 'Écouter'}
+                                    </Button>
+                                </div>
+                            </div>
+                             {audioUrl && (
+                                <audio controls src={audioUrl} className="w-full">
+                                    Votre navigateur ne supporte pas l'élément audio.
+                                </audio>
+                             )}
+                            {loadingAiReviews && (
+                                <div className="space-y-6">
+                                    <Skeleton className="w-full h-32 rounded-lg" />
+                                </div>
+                            )}
+                            {!loadingAiReviews && aiReviews.length > 0 && aiReviews.map(review => (
+                                <ReviewCard key={review.id} review={review} />
+                            ))}
+                             {!loadingAiReviews && aiReviews.length === 0 && (
+                                <p className="text-muted-foreground text-center pt-8">Générez des avis pour voir des exemples ici.</p>
+                             )}
+                        </TabsContent>
+                    </Tabs>
                   </div>
 
                   <div className="lg:col-span-1 space-y-8">
@@ -244,7 +261,7 @@ export default function RestaurantPage() {
                         <h2 className="text-2xl font-headline text-foreground mb-4">Laissez votre avis</h2>
                         <ReviewForm onSubmit={handleAddReview} />
                      </div>
-                     {reviews.length > 0 && (
+                     {allReviews.length > 0 && (
                         <div>
                           <h2 className="text-2xl font-headline text-foreground mb-4">Répartition des notes</h2>
                           <RatingsChart data={ratingsDistribution} />
@@ -255,4 +272,5 @@ export default function RestaurantPage() {
             </div>
         </div>
     )
-}
+
+    
