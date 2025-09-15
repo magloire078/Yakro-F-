@@ -120,12 +120,10 @@ export default function CustomerHomePage() {
     return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
 
-  let featuredRestaurants: Restaurant[] = [];
-  let normalRestaurants: (Restaurant & { matchReason?: string })[] = [];
-
-  if (!isLoading) {
+  const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
     let filteredRestaurants: (Restaurant & { matchReason?: string })[] = [];
-    if (restaurants && restaurants.length > 0) {
+  
+    if (!isLoading && restaurants && restaurants.length > 0) {
       if (!searchQuery && !interpretedSearch) {
         filteredRestaurants = restaurants;
       } else {
@@ -184,9 +182,14 @@ export default function CustomerHomePage() {
       }
     }
     
-    featuredRestaurants = filteredRestaurants.filter(r => r && r.enVedette);
-    normalRestaurants = filteredRestaurants.filter(r => r && !r.enVedette);
-  }
+    const validFilteredRestaurants = filteredRestaurants.filter(Boolean);
+
+    return {
+        featuredRestaurants: validFilteredRestaurants.filter(r => r.enVedette),
+        normalRestaurants: validFilteredRestaurants.filter(r => !r.enVedette),
+    }
+
+  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch]);
 
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
