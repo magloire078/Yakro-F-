@@ -84,11 +84,11 @@ const generateAudioReviewFlow = ai.defineFlow(
                         speakerVoiceConfigs: [
                             {
                                 speaker: 'Speaker1',
-                                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Algenib' } },
+                                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Algenib' } }, // Male voice
                             },
                             {
                                 speaker: 'Speaker2',
-                                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Achernar' } },
+                                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Achernar' } }, // Female voice
                             },
                         ],
                     },
