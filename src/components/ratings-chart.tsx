@@ -36,3 +36,5 @@ export function RatingsChart({ data }: RatingsChartProps) {
   );
 }
     
+
+    
