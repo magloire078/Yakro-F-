@@ -42,14 +42,6 @@ export function UserAuthForm() {
   
   const setupInitialUser = async (user: import('firebase/auth').User) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
-    let roleSysteme: SystemRole = 'User';
-    let rolesAutorises: AppRole[] = ['client'];
-
-    // Grant SuperAdmin rights to the specified user
-    if (user.email === 'magloire078@gmail.com') {
-      roleSysteme = 'SuperAdmin';
-      rolesAutorises = ['client', 'restaurateur', 'livreur'];
-    }
 
     const newUserProfile: UserProfile = {
       uid: user.uid,
@@ -57,8 +49,8 @@ export function UserAuthForm() {
       nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
       dateCreation: serverTimestamp(),
       role: 'client', // Default starting role
-      rolesAutorises: rolesAutorises,
-      roleSysteme: roleSysteme,
+      rolesAutorises: ['client'],
+      roleSysteme: 'User',
     };
     
     // Use the .catch() pattern to emit a detailed permission error
