@@ -51,19 +51,18 @@ export function UserAuthForm() {
       rolesAutorises: ['client'],
       roleSysteme: 'User',
     };
-    try {
-      await setDoc(userDocRef, newUserProfile);
-    } catch (error) {
-      console.error("Failed to create user profile client-side", error);
-      const permissionError = new FirestorePermissionError({
+    
+    // Use the .catch() pattern to emit a detailed permission error
+    setDoc(userDocRef, newUserProfile).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
           path: userDocRef.path,
           operation: 'create',
           requestResourceData: newUserProfile,
-      });
-      errorEmitter.emit('permission-error', permissionError);
-      // We still throw to potentially be caught by other error boundaries if needed
-      throw permissionError;
-    }
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // Also throw the error to be caught by the general handler below
+        throw permissionError;
+    });
   }
 
   const handleGoogleSignIn = async () => {
@@ -107,7 +106,7 @@ export function UserAuthForm() {
     } catch (error: any) {
       let description = error.message;
       if (error instanceof FirestorePermissionError) {
-        description = "Erreur de permissions lors de la création du profil. Contactez l'administrateur.";
+        description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
       } else if (error.code === 'auth/email-already-in-use') {
         description = 'Cette adresse e-mail est déjà utilisée.';
       } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
