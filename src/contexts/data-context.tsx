@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -116,122 +117,89 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
-        const collectionsToFetch = ['restaurants', 'plats'];
         const unsubscribes: Unsubscribe[] = [];
-        let publicDataLoaded = 0;
-        let roleSpecificDataLoaded = false;
         
-        const checkCompletion = () => {
-            if (publicDataLoaded >= collectionsToFetch.length && (roleSpecificDataLoaded || !user)) {
-                useDataStore.setState({ isLoading: false });
-            }
-        };
+        // Subscribe to public collections
+        const unsubRestaurants = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
+            useDataStore.setState({ restaurants: list });
+        }, (error) => console.error("Error on restaurants snapshot:", error));
+        unsubscribes.push(unsubRestaurants);
+        
+        const unsubPlats = onSnapshot(collection(db, 'plats'), (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
+            useDataStore.setState({ menuItems: list });
+        }, (error) => console.error("Error on plats snapshot:", error));
+        unsubscribes.push(unsubPlats);
 
-        // Subscribe to public data
-        collectionsToFetch.forEach(collectionName => {
-            const q = collection(db, collectionName);
-            const unsub = onSnapshot(q, (snapshot) => {
-                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                if (collectionName === 'restaurants') {
-                    useDataStore.setState({ restaurants: list as Restaurant[] });
-                } else if (collectionName === 'plats') {
-                    useDataStore.setState({ menuItems: list as MenuItem[] });
-                }
-                publicDataLoaded++;
-                checkCompletion();
-            }, (error) => {
-                console.error(`Error on ${collectionName} snapshot listener:`, error);
-                publicDataLoaded++;
-                checkCompletion();
-            });
-            unsubscribes.push(unsub);
-        });
-
-        // Subscribe to Role-Specific Data
+        // Role-specific data
         if (user && userProfile) {
-            let roleSpecificUnsub: Unsubscribe | null = null;
-            
-            // If user is SuperAdmin, only fetch all users data.
+            // If SuperAdmin, only load users and stop.
             if (userProfile.roleSysteme === 'SuperAdmin') {
-                const usersCollection = collection(db, 'utilisateurs');
-                roleSpecificUnsub = onSnapshot(usersCollection, (snapshot) => {
-                    const usersList = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
-                    useDataStore.setState({ allUsers: usersList });
-                    roleSpecificDataLoaded = true;
-                    checkCompletion();
+                const unsubUsers = onSnapshot(collection(db, 'utilisateurs'), (snapshot) => {
+                    const users = snapshot.docs.map(doc => doc.data() as UserProfile);
+                    useDataStore.setState({ allUsers: users, isLoading: false });
                 }, (error) => {
-                    console.error("Error fetching all users:", error);
-                    roleSpecificDataLoaded = true;
-                    checkCompletion();
+                    console.error("Error on allUsers snapshot:", error);
+                    useDataStore.setState({ isLoading: false });
                 });
-            } 
-            // Otherwise, fetch data based on the active functional role.
-            else {
-                 const allRestaurants = useDataStore.getState().restaurants;
-                 const myRestaurantIds = allRestaurants
-                  .filter(r => r.proprietaireId === user.uid)
-                  .map(r => r.id);
-
-                const ordersCollection = collection(db, 'commandes');
-                let q: Query<DocumentData> | null = null;
-
-                if (activeRole === 'client') {
-                    q = query(ordersCollection, where("userId", "==", user.uid));
-                } else if (activeRole === 'restaurateur' && myRestaurantIds.length > 0) {
-                    q = query(ordersCollection, where('restaurantId', 'in', myRestaurantIds));
-                } else if (activeRole === 'livreur') {
-                    q = query(ordersCollection, or(
-                        where("statut", "==", "En Préparation"),
-                        where("livreurId", "==", user.uid)
-                    ));
-                } 
+                unsubscribes.push(unsubUsers);
                 
-                if (q) {
-                    roleSpecificUnsub = onSnapshot(q, (snapshot) => {
-                        const ordersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-                        const sortedOrders = ordersList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                        useDataStore.setState({ orders: sortedOrders });
-                        roleSpecificDataLoaded = true;
-                        checkCompletion();
-                    }, (error) => {
-                        console.error("Error on orders snapshot listener:", error);
-                        roleSpecificDataLoaded = true;
-                        checkCompletion();
-                    });
-                } else {
-                     useDataStore.setState({ orders: [] });
-                     roleSpecificDataLoaded = true;
-                     checkCompletion();
+                // Do not subscribe to orders for SuperAdmin to avoid conflicts
+                useDataStore.setState({ orders: [], isLoading: false });
+
+            } else { // For all other roles (client, restaurateur, livreur)
+                let ordersQuery: Query<DocumentData> | null = null;
+                
+                if (activeRole === 'client') {
+                    ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
+                } else if (activeRole === 'restaurateur') {
+                    const myRestaurantIds = useDataStore.getState().restaurants
+                        .filter(r => r.proprietaireId === user.uid)
+                        .map(r => r.id);
+                    
+                    if (myRestaurantIds.length > 0) {
+                         ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
+                    }
+                } else if (activeRole === 'livreur') {
+                     ordersQuery = query(collection(db, 'commandes'), or(
+                        where('statut', '==', 'En Préparation'),
+                        where('livreurId', '==', user.uid)
+                    ));
                 }
-            }
-            if (roleSpecificUnsub) {
-                 unsubscribes.push(roleSpecificUnsub);
+                
+                if (ordersQuery) {
+                    const unsubOrders = onSnapshot(ordersQuery, (snapshot) => {
+                        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
+                        useDataStore.setState({ orders: orders, isLoading: false });
+                    }, (error) => {
+                        console.error(`Error on orders snapshot for role ${activeRole}:`, error);
+                        useDataStore.setState({ isLoading: false });
+                    });
+                    unsubscribes.push(unsubOrders);
+                } else {
+                     useDataStore.setState({ orders: [], isLoading: false });
+                }
+
+                // Other roles don't need allUsers
+                 useDataStore.setState({ allUsers: [] });
             }
         } else {
-            // No user, no role-specific data to load
-            roleSpecificDataLoaded = true;
-            checkCompletion();
+            // Not logged in, no role-specific data needed.
+            useDataStore.setState({ isLoading: false, orders: [], allUsers: [] });
         }
 
+
+        // Cleanup function
         return () => {
             unsubscribes.forEach(unsub => unsub());
-             useDataStore.setState({ 
-                restaurants: [], 
-                menuItems: [], 
-                orders: [], 
-                allUsers: [],
-                isLoading: true,
-            });
         };
-    }, [user, userProfile, activeRole]);
+    }, [user, userProfile, activeRole]); // Removed restaurants from dependencies to avoid re-triggering
 
-  return <>{children}</>;
+    return <>{children}</>;
 };
 
 
-// Custom hook to use in components
 export const useData = () => {
-    const store = useDataStore();
-    return store;
+  return useDataStore();
 };
