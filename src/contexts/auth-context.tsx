@@ -8,6 +8,10 @@ import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { updateUserProfileAction, setupInitialUserAction } from '@/app/actions/user-actions';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 interface AuthContextType {
   user: User | null;
@@ -66,9 +70,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               rolesAutorises: ['client'],
               roleSysteme: 'User',
             };
-            await setDoc(userDocRef, newUserProfile);
-            setUserProfile(newUserProfile);
-            setActiveRoleState('client');
+            try {
+                await setupInitialUserAction(user.uid, newUserProfile);
+                setUserProfile(newUserProfile);
+                setActiveRoleState('client');
+            } catch (e) {
+                console.error("Failed to create user profile", e);
+            }
           }
           setLoading(false);
         }, (error) => {
@@ -101,12 +109,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
-      await updateDoc(userDocRef, data);
+      await updateDoc(userDocRef, data).catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+              path: userDocRef.path,
+              operation: 'update',
+              requestResourceData: data,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw permissionError;
+      });
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
-      await updateDoc(userDocRef, data);
+      await updateDoc(userDocRef, data).catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+              path: userDocRef.path,
+              operation: 'update',
+              requestResourceData: data,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw permissionError;
+      });
   };
 
 
@@ -122,6 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
+      <FirebaseErrorListener />
       {children}
     </AuthContext.Provider>
   );
