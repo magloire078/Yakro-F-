@@ -23,12 +23,13 @@ import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
-const loginSchema = z.object({
+const authSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
   password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
+  telephone: z.string().optional(),
 });
 
-type FormData = z.infer<typeof loginSchema>;
+type FormData = z.infer<typeof authSchema>;
 
 export function UserAuthForm() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -37,24 +38,25 @@ export function UserAuthForm() {
   const { toast } = useToast();
   
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(authSchema),
   });
   
-  const setupInitialUser = async (user: import('firebase/auth').User) => {
+  const setupInitialUser = async (user: import('firebase/auth').User, data?: FormData) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
 
     const newUserProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email!,
-      nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
-      dateCreation: serverTimestamp(),
-      role: 'client', // Default starting role
-      rolesAutorises: ['client'],
-      roleSysteme: 'User',
+        uid: user.uid,
+        email: user.email!,
+        nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
+        dateCreation: serverTimestamp(),
+        role: 'client', // Default starting role
+        rolesAutorises: ['client'],
+        roleSysteme: 'User',
+        ...(data?.telephone && { telephone: data.telephone }),
     };
     
     // Use the .catch() pattern to emit a detailed permission error
-    setDoc(userDocRef, newUserProfile).catch(async (serverError) => {
+    setDoc(userDocRef, newUserProfile, { merge: true }).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
           path: userDocRef.path,
           operation: 'create',
@@ -70,7 +72,7 @@ export function UserAuthForm() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider);
       // The onAuthStateChanged listener in AuthContext will handle redirection
       // It will also handle profile creation if the user is new.
       toast({
@@ -98,7 +100,7 @@ export function UserAuthForm() {
         });
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-        await setupInitialUser(userCredential.user);
+        await setupInitialUser(userCredential.user, data);
         toast({
           title: 'Compte créé avec succès',
           description: 'Votre profil a été initialisé.',
@@ -152,6 +154,19 @@ export function UserAuthForm() {
             />
             {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
+           {!isLoginView && (
+            <div className="grid gap-2">
+                <Label htmlFor="telephone">Numéro de téléphone (optionnel)</Label>
+                <Input
+                id="telephone"
+                type="tel"
+                placeholder="Ex: 07 01 02 03 04"
+                disabled={isLoading || isGoogleLoading}
+                {...register('telephone')}
+                />
+                {errors.telephone && <p className="text-sm text-destructive">{errors.telephone.message}</p>}
+            </div>
+          )}
           <Button disabled={isLoading || isGoogleLoading}>
             {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             {isLoginView ? 'Se connecter' : 'Créer un compte'}
