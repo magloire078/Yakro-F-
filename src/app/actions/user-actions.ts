@@ -42,7 +42,8 @@ export async function setupInitialUserAction(uid: string, profileData: UserProfi
                 operation: 'create',
                 requestResourceData: profileData,
             });
-            console.error("Caught permission error in server action:", permissionError.message);
+            errorEmitter.emit('permission-error', permissionError);
+            throw permissionError;
         }
         throw serverError;
     }
