@@ -11,13 +11,17 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
+import type { UserProfile } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
@@ -35,12 +39,40 @@ export function UserAuthForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(loginSchema),
   });
+  
+  const setupInitialUser = async (user: import('firebase/auth').User) => {
+    const userDocRef = doc(db, 'utilisateurs', user.uid);
+    const newUserProfile: UserProfile = {
+      uid: user.uid,
+      email: user.email!,
+      nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
+      dateCreation: serverTimestamp(),
+      role: 'client',
+      rolesAutorises: ['client'],
+      roleSysteme: 'User',
+    };
+    try {
+      await setDoc(userDocRef, newUserProfile);
+    } catch (error) {
+      console.error("Failed to create user profile client-side", error);
+      const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'create',
+          requestResourceData: newUserProfile,
+      });
+      errorEmitter.emit('permission-error', permissionError);
+      // We still throw to potentially be caught by other error boundaries if needed
+      throw permissionError;
+    }
+  }
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      // The onAuthStateChanged listener in AuthContext will handle redirection
+      // It will also handle profile creation if the user is new.
       toast({
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté.',
@@ -65,17 +97,27 @@ export function UserAuthForm() {
           title: 'Connexion réussie',
         });
       } else {
-        await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+        await setupInitialUser(userCredential.user);
         toast({
           title: 'Compte créé avec succès',
-          description: 'Vous pouvez maintenant vous connecter.',
+          description: 'Votre profil a été initialisé.',
         });
       }
     } catch (error: any) {
+      let description = error.message;
+      if (error instanceof FirestorePermissionError) {
+        description = "Erreur de permissions lors de la création du profil. Contactez l'administrateur.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        description = 'Cette adresse e-mail est déjà utilisée.';
+      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        description = 'Email ou mot de passe incorrect.';
+      }
+      
       toast({
         variant: 'destructive',
         title: isLoginView ? 'Erreur de connexion' : 'Erreur d\'inscription',
-        description: error.code === 'auth/email-already-in-use' ? 'Cette adresse e-mail est déjà utilisée.' : error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' ? 'Email ou mot de passe incorrect.' : error.message,
+        description: description,
       });
     } finally {
       setIsLoading(false);

@@ -29,22 +29,3 @@ export async function updateUserProfileAction(uid: string, data: Partial<UserPro
      throw serverError; // Re-throw original error
   }
 }
-
-export async function setupInitialUserAction(uid: string, profileData: UserProfile) {
-    const userDocRef = doc(db, 'utilisateurs', uid);
-    try {
-        await setDoc(userDocRef, profileData);
-        revalidatePath('/login');
-    } catch (serverError: any) {
-         if (serverError.code === 'permission-denied') {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'create',
-                requestResourceData: profileData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw permissionError;
-        }
-        throw serverError;
-    }
-}

@@ -8,7 +8,7 @@ import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { updateUserProfileAction, setupInitialUserAction } from '@/app/actions/user-actions';
+import { updateUserProfileAction } from '@/app/actions/user-actions';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
@@ -60,23 +60,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
           } else {
-            // Create profile if it doesn't exist
-            const newUserProfile: UserProfile = {
-              uid: user.uid,
-              email: user.email!,
-              nom: user.displayName || user.email?.split('@')[0],
-              dateCreation: serverTimestamp(),
-              role: 'client',
-              rolesAutorises: ['client'],
-              roleSysteme: 'User',
-            };
-            try {
-                await setupInitialUserAction(user.uid, newUserProfile);
-                setUserProfile(newUserProfile);
-                setActiveRoleState('client');
-            } catch (e) {
-                console.error("Failed to create user profile", e);
-            }
+            // Profile is created client-side in user-auth-form now
+            // This listener will pick it up once created.
+            // We can set a temporary profile state if needed, or just let it load.
           }
           setLoading(false);
         }, (error) => {
