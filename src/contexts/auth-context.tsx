@@ -8,7 +8,6 @@ import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { updateUserProfileAction } from '@/app/actions/user-actions';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
@@ -108,18 +107,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
     const userDocRef = doc(db, 'utilisateurs', uid);
-    try {
-        await updateDoc(userDocRef, data);
-    } catch (serverError: any) {
+    await updateDoc(userDocRef, data).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
-        // Re-throw the original error so the UI can catch it.
-        throw serverError;
-    }
+        throw permissionError;
+    });
   };
 
 
