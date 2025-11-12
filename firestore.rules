@@ -12,6 +12,7 @@ service cloud.firestore {
       return isUserAuthenticated() && request.auth.uid == uid;
     }
 
+    // Utilise un custom claim pour vérifier le rôle, évitant une lecture de la base de données.
     function isSuperAdmin() {
       return request.auth.token.roleSysteme == 'SuperAdmin';
     }
