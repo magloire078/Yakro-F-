@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 
 export default function AdminPage() {
-    const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
+    const { user, userProfile, loading: authLoading, updateOtherUserProfile } from useAuth();
     const { allUsers, isLoading: dataLoading } = useData();
     const router = useRouter();
     const { toast } = useToast();
@@ -32,14 +32,11 @@ export default function AdminPage() {
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);
-        try {
-            await updateOtherUserProfile(userId, { roleSysteme: newRole });
-            toast({ title: 'Rôle système mis à jour' });
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de mettre à jour le rôle.' });
-        } finally {
-            setUpdatingUserId(null);
-        }
+        await updateOtherUserProfile(userId, { roleSysteme: newRole });
+        toast({ title: 'Mise à jour du rôle système...' });
+        // The UI will update automatically from the data context listener.
+        // A success toast can be added in the context if desired.
+        setUpdatingUserId(null);
     };
 
     const handleAllowedRoleChange = async (userId: string, role: AppRole, isChecked: boolean) => {
@@ -52,14 +49,9 @@ export default function AdminPage() {
             ? [...currentRoles, role]
             : currentRoles.filter(r => r !== role);
         
-        try {
-            await updateOtherUserProfile(userId, { rolesAutorises: newRoles });
-            toast({ title: 'Permissions mises à jour' });
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de mettre à jour les permissions.' });
-        } finally {
-            setUpdatingUserId(null);
-        }
+        await updateOtherUserProfile(userId, { rolesAutorises: newRoles });
+        toast({ title: 'Mise à jour des permissions...' });
+        setUpdatingUserId(null);
     };
 
     if (authLoading || dataLoading || userProfile?.roleSysteme !== 'SuperAdmin') {

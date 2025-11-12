@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -31,6 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = React.useState(true);
   const [activeRole, setActiveRoleState] = React.useState<AppRole>('client');
   const router = useRouter();
+  const { toast } = useToast();
 
   React.useEffect(() => {
     let unsubscribeProfile: Unsubscribe | undefined;
@@ -107,15 +109,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
     const userDocRef = doc(db, 'utilisateurs', uid);
-    await updateDoc(userDocRef, data).catch(async (serverError) => {
+    try {
+        await updateDoc(userDocRef, data);
+        // Optional: Show a success toast here if you want confirmation in the UI
+        toast({ title: 'Succès', description: 'Le profil a été mis à jour.' });
+    } catch (serverError) {
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
+        // Also show a generic error toast to the user
+        toast({ variant: 'destructive', title: 'Erreur de permission', description: "Vous n'avez pas les droits pour effectuer cette action." });
+        // Re-throw the error so it can be caught by the development overlay
         throw permissionError;
-    });
+    }
   };
 
 
