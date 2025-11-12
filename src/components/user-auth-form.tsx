@@ -19,7 +19,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -42,14 +42,23 @@ export function UserAuthForm() {
   
   const setupInitialUser = async (user: import('firebase/auth').User) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
+    let roleSysteme: SystemRole = 'User';
+    let rolesAutorises: AppRole[] = ['client'];
+
+    // Grant SuperAdmin rights to the specified user
+    if (user.email === 'magloire078@gmail.com') {
+      roleSysteme = 'SuperAdmin';
+      rolesAutorises = ['client', 'restaurateur', 'livreur'];
+    }
+
     const newUserProfile: UserProfile = {
       uid: user.uid,
       email: user.email!,
       nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
       dateCreation: serverTimestamp(),
-      role: 'client',
-      rolesAutorises: ['client'],
-      roleSysteme: 'User',
+      role: 'client', // Default starting role
+      rolesAutorises: rolesAutorises,
+      roleSysteme: roleSysteme,
     };
     
     // Use the .catch() pattern to emit a detailed permission error
