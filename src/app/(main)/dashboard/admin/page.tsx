@@ -96,8 +96,8 @@ export default function AdminPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {allUsers.map(u => (
-                                        <TableRow key={u.uid} className={updatingUserId === u.uid ? 'opacity-50' : ''}>
+                                    {allUsers.map((u, index) => (
+                                        <TableRow key={u.uid || index} className={updatingUserId === u.uid ? 'opacity-50' : ''}>
                                             <TableCell>
                                                 <div className="font-medium">{u.nom || 'Non défini'}</div>
                                                 <div className="text-sm text-muted-foreground">{u.email}</div>
