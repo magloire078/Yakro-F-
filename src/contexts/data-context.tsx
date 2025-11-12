@@ -12,6 +12,9 @@ import { useAuth } from './auth-context';
 import { addRestaurantAction, updateRestaurantAction } from '@/app/actions/restaurant-actions';
 import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { doc } from 'firebase/firestore';
 
 
 interface DataState {
@@ -49,13 +52,24 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 
   updateRestaurant: async (restaurantId, data, imageFile) => {
-    const formData = new FormData();
-    formData.append('restaurantId', restaurantId);
-    formData.append('data', JSON.stringify(data));
-    if (imageFile) {
-        formData.append('image', imageFile);
+    const restaurantDocRef = doc(db, 'restaurants', restaurantId);
+    try {
+        const formData = new FormData();
+        formData.append('restaurantId', restaurantId);
+        formData.append('data', JSON.stringify(data));
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+        await updateRestaurantAction(formData);
+    } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+            path: restaurantDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
     }
-    await updateRestaurantAction(formData);
   },
 
   addMenuItem: async (item, imageFile) => {
