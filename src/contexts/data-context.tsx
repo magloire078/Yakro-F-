@@ -178,13 +178,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const publicDataLoaded = allRestaurants.length > 0 || !useDataStore.getState().isLoading;
 
         if (user && userProfile) {
-            // SuperAdmin: Fetch all users. This query now has its own loading management.
+             // SuperAdmin: Fetch all users. This query now has its own loading management.
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 unsubscribe = fetchAllUsers();
-                // Let fetchAllUsers handle the isLoading state
-            } 
+                return () => { if (unsubscribe) unsubscribe(); }; // Early return for SuperAdmin
+            }
+
             // Other roles: Fetch orders
-            else if (publicDataLoaded) {
+            if (publicDataLoaded) {
                  const myRestaurantIds = allRestaurants
                   .filter(r => r.proprietaireId === user.uid)
                   .map(r => r.id);
@@ -232,7 +233,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 useDataStore.setState({ orders: [], allUsers: [] });
             }
         };
-    }, [user, userProfile, activeRole, useDataStore.getState().restaurants, fetchAllUsers]);
+    }, [user, userProfile, activeRole, fetchAllUsers]);
 
   return <>{children}</>;
 };
