@@ -107,16 +107,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-      const userDocRef = doc(db, 'utilisateurs', uid);
-      await updateDoc(userDocRef, data).catch(async (serverError) => {
-          const permissionError = new FirestorePermissionError({
-              path: userDocRef.path,
-              operation: 'update',
-              requestResourceData: data,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          throw permissionError;
-      });
+    const userDocRef = doc(db, 'utilisateurs', uid);
+    try {
+        await updateDoc(userDocRef, data);
+    } catch (serverError: any) {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // Re-throw the original error so the UI can catch it.
+        throw serverError;
+    }
   };
 
 
