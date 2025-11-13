@@ -15,17 +15,21 @@ service cloud.firestore {
     function isRestaurantOwner(restaurantId) {
        return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
     }
+    
+    function isSuperAdmin() {
+      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
+    }
 
     match /restaurants/{restaurantId} {
       allow read: if true;
       allow create: if isUser(request.resource.data.proprietaireId);
-      allow update, delete: if isRestaurantOwner(restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
+      allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
     
     match /plats/{platId} {
         allow read: if true;
         allow create: if isRestaurantOwner(request.resource.data.restaurantId);
-        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
+        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
     }
 
     match /commandes/{orderId} {
@@ -33,7 +37,7 @@ service cloud.firestore {
           request.auth.uid == resource.data.userId ||
           request.auth.uid == resource.data.livreurId ||
           isRestaurantOwner(resource.data.restaurantId) ||
-          get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
+          isSuperAdmin();
 
       allow create: if isUser(request.resource.data.userId);
 
@@ -41,17 +45,23 @@ service cloud.firestore {
           (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) ||
           (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
+          isSuperAdmin();
     }
-    
-    match /utilisateurs {
-      allow list: if isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
+
+    // Allow users to list their own orders, or livreurs to list available/their orders
+    match /commandes/{orderId} {
+       allow list: if 
+          (isUserAuthenticated() && request.query.where.field == 'userId' && request.query.where.value == request.auth.uid) ||
+          (isUserAuthenticated() && request.query.where.field == 'livreurId' && request.query.where.value == request.auth.uid) ||
+          (isUserAuthenticated() && request.query.where.field == 'restaurantId' && isRestaurantOwner(request.query.where.value)) ||
+          isSuperAdmin();
     }
     
     match /utilisateurs/{userId} {
-      allow read: if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin');
-      allow update: if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin');
+      allow read: if isUser(userId) || isSuperAdmin();
+      allow update: if isUser(userId) || isSuperAdmin();
       allow create: if isUserAuthenticated();
+      allow list: if isSuperAdmin();
     }
   }
 }
