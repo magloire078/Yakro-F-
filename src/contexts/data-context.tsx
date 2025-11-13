@@ -22,9 +22,7 @@ interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
   orders: Order[];
-  allUsers: UserProfile[];
   isLoading: boolean;
-  setAllUsers: (users: UserProfile[]) => void;
   addRestaurant: (data: Omit<Restaurant, 'id'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
@@ -40,9 +38,7 @@ const useDataStore = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
-  allUsers: [],
   isLoading: true,
-  setAllUsers: (users) => set({ allUsers: users }),
   addRestaurant: async (data, imageFile) => {
     const formData = new FormData();
     formData.append('data', JSON.stringify(data));
@@ -120,64 +116,74 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         useDataStore.setState({ isLoading: true });
 
         const unsubscribes: Unsubscribe[] = [];
-        
+
         // Subscribe to public collections
-        const unsubRestaurants = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
+        unsubscribes.push(onSnapshot(collection(db, 'restaurants'), (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
             useDataStore.setState({ restaurants: list });
-        }, (error) => console.error("Error on restaurants snapshot:", error));
-        unsubscribes.push(unsubRestaurants);
+        }, (error) => console.error("Error on restaurants snapshot:", error)));
         
-        const unsubPlats = onSnapshot(collection(db, 'plats'), (snapshot) => {
+        unsubscribes.push(onSnapshot(collection(db, 'plats'), (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
             useDataStore.setState({ menuItems: list });
-            useDataStore.setState({ isLoading: authLoading });
-        }, (error) => console.error("Error on plats snapshot:", error));
-        unsubscribes.push(unsubPlats);
-
-        if (authLoading) {
-            useDataStore.setState({ isLoading: true });
-        } else if (user && userProfile) {
-            let ordersQuery: Query<DocumentData> | null = null;
-            
-            if (activeRole === 'client') {
-                ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
-            } else if (activeRole === 'restaurateur') {
-                const myRestaurantIds = useDataStore.getState().restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-                if (myRestaurantIds.length > 0) {
-                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                }
-            } else if (activeRole === 'livreur') {
-                 ordersQuery = query(collection(db, 'commandes'), or(
-                    where('statut', '==', 'En Préparation'),
-                    where('livreurId', '==', user.uid)
-                ));
+        }, (error) => console.error("Error on plats snapshot:", error)));
+        
+        // This will be the dynamic subscription for orders based on user role
+        let ordersUnsubscribe: Unsubscribe | null = null;
+        
+        const setupSubscriptions = () => {
+            // Clean up previous orders listener if it exists
+            if (ordersUnsubscribe) {
+                ordersUnsubscribe();
+                ordersUnsubscribe = null;
             }
 
-            if (ordersQuery) {
-                const unsubOrders = onSnapshot(ordersQuery, (snapshot) => {
-                    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
-                    useDataStore.setState({ orders });
-                }, (error) => {
-                    console.error(`Error on orders snapshot for role ${activeRole}:`, error);
-                });
-                unsubscribes.push(unsubOrders);
+            if (!authLoading && user && userProfile) {
+                let ordersQuery: Query<DocumentData> | null = null;
+                
+                if (activeRole === 'client') {
+                    ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
+                } else if (activeRole === 'restaurateur') {
+                    const myRestaurantIds = useDataStore.getState().restaurants
+                        .filter(r => r.proprietaireId === user.uid)
+                        .map(r => r.id);
+                    if (myRestaurantIds.length > 0) {
+                         ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
+                    }
+                } else if (activeRole === 'livreur') {
+                     ordersQuery = query(collection(db, 'commandes'), or(
+                        where('statut', '==', 'En Préparation'),
+                        where('livreurId', '==', user.uid)
+                    ));
+                }
+
+                if (ordersQuery) {
+                    ordersUnsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+                        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
+                        useDataStore.setState({ orders });
+                    }, (error) => {
+                        console.error(`Error on orders snapshot for role ${activeRole}:`, error);
+                    });
+                } else {
+                    useDataStore.setState({ orders: [] });
+                }
             } else {
+                // No user or auth is loading, reset user-specific data
                 useDataStore.setState({ orders: [] });
             }
-        } else {
-            // No user, reset all user-specific data
-            useDataStore.setState({ orders: [], allUsers: [], isLoading: false });
-        }
+             useDataStore.setState({ isLoading: false });
+        };
+        
+        setupSubscriptions();
 
-
-        // Cleanup function
+        // Cleanup function for all subscriptions
         return () => {
             unsubscribes.forEach(unsub => unsub());
+            if (ordersUnsubscribe) {
+                ordersUnsubscribe();
+            }
         };
-    }, [user, userProfile, activeRole, authLoading]);
+    }, [user, userProfile, activeRole, authLoading]); // Re-run effect when user/role changes
 
     return <>{children}</>;
 };
