@@ -9,13 +9,16 @@ import type { MenuItem } from '@/lib/types';
 import { useCart } from '@/contexts/cart-context';
 import { AddToCartDialog } from './add-to-cart-dialog';
 import * as React from 'react';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface MenuItemCardProps {
   item: MenuItem;
 }
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
-  const imageSrc = item.image || `https://placehold.co/100x100.png`;
+  const imageSrc = (item.image && !item.image.includes('placehold.co'))
+    ? item.image 
+    : getPlaceholderImage(item.indiceImage, 100, 100);
 
   return (
     <Card className="flex items-center p-4 gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 group">

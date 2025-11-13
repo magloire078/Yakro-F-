@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/auth-context';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Label } from '@/components/ui/label';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 const restaurantFormSchema = z.object({
   nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
@@ -70,7 +71,10 @@ export default function EditRestaurantPage() {
             }
             setRestaurant(r);
             form.reset(r);
-            setImagePreview(r.image);
+            const imageSrc = r.image.includes('placehold.co')
+                ? getPlaceholderImage(r.indiceImage, 600, 400)
+                : r.image;
+            setImagePreview(imageSrc);
         }
     }, [restaurantId, getRestaurant, user, router, toast, form]);
 

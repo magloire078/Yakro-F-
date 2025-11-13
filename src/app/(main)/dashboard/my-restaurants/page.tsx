@@ -12,6 +12,7 @@ import { Loader, UtensilsCrossed, Edit, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import type { Restaurant } from '@/lib/types';
 import Link from 'next/link';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export default function MyRestaurantsPage() {
     const { user, loading: authLoading, activeRole } = useAuth();
@@ -54,34 +55,39 @@ export default function MyRestaurantsPage() {
 
             {myRestaurants.length > 0 ? (
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {myRestaurants.map(restaurant => (
-                        <Card key={restaurant.id} className="flex flex-col">
-                            <CardHeader className="p-0">
-                                <div className="relative h-40 w-full rounded-t-lg overflow-hidden bg-muted">
-                                    <Image
-                                        src={restaurant.image || `https://placehold.co/400x300.png`}
-                                        alt={restaurant.nom}
-                                        fill
-                                        className="object-cover"
-                                        data-ai-hint={restaurant.indiceImage}
-                                    />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-4 flex-grow flex flex-col">
-                                <CardTitle className="font-headline text-xl">{restaurant.nom}</CardTitle>
-                                <CardDescription className="mt-1">{restaurant.cuisine}</CardDescription>
-                                <div className="flex-grow" />
-                                <div className="mt-4 flex justify-end">
-                                    <Button variant="default" asChild>
-                                        <Link href={`/dashboard/my-restaurants/${restaurant.id}/edit`}>
-                                            <Edit />
-                                            Modifier
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    {myRestaurants.map(restaurant => {
+                        const imageSrc = restaurant.image.includes('placehold.co')
+                            ? getPlaceholderImage(restaurant.indiceImage, 400, 300)
+                            : restaurant.image;
+                        return (
+                            <Card key={restaurant.id} className="flex flex-col">
+                                <CardHeader className="p-0">
+                                    <div className="relative h-40 w-full rounded-t-lg overflow-hidden bg-muted">
+                                        <Image
+                                            src={imageSrc}
+                                            alt={restaurant.nom}
+                                            fill
+                                            className="object-cover"
+                                            data-ai-hint={restaurant.indiceImage}
+                                        />
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-4 flex-grow flex flex-col">
+                                    <CardTitle className="font-headline text-xl">{restaurant.nom}</CardTitle>
+                                    <CardDescription className="mt-1">{restaurant.cuisine}</CardDescription>
+                                    <div className="flex-grow" />
+                                    <div className="mt-4 flex justify-end">
+                                        <Button variant="default" asChild>
+                                            <Link href={`/dashboard/my-restaurants/${restaurant.id}/edit`}>
+                                                <Edit />
+                                                Modifier
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )
+                    })}
                  </div>
             ) : (
                 <Card className="max-w-lg mx-auto text-center p-8 mt-16">

@@ -11,6 +11,7 @@ import { Card } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
 import { Separator } from './ui/separator';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -24,7 +25,9 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const handleReorder = () => {
     order.plats.forEach(item => {
         const menuItem = getMenuItem(item.id);
-        const imageSrc = item.image || `https://placehold.co/100x100.png`;
+        const imageSrc = (item.image && !item.image.includes('placehold.co'))
+            ? item.image
+            : getPlaceholderImage(item.indiceImage, 100, 100);
         if (menuItem) {
             addToCart({...item, image: imageSrc });
         }
@@ -65,10 +68,13 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 {order.plats.map((item, index) => {
                     const menuItem = getMenuItem(item.id);
                     if (!menuItem) return null;
+                    const imageSrc = (item.image && !item.image.includes('placehold.co'))
+                        ? item.image
+                        : getPlaceholderImage(item.indiceImage, 100, 100);
                     return (
                         <div key={`${item.id}-${index}`} className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
-                                <Image src={item.image || `https://placehold.co/100x100.png`} alt={item.nom} width={40} height={40} className="rounded-md" data-ai-hint={item.indiceImage}/>
+                                <Image src={imageSrc} alt={item.nom} width={40} height={40} className="rounded-md" data-ai-hint={item.indiceImage}/>
                                 <div>
                                     <span className="font-medium">{item.quantite}x {item.nom}</span>
                                      <div className="text-xs text-muted-foreground">

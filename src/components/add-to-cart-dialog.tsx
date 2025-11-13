@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { MenuItem, MenuOption } from '@/lib/types';
 import Image from 'next/image';
 import { Minus, Plus } from 'lucide-react';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface AddToCartDialogProps {
   item: MenuItem;
@@ -99,6 +100,10 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
     return (basePrice + sidePrice + drinkPrice) * quantity;
   }
 
+  const dialogImageSrc = (item.image && !item.image.includes('placehold.co'))
+    ? item.image
+    : getPlaceholderImage(item.indiceImage, 400, 200);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild onClick={handleTriggerClick}>{children}</DialogTrigger>
@@ -106,7 +111,7 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <div className="relative w-full h-32 rounded-lg overflow-hidden mb-4">
-                <Image src={imageSrc} alt={item.nom} fill className="object-cover" data-ai-hint={item.indiceImage}/>
+                <Image src={dialogImageSrc} alt={item.nom} fill className="object-cover" data-ai-hint={item.indiceImage}/>
             </div>
             <DialogTitle>{item.nom}</DialogTitle>
             <DialogDescription>{item.description}</DialogDescription>

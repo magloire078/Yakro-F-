@@ -19,6 +19,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { type CartItem } from '@/lib/types';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
   const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder, clearCart } = useCart();
@@ -67,10 +68,13 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <ScrollArea className="flex-1 pr-4">
               <div className="flex flex-col gap-4 py-4">
                 {cartItems.map((item, index) => {
+                    const imageSrc = (item.image && !item.image.includes('placehold.co'))
+                        ? item.image
+                        : getPlaceholderImage(item.indiceImage, 100, 100);
                     return (
                         <div key={`${item.id}-${item.accompagnementSelectionne?.nom}-${item.boissonSelectionnee?.nom}-${index}`} className="flex items-start gap-4">
                             <Image
-                            src={item.image || `https://placehold.co/100x100.png`}
+                            src={imageSrc}
                             alt={item.nom}
                             width={64}
                             height={64}

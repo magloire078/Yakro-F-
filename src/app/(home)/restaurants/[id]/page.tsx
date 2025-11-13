@@ -18,6 +18,7 @@ import { generateAudioReview } from '@/ai/flows/generate-audio-review-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export default function RestaurantPage() {
     const params = useParams();
@@ -147,16 +148,19 @@ export default function RestaurantPage() {
     }
 
     const restaurantMenu = menuItems.filter(item => item.restaurantId === params.id);
+    const imageSrc = restaurant.image.includes('placehold.co')
+        ? getPlaceholderImage(restaurant.indiceImage, 1200, 400)
+        : restaurant.image;
 
     return (
         <div>
             {/* Header */}
             <div className="relative h-48 md:h-64 w-full -mx-4 md:-mx-8 -mt-4 md:-mt-8">
                 <Image 
-                    src={restaurant.image}
+                    src={imageSrc}
                     alt={restaurant?.nom || 'Image du restaurant'}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    sizes="(max-width: 768px) 100vw, 100vw"
                     style={{objectFit: 'cover'}}
                     data-ai-hint={restaurant.indiceImage}
                     className="md:rounded-xl"

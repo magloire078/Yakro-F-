@@ -24,7 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 
 export default function DashboardMenuPage() {
@@ -113,56 +114,61 @@ export default function DashboardMenuPage() {
                 </Card>
             ) : myMenuItems.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {myMenuItems.map(item => (
-                        <Card key={item.id} className="flex flex-col">
-                            <CardHeader>
-                                <div className="relative h-40 w-full rounded-lg overflow-hidden bg-muted">
-                                    <Image
-                                        src={item.image || `https://placehold.co/400x300.png`}
-                                        alt={item.nom}
-                                        fill
-                                        className="object-cover"
-                                        data-ai-hint={item.indiceImage}
-                                    />
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex-grow">
-                                <Badge variant="secondary" className="mb-2">{getRestaurantName(item.restaurantId)}</Badge>
-                                <CardTitle className="font-headline text-xl">{item.nom}</CardTitle>
-                                <CardDescription className="mt-1 h-12 overflow-hidden">{item.description}</CardDescription>
-                                <p className="text-lg font-bold text-primary mt-3">{item.prix.toLocaleString('fr-FR')} FCFA</p>
-                            </CardContent>
-                            <CardFooter className="flex gap-2">
-                                <Button variant="outline" className="w-full" onClick={() => setEditingItem(item)}>
-                                    <Edit />
-                                    Modifier
-                                </Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" className="w-full" disabled={isDeleting === item.id}>
-                                            {isDeleting === item.id ? <Loader className="animate-spin"/> : <Trash2 />}
-                                            Supprimer
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                        <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Cette action est irréversible. Le plat "{item.nom}" sera définitivement supprimé.
-                                        </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteItem(item.id)} disabled={!!isDeleting}>
-                                            {isDeleting === item.id && <Loader className="animate-spin" />}
-                                            Confirmer
-                                        </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </CardFooter>
-                        </Card>
-                    ))}
+                    {myMenuItems.map(item => {
+                        const imageSrc = (item.image && !item.image.includes('placehold.co'))
+                            ? item.image
+                            : getPlaceholderImage(item.indiceImage, 400, 300);
+                        return (
+                            <Card key={item.id} className="flex flex-col">
+                                <CardHeader>
+                                    <div className="relative h-40 w-full rounded-lg overflow-hidden bg-muted">
+                                        <Image
+                                            src={imageSrc}
+                                            alt={item.nom}
+                                            fill
+                                            className="object-cover"
+                                            data-ai-hint={item.indiceImage}
+                                        />
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <Badge variant="secondary" className="mb-2">{getRestaurantName(item.restaurantId)}</Badge>
+                                    <CardTitle className="font-headline text-xl">{item.nom}</CardTitle>
+                                    <CardDescription className="mt-1 h-12 overflow-hidden">{item.description}</CardDescription>
+                                    <p className="text-lg font-bold text-primary mt-3">{item.prix.toLocaleString('fr-FR')} FCFA</p>
+                                </CardContent>
+                                <CardFooter className="flex gap-2">
+                                    <Button variant="outline" className="w-full" onClick={() => setEditingItem(item)}>
+                                        <Edit />
+                                        Modifier
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" className="w-full" disabled={isDeleting === item.id}>
+                                                {isDeleting === item.id ? <Loader className="animate-spin"/> : <Trash2 />}
+                                                Supprimer
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Cette action est irréversible. Le plat "{item.nom}" sera définitivement supprimé.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteItem(item.id)} disabled={!!isDeleting}>
+                                                {isDeleting === item.id && <Loader className="animate-spin" />}
+                                                Confirmer
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </CardFooter>
+                            </Card>
+                        )
+                    })}
                 </div>
             ) : (
                 <Card className="text-center p-12">

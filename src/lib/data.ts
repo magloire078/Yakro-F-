@@ -17,7 +17,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.5,
         tempsDeLivraison: 35,
         fraisDeLivraison: 1000,
-        image: 'https://placehold.co/600x400.png',
+        image: '',
         indiceImage: 'maquis restaurant african',
         adresse: 'Quartier 2000, Yamoussoukro'
     },
@@ -28,7 +28,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.8,
         tempsDeLivraison: 45,
         fraisDeLivraison: 1500,
-        image: 'https://placehold.co/600x400.png',
+        image: '',
         indiceImage: 'french bistro fine dining',
         adresse: 'Rue des Lacs, Yamoussoukro'
     },
@@ -39,7 +39,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.2,
         tempsDeLivraison: 30,
         fraisDeLivraison: 500,
-        image: 'https://placehold.co/600x400.png',
+        image: '',
         indiceImage: 'pizza oven italy',
         adresse: 'Centre-ville, près du marché'
     },
@@ -50,7 +50,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.6,
         tempsDeLivraison: 40,
         fraisDeLivraison: 1000,
-        image: 'https://placehold.co/600x400.png',
+        image: '',
         indiceImage: 'grilled chicken barbecue',
         adresse: 'Route de l\'aéroport, Yamoussoukro'
     },
@@ -61,7 +61,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.9,
         tempsDeLivraison: 25,
         fraisDeLivraison: 500,
-        image: 'https://placehold.co/600x400.png',
+        image: '',
         indiceImage: 'french pastries cakes',
         adresse: 'Quartier Millionnaire, Yamoussoukro'
     }

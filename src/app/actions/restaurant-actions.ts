@@ -32,7 +32,7 @@ export async function addRestaurantAction(formData: FormData) {
         const docRef = await addDoc(collection(db, "restaurants"), restaurantData);
         const restaurantId = docRef.id;
 
-        let imageUrl = `https://placehold.co/600x400.png`;
+        let imageUrl = ""; // Default to empty string
 
         if (imageFile) {
             imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);

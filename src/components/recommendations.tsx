@@ -12,6 +12,7 @@ import { useCart } from '@/contexts/cart-context';
 import type { CartItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface RecommendationsProps {
   recommendationsData: PersonalizedRecommendationsOutput | null;
@@ -47,10 +48,13 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   const handleAddToCart = (recommendedItemName: string) => {
     const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === recommendedItemName.toLowerCase());
     if (menuItem) {
+      const imageSrc = (menuItem.image && !menuItem.image.includes('placehold.co'))
+        ? menuItem.image
+        : getPlaceholderImage(menuItem.indiceImage, 100, 100);
       const cartItem: CartItem = {
         ...menuItem,
         quantite: 1,
-        image: `https://placehold.co/100x100.png`
+        image: imageSrc
       };
       addToCart(cartItem);
       toast({
@@ -68,7 +72,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   
   const RecommendationCard = ({ rec }: { rec: any}) => {
     const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === rec.item.toLowerCase());
-    const imageSrc = `https://placehold.co/600x400.png`;
+    const imageSrc = menuItem ? ((menuItem.image && !menuItem.image.includes('placehold.co')) ? menuItem.image : getPlaceholderImage(menuItem.indiceImage, 600, 400)) : getPlaceholderImage(rec.cuisine, 600, 400);
     
     return (
         <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">

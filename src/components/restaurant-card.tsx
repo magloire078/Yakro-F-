@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Star, Clock, Bike } from 'lucide-react';
 import type { Restaurant } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -13,6 +14,10 @@ interface RestaurantCardProps {
 }
 
 export function RestaurantCard({ restaurant, featured = false, matchReason }: RestaurantCardProps) {
+  const imageSrc = restaurant.image.includes('placehold.co') 
+    ? getPlaceholderImage(restaurant.indiceImage, 600, 400) 
+    : restaurant.image;
+
   return (
     <Link href={`/restaurants/${restaurant.id}`}>
       <Card className={cn(
@@ -21,7 +26,7 @@ export function RestaurantCard({ restaurant, featured = false, matchReason }: Re
       )}>
         <CardHeader className="p-0 relative h-40">
           <Image
-            src={restaurant.image}
+            src={imageSrc}
             alt={restaurant.nom || ''}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
