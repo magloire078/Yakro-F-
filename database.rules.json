@@ -9,24 +9,24 @@
         "match /restaurants/{restaurantId}": {
             "allow read": "if true;",
             "allow create": "if isUser(request.resource.data.proprietaireId);",
-            "allow update, delete": "if isRestaurantOwner(restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';"
+            "allow update, delete": "if isRestaurantOwner(restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';"
         },
         "match /plats/{platId}": {
             "allow read": "if true;",
             "allow create": "if isRestaurantOwner(request.resource.data.restaurantId);",
-            "allow update, delete": "if isRestaurantOwner(resource.data.restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';"
+            "allow update, delete": "if isRestaurantOwner(resource.data.restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';"
         },
         "match /commandes/{orderId}": {
-          "allow read": "if request.auth.uid == resource.data.userId || request.auth.uid == resource.data.livreurId || isRestaurantOwner(resource.data.restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';",
+          "allow read": "if request.auth.uid == resource.data.userId || request.auth.uid == resource.data.livreurId || isRestaurantOwner(resource.data.restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';",
           "allow create": "if isUser(request.resource.data.userId);",
-          "allow update": "if (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) || (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) || (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';"
+          "allow update": "if (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) || (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) || (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';"
         },
         "match /utilisateurs": {
-          "allow list": "if isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';"
+          "allow list": "if get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';"
         },
         "match /utilisateurs/{userId}": {
-          "allow read": "if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin');",
-          "allow update": "if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin');",
+          "allow read": "if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin');",
+          "allow update": "if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin');",
           "allow create": "if isUserAuthenticated();"
         }
       }
