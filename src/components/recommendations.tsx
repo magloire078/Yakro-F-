@@ -75,7 +75,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
             <CardHeader className="p-0">
               <Image
                   src={imageSrc}
-                  alt={rec.item || ''}
+                  alt={rec.item || 'plat recommandé'}
                   width={600}
                   height={400}
                   className="w-full h-48 object-cover"
