@@ -112,8 +112,8 @@ export default function AdminHomePage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {latestUsers.map(u => (
-                                <TableRow key={u.uid}>
+                            {latestUsers.map((u, index) => (
+                                <TableRow key={u.uid || index}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar>
