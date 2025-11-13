@@ -28,6 +28,8 @@ export interface Restaurant {
   indiceImage: string;
   adresse?: string;
   enVedette?: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface CartItem extends MenuItem {

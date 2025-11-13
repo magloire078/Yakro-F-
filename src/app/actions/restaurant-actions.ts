@@ -27,6 +27,9 @@ export async function addRestaurantAction(formData: FormData) {
             ...data,
             note: 0,
             indiceImage: `${data.cuisine} restaurant`,
+            // Add dummy coordinates for now if not provided
+            latitude: data.latitude || 6.82,
+            longitude: data.longitude || -5.28
         };
 
         const docRef = await addDoc(collection(db, "restaurants"), restaurantData);

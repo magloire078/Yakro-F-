@@ -1,8 +1,9 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
-import { Star, Clock, Bike } from 'lucide-react';
+import { Star, Clock, Bike, MapPin } from 'lucide-react';
 import type { Restaurant } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
@@ -11,9 +12,10 @@ interface RestaurantCardProps {
   restaurant: Restaurant;
   featured?: boolean;
   matchReason?: string;
+  distance?: number;
 }
 
-export function RestaurantCard({ restaurant, featured = false, matchReason }: RestaurantCardProps) {
+export function RestaurantCard({ restaurant, featured = false, matchReason, distance }: RestaurantCardProps) {
   const imageSrc = restaurant.image.includes('placehold.co') 
     ? getPlaceholderImage(restaurant.indiceImage, 600, 400) 
     : restaurant.image;
@@ -41,6 +43,12 @@ export function RestaurantCard({ restaurant, featured = false, matchReason }: Re
             <p className="text-sm text-muted-foreground">{restaurant.cuisine}</p>
             {matchReason && (
               <p className="text-xs text-primary font-semibold mt-1 italic">{matchReason}</p>
+            )}
+             {distance !== undefined && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1 font-semibold">
+                <MapPin className="w-3 h-3" />
+                <span>{distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}</span>
+              </div>
             )}
           </div>
           <div className="flex justify-between items-center mt-3 text-sm pt-2 border-t">

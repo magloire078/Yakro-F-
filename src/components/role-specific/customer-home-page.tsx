@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Pizza, Drumstick, Salad, Soup, Star, Timer, Truck, TrendingUp } from 'lucide-react';
+import { Pizza, Drumstick, Salad, Soup, Star, Timer, Truck, TrendingUp, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
 import { useData } from '@/contexts/data-context';
@@ -18,6 +18,7 @@ import { Recommendations, RecommendationsSkeleton } from '../recommendations';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface Category {
     name: string;
@@ -31,7 +32,12 @@ const categories: Category[] = [
     { name: 'Salades', icon: Salad },
 ];
 
-type SortFilter = 'rating' | 'time' | 'delivery' | null;
+type SortFilter = 'rating' | 'time' | 'delivery' | 'distance' | null;
+
+type Coordinates = {
+  latitude: number;
+  longitude: number;
+}
 
 const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]): string => {
   if (orders.length === 0) return "L'utilisateur n'a pas encore d'historique de commandes.";
@@ -44,9 +50,28 @@ const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]):
   return `L'utilisateur a passé ${orders.length} commandes. Sa cuisine préférée semble être ${favoriteCuisine}.`;
 }
 
+// Haversine formula to calculate distance between two lat/lon points
+const getDistance = (coords1: Coordinates, coords2: Coordinates) => {
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const R = 6371; // Earth radius in km
+
+  const dLat = toRad(coords2.latitude - coords1.latitude);
+  const dLon = toRad(coords2.longitude - coords1.longitude);
+  const lat1 = toRad(coords1.latitude);
+  const lat2 = toRad(coords2.latitude);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // Distance in km
+};
+
 export default function CustomerHomePage() {
   const { user } = useAuth();
   const { restaurants, menuItems, orders, isLoading } = useData();
+  const { toast } = useToast();
   
   const [searchQuery, setSearchQuery] = React.useState('');
   const [interpretedSearch, setInterpretedSearch] = React.useState<IntelligentSearchOutput | null>(null);
@@ -55,6 +80,7 @@ export default function CustomerHomePage() {
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
   const [recommendationError, setRecommendationError] = React.useState(false);
   const [activeFilter, setActiveFilter] = React.useState<SortFilter>(null);
+  const [userLocation, setUserLocation] = React.useState<Coordinates | null>(null);
 
 
   const userDeliveredOrders = React.useMemo(() => {
@@ -126,7 +152,7 @@ export default function CustomerHomePage() {
   }, [orders, user]);
 
   const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
-    let filteredRestaurants: (Restaurant & { matchReason?: string })[] = [];
+    let filteredRestaurants: (Restaurant & { matchReason?: string, distance?: number })[] = [];
     const validRestaurants = restaurants.filter(Boolean);
 
     if (!isLoading && validRestaurants && validRestaurants.length > 0) {
@@ -188,6 +214,16 @@ export default function CustomerHomePage() {
       }
     }
     
+    // Add distance to each restaurant if user location is available
+    if(userLocation) {
+        filteredRestaurants = filteredRestaurants.map(r => {
+            if (r.latitude && r.longitude) {
+                return { ...r, distance: getDistance(userLocation, { latitude: r.latitude, longitude: r.longitude }) };
+            }
+            return { ...r, distance: Infinity };
+        });
+    }
+    
     let sortedRestaurants = [...filteredRestaurants];
     if (activeFilter) {
         switch (activeFilter) {
@@ -200,6 +236,9 @@ export default function CustomerHomePage() {
             case 'delivery':
                 sortedRestaurants.sort((a, b) => a.fraisDeLivraison - b.fraisDeLivraison);
                 break;
+            case 'distance':
+                sortedRestaurants.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+                break;
         }
     }
 
@@ -210,7 +249,32 @@ export default function CustomerHomePage() {
         normalRestaurants: validFilteredRestaurants.filter(r => !r.enVedette),
     }
 
-  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter]);
+  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation]);
+
+  const handleLocationFilter = () => {
+    if (activeFilter === 'distance') {
+      setActiveFilter(null);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      toast({ variant: 'destructive', title: 'Géolocalisation non supportée' });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setActiveFilter('distance');
+      },
+      () => {
+        toast({ variant: 'destructive', title: "L'accès à la localisation a été refusé." });
+      }
+    );
+  };
 
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
@@ -228,6 +292,7 @@ export default function CustomerHomePage() {
       case 'rating': return 'Bien notés';
       case 'time': return 'Plus rapides';
       case 'delivery': return 'Moins chers';
+      case 'distance': return 'À proximité';
       default: return null;
     }
   };
@@ -244,15 +309,18 @@ export default function CustomerHomePage() {
           </p>
           <div className="mt-6 max-w-xl mx-auto">
             <SearchBar onSearchChange={setSearchQuery} onInterpretedSearchChange={setInterpretedSearch} />
-             <div className="mt-4 flex flex-wrap justify-center gap-2">
-                <Button variant={activeFilter === 'rating' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'rating' ? null : 'rating')}>
-                    <TrendingUp /> Bien notés
+             <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm">
+                <Button size="sm" variant={activeFilter === 'rating' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'rating' ? null : 'rating')}>
+                    <TrendingUp /> Mieux notés
                 </Button>
-                <Button variant={activeFilter === 'time' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'time' ? null : 'time')}>
-                    <Timer /> Plus rapides
+                <Button size="sm" variant={activeFilter === 'time' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'time' ? null : 'time')}>
+                    <Timer /> Rapides
                 </Button>
-                <Button variant={activeFilter === 'delivery' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'delivery' ? null : 'delivery')}>
-                    <Truck /> Moins chers
+                <Button size="sm" variant={activeFilter === 'delivery' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'delivery' ? null : 'delivery')}>
+                    <Truck /> Économiques
+                </Button>
+                <Button size="sm" variant={activeFilter === 'distance' ? 'default' : 'outline'} onClick={handleLocationFilter}>
+                    <MapPin /> À proximité
                 </Button>
             </div>
           </div>
@@ -299,7 +367,7 @@ export default function CustomerHomePage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {isLoading ? renderSkeletons(6) : normalRestaurants.map(restaurant => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} />
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} />
           ))}
         </div>
          {normalRestaurants.length === 0 && !isLoading && (

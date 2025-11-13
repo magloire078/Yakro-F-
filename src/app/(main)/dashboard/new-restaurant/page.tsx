@@ -31,6 +31,8 @@ const restaurantFormSchema = z.object({
   adresse: z.string().min(10, { message: "L'adresse doit contenir au moins 10 caractères." }),
   tempsDeLivraison: z.coerce.number().min(5, { message: "Le temps de livraison doit être d'au moins 5 minutes."}),
   fraisDeLivraison: z.coerce.number().min(0, { message: "Les frais de livraison ne peuvent être négatifs."}),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
 });
 
 type RestaurantFormValues = z.infer<typeof restaurantFormSchema>;
@@ -198,6 +200,34 @@ export default function NewRestaurantPage() {
                                             <FormLabel>Frais de livraison (FCFA)</FormLabel>
                                             <FormControl>
                                                 <Input type="number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="latitude"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Latitude (Optionnel)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" step="any" placeholder="Ex: 6.8213" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                 <FormField
+                                    control={form.control}
+                                    name="longitude"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Longitude (Optionnel)</FormLabel>
+                                            <FormControl>
+                                                 <Input type="number" step="any" placeholder="Ex: -5.2768" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

@@ -19,7 +19,9 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         fraisDeLivraison: 1000,
         image: '',
         indiceImage: 'maquis restaurant african',
-        adresse: 'Quartier 2000, Yamoussoukro'
+        adresse: 'Quartier 2000, Yamoussoukro',
+        latitude: 6.824,
+        longitude: -5.27,
     },
     {
         proprietaireId: 'placeholderOwnerId2',
@@ -30,7 +32,9 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         fraisDeLivraison: 1500,
         image: '',
         indiceImage: 'french bistro fine dining',
-        adresse: 'Rue des Lacs, Yamoussoukro'
+        adresse: 'Rue des Lacs, Yamoussoukro',
+        latitude: 6.815,
+        longitude: -5.28
     },
     {
         proprietaireId: 'placeholderOwnerId3',
@@ -41,7 +45,9 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         fraisDeLivraison: 500,
         image: '',
         indiceImage: 'pizza oven italy',
-        adresse: 'Centre-ville, près du marché'
+        adresse: 'Centre-ville, près du marché',
+        latitude: 6.818,
+        longitude: -5.275
     },
     {
         proprietaireId: 'placeholderOwnerId4',
@@ -52,7 +58,9 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         fraisDeLivraison: 1000,
         image: '',
         indiceImage: 'grilled chicken barbecue',
-        adresse: 'Route de l\'aéroport, Yamoussoukro'
+        adresse: 'Route de l\'aéroport, Yamoussoukro',
+        latitude: 6.80,
+        longitude: -5.26
     },
     {
         proprietaireId: 'placeholderOwnerId5',
@@ -63,7 +71,9 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         fraisDeLivraison: 500,
         image: '',
         indiceImage: 'french pastries cakes',
-        adresse: 'Quartier Millionnaire, Yamoussoukro'
+        adresse: 'Quartier Millionnaire, Yamoussoukro',
+        latitude: 6.83,
+        longitude: -5.29
     }
 ];
 
