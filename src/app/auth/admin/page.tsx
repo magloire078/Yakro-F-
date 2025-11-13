@@ -38,7 +38,10 @@ export default function AdminHomePage() {
             setDataLoading(true);
             const usersCollectionRef = collection(db, 'utilisateurs');
             const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
-                const users = snapshot.docs.map(doc => doc.data() as UserProfile);
+                const users = snapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                } as UserProfile));
                 setAllUsers(users);
                 setDataLoading(false);
             }, (serverError) => {
