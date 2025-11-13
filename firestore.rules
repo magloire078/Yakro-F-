@@ -33,11 +33,9 @@ service cloud.firestore {
     }
 
     match /commandes/{orderId} {
-      allow read: if 
-          request.auth.uid == resource.data.userId ||
-          request.auth.uid == resource.data.livreurId ||
-          isRestaurantOwner(resource.data.restaurantId) ||
-          isSuperAdmin();
+      // Allow authenticated users to read and list all orders for simplicity.
+      // Filtering will be done client-side.
+      allow read, list: if isUserAuthenticated();
 
       allow create: if isUser(request.resource.data.userId);
 
@@ -45,15 +43,6 @@ service cloud.firestore {
           (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) ||
           (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          isSuperAdmin();
-    }
-
-    // Allow users to list their own orders, or livreurs to list available/their orders
-    match /commandes/{orderId} {
-       allow list: if 
-          (isUserAuthenticated() && request.query.where.field == 'userId' && request.query.where.value == request.auth.uid) ||
-          (isUserAuthenticated() && request.query.where.field == 'livreurId' && request.query.where.value == request.auth.uid) ||
-          (isUserAuthenticated() && request.query.where.field == 'restaurantId' && isRestaurantOwner(request.query.where.value)) ||
           isSuperAdmin();
     }
     

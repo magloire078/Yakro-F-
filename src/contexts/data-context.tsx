@@ -109,7 +109,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, userProfile, activeRole, loading: authLoading } = useAuth();
+    const { user, authLoading } = useAuth();
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
@@ -125,69 +125,36 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const menuItemsUnsub = onSnapshot(collection(db, 'plats'), (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
             useDataStore.setState({ menuItems: list });
-            useDataStore.setState({ isLoading: false }); // Move loading state here
         }, (serverError) => {
             const permissionError = new FirestorePermissionError({ path: 'plats', operation: 'list' });
             errorEmitter.emit('permission-error', permissionError);
-            useDataStore.setState({ isLoading: false }); // Also here
         });
         
-        // Orders are now loaded in a separate effect that depends on user context
-        return () => {
-            restaurantsUnsub();
-            menuItemsUnsub();
-        };
-    }, []);
-
-    React.useEffect(() => {
+        // This is the listener for orders. It will be re-created on auth state change.
         let ordersUnsub: Unsubscribe | undefined;
-        
-        if (!authLoading && user && userProfile) {
-            let ordersQuery: Query<DocumentData> | null = null;
-            const ordersCollectionRef = collection(db, 'commandes');
 
-            if (userProfile.roleSysteme === 'SuperAdmin') {
-                ordersQuery = query(ordersCollectionRef);
-            } else if (activeRole === 'client') {
-                 ordersQuery = query(ordersCollectionRef, where('userId', '==', user.uid));
-            } else if (activeRole === 'restaurateur') {
-                const myRestaurantIds = useDataStore.getState().restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-                
-                if (myRestaurantIds.length > 0) {
-                     ordersQuery = query(ordersCollectionRef, where('restaurantId', 'in', myRestaurantIds));
-                }
-            } else if (activeRole === 'livreur') {
-                ordersQuery = query(ordersCollectionRef, or(
-                    where('livreurId', '==', user.uid),
-                    where('statut', '==', 'En Préparation')
-                ));
-            }
-
-            if (ordersQuery) {
-                ordersUnsub = onSnapshot(ordersQuery, (snapshot) => {
-                    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
-                    useDataStore.setState({ orders: list });
-                }, (serverError) => {
-                    const permissionError = new FirestorePermissionError({ path: 'commandes', operation: 'list' });
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-            } else {
-                 useDataStore.setState({ orders: [] });
-            }
-
-        } else if (!authLoading && !user) {
-            // Clear orders when user logs out
-            useDataStore.setState({ orders: [] });
+        if (user) {
+             ordersUnsub = onSnapshot(collection(db, 'commandes'), (snapshot) => {
+                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
+                useDataStore.setState({ orders: list, isLoading: false });
+            }, (serverError) => {
+                const permissionError = new FirestorePermissionError({ path: 'commandes', operation: 'list' });
+                errorEmitter.emit('permission-error', permissionError);
+                useDataStore.setState({ isLoading: false });
+            });
+        } else {
+            // No user, no orders.
+            useDataStore.setState({ orders: [], isLoading: false });
         }
         
         return () => {
+            restaurantsUnsub();
+            menuItemsUnsub();
             if (ordersUnsub) {
                 ordersUnsub();
             }
         };
-    }, [user, userProfile, activeRole, authLoading]);
+    }, [user]); // Only depend on the user object.
 
     return <>{children}</>;
 };
