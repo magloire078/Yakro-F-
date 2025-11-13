@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -22,7 +23,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function AdminHomePage() {
     const { user, userProfile, loading: authLoading } = useAuth();
-    const { allUsers, setAllUsers, restaurants, orders, isLoading: isPublicDataLoading } = useData();
+    const { setAllUsers, allUsers, restaurants, orders, isLoading: isPublicDataLoading } = useData();
     const [dataLoading, setDataLoading] = React.useState(true);
     const router = useRouter();
 

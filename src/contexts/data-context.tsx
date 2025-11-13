@@ -120,13 +120,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         useDataStore.setState({ isLoading: true });
 
         const unsubscribes: Unsubscribe[] = [];
-        let publicDataLoaded = false;
-        
-        const checkCompletion = () => {
-             if (publicDataLoaded) {
-                 useDataStore.setState({ isLoading: false });
-             }
-        };
         
         // Subscribe to public collections
         const unsubRestaurants = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
@@ -138,8 +131,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubPlats = onSnapshot(collection(db, 'plats'), (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
             useDataStore.setState({ menuItems: list });
-            publicDataLoaded = true;
-            checkCompletion();
+            useDataStore.setState({ isLoading: authLoading });
         }, (error) => console.error("Error on plats snapshot:", error));
         unsubscribes.push(unsubPlats);
 
@@ -167,17 +159,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (ordersQuery) {
                 const unsubOrders = onSnapshot(ordersQuery, (snapshot) => {
                     const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
-                    useDataStore.setState({ orders, isLoading: false });
+                    useDataStore.setState({ orders });
                 }, (error) => {
                     console.error(`Error on orders snapshot for role ${activeRole}:`, error);
-                    useDataStore.setState({ isLoading: false });
                 });
                 unsubscribes.push(unsubOrders);
             } else {
-                useDataStore.setState({ orders: [], isLoading: false });
+                useDataStore.setState({ orders: [] });
             }
-             // Admin data (allUsers) is now loaded in the admin pages directly
-             useDataStore.setState({ allUsers: [] });
         } else {
             // No user, reset all user-specific data
             useDataStore.setState({ orders: [], allUsers: [], isLoading: false });
