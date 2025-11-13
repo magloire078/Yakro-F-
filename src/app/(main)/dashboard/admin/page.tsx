@@ -30,35 +30,39 @@ export default function AdminPage() {
     const [editingUser, setEditingUser] = React.useState<UserProfile | null>(null);
 
     React.useEffect(() => {
-        if (authLoading) {
-            return;
-        }
+        if (authLoading) return;
 
         if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
             toast({ variant: 'destructive', title: 'Accès non autorisé' });
             router.push('/');
+            setDataLoading(false);
             return;
         }
 
+        // Only subscribe if the user is a confirmed SuperAdmin
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
-        const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
-            const users = snapshot.docs.map(doc => ({
-                uid: doc.id,
-                ...doc.data()
-            } as UserProfile));
-            setAllUsers(users);
-            setDataLoading(false);
-        }, (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: usersCollectionRef.path,
-                operation: 'list',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
-            setDataLoading(false);
-        });
+        const unsubscribe = onSnapshot(usersCollectionRef, 
+            (snapshot) => {
+                const users = snapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                } as UserProfile));
+                setAllUsers(users);
+                setDataLoading(false);
+            }, 
+            (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: usersCollectionRef.path,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
+                setDataLoading(false);
+            }
+        );
 
+        // Cleanup subscription on component unmount
         return () => unsubscribe();
     }, [user, userProfile, authLoading, router, toast]);
 
