@@ -40,7 +40,7 @@ export function Sidebar() {
     if (!user) return "/login";
     if (userProfile?.roleSysteme === 'SuperAdmin') return "/auth/admin";
     if (userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1) return '/profile-selection';
-    return activeRole ? `/auth/${activeRole}` : '/';
+    return activeRole ? (activeRole === 'client' ? '/' : `/auth/${activeRole}`) : '/';
   }
 
   const homeLink = getHomeLink();

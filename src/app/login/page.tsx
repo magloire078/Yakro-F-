@@ -32,7 +32,8 @@ export default function LoginPage() {
             } else {
                 const roleToSet = allowedRoles[0] || 'client';
                 setActiveRole(roleToSet);
-                router.replace(`/auth/${roleToSet}`);
+                const redirectPath = roleToSet === 'client' ? '/' : `/auth/${roleToSet}`;
+                router.replace(redirectPath);
             }
         }
     }, [user, userProfile, isRedirecting, router, setActiveRole]);
