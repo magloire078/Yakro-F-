@@ -21,7 +21,7 @@ export default function LoginPage() {
             setIsRedirecting(true);
 
             if (userProfile.roleSysteme === 'SuperAdmin') {
-                router.replace('/dashboard/admin');
+                router.replace('/auth/admin');
                 return;
             }
             

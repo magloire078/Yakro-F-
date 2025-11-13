@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
 import { useRouter } from 'next/navigation';
-import { Loader, ShieldCheck, Edit } from 'lucide-react';
+import { Loader, ShieldCheck, Edit, UserPlus, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
+import Link from 'next/link';
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
@@ -59,13 +60,22 @@ export default function AdminPage() {
     return (
         <>
             <div className="container mx-auto">
-                <div className="flex items-center gap-4 mb-8">
-                    <ShieldCheck className="h-10 w-10 text-primary" />
-                    <div>
-                        <h1 className="text-3xl md:text-4xl font-headline text-primary">Panneau d'Administration</h1>
-                        <p className="text-muted-foreground">Gestion des utilisateurs et de leurs permissions.</p>
+                 <div className="flex items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center gap-4">
+                        <ShieldCheck className="h-10 w-10 text-primary" />
+                        <div>
+                            <h1 className="text-3xl md:text-4xl font-headline text-primary">Gestion des Utilisateurs</h1>
+                            <p className="text-muted-foreground">Gérez les permissions et les profils des utilisateurs de la plateforme.</p>
+                        </div>
                     </div>
+                     <Button asChild variant="outline">
+                        <Link href="/auth/admin">
+                           <Home />
+                           Tableau de bord
+                        </Link>
+                     </Button>
                 </div>
+
 
                 <Card>
                     <CardHeader>
