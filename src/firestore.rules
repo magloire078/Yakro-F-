@@ -32,12 +32,8 @@ service cloud.firestore {
         allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
     }
 
-    match /commandes {
-      allow list: if isUserAuthenticated();
-    }
-
     match /commandes/{orderId} {
-      allow read: if request.auth.uid == resource.data.userId || request.auth.uid == resource.data.livreurId || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
+      allow read, list: if request.auth.uid == resource.data.userId || request.auth.uid == resource.data.livreurId || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
 
       allow create: if isUser(request.resource.data.userId);
 
