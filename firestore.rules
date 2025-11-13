@@ -13,7 +13,7 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
+      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
     }
     
     function isRestaurantOwner(restaurantId) {
@@ -21,8 +21,8 @@ service cloud.firestore {
     }
 
     match /utilisateurs/{userId} {
-      allow read: if isUserAuthenticated();
-      allow list: if isUserAuthenticated();
+      allow read: if isUser(userId) || isSuperAdmin();
+      allow list: if isSuperAdmin();
       allow update: if isUser(userId) || isSuperAdmin();
       allow create: if isUserAuthenticated();
     }
