@@ -13,12 +13,10 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      // Check the user's custom claims or a specific field in their user document
       return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
     }
     
     function isRestaurantOwner(restaurantId) {
-       // Check if the user is the owner of the restaurant
        return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
     }
 
@@ -44,22 +42,16 @@ service cloud.firestore {
       allow create: if isUser(request.resource.data.userId);
 
       allow update: if 
-          // Restaurant owner can update status from 'Placed' to 'Preparing'
           (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) ||
-          // Any authenticated user (a driver) can pick up an order
           (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
-          // The assigned driver can mark the order as 'Delivered'
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          // Super admin can do anything
           isSuperAdmin();
     }
     
-    // Allow listing the entire collection only for SuperAdmins
     match /utilisateurs {
       allow list: if isSuperAdmin();
     }
     
-    // Rules for individual user documents
     match /utilisateurs/{userId} {
       allow read: if isUser(userId) || isSuperAdmin();
       allow update: if isUser(userId) || isSuperAdmin();
