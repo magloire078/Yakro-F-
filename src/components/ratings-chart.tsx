@@ -2,7 +2,7 @@
 'use client';
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 
 interface RatingsChartProps {
   data: { rating: number; count: number }[];
@@ -35,6 +35,4 @@ export function RatingsChart({ data }: RatingsChartProps) {
      </Card>
   );
 }
-    
-
     
