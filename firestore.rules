@@ -11,10 +11,6 @@ service cloud.firestore {
     function isUser(uid) {
       return isUserAuthenticated() && request.auth.uid == uid;
     }
-
-    function isSuperAdmin() {
-      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
-    }
     
     function isRestaurantOwner(restaurantId) {
        return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
@@ -23,13 +19,13 @@ service cloud.firestore {
     match /restaurants/{restaurantId} {
       allow read: if true;
       allow create: if isUser(request.resource.data.proprietaireId);
-      allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
+      allow update, delete: if isRestaurantOwner(restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
     }
     
     match /plats/{platId} {
         allow read: if true;
         allow create: if isRestaurantOwner(request.resource.data.restaurantId);
-        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
+        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
     }
 
     match /commandes/{orderId} {
@@ -37,7 +33,7 @@ service cloud.firestore {
           request.auth.uid == resource.data.userId ||
           request.auth.uid == resource.data.livreurId ||
           isRestaurantOwner(resource.data.restaurantId) ||
-          isSuperAdmin();
+          get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
 
       allow create: if isUser(request.resource.data.userId);
 
@@ -45,16 +41,16 @@ service cloud.firestore {
           (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) ||
           (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          isSuperAdmin();
+          get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
     }
     
     match /utilisateurs {
-      allow list: if isSuperAdmin();
+      allow list: if isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
     }
     
     match /utilisateurs/{userId} {
-      allow read: if isUser(userId) || isSuperAdmin();
-      allow update: if isUser(userId) || isSuperAdmin();
+      allow read: if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin');
+      allow update: if isUser(userId) || (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin');
       allow create: if isUserAuthenticated();
     }
   }
