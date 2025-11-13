@@ -128,7 +128,7 @@ export default function MarketingPage() {
                 <label className="font-medium">2. Image de référence</label>
                 <div className="border rounded-lg p-2 bg-muted h-48 flex items-center justify-center">
                    {restaurantImage ? (
-                     <Image src={restaurantImage} alt={selectedRestaurant?.nom || ""} width={300} height={150} className="object-contain rounded-md" />
+                     <Image src={restaurantImage} alt={selectedRestaurant?.nom || "Image de référence"} width={300} height={150} className="object-contain rounded-md" />
                    ) : (
                     <p className="text-sm text-muted-foreground">L'image du restaurant apparaîtra ici.</p>
                    )}
