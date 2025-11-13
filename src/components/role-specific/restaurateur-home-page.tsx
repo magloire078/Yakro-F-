@@ -232,7 +232,7 @@ export default function RestaurateurHomePage() {
                                 <Upload /> Télécharger une image (optionnel)
                             </Label>
                              <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                            {imagePreview && <Image src={imagePreview} alt="Aperçu" width={100} height={100} className="rounded-md object-cover"/>}
+                            {imagePreview && <Image src={imagePreview} alt="Aperçu de l'image" width={100} height={100} className="rounded-md object-cover"/>}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="description">Description simple du plat (obligatoire pour l'IA)</Label>
@@ -334,3 +334,5 @@ export default function RestaurateurHomePage() {
         </div>
     );
 }
+
+    
