@@ -101,33 +101,58 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user } = useAuth();
+    const { user, activeRole } = useAuth();
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
         const unsubscribes: Unsubscribe[] = [];
         
-        const setupSubscription = (path: string, callback: (docs: DocumentData[]) => void) => {
-            const q = query(collection(db, path));
+        const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
             const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     callback(list);
                 }, 
                 (serverError) => {
-                    const permissionError = new FirestorePermissionError({ path, operation: 'list'});
+                    const permissionError = new FirestorePermissionError({ path: (q as any)._query.path.segments.join('/'), operation: 'list'});
                     errorEmitter.emit('permission-error', permissionError);
                 }
             );
             return unsubscribe;
         };
 
-        unsubscribes.push(setupSubscription('restaurants', (data) => useDataStore.setState({ restaurants: data as Restaurant[] })));
-        unsubscribes.push(setupSubscription('plats', (data) => useDataStore.setState({ menuItems: data as MenuItem[] })));
+        const restaurantsQuery = query(collection(db, 'restaurants'));
+        unsubscribes.push(setupSubscription(restaurantsQuery, (data) => useDataStore.setState({ restaurants: data as Restaurant[] })));
+
+        const menuItemsQuery = query(collection(db, 'plats'));
+        unsubscribes.push(setupSubscription(menuItemsQuery, (data) => useDataStore.setState({ menuItems: data as MenuItem[] })));
 
         if (user) {
-            unsubscribes.push(setupSubscription('commandes', (data) => useDataStore.setState({ orders: data as Order[] })));
+            let ordersQuery;
+            if (activeRole === 'restaurateur') {
+                // Restaurateur needs all orders for their restaurants. This might require a more complex query or a different approach.
+                // For now, we fetch all orders, which relies on security rules. Let's adjust this if it causes issues.
+                const myRestaurantIds = useDataStore.getState().restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
+                if (myRestaurantIds.length > 0) {
+                  ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
+                }
+            } else if (activeRole === 'livreur') {
+                // Livreur can see their own orders, or orders available for pickup
+                 ordersQuery = query(collection(db, 'commandes'), or(
+                    where('livreurId', '==', user.uid),
+                    where('statut', '==', 'En Préparation')
+                ));
+            } else { // Client
+                 ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
+            }
+            
+            if (ordersQuery) {
+                unsubscribes.push(setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] })));
+            } else {
+                 useDataStore.setState({ orders: [] });
+            }
+
         } else {
             useDataStore.setState({ orders: [] });
         }
@@ -138,7 +163,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => {
             unsubscribes.forEach(unsub => unsub());
         };
-    }, [user]);
+    }, [user, activeRole]);
 
     return <>{children}</>;
 };
