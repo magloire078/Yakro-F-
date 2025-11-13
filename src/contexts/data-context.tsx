@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -23,6 +22,7 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
+  setOrders: (orders: Order[]) => void;
   addRestaurant: (data: Omit<Restaurant, 'id'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
@@ -39,6 +39,7 @@ const useDataStore = create<DataState>((set, get) => ({
   menuItems: [],
   orders: [],
   isLoading: true,
+  setOrders: (orders: Order[]) => set({ orders }),
   addRestaurant: async (data, imageFile) => {
     const formData = new FormData();
     formData.append('data', JSON.stringify(data));
@@ -113,72 +114,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     
     React.useEffect(() => {
-        let isMounted = true;
-        const unsubscribes: Unsubscribe[] = [];
+        useDataStore.setState({ isLoading: true });
 
-        const setupSubscriptions = () => {
-            if (!isMounted) return;
-
-            // Clear previous subscriptions
-            unsubscribes.forEach(unsub => unsub());
-            unsubscribes.length = 0;
-            
-            useDataStore.setState({ isLoading: true });
-
-            // Subscribe to public collections
-            unsubscribes.push(onSnapshot(collection(db, 'restaurants'), (snapshot) => {
-                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
-                if(isMounted) useDataStore.setState({ restaurants: list });
-            }, (error) => console.error("Error on restaurants snapshot:", error)));
-            
-            unsubscribes.push(onSnapshot(collection(db, 'plats'), (snapshot) => {
-                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
-                if(isMounted) useDataStore.setState({ menuItems: list });
-            }, (error) => console.error("Error on plats snapshot:", error)));
-            
-            // Dynamic subscription for orders based on user role
-            if (!authLoading && user && userProfile) {
-                let ordersQuery: Query<DocumentData> | null = null;
-                
-                if (activeRole === 'client') {
-                    ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
-                } else if (activeRole === 'restaurateur') {
-                    const myRestaurantIds = useDataStore.getState().restaurants
-                        .filter(r => r.proprietaireId === user.uid)
-                        .map(r => r.id);
-                    if (myRestaurantIds.length > 0) {
-                         ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                    }
-                } else if (activeRole === 'livreur') {
-                     ordersQuery = query(collection(db, 'commandes'), or(
-                        where('statut', '==', 'En Préparation'),
-                        where('livreurId', '==', user.uid)
-                    ));
-                }
-
-                if (ordersQuery) {
-                    unsubscribes.push(onSnapshot(ordersQuery, (snapshot) => {
-                        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
-                        if(isMounted) useDataStore.setState({ orders });
-                    }, (error) => {
-                        console.error(`Error on orders snapshot for role ${activeRole}:`, error);
-                    }));
-                } else {
-                     if(isMounted) useDataStore.setState({ orders: [] });
-                }
-            } else {
-                if(isMounted) useDataStore.setState({ orders: [] });
-            }
-             if(isMounted) useDataStore.setState({ isLoading: false });
-        };
+        const restaurantsUnsub = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
+            useDataStore.setState({ restaurants: list });
+        }, (error) => console.error("Error on restaurants snapshot:", error));
         
-        setupSubscriptions();
+        const menuItemsUnsub = onSnapshot(collection(db, 'plats'), (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
+            useDataStore.setState({ menuItems: list });
+        }, (error) => console.error("Error on plats snapshot:", error));
+        
+        // This subscription will now be handled in specific components that need it
+        const ordersUnsub = onSnapshot(collection(db, 'commandes'), (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
+            useDataStore.setState({ orders: list });
+             useDataStore.setState({ isLoading: false });
+        }, (error) => {
+            console.error("Error on orders snapshot:", error)
+            useDataStore.setState({ isLoading: false });
+        });
 
         return () => {
-            isMounted = false;
-            unsubscribes.forEach(unsub => unsub());
+            restaurantsUnsub();
+            menuItemsUnsub();
+            ordersUnsub();
         };
-    }, [user, userProfile, activeRole, authLoading]);
+    }, []);
 
     return <>{children}</>;
 };
