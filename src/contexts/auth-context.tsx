@@ -109,22 +109,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
     const userDocRef = doc(db, 'utilisateurs', uid);
-    try {
-        await updateDoc(userDocRef, data);
-        // Optional: Show a success toast here if you want confirmation in the UI
+    return updateDoc(userDocRef, data)
+      .then(() => {
         toast({ title: 'Succès', description: 'Le profil a été mis à jour.' });
-    } catch (serverError) {
+      })
+      .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
-        // Also show a generic error toast to the user
         toast({ variant: 'destructive', title: 'Erreur de permission', description: "Vous n'avez pas les droits pour effectuer cette action." });
-        // Re-throw the error so it can be caught by the development overlay
         throw permissionError;
-    }
+    });
   };
 
 

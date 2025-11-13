@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 
 export default function AdminPage() {
-    const { user, userProfile, loading: authLoading, updateOtherUserProfile } from useAuth();
+    const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
     const { allUsers, isLoading: dataLoading } = useData();
     const router = useRouter();
     const { toast } = useToast();
@@ -33,9 +33,7 @@ export default function AdminPage() {
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);
         await updateOtherUserProfile(userId, { roleSysteme: newRole });
-        toast({ title: 'Mise à jour du rôle système...' });
-        // The UI will update automatically from the data context listener.
-        // A success toast can be added in the context if desired.
+        // Toast is handled in the context now on success/error
         setUpdatingUserId(null);
     };
 
@@ -50,7 +48,7 @@ export default function AdminPage() {
             : currentRoles.filter(r => r !== role);
         
         await updateOtherUserProfile(userId, { rolesAutorises: newRoles });
-        toast({ title: 'Mise à jour des permissions...' });
+        // Toast is handled in the context now on success/error
         setUpdatingUserId(null);
     };
 
