@@ -154,7 +154,7 @@ export default function RestaurantPage() {
             <div className="relative h-48 md:h-64 w-full -mx-4 md:-mx-8 -mt-4 md:-mt-8">
                 <Image 
                     src={restaurant.image}
-                    alt={restaurant.nom}
+                    alt={restaurant?.nom || 'Image du restaurant'}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     style={{objectFit: 'cover'}}
@@ -274,5 +274,3 @@ export default function RestaurantPage() {
     )
 
 }
-
-    
