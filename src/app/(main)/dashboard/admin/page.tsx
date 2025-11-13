@@ -15,10 +15,15 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 import Link from 'next/link';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
-    const { allUsers, isLoading: dataLoading } = useData();
+    const { setAllUsers, allUsers } = useData();
+    const [dataLoading, setDataLoading] = React.useState(true);
     const router = useRouter();
     const { toast } = useToast();
     const [updatingUserId, setUpdatingUserId] = React.useState<string | null>(null);
@@ -28,8 +33,28 @@ export default function AdminPage() {
         if (!authLoading && (!user || userProfile?.roleSysteme !== 'SuperAdmin')) {
             toast({ variant: 'destructive', title: 'Accès non autorisé' });
             router.push('/profile-selection');
+            return;
         }
-    }, [user, userProfile, authLoading, router, toast]);
+
+        if (user && userProfile?.roleSysteme === 'SuperAdmin') {
+            setDataLoading(true);
+            const usersCollectionRef = collection(db, 'utilisateurs');
+            const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
+                const users = snapshot.docs.map(doc => doc.data() as UserProfile);
+                setAllUsers(users);
+                setDataLoading(false);
+            }, (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: usersCollectionRef.path,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
+                setDataLoading(false);
+            });
+            return () => unsubscribe();
+        }
+    }, [user, userProfile, authLoading, router, toast, setAllUsers]);
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);

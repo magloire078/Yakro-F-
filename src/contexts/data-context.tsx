@@ -24,6 +24,7 @@ interface DataState {
   orders: Order[];
   allUsers: UserProfile[];
   isLoading: boolean;
+  setAllUsers: (users: UserProfile[]) => void;
   addRestaurant: (data: Omit<Restaurant, 'id'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
@@ -41,7 +42,7 @@ const useDataStore = create<DataState>((set, get) => ({
   orders: [],
   allUsers: [],
   isLoading: true,
-
+  setAllUsers: (users) => set({ allUsers: users }),
   addRestaurant: async (data, imageFile) => {
     const formData = new FormData();
     formData.append('data', JSON.stringify(data));
@@ -145,40 +146,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (authLoading) {
             useDataStore.setState({ isLoading: true });
         } else if (user && userProfile) {
-            // This part runs only when user and profile are confirmed to be loaded
             let ordersQuery: Query<DocumentData> | null = null;
             
-            if (userProfile.roleSysteme === 'SuperAdmin') {
-                const usersCollectionRef = collection(db, 'utilisateurs');
-                const unsubUsers = onSnapshot(usersCollectionRef, (snapshot) => {
-                    const users = snapshot.docs.map(doc => doc.data() as UserProfile);
-                    useDataStore.setState({ allUsers: users, isLoading: false });
-                }, (serverError) => {
-                    const permissionError = new FirestorePermissionError({
-                        path: usersCollectionRef.path,
-                        operation: 'list',
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                    useDataStore.setState({ isLoading: false });
-                });
-                unsubscribes.push(unsubUsers);
-                 useDataStore.setState({ orders: [] }); // SuperAdmin doesn't need orders data
-            } else {
-                 if (activeRole === 'client') {
-                    ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
-                } else if (activeRole === 'restaurateur') {
-                    const myRestaurantIds = useDataStore.getState().restaurants
-                        .filter(r => r.proprietaireId === user.uid)
-                        .map(r => r.id);
-                    if (myRestaurantIds.length > 0) {
-                         ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                    }
-                } else if (activeRole === 'livreur') {
-                     ordersQuery = query(collection(db, 'commandes'), or(
-                        where('statut', '==', 'En Préparation'),
-                        where('livreurId', '==', user.uid)
-                    ));
+            if (activeRole === 'client') {
+                ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
+            } else if (activeRole === 'restaurateur') {
+                const myRestaurantIds = useDataStore.getState().restaurants
+                    .filter(r => r.proprietaireId === user.uid)
+                    .map(r => r.id);
+                if (myRestaurantIds.length > 0) {
+                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
                 }
+            } else if (activeRole === 'livreur') {
+                 ordersQuery = query(collection(db, 'commandes'), or(
+                    where('statut', '==', 'En Préparation'),
+                    where('livreurId', '==', user.uid)
+                ));
             }
 
             if (ordersQuery) {
@@ -190,12 +173,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     useDataStore.setState({ isLoading: false });
                 });
                 unsubscribes.push(unsubOrders);
-            } else if(userProfile.roleSysteme !== 'SuperAdmin') {
+            } else {
                 useDataStore.setState({ orders: [], isLoading: false });
             }
-             if (userProfile.roleSysteme !== 'SuperAdmin') {
-                useDataStore.setState({ allUsers: [] });
-            }
+             // Admin data (allUsers) is now loaded in the admin pages directly
+             useDataStore.setState({ allUsers: [] });
         } else {
             // No user, reset all user-specific data
             useDataStore.setState({ orders: [], allUsers: [], isLoading: false });

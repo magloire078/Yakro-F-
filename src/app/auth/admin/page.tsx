@@ -15,17 +15,42 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import {formatDistanceToNow} from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function AdminHomePage() {
     const { user, userProfile, loading: authLoading } = useAuth();
-    const { allUsers, restaurants, orders, isLoading: dataLoading } = useData();
+    const { allUsers, setAllUsers, restaurants, orders, isLoading: isPublicDataLoading } = useData();
+    const [dataLoading, setDataLoading] = React.useState(true);
     const router = useRouter();
 
     React.useEffect(() => {
         if (!authLoading && (!user || userProfile?.roleSysteme !== 'SuperAdmin')) {
             router.push('/');
+            return;
         }
-    }, [user, userProfile, authLoading, router]);
+        
+        if (user && userProfile?.roleSysteme === 'SuperAdmin') {
+            setDataLoading(true);
+            const usersCollectionRef = collection(db, 'utilisateurs');
+            const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
+                const users = snapshot.docs.map(doc => doc.data() as UserProfile);
+                setAllUsers(users);
+                setDataLoading(false);
+            }, (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: usersCollectionRef.path,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                setDataLoading(false);
+            });
+            return () => unsubscribe();
+        }
+
+    }, [user, userProfile, authLoading, router, setAllUsers]);
 
     const getInitials = (name: string | undefined) => {
         if (!name) return '?';
@@ -46,7 +71,7 @@ export default function AdminHomePage() {
             .slice(0, 5);
     }, [allUsers]);
 
-    if (authLoading || dataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
+    if (authLoading || dataLoading || isPublicDataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
     
