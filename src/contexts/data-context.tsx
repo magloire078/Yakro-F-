@@ -108,7 +108,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const unsubscribes: Unsubscribe[] = [];
         
-        const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
+        const setupSubscription = (q: Query<DocumentData, DocumentData> | null, callback: (docs: DocumentData[]) => void) => {
+            if (!q) {
+                callback([]);
+                return () => {}; // Return a no-op function if there's no query
+            }
             const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -129,16 +133,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubscribes.push(setupSubscription(menuItemsQuery, (data) => useDataStore.setState({ menuItems: data as MenuItem[] })));
 
         if (user) {
-            let ordersQuery;
+            let ordersQuery: Query | null = null;
             if (activeRole === 'restaurateur') {
-                // Restaurateur needs all orders for their restaurants. This might require a more complex query or a different approach.
-                // For now, we fetch all orders, which relies on security rules. Let's adjust this if it causes issues.
-                const myRestaurantIds = useDataStore.getState().restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
+                const myRestaurantIds = useDataStore.getState().restaurants
+                    .filter(r => r.proprietaireId === user.uid)
+                    .map(r => r.id);
+                
                 if (myRestaurantIds.length > 0) {
                   ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
                 }
             } else if (activeRole === 'livreur') {
-                // Livreur can see their own orders, or orders available for pickup
                  ordersQuery = query(collection(db, 'commandes'), or(
                     where('livreurId', '==', user.uid),
                     where('statut', '==', 'En Préparation')
@@ -147,11 +151,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                  ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
             }
             
-            if (ordersQuery) {
-                unsubscribes.push(setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] })));
-            } else {
-                 useDataStore.setState({ orders: [] });
-            }
+            unsubscribes.push(setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] })));
 
         } else {
             useDataStore.setState({ orders: [] });
