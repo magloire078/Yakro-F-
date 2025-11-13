@@ -29,18 +29,15 @@ export default function AdminHomePage() {
     const router = useRouter();
 
     React.useEffect(() => {
-        // Ne rien faire tant que l'authentification n'est pas terminée
         if (authLoading) {
             return;
         }
 
-        // Si l'utilisateur n'est pas connecté ou n'est pas SuperAdmin, rediriger
         if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
             router.push('/');
-            return;
+            return; 
         }
         
-        // À ce stade, nous sommes sûrs que l'utilisateur est un SuperAdmin
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
 

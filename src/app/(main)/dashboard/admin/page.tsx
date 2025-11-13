@@ -30,19 +30,16 @@ export default function AdminPage() {
     const [editingUser, setEditingUser] = React.useState<UserProfile | null>(null);
 
     React.useEffect(() => {
-        // Ne rien faire tant que l'authentification n'est pas terminée
         if (authLoading) {
             return;
         }
 
-        // Si l'utilisateur n'est pas connecté ou n'est pas SuperAdmin, rediriger
         if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
             toast({ variant: 'destructive', title: 'Accès non autorisé' });
             router.push('/');
             return;
         }
 
-        // À ce stade, nous sommes sûrs que l'utilisateur est un SuperAdmin
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
         const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
@@ -68,7 +65,6 @@ export default function AdminPage() {
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);
         await updateOtherUserProfile(userId, { roleSysteme: newRole });
-        // Toast is handled in the context now on success/error
         setUpdatingUserId(null);
     };
 
@@ -83,7 +79,6 @@ export default function AdminPage() {
             : currentRoles.filter(r => r !== role);
         
         await updateOtherUserProfile(userId, { rolesAutorises: newRoles });
-        // Toast is handled in the context now on success/error
         setUpdatingUserId(null);
     };
 
