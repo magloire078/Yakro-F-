@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 import Link from 'next/link';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -30,33 +30,39 @@ export default function AdminPage() {
     const [editingUser, setEditingUser] = React.useState<UserProfile | null>(null);
 
     React.useEffect(() => {
-        if (!authLoading && (!user || userProfile?.roleSysteme !== 'SuperAdmin')) {
-            toast({ variant: 'destructive', title: 'Accès non autorisé' });
-            router.push('/profile-selection');
+        // Ne rien faire tant que l'authentification n'est pas terminée
+        if (authLoading) {
             return;
         }
 
-        if (user && userProfile?.roleSysteme === 'SuperAdmin') {
-            setDataLoading(true);
-            const usersCollectionRef = collection(db, 'utilisateurs');
-            const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
-                const users = snapshot.docs.map(doc => ({
-                    uid: doc.id,
-                    ...doc.data()
-                } as UserProfile));
-                setAllUsers(users);
-                setDataLoading(false);
-            }, (serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: usersCollectionRef.path,
-                    operation: 'list',
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
-                setDataLoading(false);
-            });
-            return () => unsubscribe();
+        // Si l'utilisateur n'est pas connecté ou n'est pas SuperAdmin, rediriger
+        if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
+            toast({ variant: 'destructive', title: 'Accès non autorisé' });
+            router.push('/');
+            return;
         }
+
+        // À ce stade, nous sommes sûrs que l'utilisateur est un SuperAdmin
+        setDataLoading(true);
+        const usersCollectionRef = collection(db, 'utilisateurs');
+        const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
+            const users = snapshot.docs.map(doc => ({
+                uid: doc.id,
+                ...doc.data()
+            } as UserProfile));
+            setAllUsers(users);
+            setDataLoading(false);
+        }, (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: usersCollectionRef.path,
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
+            setDataLoading(false);
+        });
+
+        return () => unsubscribe();
     }, [user, userProfile, authLoading, router, toast]);
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
@@ -81,7 +87,7 @@ export default function AdminPage() {
         setUpdatingUserId(null);
     };
 
-    if (authLoading || dataLoading || userProfile?.roleSysteme !== 'SuperAdmin') {
+    if (authLoading || dataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 
