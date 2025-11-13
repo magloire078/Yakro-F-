@@ -34,8 +34,8 @@ const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]):
   if (orders.length === 0) return "L'utilisateur n'a pas encore d'historique de commandes.";
   const cuisineCount: { [key: string]: number } = {};
   orders.forEach(order => {
-    const restaurant = restaurants.find(r => r.id === order.restaurantId);
-    if (restaurant) cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
+    const restaurant = restaurants.find(r => r && r.id === order.restaurantId);
+    if (restaurant && restaurant.cuisine) cuisineCount[restaurant.cuisine] = (cuisineCount[restaurant.cuisine] || 0) + 1;
   });
   const favoriteCuisine = Object.keys(cuisineCount).length > 0 ? Object.keys(cuisineCount).reduce((a, b) => cuisineCount[a] > cuisineCount[b] ? a : b) : 'inconnue';
   return `L'utilisateur a passé ${orders.length} commandes. Sa cuisine préférée semble être ${favoriteCuisine}.`;
@@ -68,7 +68,7 @@ export default function CustomerHomePage() {
       const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
 
       const availableMenuItems = menuItems.map(item => {
-        const restaurant = restaurants.find(r => r.id === item.restaurantId);
+        const restaurant = restaurants.find(r => r && r.id === item.restaurantId);
         return {
           id: item.id,
           nom: item.nom,
@@ -122,10 +122,11 @@ export default function CustomerHomePage() {
 
   const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
     let filteredRestaurants: (Restaurant & { matchReason?: string })[] = [];
-  
-    if (!isLoading && restaurants && restaurants.length > 0) {
+    const validRestaurants = restaurants.filter(Boolean);
+
+    if (!isLoading && validRestaurants && validRestaurants.length > 0) {
       if (!searchQuery && !interpretedSearch) {
-        filteredRestaurants = restaurants;
+        filteredRestaurants = validRestaurants;
       } else {
         const searchTerms = [
           ...(interpretedSearch?.keywords || []),
@@ -140,9 +141,9 @@ export default function CustomerHomePage() {
         );
         const matchReasons = new Map<string, string>();
 
-        filteredRestaurants = restaurants
+        filteredRestaurants = validRestaurants
           .filter(r => {
-            if (!r) return false;
+            if (!r || !r.nom || !r.cuisine) return false;
 
             const matchesCuisine =
               lowerCuisines.length > 0 &&
@@ -277,3 +278,5 @@ export default function CustomerHomePage() {
     </div>
   );
 }
+
+    
