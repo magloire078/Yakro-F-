@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Pizza, Drumstick, Salad, Soup, Star } from 'lucide-react';
+import { Pizza, Drumstick, Salad, Soup, Star, Timer, Truck, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
 import { useData } from '@/contexts/data-context';
@@ -17,6 +17,7 @@ import type { Order, Restaurant, MenuItem } from '@/lib/types';
 import { Recommendations, RecommendationsSkeleton } from '../recommendations';
 import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Badge } from '../ui/badge';
+import { cn } from '@/lib/utils';
 
 interface Category {
     name: string;
@@ -29,6 +30,8 @@ const categories: Category[] = [
     { name: 'Grillades', icon: Drumstick },
     { name: 'Salades', icon: Salad },
 ];
+
+type SortFilter = 'rating' | 'time' | 'delivery' | null;
 
 const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]): string => {
   if (orders.length === 0) return "L'utilisateur n'a pas encore d'historique de commandes.";
@@ -51,6 +54,8 @@ export default function CustomerHomePage() {
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
   const [recommendationError, setRecommendationError] = React.useState(false);
+  const [activeFilter, setActiveFilter] = React.useState<SortFilter>(null);
+
 
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
@@ -183,14 +188,29 @@ export default function CustomerHomePage() {
       }
     }
     
-    const validFilteredRestaurants = filteredRestaurants.filter(Boolean);
+    let sortedRestaurants = [...filteredRestaurants];
+    if (activeFilter) {
+        switch (activeFilter) {
+            case 'rating':
+                sortedRestaurants.sort((a, b) => b.note - a.note);
+                break;
+            case 'time':
+                sortedRestaurants.sort((a, b) => a.tempsDeLivraison - b.tempsDeLivraison);
+                break;
+            case 'delivery':
+                sortedRestaurants.sort((a, b) => a.fraisDeLivraison - b.fraisDeLivraison);
+                break;
+        }
+    }
+
+    const validFilteredRestaurants = sortedRestaurants.filter(Boolean);
 
     return {
         featuredRestaurants: validFilteredRestaurants.filter(r => r.enVedette),
         normalRestaurants: validFilteredRestaurants.filter(r => !r.enVedette),
     }
 
-  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch]);
+  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter]);
 
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
@@ -202,6 +222,15 @@ export default function CustomerHomePage() {
       </div>
     </div>
   ));
+
+   const getFilterLabel = () => {
+    switch (activeFilter) {
+      case 'rating': return 'Bien notés';
+      case 'time': return 'Plus rapides';
+      case 'delivery': return 'Moins chers';
+      default: return null;
+    }
+  };
   
   return (
     <div className="flex flex-col gap-12 md:gap-16">
@@ -215,6 +244,17 @@ export default function CustomerHomePage() {
           </p>
           <div className="mt-6 max-w-xl mx-auto">
             <SearchBar onSearchChange={setSearchQuery} onInterpretedSearchChange={setInterpretedSearch} />
+             <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <Button variant={activeFilter === 'rating' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'rating' ? null : 'rating')}>
+                    <TrendingUp /> Bien notés
+                </Button>
+                <Button variant={activeFilter === 'time' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'time' ? null : 'time')}>
+                    <Timer /> Plus rapides
+                </Button>
+                <Button variant={activeFilter === 'delivery' ? 'default' : 'outline'} onClick={() => setActiveFilter(activeFilter === 'delivery' ? null : 'delivery')}>
+                    <Truck /> Moins chers
+                </Button>
+            </div>
           </div>
         </section>
       )}
@@ -250,9 +290,12 @@ export default function CustomerHomePage() {
 
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl md:text-3xl font-headline text-foreground">
-            {searchQuery || interpretedSearch ? 'Résultats de la recherche' : 'Tous les Restaurants'}
-          </h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl md:text-3xl font-headline text-foreground">
+              {searchQuery || interpretedSearch || activeFilter ? 'Résultats' : 'Tous les Restaurants'}
+            </h2>
+            {getFilterLabel() && <Badge>{getFilterLabel()}</Badge>}
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {isLoading ? renderSkeletons(6) : normalRestaurants.map(restaurant => (
@@ -278,5 +321,3 @@ export default function CustomerHomePage() {
     </div>
   );
 }
-
-    
