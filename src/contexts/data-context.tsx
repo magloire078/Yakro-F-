@@ -53,11 +53,6 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
         formData.append('image', imageFile);
     }
-    // This server action does not have permission error handling on client,
-    // because it's a server action. The error would be on the server logs.
-    // To fix this, we need to call updateDoc from here and catch the error.
-    // For now, we will assume it works or is caught by a higher-level boundary.
-    // But for a robust solution, the call should be wrapped.
     await updateRestaurantAction(formData);
   },
 
@@ -110,13 +105,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubscribes: Unsubscribe[] = [];
         
         const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
+            const path = (q as any)._query.path.segments.join('/');
             const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     callback(list);
                 }, 
                 (serverError) => {
-                    const permissionError = new FirestorePermissionError({ path: (q as any)._query.path.segments.join('/'), operation: 'list'});
+                    const permissionError = new FirestorePermissionError({ path, operation: 'list'});
                     errorEmitter.emit('permission-error', permissionError);
                 }
             );
@@ -141,16 +137,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Separate useEffect for user-dependent data like orders
     React.useEffect(() => {
-        let unsubOrders: Unsubscribe = () => {};
+        let unsubOrders: Unsubscribe | null = null;
 
         const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
+            const path = (q as any)._query.path.segments.join('/');
             const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     callback(list);
                 }, 
                 (serverError) => {
-                    const permissionError = new FirestorePermissionError({ path: (q as any)._query.path.segments.join('/'), operation: 'list'});
+                    const permissionError = new FirestorePermissionError({ path, operation: 'list'});
                     errorEmitter.emit('permission-error', permissionError);
                 }
             );
@@ -158,53 +155,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         
         if (user) {
-            let ordersQuery: Query | null = null;
-
-            if (activeRole === 'restaurateur') {
-                // For restaurateurs, we depend on the restaurants being loaded first.
-                // We listen to the store's state.
-                const unsub = useDataStore.subscribe(state => {
-                    const myRestaurantIds = state.restaurants
-                        .filter(r => r.proprietaireId === user.uid)
-                        .map(r => r.id);
-                    
-                    if (myRestaurantIds.length > 0) {
-                        const newQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                        // Check if query has changed to avoid redundant subscriptions
-                        if (JSON.stringify(newQuery) !== JSON.stringify(ordersQuery)) {
-                            ordersQuery = newQuery;
-                            if (unsubOrders) unsubOrders();
-                            unsubOrders = setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] }));
-                        }
-                    } else {
-                         useDataStore.setState({ orders: [] });
-                    }
-                });
-                // Initial call to set up the subscription
+            let ordersQuery: Query<DocumentData, DocumentData> | null = null;
+            
+            if (activeRole === 'client') {
+                ordersQuery = query(collection(db, "commandes"), where("userId", "==", user.uid));
+            } else if (activeRole === 'livreur') {
+                ordersQuery = query(collection(db, "commandes"), or(
+                    where('livreurId', '==', user.uid),
+                    where('statut', '==', 'En Préparation')
+                ));
+            } else if (activeRole === 'restaurateur') {
                  const currentState = useDataStore.getState();
                  const myRestaurantIds = currentState.restaurants
                         .filter(r => r.proprietaireId === user.uid)
                         .map(r => r.id);
-
-                 if (myRestaurantIds.length > 0) {
-                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                     unsubOrders = setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] }));
-                 }
-
-                return () => {
-                    unsub();
-                    if(unsubOrders) unsubOrders();
+                if (myRestaurantIds.length > 0) {
+                    ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
+                } else {
+                    useDataStore.setState({ orders: [] });
                 }
-
-            } else if (activeRole === 'livreur') {
-                 ordersQuery = query(collection(db, 'commandes'), or(
-                    where('livreurId', '==', user.uid),
-                    where('statut', '==', 'En Préparation')
-                ));
-            } else { // Client
-                 ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
             }
-            
+
             if (ordersQuery) {
                 unsubOrders = setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] }));
             }
