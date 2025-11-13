@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
@@ -21,6 +21,7 @@ interface AuthContextType {
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => Promise<void>;
   updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
+  createNewUser: (data: {email: string, password: string, nom: string}) => Promise<User | null>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -125,8 +126,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const createNewUser = async (data: {email: string, password: string, nom: string}): Promise<User | null> => {
+    try {
+      // Note: This creates a new user, but doesn't sign them in for the admin.
+      // This is a simplified approach. A more robust solution might use Firebase Admin SDK on a backend.
+      const tempAuth = auth; // This is a bit of a hack for isolation, ideally use a separate auth instance
+      const userCredential = await createUserWithEmailAndPassword(tempAuth, data.email, data.password);
+      const newUser = userCredential.user;
 
-  const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile };
+      const userDocRef = doc(db, 'utilisateurs', newUser.uid);
+      const newUserProfile: UserProfile = {
+          uid: newUser.uid,
+          email: data.email,
+          nom: data.nom,
+          dateCreation: serverTimestamp(),
+          role: 'client',
+          rolesAutorises: ['client'],
+          roleSysteme: 'User',
+      };
+      
+      await setDoc(userDocRef, newUserProfile);
+      toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
+      return newUser;
+
+    } catch (error: any) {
+        console.error("Error creating new user:", error);
+        let description = "Une erreur est survenue.";
+        if (error.code === 'auth/email-already-in-use') {
+            description = 'Cette adresse e-mail est déjà utilisée.';
+        } else if (error.code === 'auth/weak-password') {
+            description = 'Le mot de passe est trop faible.';
+        }
+        toast({
+            variant: 'destructive',
+            title: "Erreur de création",
+            description,
+        });
+        return null;
+    }
+  }
+
+
+  const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile, createNewUser };
 
   if (loading) {
     return (

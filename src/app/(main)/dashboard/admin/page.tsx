@@ -19,6 +19,7 @@ import { collection, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { AddUserDialog } from '@/components/add-user-dialog';
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
@@ -28,6 +29,7 @@ export default function AdminPage() {
     const { toast } = useToast();
     const [updatingUserId, setUpdatingUserId] = React.useState<string | null>(null);
     const [editingUser, setEditingUser] = React.useState<UserProfile | null>(null);
+    const [isAddUserDialogOpen, setIsAddUserDialogOpen] = React.useState(false);
 
     React.useEffect(() => {
         if (authLoading) return;
@@ -101,12 +103,18 @@ export default function AdminPage() {
                             <p className="text-muted-foreground">Gérez les permissions et les profils des utilisateurs de la plateforme.</p>
                         </div>
                     </div>
-                     <Button asChild variant="outline">
-                        <Link href="/auth/admin">
-                           <Home />
-                           Tableau de bord
-                        </Link>
-                     </Button>
+                     <div className="flex gap-2">
+                        <Button asChild variant="outline">
+                            <Link href="/auth/admin">
+                            <Home />
+                            Tableau de bord
+                            </Link>
+                        </Button>
+                        <Button onClick={() => setIsAddUserDialogOpen(true)}>
+                            <UserPlus />
+                            Ajouter un utilisateur
+                        </Button>
+                    </div>
                 </div>
 
 
@@ -191,6 +199,10 @@ export default function AdminPage() {
                     userProfile={editingUser}
                 />
             )}
+            <AddUserDialog
+                isOpen={isAddUserDialogOpen}
+                onClose={() => setIsAddUserDialogOpen(false)}
+            />
         </>
     );
 }
