@@ -20,34 +20,30 @@ import { collection, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { cn } from '@/lib/utils';
 
 export default function AdminHomePage() {
-    const { user, userProfile, loading: authLoading } from useAuth();
+    const { user, userProfile, loading: authLoading } = useAuth();
     const { restaurants, orders, isLoading: isPublicDataLoading } = useData();
     const [allUsers, setAllUsers] = React.useState<UserProfile[]>([]);
     const [dataLoading, setDataLoading] = React.useState(true);
     const router = useRouter();
 
     React.useEffect(() => {
+        let unsubscribe: Unsubscribe | undefined;
+
         if (authLoading) {
             return;
         }
 
-        // Redirect if not a SuperAdmin, wait for profile to be loaded
-        if (!user || !userProfile) {
-            router.push('/');
-            return; 
-        }
-        if (userProfile.roleSysteme !== 'SuperAdmin') {
+        if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
             router.push('/');
             return;
         }
-        
+
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
 
-        const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
+        unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
             const usersData = snapshot.docs.map(doc => ({
                 uid: doc.id,
                 ...doc.data()
@@ -63,7 +59,11 @@ export default function AdminHomePage() {
             setDataLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
     }, [user, userProfile, authLoading, router]);
 
     const getInitials = (name: string | undefined) => {

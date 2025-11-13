@@ -32,19 +32,23 @@ export default function AdminPage() {
     const [isAddUserDialogOpen, setIsAddUserDialogOpen] = React.useState(false);
 
     React.useEffect(() => {
-        if (authLoading) return;
+        let unsubscribe: Unsubscribe | undefined;
+
+        if (authLoading) {
+            return;
+        }
 
         if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
             toast({ variant: 'destructive', title: 'Accès non autorisé' });
             router.push('/');
-            setDataLoading(false);
+            setDataLoading(false); // Stop loading if unauthorized
             return;
         }
 
         // Only subscribe if the user is a confirmed SuperAdmin
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
-        const unsubscribe = onSnapshot(usersCollectionRef, 
+        unsubscribe = onSnapshot(usersCollectionRef, 
             (snapshot) => {
                 const users = snapshot.docs.map(doc => ({
                     uid: doc.id,
@@ -65,7 +69,11 @@ export default function AdminPage() {
         );
 
         // Cleanup subscription on component unmount
-        return () => unsubscribe();
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
     }, [user, userProfile, authLoading, router, toast]);
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {

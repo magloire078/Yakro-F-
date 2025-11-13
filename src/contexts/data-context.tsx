@@ -97,7 +97,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, activeRole } = useAuth();
+    const { user, activeRole, userProfile } = useAuth();
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
@@ -138,7 +138,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Separate useEffect for user-dependent data like orders
     React.useEffect(() => {
         let unsubOrders: Unsubscribe | null = null;
-
+        
+        // This function should be defined once, or memoized.
         const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
             const path = (q as any)._query.path.segments.join('/');
             const unsubscribe = onSnapshot(q, 
@@ -154,7 +155,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return unsubscribe;
         };
         
-        if (user) {
+        if (user && userProfile) { // Ensure userProfile is loaded
             let ordersQuery: Query<DocumentData, DocumentData> | null = null;
             
             if (activeRole === 'client') {
@@ -165,28 +166,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     where('statut', '==', 'En Préparation')
                 ));
             } else if (activeRole === 'restaurateur') {
-                 const currentState = useDataStore.getState();
-                 const myRestaurantIds = currentState.restaurants
-                        .filter(r => r.proprietaireId === user.uid)
-                        .map(r => r.id);
+                // Get restaurants from the store, which should be populated by now.
+                const allRestaurants = useDataStore.getState().restaurants;
+                const myRestaurantIds = allRestaurants
+                    .filter(r => r.proprietaireId === user.uid)
+                    .map(r => r.id);
+                
                 if (myRestaurantIds.length > 0) {
                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
                 } else {
-                    useDataStore.setState({ orders: [] });
+                    useDataStore.setState({ orders: [] }); // No restaurants, no orders.
                 }
+            } else if (userProfile.roleSysteme === 'SuperAdmin') {
+                // SuperAdmins can see all orders
+                ordersQuery = query(collection(db, 'commandes'));
             }
 
             if (ordersQuery) {
                 unsubOrders = setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] }));
             }
         } else {
+            // Not logged in, clear orders
             useDataStore.setState({ orders: [] });
         }
 
         return () => {
             if (unsubOrders) unsubOrders();
         };
-    }, [user, activeRole]);
+    }, [user, userProfile, activeRole]); // Dependency on userProfile ensures it runs after profile is loaded
 
     return <>{children}</>;
 };
