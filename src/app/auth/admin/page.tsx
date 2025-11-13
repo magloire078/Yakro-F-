@@ -23,7 +23,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function AdminHomePage() {
     const { user, userProfile, loading: authLoading } = useAuth();
-    const { setAllUsers, allUsers, restaurants, orders, isLoading: isPublicDataLoading } = useData();
+    const { restaurants, orders, isLoading: isPublicDataLoading } = useData();
+    const [allUsers, setAllUsers] = React.useState<UserProfile[]>([]);
     const [dataLoading, setDataLoading] = React.useState(true);
     const router = useRouter();
 
@@ -51,7 +52,7 @@ export default function AdminHomePage() {
             return () => unsubscribe();
         }
 
-    }, [user, userProfile, authLoading, router, setAllUsers]);
+    }, [user, userProfile, authLoading, router]);
 
     const getInitials = (name: string | undefined) => {
         if (!name) return '?';
@@ -138,8 +139,8 @@ export default function AdminHomePage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {latestUsers.map((u, index) => (
-                                <TableRow key={u.uid || index}>
+                            {latestUsers.map((u) => (
+                                <TableRow key={u.uid}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar>

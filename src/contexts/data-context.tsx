@@ -113,31 +113,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     
     React.useEffect(() => {
-        useDataStore.setState({ isLoading: true });
-
+        let isMounted = true;
         const unsubscribes: Unsubscribe[] = [];
 
-        // Subscribe to public collections
-        unsubscribes.push(onSnapshot(collection(db, 'restaurants'), (snapshot) => {
-            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
-            useDataStore.setState({ restaurants: list });
-        }, (error) => console.error("Error on restaurants snapshot:", error)));
-        
-        unsubscribes.push(onSnapshot(collection(db, 'plats'), (snapshot) => {
-            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
-            useDataStore.setState({ menuItems: list });
-        }, (error) => console.error("Error on plats snapshot:", error)));
-        
-        // This will be the dynamic subscription for orders based on user role
-        let ordersUnsubscribe: Unsubscribe | null = null;
-        
         const setupSubscriptions = () => {
-            // Clean up previous orders listener if it exists
-            if (ordersUnsubscribe) {
-                ordersUnsubscribe();
-                ordersUnsubscribe = null;
-            }
+            if (!isMounted) return;
 
+            // Clear previous subscriptions
+            unsubscribes.forEach(unsub => unsub());
+            unsubscribes.length = 0;
+            
+            useDataStore.setState({ isLoading: true });
+
+            // Subscribe to public collections
+            unsubscribes.push(onSnapshot(collection(db, 'restaurants'), (snapshot) => {
+                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
+                if(isMounted) useDataStore.setState({ restaurants: list });
+            }, (error) => console.error("Error on restaurants snapshot:", error)));
+            
+            unsubscribes.push(onSnapshot(collection(db, 'plats'), (snapshot) => {
+                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
+                if(isMounted) useDataStore.setState({ menuItems: list });
+            }, (error) => console.error("Error on plats snapshot:", error)));
+            
+            // Dynamic subscription for orders based on user role
             if (!authLoading && user && userProfile) {
                 let ordersQuery: Query<DocumentData> | null = null;
                 
@@ -158,32 +157,28 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
 
                 if (ordersQuery) {
-                    ordersUnsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+                    unsubscribes.push(onSnapshot(ordersQuery, (snapshot) => {
                         const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
-                        useDataStore.setState({ orders });
+                        if(isMounted) useDataStore.setState({ orders });
                     }, (error) => {
                         console.error(`Error on orders snapshot for role ${activeRole}:`, error);
-                    });
+                    }));
                 } else {
-                    useDataStore.setState({ orders: [] });
+                     if(isMounted) useDataStore.setState({ orders: [] });
                 }
             } else {
-                // No user or auth is loading, reset user-specific data
-                useDataStore.setState({ orders: [] });
+                if(isMounted) useDataStore.setState({ orders: [] });
             }
-             useDataStore.setState({ isLoading: false });
+             if(isMounted) useDataStore.setState({ isLoading: false });
         };
         
         setupSubscriptions();
 
-        // Cleanup function for all subscriptions
         return () => {
+            isMounted = false;
             unsubscribes.forEach(unsub => unsub());
-            if (ordersUnsubscribe) {
-                ordersUnsubscribe();
-            }
         };
-    }, [user, userProfile, activeRole, authLoading]); // Re-run effect when user/role changes
+    }, [user, userProfile, activeRole, authLoading]);
 
     return <>{children}</>;
 };

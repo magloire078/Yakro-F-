@@ -1,10 +1,8 @@
 
-
 'use client';
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useData } from '@/contexts/data-context';
 import { useRouter } from 'next/navigation';
 import { Loader, ShieldCheck, Edit, UserPlus, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -23,7 +21,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
-    const { setAllUsers, allUsers } = useData();
+    const [allUsers, setAllUsers] = React.useState<UserProfile[]>([]);
     const [dataLoading, setDataLoading] = React.useState(true);
     const router = useRouter();
     const { toast } = useToast();
@@ -55,7 +53,7 @@ export default function AdminPage() {
             });
             return () => unsubscribe();
         }
-    }, [user, userProfile, authLoading, router, toast, setAllUsers]);
+    }, [user, userProfile, authLoading, router, toast]);
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);
@@ -122,8 +120,8 @@ export default function AdminPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {allUsers.map((u, index) => (
-                                        <TableRow key={u.uid || index} className={updatingUserId === u.uid ? 'opacity-50' : ''}>
+                                    {allUsers.map((u) => (
+                                        <TableRow key={u.uid} className={updatingUserId === u.uid ? 'opacity-50' : ''}>
                                             <TableCell>
                                                 <div className="font-medium">{u.nom || 'Non défini'}</div>
                                                 <div className="text-sm text-muted-foreground">{u.email}</div>
