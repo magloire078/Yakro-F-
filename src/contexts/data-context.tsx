@@ -107,55 +107,45 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, userProfile, activeRole } = useAuth();
+    const { user } = useAuth();
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
         const unsubscribes: Unsubscribe[] = [];
+        
+        const setupSubscription = (path: string, callback: (docs: DocumentData[]) => void) => {
+            const q = query(collection(db, path));
+            const unsubscribe = onSnapshot(q, 
+                (snapshot) => {
+                    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    callback(list);
+                }, 
+                (error) => {
+                    console.error(`Error fetching ${path}:`, error);
+                    const permissionError = new FirestorePermissionError({ path: path, operation: 'list'});
+                    errorEmitter.emit('permission-error', permissionError);
+                }
+            );
+            return unsubscribe;
+        };
 
-        const restaurantsUnsub = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
-            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
-            useDataStore.setState({ restaurants: list });
-        }, (error) => {
-            console.error("Error fetching restaurants:", error);
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'restaurants', operation: 'list'}));
-        });
-        unsubscribes.push(restaurantsUnsub);
-        
-        const menuItemsUnsub = onSnapshot(collection(db, 'plats'), (snapshot) => {
-            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
-            useDataStore.setState({ menuItems: list });
-        }, (error) => {
-             console.error("Error fetching menu items:", error);
-             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'plats', operation: 'list'}));
-        });
-        unsubscribes.push(menuItemsUnsub);
-        
-        let ordersQuery: Query<DocumentData> | null = null;
-        
+        unsubscribes.push(setupSubscription('restaurants', (data) => useDataStore.setState({ restaurants: data as Restaurant[] })));
+        unsubscribes.push(setupSubscription('plats', (data) => useDataStore.setState({ menuItems: data as MenuItem[] })));
+
         if (user) {
-            ordersQuery = query(collection(db, 'commandes'));
-        }
-
-        if (ordersQuery) {
-            const ordersUnsub = onSnapshot(ordersQuery, (snapshot) => {
-                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
-                useDataStore.setState({ orders: list, isLoading: false });
-            }, (error) => {
-                console.error("Error fetching orders:", error);
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'commandes', operation: 'list'}));
-                useDataStore.setState({ isLoading: false });
-            });
-            unsubscribes.push(ordersUnsub);
+            unsubscribes.push(setupSubscription('commandes', (data) => useDataStore.setState({ orders: data as Order[] })));
         } else {
-             useDataStore.setState({ orders: [], isLoading: false });
+            useDataStore.setState({ orders: [] });
         }
         
+        // Mark loading as false after setting up initial subscriptions
+        useDataStore.setState({ isLoading: false });
+
         return () => {
             unsubscribes.forEach(unsub => unsub());
         };
-    }, [user, userProfile, activeRole]);
+    }, [user]);
 
     return <>{children}</>;
 };

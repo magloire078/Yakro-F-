@@ -1,0 +1,52 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    function isUserAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(uid) {
+      return isUserAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function isRestaurantOwner(restaurantId) {
+       return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
+    }
+    
+    function isSuperAdmin() {
+      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.get('roleSysteme', 'User') == 'SuperAdmin';
+    }
+
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow create: if isUser(request.resource.data.proprietaireId);
+      allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
+    }
+    
+    match /plats/{platId} {
+        allow read: if true;
+        allow create: if isRestaurantOwner(request.resource.data.restaurantId);
+        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
+    }
+
+    match /commandes/{orderId} {
+       allow read, list: if isUserAuthenticated();
+      allow create: if isUser(request.resource.data.userId);
+      allow update: if 
+          (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) ||
+          (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
+          (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
+          isSuperAdmin();
+    }
+    
+    match /utilisateurs/{userId} {
+      allow read: if isUser(userId) || isSuperAdmin();
+      allow update: if isUser(userId) || isSuperAdmin();
+      allow create: if isUserAuthenticated();
+      allow list: if isSuperAdmin();
+    }
+  }
+}
