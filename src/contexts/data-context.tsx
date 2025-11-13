@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, where, Unsubscribe, DocumentData, Query, or, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, Unsubscribe, DocumentData, Query, or, getDocs, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 
@@ -14,8 +14,6 @@ import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { doc } from 'firebase/firestore';
-
 
 interface DataState {
   restaurants: Restaurant[];
@@ -109,52 +107,55 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, authLoading } = useAuth();
+    const { user, userProfile, activeRole } = useAuth();
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
+        const unsubscribes: Unsubscribe[] = [];
+
         const restaurantsUnsub = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
             useDataStore.setState({ restaurants: list });
-        }, (serverError) => {
-             const permissionError = new FirestorePermissionError({ path: 'restaurants', operation: 'list' });
-             errorEmitter.emit('permission-error', permissionError);
+        }, (error) => {
+            console.error("Error fetching restaurants:", error);
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'restaurants', operation: 'list'}));
         });
+        unsubscribes.push(restaurantsUnsub);
         
         const menuItemsUnsub = onSnapshot(collection(db, 'plats'), (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
             useDataStore.setState({ menuItems: list });
-        }, (serverError) => {
-            const permissionError = new FirestorePermissionError({ path: 'plats', operation: 'list' });
-            errorEmitter.emit('permission-error', permissionError);
+        }, (error) => {
+             console.error("Error fetching menu items:", error);
+             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'plats', operation: 'list'}));
         });
+        unsubscribes.push(menuItemsUnsub);
         
-        // This is the listener for orders. It will be re-created on auth state change.
-        let ordersUnsub: Unsubscribe | undefined;
-
+        let ordersQuery: Query<DocumentData> | null = null;
+        
         if (user) {
-             ordersUnsub = onSnapshot(collection(db, 'commandes'), (snapshot) => {
+            ordersQuery = query(collection(db, 'commandes'));
+        }
+
+        if (ordersQuery) {
+            const ordersUnsub = onSnapshot(ordersQuery, (snapshot) => {
                 const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
                 useDataStore.setState({ orders: list, isLoading: false });
-            }, (serverError) => {
-                const permissionError = new FirestorePermissionError({ path: 'commandes', operation: 'list' });
-                errorEmitter.emit('permission-error', permissionError);
+            }, (error) => {
+                console.error("Error fetching orders:", error);
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'commandes', operation: 'list'}));
                 useDataStore.setState({ isLoading: false });
             });
+            unsubscribes.push(ordersUnsub);
         } else {
-            // No user, no orders.
-            useDataStore.setState({ orders: [], isLoading: false });
+             useDataStore.setState({ orders: [], isLoading: false });
         }
         
         return () => {
-            restaurantsUnsub();
-            menuItemsUnsub();
-            if (ordersUnsub) {
-                ordersUnsub();
-            }
+            unsubscribes.forEach(unsub => unsub());
         };
-    }, [user]); // Only depend on the user object.
+    }, [user, userProfile, activeRole]);
 
     return <>{children}</>;
 };
