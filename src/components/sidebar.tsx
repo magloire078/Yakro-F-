@@ -14,6 +14,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import type { AppRole } from '@/lib/types';
+import { ThemeToggle } from './theme-toggle';
 
 export function Sidebar() {
   const { cartCount } = useCart();
@@ -47,10 +48,15 @@ export function Sidebar() {
 
   return (
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
-       <Link href={homeLink} className="mb-8 flex items-center space-x-2">
-          <Icons.logo className="h-10 w-10 text-primary" />
-          <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
-        </Link>
+       <div className="flex justify-between items-center mb-8">
+            <Link href={homeLink} className="flex items-center space-x-2">
+                <Icons.logo className="h-10 w-10 text-primary" />
+                <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
+            </Link>
+            <div className="hidden md:block">
+                <ThemeToggle />
+            </div>
+        </div>
         
        <nav className="flex flex-col gap-4">
            {/* Common Link */}

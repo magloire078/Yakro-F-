@@ -10,6 +10,7 @@ import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
 import { useAuth } from '@/contexts/auth-context';
+import { ThemeToggle } from './theme-toggle';
 
 export function MobileHeader() {
   const { cartCount } = useCart();
@@ -33,6 +34,7 @@ export function MobileHeader() {
             <Icons.logo className="h-8 w-8 text-primary" />
           </Link>
       </div>
+      <ThemeToggle />
       {activeRole === 'client' && (
         <CartSheet>
               <Button variant="outline" size="icon" className="relative">
