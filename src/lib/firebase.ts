@@ -8,7 +8,7 @@ const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: "yakro-go.firebaseapp.com",
   projectId: "yakro-go",
-  storageBucket: "yakro-go.firebasestorage.app",
+  storageBucket: "yakro-go.appspot.com",
   messagingSenderId: "102516892596",
   appId: "1:102516892596:web:44d219ce96eb75352808e1",
   measurementId: "G-BZXTLHE681"

@@ -9,7 +9,7 @@
         "match": {
           "path": "/utilisateurs/{userId}",
           "rules": {
-            "allow read": "if isUser(userId);",
+            "allow read": "if isUser(userId) || isSuperAdmin();",
             "allow list": "if isSuperAdmin();",
             "allow update": "if isUser(userId) || isSuperAdmin();",
             "allow create": "if isUserAuthenticated();"
