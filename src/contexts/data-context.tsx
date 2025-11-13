@@ -22,7 +22,6 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
-  setOrders: (orders: Order[]) => void;
   addRestaurant: (data: Omit<Restaurant, 'id'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
@@ -39,7 +38,6 @@ const useDataStore = create<DataState>((set, get) => ({
   menuItems: [],
   orders: [],
   isLoading: true,
-  setOrders: (orders: Order[]) => set({ orders }),
   addRestaurant: async (data, imageFile) => {
     const formData = new FormData();
     formData.append('data', JSON.stringify(data));
@@ -116,23 +114,32 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
-        const restaurantsUnsub = onSnapshot(collection(db, 'restaurants'), (snapshot) => {
+        const restaurantsCollectionRef = collection(db, 'restaurants');
+        const restaurantsUnsub = onSnapshot(restaurantsCollectionRef, (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Restaurant, 'id'> })) as Restaurant[];
             useDataStore.setState({ restaurants: list });
-        }, (error) => console.error("Error on restaurants snapshot:", error));
+        }, (serverError) => {
+             const permissionError = new FirestorePermissionError({ path: restaurantsCollectionRef.path, operation: 'list' });
+             errorEmitter.emit('permission-error', permissionError);
+        });
         
-        const menuItemsUnsub = onSnapshot(collection(db, 'plats'), (snapshot) => {
+        const menuItemsCollectionRef = collection(db, 'plats');
+        const menuItemsUnsub = onSnapshot(menuItemsCollectionRef, (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<MenuItem, 'id'> })) as MenuItem[];
             useDataStore.setState({ menuItems: list });
-        }, (error) => console.error("Error on plats snapshot:", error));
+        }, (serverError) => {
+            const permissionError = new FirestorePermissionError({ path: menuItemsCollectionRef.path, operation: 'list' });
+            errorEmitter.emit('permission-error', permissionError);
+        });
         
-        // This subscription will now be handled in specific components that need it
-        const ordersUnsub = onSnapshot(collection(db, 'commandes'), (snapshot) => {
+        const ordersCollectionRef = collection(db, 'commandes');
+        const ordersUnsub = onSnapshot(ordersCollectionRef, (snapshot) => {
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<Order, 'id'> })) as Order[];
             useDataStore.setState({ orders: list });
              useDataStore.setState({ isLoading: false });
-        }, (error) => {
-            console.error("Error on orders snapshot:", error)
+        }, (serverError) => {
+            const permissionError = new FirestorePermissionError({ path: ordersCollectionRef.path, operation: 'list' });
+            errorEmitter.emit('permission-error', permissionError);
             useDataStore.setState({ isLoading: false });
         });
 
