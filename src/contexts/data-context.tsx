@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -135,12 +136,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) {
             let ordersQuery: Query | null = null;
             if (activeRole === 'restaurateur') {
-                const myRestaurantIds = useDataStore.getState().restaurants
+                const restaurantState = useDataStore.getState().restaurants;
+                const myRestaurantIds = restaurantState
                     .filter(r => r.proprietaireId === user.uid)
                     .map(r => r.id);
                 
                 if (myRestaurantIds.length > 0) {
                   ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
+                } else {
+                  ordersQuery = null;
                 }
             } else if (activeRole === 'livreur') {
                  ordersQuery = query(collection(db, 'commandes'), or(
