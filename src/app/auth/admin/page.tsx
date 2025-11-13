@@ -23,7 +23,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { cn } from '@/lib/utils';
 
 export default function AdminHomePage() {
-    const { user, userProfile, loading: authLoading } = useAuth();
+    const { user, userProfile, loading: authLoading } from useAuth();
     const { restaurants, orders, isLoading: isPublicDataLoading } = useData();
     const [allUsers, setAllUsers] = React.useState<UserProfile[]>([]);
     const [dataLoading, setDataLoading] = React.useState(true);
@@ -34,9 +34,14 @@ export default function AdminHomePage() {
             return;
         }
 
-        if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
+        // Redirect if not a SuperAdmin, wait for profile to be loaded
+        if (!user || !userProfile) {
             router.push('/');
             return; 
+        }
+        if (userProfile.roleSysteme !== 'SuperAdmin') {
+            router.push('/');
+            return;
         }
         
         setDataLoading(true);
@@ -71,6 +76,7 @@ export default function AdminHomePage() {
     }
 
     const latestUsers = React.useMemo(() => {
+        if (!allUsers) return [];
         return [...allUsers]
             .sort((a, b) => {
                 const dateA = a.dateCreation?.toDate ? a.dateCreation.toDate() : new Date(0);
