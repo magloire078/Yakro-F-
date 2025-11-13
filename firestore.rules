@@ -20,7 +20,7 @@ service cloud.firestore {
     }
 
     match /utilisateurs/{userId} {
-      allow read: if isUser(userId) || get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
+      allow read: if isUser(userId) || isSuperAdmin();
       allow list: if isSuperAdmin();
       allow update: if isUser(userId) || isSuperAdmin();
       allow create: if isUserAuthenticated();
