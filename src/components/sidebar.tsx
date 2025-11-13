@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck, UtensilsCrossed } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck, UtensilsCrossed, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -14,14 +14,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import type { AppRole } from '@/lib/types';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-
 
 export function Sidebar() {
   const { cartCount } = useCart();
@@ -35,13 +27,6 @@ export function Sidebar() {
     router.push('/login');
   }
   
-  const handleRoleChange = (newRole: AppRole) => {
-    if (userProfile?.rolesAutorises?.includes(newRole)) {
-      setActiveRole(newRole);
-      router.push(`/auth/${newRole}`);
-    }
-  }
-
   const getInitials = (nameOrEmail: string | null | undefined) => {
     if (!nameOrEmail) return '?';
     const nameParts = nameOrEmail.split(' ');
@@ -54,6 +39,7 @@ export function Sidebar() {
   const getHomeLink = () => {
     if (!user) return "/login";
     if (userProfile?.roleSysteme === 'SuperAdmin') return "/dashboard/admin";
+    if (userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1) return '/profile-selection';
     return activeRole ? `/auth/${activeRole}` : '/';
   }
 
@@ -66,22 +52,7 @@ export function Sidebar() {
           <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
         </Link>
         
-        {user && userProfile && userProfile.roleSysteme !== 'SuperAdmin' && userProfile.rolesAutorises && userProfile.rolesAutorises.length > 1 && (
-          <div className="mb-8">
-            <Select onValueChange={handleRoleChange} value={activeRole}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Changer de profil" />
-              </SelectTrigger>
-              <SelectContent>
-                {userProfile.rolesAutorises.map(role => (
-                  <SelectItem key={role} value={role} className="capitalize">{role}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        <nav className="flex flex-col gap-4">
+       <nav className="flex flex-col gap-4">
            {/* Common Link */}
            <Button variant={pathname === homeLink ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
                 <Link href={homeLink}>
@@ -171,7 +142,6 @@ export function Sidebar() {
               </Link>
             </Button>
           )}
-
         </nav>
 
         <div className="mt-auto space-y-4">
@@ -198,16 +168,20 @@ export function Sidebar() {
                 <DropdownMenuContent className="w-56 mb-2">
                     <DropdownMenuLabel>{userProfile?.nom || user.email}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
+                     <DropdownMenuItem asChild>
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4"/>
-                          Profil
+                          Mon Profil
                         </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <Settings className="mr-2 h-4 w-4"/>
-                        Paramètres
-                    </DropdownMenuItem>
+                    {userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1 && (
+                        <DropdownMenuItem asChild>
+                            <Link href="/profile-selection">
+                                <Users className="mr-2 h-4 w-4"/>
+                                Changer de profil
+                            </Link>
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                         <LogOut className="mr-2 h-4 w-4"/>

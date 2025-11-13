@@ -26,7 +26,7 @@ export default function AdminPage() {
     React.useEffect(() => {
         if (!authLoading && (!user || userProfile?.roleSysteme !== 'SuperAdmin')) {
             toast({ variant: 'destructive', title: 'Accès non autorisé' });
-            router.push('/');
+            router.push('/profile-selection');
         }
     }, [user, userProfile, authLoading, router, toast]);
 

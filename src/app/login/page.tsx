@@ -26,25 +26,16 @@ export default function LoginPage() {
             }
             
             const allowedRoles = userProfile.rolesAutorises || ['client'];
-            const currentRole = userProfile.role;
 
-            let roleToSet: AppRole = 'client';
-
-            if (currentRole && allowedRoles.includes(currentRole)) {
-                roleToSet = currentRole;
-            } else if (allowedRoles.length > 0) {
-                roleToSet = allowedRoles[0];
+            if (allowedRoles.length > 1) {
+                router.replace('/profile-selection');
+            } else {
+                const roleToSet = allowedRoles[0] || 'client';
+                setActiveRole(roleToSet);
+                router.replace(`/auth/${roleToSet}`);
             }
-            
-            setActiveRole(roleToSet);
-
-            if (!currentRole && user.uid) {
-                updateUserProfile(user.uid, { role: roleToSet }).catch(console.error);
-            }
-            
-            router.replace(`/auth/${roleToSet}`);
         }
-    }, [user, userProfile, isRedirecting, router, setActiveRole, updateUserProfile]);
+    }, [user, userProfile, isRedirecting, router, setActiveRole]);
     
     if (authLoading || (user && userProfile) || isRedirecting) {
         return (
