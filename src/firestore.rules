@@ -48,11 +48,14 @@ service cloud.firestore {
           isSuperAdmin();
     }
     
+    match /utilisateurs {
+      allow list: if isSuperAdmin();
+    }
+    
     match /utilisateurs/{userId} {
       allow read: if isUser(userId) || isSuperAdmin();
       allow update: if isUser(userId) || isSuperAdmin();
       allow create: if isUserAuthenticated();
-      allow list: if isSuperAdmin();
     }
   }
 }
