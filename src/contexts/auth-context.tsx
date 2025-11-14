@@ -47,9 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
           if (docSnap.exists()) {
             const profile = docSnap.data() as UserProfile;
-            setUserProfile(profile);
+            setUserProfile({ ...profile, uid: docSnap.id });
 
-            // Set active role from localStorage or profile
             const savedRole = localStorage.getItem('activeRole') as AppRole;
             if (savedRole && profile.rolesAutorises?.includes(savedRole)) {
               setActiveRoleState(savedRole);
@@ -62,17 +61,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
           } else {
-            // Profile is created client-side in user-auth-form now
-            // This listener will pick it up once created.
-            // We can set a temporary profile state if needed, or just let it load.
+             // Profile creation is handled client-side on first login
           }
           setLoading(false);
         }, (error) => {
             console.error("Error listening to user profile:", error);
-            setUser(null);
-            setUserProfile(null);
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'get',
+            });
+            errorEmitter.emit('permission-error', permissionError);
             setLoading(false);
-            router.push('/login');
         });
       } else {
         setUser(null);
@@ -88,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubscribeProfile();
       }
     };
-  }, [router]);
+  }, []);
   
   const setActiveRole = (role: AppRole) => {
       localStorage.setItem('activeRole', role);
