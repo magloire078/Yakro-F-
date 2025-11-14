@@ -139,7 +139,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         let unsubOrders: Unsubscribe | null = null;
         
-        // This function should be defined once, or memoized.
         const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
             const path = (q as any)._query.path.segments.join('/');
             const unsubscribe = onSnapshot(q, 
