@@ -110,6 +110,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     callback(list);
                 }, 
                 (serverError) => {
+                    console.error(`Permission error on path: ${path}`, serverError);
                     const permissionError = new FirestorePermissionError({ path, operation: 'list'});
                     errorEmitter.emit('permission-error', permissionError);
                 }
@@ -187,7 +188,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => {
             if (unsubOrders) unsubOrders();
         };
-    }, [user, userProfile, activeRole]); // Dependency on user/profile ensures it runs only when auth state is certain
+    }, [user, userProfile, activeRole, useDataStore.getState().restaurants]); // Rerun when restaurants change for restaurateur role
 
     return <>{children}</>;
 };
