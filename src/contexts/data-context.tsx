@@ -102,8 +102,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
-        const unsubscribes: Unsubscribe[] = [];
-        
         const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
             const path = (q as any)._query.path.segments.join('/');
             const unsubscribe = onSnapshot(q, 
@@ -118,20 +116,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             );
             return unsubscribe;
         };
-
+        
         const restaurantsQuery = query(collection(db, 'restaurants'));
         const unsubRestaurants = setupSubscription(restaurantsQuery, (data) => useDataStore.setState({ restaurants: data as Restaurant[] }));
-        unsubscribes.push(unsubRestaurants);
 
         const menuItemsQuery = query(collection(db, 'plats'));
         const unsubMenuItems = setupSubscription(menuItemsQuery, (data) => useDataStore.setState({ menuItems: data as MenuItem[] }));
-        unsubscribes.push(unsubMenuItems);
         
-        // Mark loading as false after setting up initial subscriptions for public data
         useDataStore.setState({ isLoading: false });
 
         return () => {
-            unsubscribes.forEach(unsub => unsub());
+            unsubRestaurants();
+            unsubMenuItems();
         };
     }, []);
 
@@ -154,7 +150,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return unsubscribe;
         };
         
-        if (user && userProfile) { // Ensure userProfile is loaded
+        if (user && userProfile) { // Ensure user and profile are loaded
             let ordersQuery: Query<DocumentData, DocumentData> | null = null;
             
             if (activeRole === 'client') {
@@ -165,7 +161,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     where('statut', '==', 'En Préparation')
                 ));
             } else if (activeRole === 'restaurateur') {
-                // Get restaurants from the store, which should be populated by now.
                 const allRestaurants = useDataStore.getState().restaurants;
                 const myRestaurantIds = allRestaurants
                     .filter(r => r.proprietaireId === user.uid)
@@ -177,7 +172,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     useDataStore.setState({ orders: [] }); // No restaurants, no orders.
                 }
             } else if (userProfile.roleSysteme === 'SuperAdmin') {
-                // SuperAdmins can see all orders
                 ordersQuery = query(collection(db, 'commandes'));
             }
 
@@ -185,14 +179,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 unsubOrders = setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] }));
             }
         } else {
-            // Not logged in, clear orders
+            // Not logged in or profile not ready, clear orders and cancel any existing subscription
+             if (unsubOrders) unsubOrders();
             useDataStore.setState({ orders: [] });
         }
 
         return () => {
             if (unsubOrders) unsubOrders();
         };
-    }, [user, userProfile, activeRole]); // Dependency on userProfile ensures it runs after profile is loaded
+    }, [user, userProfile, activeRole]); // Dependency on user/profile ensures it runs only when auth state is certain
 
     return <>{children}</>;
 };
