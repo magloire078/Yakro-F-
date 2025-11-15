@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, where, Unsubscribe, DocumentData, Query, or, getDocs, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -21,6 +21,10 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
+  setRestaurants: (restaurants: Restaurant[]) => void;
+  setMenuItems: (menuItems: MenuItem[]) => void;
+  setOrders: (orders: Order[]) => void;
+  setIsLoading: (isLoading: boolean) => void;
   addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
@@ -37,6 +41,10 @@ const useDataStore = create<DataState>((set, get) => ({
   menuItems: [],
   orders: [],
   isLoading: true,
+  setRestaurants: (restaurants) => set({ restaurants }),
+  setMenuItems: (menuItems) => set({ menuItems }),
+  setOrders: (orders) => set({ orders }),
+  setIsLoading: (isLoading) => set({ isLoading }),
   addRestaurant: async (restaurantData, imageFile) => {
     const formData = new FormData();
     formData.append('data', JSON.stringify(restaurantData));
@@ -98,71 +106,45 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, userProfile } = useAuth();
+    const { user } = useAuth();
+    const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useDataStore();
     
     React.useEffect(() => {
-        useDataStore.setState({ isLoading: true });
-        let subscriptions: Unsubscribe[] = [];
-
-        const setupSubscription = (
-            q: Query,
-            onData: (data: DocumentData[]) => void
-        ) => {
-            const unsubscribe = onSnapshot(q,
+        setIsLoading(true);
+        
+        const setupSubscription = <T extends DocumentData>(collectionName: string, setData: (data: T[]) => void): Unsubscribe => {
+            const q = query(collection(db, collectionName));
+            return onSnapshot(q, 
                 (snapshot) => {
-                    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    onData(list);
-                },
+                    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as T[];
+                    setData(list);
+                    setIsLoading(false); // Set loading to false after data is fetched
+                }, 
                 (error) => {
+                    console.error(`Error fetching ${collectionName}:`, error);
                     const permissionError = new FirestorePermissionError({
-                        path: (q as any)._query.path.segments.join('/'),
+                        path: collectionName,
                         operation: 'list'
                     });
                     errorEmitter.emit('permission-error', permissionError);
+                    setIsLoading(false); // Also stop loading on error
                 }
             );
-            subscriptions.push(unsubscribe);
         };
 
-        // Public data subscriptions
-        setupSubscription(
-            query(collection(db, 'restaurants')),
-            (data) => useDataStore.setState({ restaurants: data as Restaurant[] })
-        );
-
-        setupSubscription(
-            query(collection(db, 'plats')),
-            (data) => useDataStore.setState({ menuItems: data as MenuItem[] })
-        );
+        const restaurantUnsub = setupSubscription<Restaurant>('restaurants', setRestaurants);
+        const menuItemsUnsub = setupSubscription<MenuItem>('plats', setMenuItems);
         
-        // Conditional subscription for orders based on user role
-        if (user && userProfile) {
-            // A SuperAdmin, Restaurateur, or Livreur might need a broader view of orders.
-            // Security rules will ultimately enforce what they can see.
-            // Client users will only see their own orders.
-            // This simplified query relies on security rules to filter the data.
-            const ordersQuery = query(collection(db, 'commandes'));
-             if(ordersQuery) {
-                setupSubscription(
-                    ordersQuery,
-                    (data) => useDataStore.setState({ orders: data as Order[] })
-                );
-            }
-        } else {
-             useDataStore.setState({ orders: [] });
-        }
+        // Orders are dependent on the user, but we will fetch all and filter client-side for simplicity and security rule compatibility
+        const ordersUnsub = setupSubscription<Order>('commandes', setOrders);
 
-
-        const loadingTimeout = setTimeout(() => {
-             useDataStore.setState({ isLoading: false });
-        }, 2000);
-       
-
+        // Cleanup subscriptions on component unmount
         return () => {
-            clearTimeout(loadingTimeout);
-            subscriptions.forEach(unsub => unsub());
+            restaurantUnsub();
+            menuItemsUnsub();
+            ordersUnsub();
         };
-    }, [user, userProfile]);
+    }, [setRestaurants, setMenuItems, setOrders, setIsLoading]);
 
     return <>{children}</>;
 };
@@ -178,7 +160,6 @@ export const useData = () => {
   ) => {
     if (!user) throw new Error("User not authenticated");
     
-    // The proprietaireId is added in the server action from the authenticated user
     await state.addRestaurant({ ...restaurantData, proprietaireId: user.uid }, imageFile);
   };
   
