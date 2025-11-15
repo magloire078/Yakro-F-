@@ -34,26 +34,6 @@ export default function ProfilePage() {
     router.push('/login');
   }
 
-  const handleBecomeSuperAdmin = async () => {
-    if (!user || !userProfile) return;
-
-    try {
-      await updateUserProfile(user.uid, { roleSysteme: 'SuperAdmin', rolesAutorises: ['client', 'restaurateur', 'livreur'] });
-      toast({
-        title: 'Promotion réussie !',
-        description: 'Vous êtes maintenant Super Administrateur. Veuillez vous reconnecter pour appliquer les changements.',
-      });
-      // Force sign out to get new token with claims if we were using them, and to reload profile correctly
-      setTimeout(() => handleSignOut(), 2000);
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Promotion échouée',
-        description: 'Impossible de vous promouvoir. Un Super Administrateur existe probablement déjà.',
-      });
-    }
-  };
-
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
     return orders.filter(o => o.userId === user.uid && o.statut === 'Livrée');
@@ -146,12 +126,6 @@ export default function ProfilePage() {
                         <LogOut className="mr-2 h-4 w-4" />
                         Se déconnecter
                     </Button>
-                    {userProfile.roleSysteme !== 'SuperAdmin' && (
-                      <Button variant="destructive" onClick={handleBecomeSuperAdmin}>
-                        <ShieldAlert className="mr-2 h-4 w-4" />
-                        Devenir Super Admin
-                      </Button>
-                    )}
                  </div>
             </CardContent>
           </Card>
