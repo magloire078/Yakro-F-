@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -143,7 +142,7 @@ export default function AdminPage() {
                                     <TableRow>
                                         <TableHead>Utilisateur</TableHead>
                                         <TableHead>Rôle Système</TableHead>
-                                        <TableHead>Permissions</TableHead>
+                                        <TableHead>Rôles Fonctionnels</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
