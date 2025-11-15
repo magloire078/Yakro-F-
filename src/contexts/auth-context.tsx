@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -112,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
-      updateDoc(userDocRef, data).catch(async (serverError) => {
+      return updateDoc(userDocRef, data).catch(async (serverError) => {
           const permissionError = new FirestorePermissionError({
               path: userDocRef.path,
               operation: 'update',

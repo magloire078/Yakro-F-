@@ -213,12 +213,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Abonnement aux données privées (commandes)
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
-            const restaurants = useDataStore.getState().restaurants;
-            const myRestaurantIds = restaurants
-                .filter(r => r.proprietaireId === user.uid)
-                .map(r => r.id);
+            
+            const myRestaurantIds = userProfile.roleSysteme === 'SuperAdmin' 
+                ? [] // SuperAdmin will get all orders
+                : useDataStore.getState().restaurants
+                    .filter(r => r.proprietaireId === user.uid)
+                    .map(r => r.id);
 
-            if (activeRole === 'client') {
+            if (userProfile.roleSysteme === 'SuperAdmin') {
+                ordersQuery = query(collection(db, 'commandes'));
+            } else if (activeRole === 'client') {
                  ordersQuery = query(collection(db, "commandes"), where("userId", "==", user.uid));
             } else if (activeRole === 'livreur') {
                 ordersQuery = query(collection(db, "commandes"), or(
@@ -229,9 +233,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (myRestaurantIds.length > 0) {
                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
                 }
-            } else if (userProfile.roleSysteme === 'SuperAdmin') {
-                ordersQuery = query(collection(db, 'commandes'));
-            }
+            } 
 
             if (ordersQuery) {
                 setupSubscription(
@@ -239,8 +241,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     'commandes',
                     (data) => useDataStore.setState({ orders: data as Order[] })
                 );
-            } else {
-                useDataStore.setState({ orders: [] });
+            } else if (activeRole === 'restaurateur' && myRestaurantIds.length === 0) {
+                useDataStore.setState({ orders: [] }); // No restaurants, so no orders
             }
         } else {
             useDataStore.setState({ orders: [] });
