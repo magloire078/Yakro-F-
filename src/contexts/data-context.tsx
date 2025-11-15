@@ -27,7 +27,7 @@ interface DataState {
   setMenuItems: (menuItems: MenuItem[]) => void;
   setOrders: (orders: Order[]) => void;
   setIsLoading: (isLoading: boolean) => void;
-  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'>, imageFile: File | null) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -48,13 +48,8 @@ const useDataStore = create<DataState>((set, get) => ({
   setOrders: (orders) => set({ orders }),
   setIsLoading: (isLoading) => set({ isLoading }),
   addRestaurant: async (restaurantData, imageFile) => {
-    const formData = new FormData();
-    formData.append('data', JSON.stringify(restaurantData));
-
-    if (imageFile) {
-        formData.append('image', imageFile);
-    }
-    await addRestaurantAction(formData);
+    // This is handled by the useData hook now to get user context
+    throw new Error("addRestaurant should not be called directly from the store.");
   },
 
   updateRestaurant: async (restaurantId, data, imageFile) => {
@@ -164,13 +159,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else if (activeRole === 'livreur') {
                 q = query(ordersCollectionRef, where("statut", "==", "En Préparation"));
             } else if (activeRole === 'restaurateur') {
+                // Get the restaurant IDs synchronously from the Zustand store
                 const myRestaurantIds = useDataStore.getState().restaurants
                     .filter(r => r.proprietaireId === user.uid)
                     .map(r => r.id);
+
                 if (myRestaurantIds.length > 0) {
-                    q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
+                     q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
                 } else {
-                    // Restaurateur has no restaurants, don't query for orders.
                     setOrders([]);
                 }
             }
@@ -220,12 +216,18 @@ export const useData = () => {
   const state = useDataStore();
 
   const addRestaurant = async (
-    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'>, 
+    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, 
     imageFile: File | null
   ) => {
     if (!user) throw new Error("User not authenticated");
     
-    await state.addRestaurant({ ...restaurantData, proprietaireId: user.uid }, imageFile);
+    const formData = new FormData();
+    const fullData = { ...restaurantData, proprietaireId: user.uid };
+    formData.append('data', JSON.stringify(fullData));
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    await addRestaurantAction(formData);
   };
   
   return { ...state, addRestaurant };

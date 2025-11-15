@@ -42,15 +42,13 @@ export async function addRestaurantAction(formData: FormData) {
     };
     
     try {
-        const batch = writeBatch(db);
         let imageUrl = '';
 
         if (imageFile) {
             imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
         }
         
-        batch.set(docRef, { ...restaurantPayload, image: imageUrl });
-        await batch.commit();
+        await setDoc(docRef, { ...restaurantPayload, image: imageUrl });
         
         revalidatePath('/');
         revalidatePath('/dashboard/new-restaurant');
