@@ -47,12 +47,17 @@ service cloud.firestore {
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           isSuperAdmin();
     }
+
+    match /utilisateurs {
+        allow list: if isSuperAdmin();
+    }
     
     match /utilisateurs/{userId} {
       allow read: if isUser(userId) || isSuperAdmin();
       allow update: if isUser(userId) || isSuperAdmin();
       allow create: if isUserAuthenticated();
-      allow list: if isSuperAdmin();
     }
   }
 }
+
+    
