@@ -73,6 +73,8 @@ export default function AdminPage() {
                     operation: 'list',
                 });
                 errorEmitter.emit('permission-error', permissionError);
+                // The listener will throw the error for the dev overlay.
+                // A toast is still useful for the end-user.
                 toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
                 setDataLoading(false);
             }
