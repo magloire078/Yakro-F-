@@ -93,7 +93,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 operation: 'get',
             });
             errorEmitter.emit('permission-error', permissionError);
-            console.error("Original error in user profile snapshot:", error);
             setLoading(false);
         });
       } else {
