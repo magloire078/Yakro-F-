@@ -189,83 +189,108 @@ export default function AdminPage() {
                 </div>
 
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Gestion des Utilisateurs</CardTitle>
-                        <CardDescription>
-                            {allUsers.length} utilisateur(s) trouvé(s) sur la plateforme.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Utilisateur</TableHead>
-                                        <TableHead>Rôle Système</TableHead>
-                                        <TableHead>Rôles Fonctionnels</TableHead>
-                                        <TableHead>Date d'inscription</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {allUsers.map((u) => (
-                                        <TableRow key={u.uid} className={updatingUserId === u.uid ? 'opacity-50' : ''}>
-                                            <TableCell>
-                                                <div className="font-medium">{u.nom || 'Non défini'}</div>
-                                                <div className="text-sm text-muted-foreground">{u.email}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Select
-                                                    value={u.roleSysteme || 'User'}
-                                                    onValueChange={(value: SystemRole) => handleSystemRoleChange(u.uid, value)}
-                                                    disabled={updatingUserId === u.uid || u.uid === user?.uid}
-                                                >
-                                                    <SelectTrigger className="w-[180px]">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="SuperAdmin">Super Admin</SelectItem>
-                                                        <SelectItem value="Admin">Admin</SelectItem>
-                                                        <SelectItem value="User">Utilisateur</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-4">
-                                                    {(['client', 'restaurateur', 'livreur'] as AppRole[]).map(role => (
-                                                        <div key={role} className="flex items-center space-x-2">
-                                                            <Checkbox
-                                                                id={`${u.uid}-${role}`}
-                                                                checked={(u.rolesAutorises || []).includes(role)}
-                                                                onCheckedChange={(checked) => handleAllowedRoleChange(u.uid, role, !!checked)}
-                                                                disabled={updatingUserId === u.uid || (u.roleSysteme === 'SuperAdmin' && u.uid === user?.uid)}
-                                                            />
-                                                            <label
-                                                                htmlFor={`${u.uid}-${role}`}
-                                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-                                                            >
-                                                                {role}
-                                                            </label>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                     <div className="lg:col-span-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Gestion des Utilisateurs</CardTitle>
+                                <CardDescription>
+                                    {allUsers.length} utilisateur(s) trouvé(s) sur la plateforme.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Utilisateur</TableHead>
+                                                <TableHead>Rôle Système</TableHead>
+                                                <TableHead>Rôles Fonctionnels</TableHead>
+                                                <TableHead>Date d'inscription</TableHead>
+                                                <TableHead>Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {allUsers.map((u) => (
+                                                <TableRow key={u.uid} className={updatingUserId === u.uid ? 'opacity-50' : ''}>
+                                                    <TableCell>
+                                                        <div className="font-medium">{u.nom || 'Non défini'}</div>
+                                                        <div className="text-sm text-muted-foreground">{u.email}</div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Select
+                                                            value={u.roleSysteme || 'User'}
+                                                            onValueChange={(value: SystemRole) => handleSystemRoleChange(u.uid, value)}
+                                                            disabled={updatingUserId === u.uid || u.uid === user?.uid}
+                                                        >
+                                                            <SelectTrigger className="w-[180px]">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="SuperAdmin">Super Admin</SelectItem>
+                                                                <SelectItem value="Admin">Admin</SelectItem>
+                                                                <SelectItem value="User">Utilisateur</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-4">
+                                                            {(['client', 'restaurateur', 'livreur'] as AppRole[]).map(role => (
+                                                                <div key={role} className="flex items-center space-x-2">
+                                                                    <Checkbox
+                                                                        id={`${u.uid}-${role}`}
+                                                                        checked={(u.rolesAutorises || []).includes(role)}
+                                                                        onCheckedChange={(checked) => handleAllowedRoleChange(u.uid, role, !!checked)}
+                                                                        disabled={updatingUserId === u.uid || (u.roleSysteme === 'SuperAdmin' && u.uid === user?.uid)}
+                                                                    />
+                                                                    <label
+                                                                        htmlFor={`${u.uid}-${role}`}
+                                                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                                                                    >
+                                                                        {role}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : 'Date inconnue'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button variant="outline" size="icon" onClick={() => setEditingUser(u)} disabled={updatingUserId === u.uid}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
+                                                    </TableCell>
+                                                     <TableCell>
+                                                        {u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : 'Date inconnue'}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button variant="outline" size="icon" onClick={() => setEditingUser(u)} disabled={updatingUserId === u.uid}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                     </div>
+                     <div className="lg:col-span-1">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Derniers Inscrits</CardTitle>
+                            </CardHeader>
+                             <CardContent className="space-y-4">
+                                {latestUsers.map(u => (
+                                    <div key={u.uid} className="flex items-center gap-4">
+                                        <Avatar>
+                                            <AvatarFallback>{getInitials(u.nom || u.email)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1">
+                                            <p className="font-semibold truncate">{u.nom || 'Non défini'}</p>
+                                            <p className="text-sm text-muted-foreground truncate">{u.email}</p>
+                                        </div>
+                                        <Badge variant="outline">{u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : ''}</Badge>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                     </div>
+                </div>
             </div>
             {editingUser && (
                 <EditUserDialog
