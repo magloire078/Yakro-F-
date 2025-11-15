@@ -149,6 +149,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else if (activeRole === 'client') {
                  ordersQuery = query(
                    collection(db, "commandes"), 
+                   where("statut", "in", ["Placée", "En Préparation", "En Route"]),
                    where("userId", "==", user.uid)
                  );
             } else if (activeRole === 'livreur') {
@@ -157,10 +158,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     where('statut', '==', 'En Préparation')
                 ));
             } else if (activeRole === 'restaurateur') {
-                // For restaurateurs, we fetch all orders and filter on the client
-                // This avoids race conditions with fetching restaurants first.
-                // Security rules will still prevent them from seeing orders they don't own.
-                ordersQuery = query(collection(db, 'commandes'));
+                 const myRestaurantIds = useDataStore.getState().restaurants
+                    .filter(r => r.proprietaireId === user.uid)
+                    .map(r => r.id);
+
+                if (myRestaurantIds.length > 0) {
+                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
+                }
             } 
 
             if (ordersQuery) {
@@ -169,6 +173,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     'commandes',
                     (data) => useDataStore.setState({ orders: data as Order[] })
                 );
+            } else {
+                 useDataStore.setState({ orders: [] });
             }
         } else {
             useDataStore.setState({ orders: [] });
@@ -194,14 +200,13 @@ export const useData = () => {
   const state = useDataStore();
 
   const addRestaurant = async (
-    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, 
+    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, 
     imageFile: File | null
   ) => {
     if (!user) throw new Error("User not authenticated");
-
-    const dataWithOwner = { ...restaurantData, proprietaireId: user.uid };
     
-    await state.addRestaurant(dataWithOwner, imageFile);
+    // The proprietaireId is now added on the server action side
+    await state.addRestaurant({ ...restaurantData, proprietaireId: user.uid }, imageFile);
   };
   
   return { ...state, addRestaurant };

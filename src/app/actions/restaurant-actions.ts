@@ -22,7 +22,7 @@ const uploadImage = async (file: File, path: string): Promise<string> => {
 export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
-    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'>;
+    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'> & { proprietaireId: string };
     const collectionRef = collection(db, "restaurants");
 
     if (!data.proprietaireId) {
@@ -39,23 +39,8 @@ export async function addRestaurantAction(formData: FormData) {
         image: "" // Start with empty image URL
     };
     
-    try {
-        // First, add the restaurant document with an empty image URL to get an ID.
-        const docRef = await addDoc(collectionRef, restaurantPayload);
-        const restaurantId = docRef.id;
-
-        // If an image file was provided, upload it now.
-        if (imageFile) {
-            const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
-            // Now, update the document with the correct image URL.
-            await updateDoc(docRef, { image: imageUrl });
-        }
-
-
-        revalidatePath('/');
-        revalidatePath('/dashboard/new-restaurant');
-        revalidatePath('/dashboard/my-restaurants');
-    } catch (e: any) {
+    // First, add the restaurant document with an empty image URL to get an ID.
+    const docRef = await addDoc(collectionRef, restaurantPayload).catch((e: any) => {
         const permissionError = new FirestorePermissionError({
             path: collectionRef.path,
             operation: 'create',
@@ -63,8 +48,29 @@ export async function addRestaurantAction(formData: FormData) {
         });
         errorEmitter.emit('permission-error', permissionError);
         // Re-throw to let the caller know it failed, it will be caught in the UI
-        throw new Error(e.message || "Failed to add restaurant.");
+        throw e;
+    });
+
+    const restaurantId = docRef.id;
+
+    // If an image file was provided, upload it now.
+    if (imageFile) {
+        const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+        // Now, update the document with the correct image URL.
+        await updateDoc(docRef, { image: imageUrl }).catch((e: any) => {
+             const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'update',
+                requestResourceData: { image: 'URL_PLACEHOLDER' },
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw e;
+        });
     }
+
+    revalidatePath('/');
+    revalidatePath('/dashboard/new-restaurant');
+    revalidatePath('/dashboard/my-restaurants');
 }
 
 export async function updateRestaurantAction(formData: FormData) {
@@ -78,24 +84,25 @@ export async function updateRestaurantAction(formData: FormData) {
     }
     
     const restaurantDocRef = doc(db, 'restaurants', restaurantId);
-    try {
-        const updateData: Partial<Restaurant> = { ...data };
-        if (imageFile) {
-            const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
-            updateData.image = imageUrl;
-        }
-        await updateDoc(restaurantDocRef, updateData);
-        revalidatePath('/');
-        revalidatePath(`/restaurants/${restaurantId}`);
-        revalidatePath('/dashboard/my-restaurants');
-        revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
-    } catch (e: any) {
+    
+    const updateData: Partial<Restaurant> = { ...data };
+    if (imageFile) {
+        const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+        updateData.image = imageUrl;
+    }
+
+    await updateDoc(restaurantDocRef, updateData).catch((e: any) => {
          const permissionError = new FirestorePermissionError({
             path: restaurantDocRef.path,
             operation: 'update',
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
-        throw new Error(e.message || "Failed to update restaurant.");
-    }
+        throw e;
+    });
+    
+    revalidatePath('/');
+    revalidatePath(`/restaurants/${restaurantId}`);
+    revalidatePath('/dashboard/my-restaurants');
+    revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
 }
