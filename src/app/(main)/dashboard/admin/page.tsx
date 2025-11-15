@@ -37,10 +37,14 @@ export default function AdminPage() {
             return;
         }
 
-        if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
-            toast({ variant: 'destructive', title: 'Accès non autorisé' });
+        if (!user || userProfile?.roleSysteme !== 'SuperAdmin') {
+            toast({ 
+                variant: 'destructive', 
+                title: 'Accès non autorisé',
+                description: "Cette page est réservée aux Super Administrateurs."
+            });
             router.push('/');
-            setDataLoading(false); // Stop loading if unauthorized
+            setDataLoading(false);
             return;
         }
 
@@ -113,12 +117,12 @@ export default function AdminPage() {
                      <div className="flex gap-2">
                         <Button asChild variant="outline">
                             <Link href="/auth/admin">
-                            <Home />
-                            Tableau de bord
+                                <Home className="mr-2" />
+                                Tableau de bord
                             </Link>
                         </Button>
                         <Button onClick={() => setIsAddUserDialogOpen(true)}>
-                            <UserPlus />
+                            <UserPlus className="mr-2" />
                             Ajouter un utilisateur
                         </Button>
                     </div>
