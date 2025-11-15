@@ -1,3 +1,4 @@
+
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
@@ -20,10 +21,6 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const storage = getStorage(app);
 const db = getFirestore(app);
-
-auth.onAuthStateChanged(user => {
-    auth.currentUser = user;
-});
 
 export { app, auth, storage, db };
 
