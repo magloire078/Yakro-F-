@@ -345,4 +345,3 @@ export default function NewMenuItemPage() {
         </div>
     );
 }
-

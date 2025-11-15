@@ -177,7 +177,7 @@ export default function DashboardMenuPage() {
                         Utilisez le créateur de plats par IA sur la page d'accueil de votre tableau de bord pour commencer à ajouter des plats.
                      </CardDescription>
                      <Button className="mt-6" asChild>
-                        <Link href="/">Ajouter un plat</Link>
+                        <Link href="/dashboard/new-menu-item">Ajouter un plat</Link>
                      </Button>
                 </Card>
             )}
