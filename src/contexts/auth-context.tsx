@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
@@ -43,6 +43,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         setUser(user);
         const userDocRef = doc(db, 'utilisateurs', user.uid);
+
+        // Recovery mechanism: check if a SuperAdmin exists. If not, promote this user.
+        const superAdminQuery = query(collection(db, 'utilisateurs'), where('roleSysteme', '==', 'SuperAdmin'), limit(1));
+        const superAdminSnapshot = await getDocs(superAdminQuery);
+        
+        if (superAdminSnapshot.empty) {
+            console.log("No SuperAdmin found. Promoting current user.");
+            try {
+                await updateDoc(userDocRef, { roleSysteme: 'SuperAdmin' });
+                toast({
+                    title: "Récupération du compte Super Admin",
+                    description: `Votre compte (${user.email}) a été promu Super Administrateur.`,
+                });
+            } catch (e) {
+                 console.error("Failed to promote user to SuperAdmin:", e);
+                 const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { roleSysteme: 'SuperAdmin' },
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            }
+        }
+
 
         unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
           if (docSnap.exists()) {
