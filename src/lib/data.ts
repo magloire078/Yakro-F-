@@ -1,4 +1,5 @@
 
+
 import type { MenuItem, Restaurant, Order } from './types';
 
 // These are used for seeding the database on first run and for providing static data
