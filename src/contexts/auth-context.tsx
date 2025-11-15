@@ -125,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
-        toast({ variant: 'destructive', title: 'Erreur de permission', description: "Vous n'avez pas les droits pour effectuer cette action." });
+        // Do not toast here, let the listener handle it.
         throw permissionError;
     }
   };
@@ -153,26 +153,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return newUser;
     } catch (error: any) {
-        let description = "Une erreur est survenue.";
-        if (error.code === 'auth/email-already-in-use') {
-            description = 'Cette adresse e-mail est déjà utilisée.';
-        } else if (error.code === 'auth/weak-password') {
-            description = 'Le mot de passe est trop faible.';
-        } else {
-             const permissionError = new FirestorePermissionError({
-                path: `utilisateurs/${(newUser?.uid || 'nouvel-utilisateur')}`,
-                operation: 'create',
-                requestResourceData: { email: data.email, nom: data.nom, roles: data.rolesAutorises },
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            description = "Erreur de permissions lors de la création du profil.";
-        }
-        toast({
-            variant: 'destructive',
-            title: "Erreur de création",
-            description,
+      if (error.code === 'auth/email-already-in-use') {
+        toast({ variant: 'destructive', title: 'Erreur de création', description: 'Cette adresse e-mail est déjà utilisée.'});
+      } else if (error.code === 'auth/weak-password') {
+        toast({ variant: 'destructive', title: 'Erreur de création', description: 'Le mot de passe est trop faible.'});
+      } else {
+         const permissionError = new FirestorePermissionError({
+            path: `utilisateurs/${(newUser?.uid || 'nouvel-utilisateur')}`,
+            operation: 'create',
+            requestResourceData: { email: data.email, nom: data.nom, rolesAutorises: data.rolesAutorises },
         });
-        return null;
+        errorEmitter.emit('permission-error', permissionError);
+        // Let the listener throw the visible error.
+      }
+      return null;
     }
   }
 
