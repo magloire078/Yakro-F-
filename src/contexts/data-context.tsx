@@ -22,7 +22,7 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
-  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, imageFile: File | null) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -147,7 +147,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .map(r => r.id);
 
             if (activeRole === 'client') {
-                ordersQuery = query(collection(db, "commandes"), where("userId", "==", user.uid));
+                 ordersQuery = query(
+                    collection(db, "commandes"), 
+                    where("userId", "==", user.uid),
+                    where("statut", "in", ["Placée", "En Préparation", "En Route"])
+                );
             } else if (activeRole === 'livreur') {
                 ordersQuery = query(collection(db, "commandes"), or(
                     where('livreurId', '==', user.uid),
@@ -195,7 +199,7 @@ export const useData = () => {
   const state = useDataStore();
 
   const addRestaurant = async (
-    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, 
+    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, 
     imageFile: File | null
   ) => {
     if (!user) throw new Error("User not authenticated");
