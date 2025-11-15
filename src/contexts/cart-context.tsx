@@ -6,6 +6,7 @@ import * as React from 'react';
 import type { CartItem, MenuItem, Order, MenuOption } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -37,11 +38,32 @@ const getInitialCart = (): CartItem[] => {
 
 const COMMISSION_RATE = 0.15; // 15% commission
 
+const getUserLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      () => {
+        resolve(null);
+      }
+    );
+  });
+};
+
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
   const { addOrder, getRestaurant } = useData();
   const { user, userProfile } = useAuth();
+  const { toast } = useToast();
 
 
   React.useEffect(() => {
@@ -130,11 +152,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cartItems]);
 
   const placeOrder = async () => {
-    if (!user || !userProfile || cartItems.length === 0) {
-        console.error("User not logged in or cart is empty");
-        throw new Error("User not logged in or cart is empty");
+    if (!user || !userProfile) {
+        throw new Error("Vous devez être connecté pour passer une commande.");
     }
-    
+     if (cartItems.length === 0) {
+        throw new Error("Votre panier est vide.");
+    }
+     if (!userProfile.adresseParDefaut) {
+        throw new Error("Veuillez définir une adresse de livraison par défaut dans votre profil.");
+    }
+
+    const location = await getUserLocation();
+    if (!location) {
+        const confirmNoLocation = window.confirm("Impossible de récupérer votre position GPS. Voulez-vous continuer sans localisation ? Cela pourrait compliquer la livraison.");
+        if (!confirmNoLocation) {
+            throw new Error("Commande annulée. La localisation GPS est recommandée.");
+        }
+    }
+
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
     
@@ -155,9 +190,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
         restaurantId: restaurantId,
         statut: 'Placée',
-        adresseClient: userProfile.adresseParDefaut || 'Adresse non spécifiée',
+        adresseClient: userProfile.adresseParDefaut,
         adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
         telephoneClient: userProfile.telephone || 'Numéro non spécifié',
+        ...(location && {
+            latitudeClient: location.latitude,
+            longitudeClient: location.longitude,
+        }),
+        ...(restaurant?.latitude && { latitudeRestaurant: restaurant.latitude }),
+        ...(restaurant?.longitude && { longitudeRestaurant: restaurant.longitude }),
     };
 
     await addOrder(newOrder);

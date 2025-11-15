@@ -57,6 +57,10 @@ export interface Order {
   adresseClient: string;
   adresseRestaurant: string;
   telephoneClient: string;
+  latitudeClient?: number;
+  longitudeClient?: number;
+  latitudeRestaurant?: number;
+  longitudeRestaurant?: number;
 }
 
 export interface Review {

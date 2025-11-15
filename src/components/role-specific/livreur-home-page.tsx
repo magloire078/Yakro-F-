@@ -5,7 +5,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, Phone, Bike, Home, ChefHat } from 'lucide-react';
+import { Loader, Phone, Bike, Home, ChefHat, Map } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import { type Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
 
 export default function LivreurHomePage() {
@@ -103,7 +104,15 @@ export default function LivreurHomePage() {
         }
     }
 
+    const getGoogleMapsLink = (order: Order) => {
+        if (!order.latitudeRestaurant || !order.longitudeRestaurant || !order.latitudeClient || !order.longitudeClient) {
+            return null;
+        }
+        return `https://www.google.com/maps/dir/?api=1&origin=${order.latitudeRestaurant},${order.longitudeRestaurant}&destination=${order.latitudeClient},${order.longitudeClient}&travelmode=driving`;
+    }
+
     if (currentDelivery) {
+        const mapsLink = getGoogleMapsLink(currentDelivery);
         return (
             <div className="container mx-auto">
                 <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Livraison en cours</h1>
@@ -133,6 +142,14 @@ export default function LivreurHomePage() {
                             </div>
                         </div>
                         <div className="space-y-3">
+                            {mapsLink && (
+                                <Button asChild variant="outline" className="w-full">
+                                    <Link href={mapsLink} target="_blank" rel="noopener noreferrer">
+                                        <Map className="mr-2"/>
+                                        Voir sur la carte
+                                    </Link>
+                                </Button>
+                            )}
                              <div className="flex items-center gap-4">
                                 <p>Contenu : {currentDelivery.plats.map(i => `${i.quantite}x ${i.nom}`).join(', ')}</p>
                             </div>
