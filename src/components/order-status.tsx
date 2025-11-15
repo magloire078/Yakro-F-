@@ -1,13 +1,15 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { CheckCircle, CookingPot, Bike, Home, Loader } from 'lucide-react';
+import { CheckCircle, CookingPot, Bike, Home, Loader, Map } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useAuth } from '@/contexts/auth-context';
 import type { Order } from '@/lib/types';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
 
 const statusConfig = {
   'Placée': { name: 'Placée', icon: <CheckCircle className="h-8 w-8" />, description: "Le restaurant a bien reçu votre commande." },
@@ -50,8 +52,16 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
                     {currentStatus.icon}
                 </div>
                 <h3 className="text-2xl font-bold">{currentStatus.name}</h3>
-                <p className="text-muted-foreground mb-8 h-6">
+                <p className="text-muted-foreground mb-8 h-10">
                     {currentStatus.description}
+                    {order.statut === 'En Route' && (
+                        <Button asChild variant="link" className="text-primary">
+                            <Link href={`/orders/${order.id}/track`}>
+                                Suivre le livreur
+                                <Map className="ml-2 h-4 w-4"/>
+                            </Link>
+                        </Button>
+                    )}
                 </p>
 
                 <div className="w-full max-w-lg">

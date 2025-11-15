@@ -36,6 +36,7 @@ interface DataState {
   updateOrderStatus: (orderId: string, status: Order['statut'], delivererId?: string) => Promise<void>;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
+  getOrder: (id: string) => Order | undefined;
 }
 
 const useDataStore = create<DataState>((set, get) => ({
@@ -99,6 +100,9 @@ const useDataStore = create<DataState>((set, get) => ({
   getRestaurant: (id: string) => {
     return get().restaurants.find(r => r.id === id);
   },
+  getOrder: (id: string) => {
+    return get().orders.find(o => o.id === id);
+  }
 }));
 
 function setupSubscription<T extends DocumentData>(

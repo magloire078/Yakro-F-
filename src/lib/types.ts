@@ -110,4 +110,8 @@ export interface UserProfile {
     rolesAutorises?: AppRole[];
     
     statutService?: 'En service' | 'Hors service';
+    
+    // Position actuelle du livreur
+    latitude?: number;
+    longitude?: number;
 }

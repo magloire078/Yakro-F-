@@ -26,6 +26,7 @@ export default function LivreurHomePage() {
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
     const [isCompleting, setIsCompleting] = React.useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
+    const locationIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
     const isEnService = userProfile?.statutService === 'En service';
     
@@ -83,23 +84,53 @@ export default function LivreurHomePage() {
             setIsCompleting(false);
         }
     }
+    
+    const updateLocation = React.useCallback(() => {
+        if (!user || !navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                updateUserProfile(user.uid, { latitude, longitude });
+            },
+            (error) => {
+                console.error("Erreur de géolocalisation: ", error.message);
+                // Optionnel: informer l'utilisateur que la localisation a échoué
+            }
+        );
+    }, [user, updateUserProfile]);
+
 
     const handleStatusToggle = async (checked: boolean) => {
         if (!user) return;
         const newStatus = checked ? 'En service' : 'Hors service';
         setIsUpdatingStatus(true);
-        try {
+
+        if (checked) {
+            if (!navigator.geolocation) {
+                toast({ variant: 'destructive', title: 'Géolocalisation non supportée' });
+                setIsUpdatingStatus(false);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    updateUserProfile(user.uid, { statutService: newStatus, latitude, longitude });
+                    locationIntervalRef.current = setInterval(updateLocation, 10000); // Mettre à jour toutes les 10s
+                    toast({ title: `Vous êtes maintenant en service.` });
+                    setIsUpdatingStatus(false);
+                },
+                (error) => {
+                    toast({ variant: 'destructive', title: 'Accès à la localisation refusé', description: "Veuillez autoriser la géolocalisation pour passer en service." });
+                    setIsUpdatingStatus(false);
+                }
+            );
+        } else {
+             if (locationIntervalRef.current) {
+                clearInterval(locationIntervalRef.current);
+                locationIntervalRef.current = null;
+            }
             await updateUserProfile(user.uid, { statutService: newStatus });
-            toast({
-                title: `Vous êtes maintenant ${newStatus.toLowerCase()}.`
-            });
-        } catch(error) {
-            toast({
-                variant: 'destructive',
-                title: 'Erreur',
-                description: 'Impossible de changer votre statut pour le moment.'
-            });
-        } finally {
+            toast({ title: `Vous êtes maintenant hors service.` });
             setIsUpdatingStatus(false);
         }
     }
@@ -110,6 +141,14 @@ export default function LivreurHomePage() {
         }
         return `https://www.google.com/maps/dir/?api=1&origin=${order.latitudeRestaurant},${order.longitudeRestaurant}&destination=${order.latitudeClient},${order.longitudeClient}&travelmode=driving`;
     }
+    
+    React.useEffect(() => {
+        return () => {
+            if(locationIntervalRef.current) {
+                clearInterval(locationIntervalRef.current);
+            }
+        }
+    }, [])
 
     if (currentDelivery) {
         const mapsLink = getGoogleMapsLink(currentDelivery);
