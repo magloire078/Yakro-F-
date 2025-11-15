@@ -55,7 +55,7 @@ export default function AdminPage() {
             return;
         }
 
-        // Only subscribe if the user is a confirmed SuperAdmin
+        // The user is authenticated and is a SuperAdmin. Now we can safely subscribe.
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
         unsubscribe = onSnapshot(usersCollectionRef, 
@@ -73,8 +73,6 @@ export default function AdminPage() {
                     operation: 'list',
                 });
                 errorEmitter.emit('permission-error', permissionError);
-                // The listener will throw the error for the dev overlay.
-                // A toast is still useful for the end-user.
                 toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
                 setDataLoading(false);
             }
@@ -308,5 +306,3 @@ export default function AdminPage() {
         </>
     );
 }
-
-    
