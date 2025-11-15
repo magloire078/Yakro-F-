@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart } from 'lucide-react';
+import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,8 @@ import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import type { Restaurant } from '@/lib/types';
 import Link from 'next/link';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function ProfilePage() {
   const { user, userProfile, loading: authLoading, activeRole } = useAuth();
@@ -23,6 +25,12 @@ export default function ProfilePage() {
       router.push('/login');
     }
   }, [user, authLoading, router]);
+  
+  const handleSignOut = async () => {
+    await signOut(auth);
+    localStorage.removeItem('activeRole');
+    router.push('/login');
+  }
 
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
@@ -110,6 +118,11 @@ export default function ProfilePage() {
                     <p className="text-sm text-muted-foreground">Adresse par défaut</p>
                 </div>
               </div>
+                 <Separator />
+                 <Button variant="outline" onClick={handleSignOut} className="w-full sm:w-auto">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Se déconnecter
+                </Button>
             </CardContent>
           </Card>
         </div>
