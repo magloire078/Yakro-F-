@@ -32,14 +32,20 @@ export async function addMenuItemAction(formData: FormData) {
     const item = JSON.parse(itemJSON) as Omit<MenuItem, 'id'>;
 
     try {
-        let imageUrlToUpload: string | File | undefined = imageFile || undefined;
+        let finalImageUrl: string | undefined = undefined;
 
-        // If no image is provided by user, generate one with AI
-        if (!imageUrlToUpload && item.indiceImage) {
+        // If user provides an image, use it.
+        if (imageFile) {
+             const docRefId = doc(collection(db, "plats")).id; // generate an ID upfront
+             finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
+        } 
+        // If no user image, and there's a hint, generate one with AI
+        else if (item.indiceImage) {
             try {
                 const generatedImage = await generateImage({ prompt: item.indiceImage });
                 if (generatedImage.imageDataUri) {
-                    imageUrlToUpload = generatedImage.imageDataUri;
+                    const docRefId = doc(collection(db, "plats")).id;
+                    finalImageUrl = await uploadImage(generatedImage.imageDataUri, `plats/${docRefId}`);
                 }
             } catch (aiError) {
                 console.error("AI image generation failed:", aiError);
@@ -47,18 +53,11 @@ export async function addMenuItemAction(formData: FormData) {
             }
         }
         
-        // Add the base item data to Firestore first to get an ID
-        const itemData: Omit<MenuItem, 'id' | 'image'> = { ...item };
-        const docRef = await addDoc(collection(db, "plats"), { ...itemData, image: "" });
-        const itemId = docRef.id;
-
-        // Now, handle the image upload (either from user or AI)
-        if (imageUrlToUpload) {
-            const finalImageUrl = await uploadImage(imageUrlToUpload, `plats/${itemId}`);
-            await updateDoc(doc(db, "plats", itemId), { image: finalImageUrl });
-        }
+        // Add the item data to Firestore
+        await addDoc(collection(db, "plats"), { ...item, image: finalImageUrl || '' });
         
         revalidatePath('/dashboard/menu');
+        revalidatePath(`/restaurants/${item.restaurantId}`);
 
     } catch (e) {
         console.error("Error adding menu item: ", e);

@@ -21,13 +21,14 @@ const uploadImage = async (file: File, path: string): Promise<string> => {
 export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
-    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image'>;
+    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'enVedette' | 'note'>;
 
     try {
         // First, add the restaurant document with an empty image URL to get an ID.
         const docRef = await addDoc(collection(db, "restaurants"), {
             ...data,
             note: 0,
+            enVedette: false,
             indiceImage: `${data.cuisine} restaurant`,
             latitude: data.latitude || 6.82,
             longitude: data.longitude || -5.28,
