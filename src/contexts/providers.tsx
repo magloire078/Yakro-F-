@@ -9,12 +9,15 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import * as React from 'react';
 
 const ThemeRoleProvider = ({ children }: { children: React.ReactNode }) => {
-  const { activeRole } = useAuth();
+  const { userProfile, activeRole } = useAuth();
   
   React.useEffect(() => {
-    // Set theme attribute on the body or a root element
-    document.documentElement.setAttribute('data-theme', activeRole || 'client');
-  }, [activeRole]);
+    let theme = activeRole || 'client';
+    if (userProfile?.roleSysteme === 'SuperAdmin') {
+      theme = 'admin';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [activeRole, userProfile]);
 
   return <>{children}</>;
 };
