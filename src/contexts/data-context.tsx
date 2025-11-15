@@ -191,6 +191,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
         } else {
+            // User is not logged in, do not attempt to fetch orders.
             setOrders([]);
         }
 
