@@ -111,6 +111,8 @@ function setupSubscription<T extends DocumentData>(
   setData: (data: T[]) => void
 ): Unsubscribe {
   const q = typeof param === 'string' ? query(collection(db, param)) : param;
+  const collectionId = typeof param === 'string' ? param : (param as any)._query.path.segments[0];
+
   return onSnapshot(
     q,
     (snapshot) => {
@@ -118,12 +120,11 @@ function setupSubscription<T extends DocumentData>(
       setData(list);
     },
     (error) => {
-      const path = typeof param === 'string' ? param : param.toString(); // Not perfect but gives a hint
       errorEmitter.emit(
         'permission-error',
-        new FirestorePermissionError({ path, operation: 'list' })
+        new FirestorePermissionError({ path: collectionId, operation: 'list' })
       );
-      console.error(`Error fetching ${path}:`, error);
+      console.error(`Error fetching ${collectionId}:`, error);
     }
   );
 }
