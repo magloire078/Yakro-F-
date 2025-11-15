@@ -215,7 +215,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             let ordersQuery: Query | null = null;
             
             const myRestaurantIds = userProfile.roleSysteme === 'SuperAdmin' 
-                ? [] // SuperAdmin will get all orders
+                ? [] // SuperAdmin will get all orders from its own subscription
                 : useDataStore.getState().restaurants
                     .filter(r => r.proprietaireId === user.uid)
                     .map(r => r.id);
