@@ -6,7 +6,7 @@
         "function isUserAuthenticated()": "return request.auth != null;",
         "function isUser(uid)": "return isUserAuthenticated() && request.auth.uid == uid;",
         "function isRestaurantOwner(restaurantId)": "return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);",
-        "function isSuperAdmin()": "return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';",
+        "function isSuperAdmin()": "return request.auth.token.roleSysteme == 'SuperAdmin';",
         "function noSuperAdminExists()": "return !exists(/databases/$(database)/documents/utilisateurs.where(\"roleSysteme\", \"==\", \"SuperAdmin\"));",
         "match /restaurants/{restaurantId}": {
             "allow read": "if true;",

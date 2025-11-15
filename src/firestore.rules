@@ -16,8 +16,9 @@ service cloud.firestore {
        return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
     }
     
+    // Check for a custom claim on the auth token instead of reading the database
     function isSuperAdmin() {
-      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
+      return request.auth.token.roleSysteme == 'SuperAdmin';
     }
 
     function noSuperAdminExists() {
@@ -57,10 +58,12 @@ service cloud.firestore {
     }
     
     match /utilisateurs/{userId} {
+      // isSuperAdmin() now checks claims, so it won't cause a recursive loop.
       allow read: if isUser(userId) || isSuperAdmin();
-      // Allow user to update their own profile
-      // Allow SuperAdmin to update any profile
-      // Allow user to promote themselves to SuperAdmin ONLY IF no super admin exists.
+      
+      // A user can update their own profile, as long as they are not trying to change their system role.
+      // A SuperAdmin can update any profile.
+      // A user can promote themselves to SuperAdmin ONLY IF no super admin exists.
       allow update: if (isUser(userId) && (!('roleSysteme' in request.resource.data) || request.resource.data.roleSysteme == resource.data.roleSysteme)) || 
                       isSuperAdmin() ||
                       (isUser(userId) && request.resource.data.roleSysteme == 'SuperAdmin' && noSuperAdminExists());
