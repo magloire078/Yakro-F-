@@ -50,7 +50,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUserProfile({ ...profile, uid: docSnap.id });
 
             const savedRole = localStorage.getItem('activeRole') as AppRole;
-            // Ensure rolesAutorises is an array and contains valid AppRoles
             const validRoles = profile.rolesAutorises?.filter(r => ['client', 'restaurateur', 'livreur'].includes(r)) || ['client'];
 
             if (savedRole && validRoles.includes(savedRole)) {
@@ -64,7 +63,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
           } else {
-             // This case is now mainly handled by user-auth-form to ensure roleSysteme is not auto-assigned here
+             // Profile doesn't exist, create it.
+             const newUserProfile: UserProfile = {
+                uid: user.uid,
+                email: user.email!,
+                nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
+                dateCreation: serverTimestamp(),
+                role: 'client',
+                rolesAutorises: ['client'],
+                roleSysteme: 'User',
+            };
+            try {
+                await setDoc(userDocRef, newUserProfile);
+                setUserProfile(newUserProfile);
+                setActiveRoleState('client');
+            } catch(e) {
+                const permissionError = new FirestorePermissionError({
+                  path: userDocRef.path,
+                  operation: 'create',
+                  requestResourceData: newUserProfile,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            }
           }
           setLoading(false);
         }, (error) => {
@@ -108,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               requestResourceData: data,
           });
           errorEmitter.emit('permission-error', permissionError);
+          // Re-throw the error so the calling component knows the operation failed.
           throw permissionError;
       }
   };
