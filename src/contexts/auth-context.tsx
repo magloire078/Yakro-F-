@@ -61,7 +61,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
           } else {
-             // Profile creation is handled client-side on first login
+             const newUserProfile: UserProfile = {
+                uid: user.uid,
+                email: user.email!,
+                nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
+                dateCreation: serverTimestamp(),
+                role: 'client',
+                rolesAutorises: ['client'],
+                roleSysteme: 'User',
+            };
+            setDoc(userDocRef, newUserProfile, { merge: true }).catch(async (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                  path: userDocRef.path,
+                  operation: 'create',
+                  requestResourceData: newUserProfile,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
           }
           setLoading(false);
         }, (error) => {

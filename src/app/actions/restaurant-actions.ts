@@ -26,9 +26,10 @@ export async function addRestaurantAction(formData: FormData) {
         throw new Error("Owner ID is missing.");
     }
     
+    let docRef;
     try {
         // First, add the restaurant document with an empty image URL to get an ID.
-        const docRef = await addDoc(collection(db, "restaurants"), {
+        docRef = await addDoc(collection(db, "restaurants"), {
             ...data,
             note: 0,
             enVedette: false,
@@ -50,9 +51,10 @@ export async function addRestaurantAction(formData: FormData) {
         revalidatePath('/');
         revalidatePath('/dashboard/new-restaurant');
         revalidatePath('/dashboard/my-restaurants');
-    } catch (e) {
+    } catch (e: any) {
         console.error("Error adding restaurant: ", e);
-        throw new Error("Failed to add restaurant.");
+        // This makes sure the permission error can be caught by the client
+        throw new Error(e.message || "Failed to add restaurant.");
     }
 }
 
@@ -78,8 +80,8 @@ export async function updateRestaurantAction(formData: FormData) {
         revalidatePath(`/restaurants/${restaurantId}`);
         revalidatePath('/dashboard/my-restaurants');
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
-    } catch (e) {
+    } catch (e: any) {
         console.error("Error updating restaurant: ", e);
-        throw new Error("Failed to update restaurant.");
+        throw new Error(e.message || "Failed to update restaurant.");
     }
 }

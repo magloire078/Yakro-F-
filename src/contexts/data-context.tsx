@@ -202,12 +202,7 @@ export const useData = () => {
 
     const dataWithOwner = { ...restaurantData, proprietaireId: user.uid };
     
-    const formData = new FormData();
-    formData.append('data', JSON.stringify(dataWithOwner));
-    if (imageFile) {
-      formData.append('image', imageFile);
-    }
-    await addRestaurantAction(formData);
+    await state.addRestaurant(dataWithOwner, imageFile);
   };
   
   return { ...state, addRestaurant };
