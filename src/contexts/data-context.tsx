@@ -106,11 +106,11 @@ const useDataStore = create<DataState>((set, get) => ({
 
 function setupSubscription<T extends DocumentData>(
   q: Query<DocumentData, DocumentData> | string,
-  setData: (data: T[]) => void
+  setData: (data: T[]) => void,
+  onError: (error: any) => void
 ): Unsubscribe {
   const queryToExecute = typeof q === 'string' ? query(collection(db, q)) : q;
-  const collectionPath = (queryToExecute as any)._query?.path?.segments?.join('/') || (typeof q === 'string' ? q : 'unknown_collection');
-
+  
   return onSnapshot(
     queryToExecute,
     (snapshot) => {
@@ -118,12 +118,7 @@ function setupSubscription<T extends DocumentData>(
       setData(list);
     },
     (error) => {
-        const permissionError = new FirestorePermissionError({
-            path: collectionPath,
-            operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error(`Error subscribing to ${collectionPath}:`, error);
+        onError(error);
     }
   );
 }
@@ -142,81 +137,94 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     React.useEffect(() => {
         if (!authReady) {
-            return; // Don't run subscriptions until auth state is confirmed
+            return;
         }
 
         setIsLoading(true);
         let unsubscribers: Unsubscribe[] = [];
         
-        unsubscribers.push(setupSubscription<Restaurant>('restaurants', async (restaurants) => {
-            if (restaurants.length === 0 && user?.uid) {
-                try {
-                    await seedDatabaseAction(user.uid);
-                } catch(e) {
-                    console.error("Seeding failed", e);
+        const createSubscription = <T extends DocumentData>(
+            collectionPath: string, 
+            setData: (data: T[]) => void, 
+            queryBuilder?: (ref: Query) => Query | Promise<Query | null>
+        ) => {
+            const collectionRef = collection(db, collectionPath);
+            const onError = (error: any) => {
+                const permissionError = new FirestorePermissionError({
+                    path: collectionPath,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                console.error(`Error subscribing to ${collectionPath}:`, error);
+            };
+
+            if (queryBuilder) {
+                const queryOrPromise = queryBuilder(collectionRef);
+                if (queryOrPromise instanceof Promise) {
+                    queryOrPromise.then(q => {
+                        if (q) {
+                            unsubscribers.push(setupSubscription<T>(q, setData, onError));
+                        } else {
+                            setData([]);
+                        }
+                    }).catch(onError);
+                } else {
+                     unsubscribers.push(setupSubscription<T>(queryOrPromise, setData, onError));
                 }
             } else {
-                setRestaurants(restaurants);
+                 unsubscribers.push(setupSubscription<T>(collectionRef, setData, onError));
             }
-        }));
-        
-        unsubscribers.push(setupSubscription<MenuItem>('plats', setMenuItems));
-        
-        // --- Centralized Order Subscription Logic ---
-        const ordersCollectionRef = collection(db, "commandes");
-        let ordersQuery: Query | null = null;
-        
-        if (user && userProfile) {
-            if (userProfile.roleSysteme === 'SuperAdmin') {
-                ordersQuery = query(ordersCollectionRef);
-            } else if (activeRole === 'client') {
-                ordersQuery = query(ordersCollectionRef, where("userId", "==", user.uid));
-            } else if (activeRole === 'restaurateur') {
-                const restoQuery = query(collection(db, 'restaurants'), where('proprietaireId', '==', user.uid));
-                getDocs(restoQuery).then(restoSnap => {
+        };
+
+        // Restaurants & MenuItems are public, so simple subscriptions are fine.
+        createSubscription<Restaurant>('restaurants', setRestaurants);
+        createSubscription<MenuItem>('plats', setMenuItems);
+
+        // Orders require role-based queries.
+        createSubscription<Order>('commandes', setOrders, async (ref) => {
+            if (!user || !userProfile) return null; // No user, no orders.
+            
+            switch (activeRole) {
+                case 'client':
+                    return query(ref, where("userId", "==", user.uid));
+                
+                case 'restaurateur':
+                    const restoQuery = query(collection(db, 'restaurants'), where('proprietaireId', '==', user.uid));
+                    const restoSnap = await getDocs(restoQuery);
                     const myRestaurantIds = restoSnap.docs.map(doc => doc.id);
-                    if (myRestaurantIds.length > 0) {
-                        const newOrdersQuery = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
-                        unsubscribers.push(setupSubscription<Order>(newOrdersQuery, setOrders));
-                    } else {
-                        setOrders([]);
+                    return myRestaurantIds.length > 0 ? query(ref, where("restaurantId", "in", myRestaurantIds)) : null;
+
+                case 'livreur':
+                    // Livreur sees orders ready for pickup OR orders they are currently delivering.
+                    const q1 = query(ref, where("statut", "==", "En Préparation"));
+                    const q2 = query(ref, where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
+                    
+                    const [availableSnap, assignedSnap] = await Promise.all([getDocs(q1), getDocs(q2)]);
+                    const availableOrders = availableSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
+                    const assignedOrders = assignedSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
+
+                    const combined = [...availableOrders, ...assignedOrders];
+                    const uniqueOrders = Array.from(new Map(combined.map(o => [o.id, o])).values());
+                    setOrders(uniqueOrders);
+                    
+                    // Since we're fetching manually for livreur for now to combine queries,
+                    // we return null to prevent setting up a persistent listener that might be incorrect.
+                    // A more advanced implementation could use multiple listeners and merge client-side.
+                    return null;
+                
+                default:
+                     if (userProfile.roleSysteme === 'SuperAdmin') {
+                        return query(ref); // SuperAdmin can see all orders.
                     }
-                }).catch(err => {
-                    errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'restaurants', operation: 'list'}));
-                });
-            } else if (activeRole === 'livreur') {
-                // Livreur: sees orders ready for pickup OR orders they are currently delivering.
-                const availableQuery = query(ordersCollectionRef, where("statut", "==", "En Préparation"));
-                unsubscribers.push(setupSubscription<Order>(availableQuery, (availableOrders) => {
-                    const assignedQuery = query(ordersCollectionRef, where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
-                    getDocs(assignedQuery).then(assignedSnap => {
-                        const assignedOrders = assignedSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
-                        // Combine and remove duplicates
-                        const combined = [...availableOrders, ...assignedOrders];
-                        const uniqueOrders = Array.from(new Map(combined.map(o => [o.id, o])).values());
-                        setOrders(uniqueOrders);
-                    }).catch(err => {
-                        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'commandes', operation: 'list'}));
-                    });
-                }));
+                    return null;
             }
-        } else {
-            // Not logged in, clear orders.
-            setOrders([]);
-        }
-
-        // If a direct query was constructed (for client or admin), subscribe to it.
-        if (ordersQuery) {
-            unsubscribers.push(setupSubscription<Order>(ordersQuery, setOrders));
-        }
-
-        // --- End of Centralized Logic ---
+        });
 
         const timer = setTimeout(() => setIsLoading(false), 1500);
         unsubscribers.push(() => clearTimeout(timer));
 
         return () => {
-            unsubscribers.forEach(unsub => unsub());
+            unsubscribers.forEach(unsub => unsub && unsub());
         };
     }, [authReady, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
