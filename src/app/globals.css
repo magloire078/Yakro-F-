@@ -3,13 +3,11 @@
 @tailwind utilities;
 
 @layer base {
-  :root, [data-theme="client"] {
+  :root, [data-theme="livreur"] {
     --background: 0 0% 98%;
     --foreground: 20 15% 9%;
     --card: 0 0% 100%;
     --card-foreground: 20 15% 9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 15% 9%;
     --primary: 221 83% 53%; /* Blue */
     --primary-foreground: 0 0% 100%;
     --secondary: 30 5% 90%;
@@ -26,7 +24,7 @@
     --radius: 0.5rem;
   }
  
-  .dark, .dark [data-theme="client"] {
+  .dark, .dark [data-theme="livreur"] {
     --background: 222 47% 11%;
     --foreground: 0 0% 98%;
     --card: 222 47% 13%;
@@ -92,7 +90,7 @@
     --ring: 141 71% 45%;
   }
 
-  [data-theme="livreur"] {
+  :root, [data-theme="client"] {
     --background: 45 50% 97%;
     --foreground: 45 15% 8%;
     --card: 45 50% 100%;
@@ -112,9 +110,10 @@
     --border: 45 15% 88%;
     --input: 45 50% 100%;
     --ring: 38 92% 50%;
+    --radius: 0.5rem;
   }
 
-  .dark [data-theme="livreur"] {
+  .dark, .dark [data-theme="client"] {
     --background: 35 30% 10%;
     --foreground: 35 5% 95%;
     --card: 35 30% 12%;
