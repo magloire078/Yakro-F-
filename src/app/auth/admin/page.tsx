@@ -33,10 +33,8 @@ export default function AdminHomePage() {
             return;
         }
 
-        // Immediately redirect if the user is not a SuperAdmin
-        if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
-            // No toast here to avoid flashing messages on normal user login.
-            // The redirection is enough.
+        // Redirect non-super-admins immediately
+        if (!user || userProfile?.roleSysteme !== 'SuperAdmin') {
             router.push('/');
             return;
         }
