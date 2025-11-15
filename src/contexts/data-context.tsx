@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, or, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -118,7 +118,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as T[];
                     setData(list);
-                    setIsLoading(false);
                 }, 
                 (error) => {
                     console.error(`Error fetching ${collectionName}:`, error);
@@ -127,7 +126,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         operation: 'list'
                     });
                     errorEmitter.emit('permission-error', permissionError);
-                    setIsLoading(false);
                 }
             );
             return unsubscribe;
@@ -141,6 +139,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user && userProfile) {
             const ordersCollectionRef = collection(db, "commandes");
             let q;
+            
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 q = query(ordersCollectionRef); // SuperAdmin gets all orders
             } else {
@@ -148,32 +147,45 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     .filter(r => r.proprietaireId === user.uid)
                     .map(r => r.id);
 
-                // Build conditions dynamically. Max 10 `in` clauses for `or`
-                const conditions = [where("userId", "==", user.uid)];
-                if(activeRole === 'livreur') conditions.push(where("livreurId", "==", user.uid));
-                if(activeRole === 'restaurateur' && restaurantIdsOwned.length > 0) conditions.push(where("restaurantId", "in", restaurantIdsOwned));
-                
-                // If there's only one condition, no need for `or`.
-                if (conditions.length > 1) {
-                    q = query(ordersCollectionRef, or(...conditions));
-                } else {
-                    q = query(ordersCollectionRef, conditions[0]);
+                switch (activeRole) {
+                    case 'restaurateur':
+                        if (restaurantIdsOwned.length > 0) {
+                            q = query(ordersCollectionRef, where("restaurantId", "in", restaurantIdsOwned));
+                        }
+                        break;
+                    case 'livreur':
+                        q = query(ordersCollectionRef, where("livreurId", "==", user.uid));
+                        break;
+                    case 'client':
+                    default:
+                         q = query(ordersCollectionRef, where("userId", "==", user.uid));
+                        break;
                 }
             }
 
-            ordersUnsub = onSnapshot(q, (snapshot) => {
-                const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
-                setOrders(list);
-            }, (error) => {
-                console.error(`Error fetching commandes:`, error);
-                const permissionError = new FirestorePermissionError({
-                    path: "commandes",
-                    operation: 'list'
+            if(q) {
+                ordersUnsub = onSnapshot(q, (snapshot) => {
+                    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
+                    setOrders(list);
+                    setIsLoading(false);
+                }, (error) => {
+                    console.error(`Error fetching commandes:`, error);
+                    const permissionError = new FirestorePermissionError({
+                        path: "commandes",
+                        operation: 'list'
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                    setIsLoading(false);
                 });
-                errorEmitter.emit('permission-error', permissionError);
-            });
-        }
+            } else {
+                 setOrders([]);
+                 setIsLoading(false);
+            }
 
+        } else {
+            setOrders([]);
+            setIsLoading(false);
+        }
 
         // Cleanup subscriptions on component unmount
         return () => {
@@ -183,7 +195,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ordersUnsub();
             }
         };
-    }, [user, userProfile, setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants, activeRole]);
+    }, [user, userProfile, activeRole, setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants]);
 
     return <>{children}</>;
 };
