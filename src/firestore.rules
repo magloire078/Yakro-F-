@@ -17,7 +17,7 @@ service cloud.firestore {
     }
     
     function isSuperAdmin() {
-      return request.auth != null && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
+      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
     }
 
     match /restaurants/{restaurantId} {
@@ -30,6 +30,10 @@ service cloud.firestore {
         allow read: if true;
         allow create: if isRestaurantOwner(request.resource.data.restaurantId);
         allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
+    }
+
+    match /commandes {
+      allow list: if isSuperAdmin();
     }
 
     match /commandes/{orderId} {
@@ -46,6 +50,8 @@ service cloud.firestore {
 
     match /utilisateurs/{userId} {
       allow read: if isUser(userId) || isSuperAdmin();
+      // Any authenticated user can update their own profile.
+      // SuperAdmins can update any profile.
       allow update: if isUser(userId) || isSuperAdmin();
       allow create: if isUserAuthenticated();
     }
