@@ -128,7 +128,7 @@ export default function AdminPage() {
             .slice(0, 5);
     }, [allUsers]);
 
-    if (authLoading || dataLoading || isPublicDataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
+    if (authLoading || dataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 
@@ -308,3 +308,5 @@ export default function AdminPage() {
         </>
     );
 }
+
+    
