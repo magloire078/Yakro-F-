@@ -33,7 +33,7 @@ service cloud.firestore {
     }
 
     match /commandes {
-      allow list: if isSuperAdmin();
+      allow list: if isUserAuthenticated();
     }
 
     match /commandes/{orderId} {
@@ -52,9 +52,10 @@ service cloud.firestore {
       allow read: if isUser(userId) || isSuperAdmin();
       // Any authenticated user can update their own profile.
       // SuperAdmins can update any profile.
-      allow update: if isUser(userId) || isSuperAdmin();
-      // Anyone can create a user profile document for themselves during sign-up
-      allow create: if true;
+      // The auto-recovery mechanism needs to be able to promote a user, 
+      // so we also allow writes if the database has no SuperAdmin yet.
+      allow update: if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);
+      allow create: if isUser(userId);
     }
      match /utilisateurs {
         allow list: if isSuperAdmin();

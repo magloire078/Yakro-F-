@@ -18,7 +18,7 @@
           "allow update, delete": "if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();"
         },
         "match /commandes": {
-          "allow list": "if isSuperAdmin();"
+          "allow list": "if isUserAuthenticated();"
         },
         "match /commandes/{orderId}": {
           "allow read": "if request.auth.uid == resource.data.userId || request.auth.uid == resource.data.livreurId || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();",
@@ -27,8 +27,8 @@
         },
         "match /utilisateurs/{userId}": {
             "allow read": "if isUser(userId) || isSuperAdmin();",
-            "allow update": "if isUser(userId) || isSuperAdmin();",
-            "allow create": "if true;"
+            "allow update": "if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);",
+            "allow create": "if isUser(userId);"
         },
         "match /utilisateurs": {
           "allow list": "if isSuperAdmin();"

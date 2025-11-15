@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, getDocs, collection, query, where, writeBatch } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, getDocs, collection, query, where, writeBatch, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(user);
         const userDocRef = doc(db, 'utilisateurs', user.uid);
         
-        unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
+        unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             const profile = docSnap.data() as UserProfile;
             setUserProfile({ ...profile, uid: docSnap.id });
@@ -61,30 +61,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else {
               setActiveRoleState('client');
             }
-
           } else {
-             // Profile doesn't exist, create it.
-             const newUserProfile: UserProfile = {
-                uid: user.uid,
-                email: user.email!,
-                nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
-                dateCreation: serverTimestamp(),
-                role: 'client',
-                rolesAutorises: ['client'],
-                roleSysteme: 'User',
-            };
-            try {
-                await setDoc(userDocRef, newUserProfile, { merge: true });
-                setUserProfile(newUserProfile);
-                setActiveRoleState('client');
-            } catch(e) {
-                const permissionError = new FirestorePermissionError({
-                  path: userDocRef.path,
-                  operation: 'create',
-                  requestResourceData: newUserProfile,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            }
+            // This case should ideally not happen if signup flow is robust.
+            // But as a fallback, we can clear the state.
+            setUserProfile(null);
+            console.warn("User is authenticated but has no profile document.");
           }
           setLoading(false);
         }, (error) => {

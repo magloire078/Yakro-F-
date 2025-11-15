@@ -44,32 +44,32 @@ export function UserAuthForm() {
   
   const setupInitialUser = async (user: import('firebase/auth').User, data?: FormData) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
+    const userDoc = await getDoc(userDocRef);
 
-    const newUserProfile: UserProfile = {
-        uid: user.uid,
-        email: user.email!,
-        nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
-        dateCreation: serverTimestamp(),
-        role: 'client',
-        rolesAutorises: ['client'],
-        roleSysteme: 'User',
-        ...(data?.telephone && { telephone: data.telephone }),
-    };
-    
-    try {
-        // Use setDoc with merge: true. This will create the doc if it doesn't exist,
-        // or do nothing if it does exist (as we are not providing new data to merge).
-        // This is safer and simpler than checking for existence first.
-        await setDoc(userDocRef, newUserProfile, { merge: true });
-    } catch(e) {
-        const permissionError = new FirestorePermissionError({
-          path: userDocRef.path,
-          operation: 'create',
-          requestResourceData: newUserProfile,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        // Also throw the error to be caught by the general handler below
-        throw permissionError;
+    // Only create profile if it does not exist
+    if (!userDoc.exists()) {
+        const newUserProfile: UserProfile = {
+            uid: user.uid,
+            email: user.email!,
+            nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
+            dateCreation: serverTimestamp(),
+            role: 'client',
+            rolesAutorises: ['client'],
+            roleSysteme: 'User',
+            ...(data?.telephone && { telephone: data.telephone }),
+        };
+        
+        try {
+            await setDoc(userDocRef, newUserProfile);
+        } catch(e) {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'create',
+                requestResourceData: newUserProfile,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw permissionError;
+        }
     }
   }
 
@@ -79,7 +79,7 @@ export function UserAuthForm() {
     const clientAuth = getAuth();
     try {
       const result = await signInWithPopup(clientAuth, provider);
-      await setupInitialUser(result.user); // This will create the user profile if it doesn't exist
+      await setupInitialUser(result.user);
       toast({
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté.',
