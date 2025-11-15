@@ -42,8 +42,9 @@ service cloud.firestore {
           isSuperAdmin();
     }
     
-    // No 'list' rule for commandes. Read access is determined by the read rule on individual documents.
-    // Queries must be constructed on the client-side to only request documents the user has access to.
+    match /commandes {
+      allow list: if isUserAuthenticated();
+    }
 
     match /utilisateurs {
         allow list: if isSuperAdmin();
