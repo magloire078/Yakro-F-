@@ -134,8 +134,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const restaurantUnsub = setupSubscription<Restaurant>('restaurants', setRestaurants);
         const menuItemsUnsub = setupSubscription<MenuItem>('plats', setMenuItems);
-        
-        // Orders are dependent on the user, but we will fetch all and filter client-side for simplicity and security rule compatibility
         const ordersUnsub = setupSubscription<Order>('commandes', setOrders);
 
         // Cleanup subscriptions on component unmount
