@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Pizza, Drumstick, Salad, Soup, Star, Timer, Truck, TrendingUp, MapPin } from 'lucide-react';
+import { Pizza, Drumstick, Salad, Soup, Star, Timer, Truck, TrendingUp, MapPin, Sparkles as SparklesIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
 import { useData } from '@/contexts/data-context';
@@ -25,12 +25,28 @@ interface Category {
     icon: React.ElementType;
 }
 
-const categories: Category[] = [
-    { name: 'Ivoirien', icon: Soup },
-    { name: 'Pizza', icon: Pizza },
-    { name: 'Grillades', icon: Drumstick },
-    { name: 'Salades', icon: Salad },
-];
+const cuisineToIconMap: { [key: string]: React.ElementType } = {
+    'ivoirien': Soup,
+    'ivoirienne': Soup,
+    'pizza': Pizza,
+    'pizzeria': Pizza,
+    'grillades': Drumstick,
+    'salades': Salad,
+    'française': SparklesIcon,
+    'pâtisserie': SparklesIcon,
+    'default': SparklesIcon
+};
+
+const getIconForCuisine = (cuisine: string): React.ElementType => {
+    const lowerCuisine = cuisine.toLowerCase();
+    for (const key in cuisineToIconMap) {
+        if (lowerCuisine.includes(key)) {
+            return cuisineToIconMap[key];
+        }
+    }
+    return cuisineToIconMap.default;
+};
+
 
 type SortFilter = 'rating' | 'time' | 'delivery' | 'distance' | null;
 
@@ -151,9 +167,17 @@ export default function CustomerHomePage() {
     return () => window.removeEventListener('place-order', findActiveOrder);
   }, [orders, user]);
 
-  const { featuredRestaurants, normalRestaurants } = React.useMemo(() => {
+  const { featuredRestaurants, normalRestaurants, categories } = React.useMemo(() => {
     let filteredRestaurants: (Restaurant & { matchReason?: string, distance?: number })[] = [];
     const validRestaurants = restaurants.filter(Boolean);
+
+    // Categories generation
+    const allCuisines = new Set(validRestaurants.map(r => r.cuisine.trim()).filter(Boolean));
+    const dynamicCategories: Category[] = Array.from(allCuisines).slice(0, 4).map(cuisine => ({
+        name: cuisine,
+        icon: getIconForCuisine(cuisine)
+    }));
+
 
     if (!isLoading && validRestaurants && validRestaurants.length > 0) {
       if (!searchQuery && !interpretedSearch) {
@@ -247,6 +271,7 @@ export default function CustomerHomePage() {
     return {
         featuredRestaurants: validFilteredRestaurants.filter(r => r.enVedette),
         normalRestaurants: validFilteredRestaurants.filter(r => !r.enVedette),
+        categories: dynamicCategories,
     }
 
   }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation]);
@@ -389,3 +414,5 @@ export default function CustomerHomePage() {
     </div>
   );
 }
+
+    
