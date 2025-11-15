@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -126,10 +127,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
     try {
-      // Note: This creates a new user, but doesn't sign them in for the admin.
       // This is a simplified approach. A more robust solution might use Firebase Admin SDK on a backend.
-      const tempAuth = auth; // This is a bit of a hack for isolation, ideally use a separate auth instance
-      const userCredential = await createUserWithEmailAndPassword(tempAuth, data.email, data.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const newUser = userCredential.user;
 
       const userDocRef = doc(db, 'utilisateurs', newUser.uid);
@@ -143,14 +142,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           roleSysteme: 'User',
       };
       
-      await setDoc(userDocRef, newUserProfile);
-      toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
+      setDoc(userDocRef, newUserProfile)
+        .then(() => {
+            toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
+        })
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'create',
+                requestResourceData: newUserProfile,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            // We throw it so it's caught by the outer catch block and displayed in a toast
+            throw permissionError;
+        });
+
       return newUser;
 
     } catch (error: any) {
-        console.error("Error creating new user:", error);
         let description = "Une erreur est survenue.";
-        if (error.code === 'auth/email-already-in-use') {
+        if (error instanceof FirestorePermissionError) {
+             description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
+        } else if (error.code === 'auth/email-already-in-use') {
             description = 'Cette adresse e-mail est déjà utilisée.';
         } else if (error.code === 'auth/weak-password') {
             description = 'Le mot de passe est trop faible.';
