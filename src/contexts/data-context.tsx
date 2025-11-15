@@ -107,10 +107,11 @@ const useDataStore = create<DataState>((set, get) => ({
 
 function setupSubscription<T extends DocumentData>(
   param: string | Query<DocumentData, DocumentData>,
-  setData: (data: T[]) => void
+  setData: (data: T[]) => void,
+  collectionIdOverride?: string
 ): Unsubscribe {
   const q = typeof param === 'string' ? query(collection(db, param)) : param;
-  const collectionId = typeof param === 'string' ? param : (q as any)._query?.path?.segments?.[0] || 'unknown';
+  const collectionId = collectionIdOverride || (typeof param === 'string' ? param : (q as any)._query?.path?.segments?.[0] || 'unknown');
 
   return onSnapshot(
     q,
@@ -146,75 +147,75 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         setIsLoading(true);
+        
+        let unsubscribers: Unsubscribe[] = [];
 
-        const restaurantUnsub = setupSubscription<Restaurant>('restaurants', async (restaurants) => {
-             if (restaurants.length === 0 && user?.uid) {
-                 await seedDatabaseAction(user.uid);
+        // Restaurants and Menu Items can be subscribed to by anyone
+        unsubscribers.push(setupSubscription<Restaurant>('restaurants', async (restaurants) => {
+            if (restaurants.length === 0 && user?.uid) {
+                await seedDatabaseAction(user.uid);
             } else {
                 setRestaurants(restaurants);
             }
-        });
-
-        const menuItemsUnsub = setupSubscription<MenuItem>('plats', setMenuItems);
+        }));
         
-        let ordersUnsub: Unsubscribe | undefined;
+        unsubscribers.push(setupSubscription<MenuItem>('plats', setMenuItems));
         
+        // Orders subscription depends on the user's role
         if (user && userProfile) {
             const ordersCollectionRef = collection(db, "commandes");
             let q: Query | null = null;
             
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 q = query(ordersCollectionRef);
-            } else if (activeRole === 'client') {
+            } else if (activeRole === 'client' && user.uid) {
                 q = query(ordersCollectionRef, where("userId", "==", user.uid));
-            } else if (activeRole === 'livreur') {
-                q = query(ordersCollectionRef, where("statut", "==", "En Préparation"));
-            } else if (activeRole === 'restaurateur') {
-                const myRestaurantIds = useDataStore.getState().restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-
-                if (myRestaurantIds.length > 0) {
-                     q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
-                } else {
-                    setOrders([]);
-                }
-            }
-
-            if (q) {
-                ordersUnsub = setupSubscription<Order>(q, (initialOrders) => {
-                    if (activeRole === 'livreur') {
-                        const enRouteQuery = query(ordersCollectionRef, where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
-                        getDocs(enRouteQuery).then(enRouteSnap => {
-                            const enRouteOrders = enRouteSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
-                            const combinedOrders = [...initialOrders, ...enRouteOrders];
-                            const uniqueOrders = Array.from(new Set(combinedOrders.map(o => o.id))).map(id => combinedOrders.find(o => o.id === id)!);
-                            setOrders(uniqueOrders);
-                        }).catch(err => {
-                           errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'commandes', operation: 'list'}));
-                           console.error(`Error fetching 'en route' orders:`, err);
-                        });
+            } else if (activeRole === 'livreur' && user.uid) {
+                // Livreur sees orders ready for pickup and orders they are currently delivering
+                const availableQuery = query(ordersCollectionRef, where("statut", "==", "En Préparation"));
+                unsubscribers.push(setupSubscription<Order>(availableQuery, (availableOrders) => {
+                    const assignedQuery = query(ordersCollectionRef, where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
+                    getDocs(assignedQuery).then(assignedSnap => {
+                        const assignedOrders = assignedSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
+                        const combinedOrders = [...availableOrders, ...assignedOrders];
+                        const uniqueOrders = Array.from(new Set(combinedOrders.map(o => o.id))).map(id => combinedOrders.find(o => o.id === id)!);
+                        setOrders(uniqueOrders);
+                    }).catch(err => {
+                        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'commandes', operation: 'list'}));
+                    });
+                }, 'commandes'));
+            } else if (activeRole === 'restaurateur' && user.uid) {
+                // Must query restaurants first, then subscribe to orders
+                const restoQuery = query(collection(db, 'restaurants'), where('proprietaireId', '==', user.uid));
+                getDocs(restoQuery).then(restoSnap => {
+                    const myRestaurantIds = restoSnap.docs.map(doc => doc.id);
+                    if (myRestaurantIds.length > 0) {
+                        const ordersQuery = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
+                        unsubscribers.push(setupSubscription<Order>(ordersQuery, setOrders, 'commandes'));
                     } else {
-                        setOrders(initialOrders);
+                        setOrders([]); // No restaurants, so no orders
                     }
+                }).catch(err => {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'restaurants', operation: 'list'}));
                 });
-            } else if (activeRole !== 'restaurateur') {
+            } else {
                  setOrders([]);
             }
 
+            if (q) {
+                unsubscribers.push(setupSubscription<Order>(q, setOrders, 'commandes'));
+            }
+
         } else {
+            // Not logged in, clear orders
             setOrders([]);
         }
 
         const timer = setTimeout(() => setIsLoading(false), 1500);
+        unsubscribers.push(() => clearTimeout(timer));
 
         return () => {
-            clearTimeout(timer);
-            restaurantUnsub();
-            menuItemsUnsub();
-            if (ordersUnsub) {
-                ordersUnsub();
-            }
+            unsubscribers.forEach(unsub => unsub());
         };
     }, [authReady, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
