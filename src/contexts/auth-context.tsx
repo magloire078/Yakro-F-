@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
         } catch (e) {
-            const permissionError = new FirestorePermissionError({
+             const permissionError = new FirestorePermissionError({
                 path: 'utilisateurs',
                 operation: 'list',
             });
@@ -105,6 +105,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
             try {
                 await setDoc(userDocRef, newUserProfile, { merge: true });
+                 toast({
+                    title: "Compte créé",
+                    description: `Votre profil a été initialisé.`,
+                });
             } catch(e) {
                 const permissionError = new FirestorePermissionError({
                   path: userDocRef.path,
