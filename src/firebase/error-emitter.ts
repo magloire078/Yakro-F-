@@ -1,4 +1,3 @@
-'use client';
 
 import { EventEmitter } from 'events';
 import type { FirestorePermissionError } from './errors';
