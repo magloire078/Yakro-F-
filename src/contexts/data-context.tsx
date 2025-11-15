@@ -111,7 +111,7 @@ function setupSubscription<T extends DocumentData>(
   collectionIdOverride?: string
 ): Unsubscribe {
   const q = typeof param === 'string' ? query(collection(db, param)) : param;
-  const collectionId = collectionIdOverride || (typeof param === 'string' ? param : (q as any)._query?.path?.segments?.[0] || 'unknown');
+  const collectionPath = (q as any)._query?.path?.segments?.join('/') || (typeof param === 'string' ? param : 'unknown_collection');
 
   return onSnapshot(
     q,
@@ -120,11 +120,12 @@ function setupSubscription<T extends DocumentData>(
       setData(list);
     },
     (error) => {
-      errorEmitter.emit(
-        'permission-error',
-        new FirestorePermissionError({ path: collectionId, operation: 'list' })
-      );
-      console.error(`Error fetching ${collectionId}:`, error);
+        const permissionError = new FirestorePermissionError({
+            path: collectionPath,
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        console.error(`Error fetching ${collectionPath}:`, error);
     }
   );
 }
@@ -153,7 +154,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Restaurants and Menu Items can be subscribed to by anyone
         unsubscribers.push(setupSubscription<Restaurant>('restaurants', async (restaurants) => {
             if (restaurants.length === 0 && user?.uid) {
-                await seedDatabaseAction(user.uid);
+                try {
+                    await seedDatabaseAction(user.uid);
+                } catch(e) {
+                    // The error is already being handled by the action via the emitter
+                }
             } else {
                 setRestaurants(restaurants);
             }
