@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, ShieldCheck, Edit, UserPlus, Users, Utensils, ShoppingCart, Home } from 'lucide-react';
+import { Loader, ShieldCheck, Edit, UserPlus, Users, Utensils, ShoppingCart, Home, UtensilsCrossed, Bike } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
@@ -39,7 +39,6 @@ export default function AdminPage() {
 
     React.useEffect(() => {
         if (authLoading) {
-            setDataLoading(true);
             return;
         }
 
@@ -50,11 +49,9 @@ export default function AdminPage() {
                 description: "Cette page est réservée aux Super Administrateurs."
             });
             router.push('/');
-            setDataLoading(false);
             return;
         }
 
-        // At this point, we are sure the user is a SuperAdmin. We can safely subscribe.
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
         const unsubscribe = onSnapshot(usersCollectionRef, 
@@ -77,7 +74,6 @@ export default function AdminPage() {
             }
         );
 
-        // Cleanup subscription on component unmount
         return () => {
             unsubscribe();
         };
@@ -123,6 +119,15 @@ export default function AdminPage() {
             .slice(0, 5);
     }, [allUsers]);
 
+    const userStats = React.useMemo(() => {
+        if (!allUsers) return { clients: 0, restaurateurs: 0, livreurs: 0 };
+        return {
+            clients: allUsers.filter(u => u.rolesAutorises?.includes('client')).length,
+            restaurateurs: allUsers.filter(u => u.rolesAutorises?.includes('restaurateur')).length,
+            livreurs: allUsers.filter(u => u.rolesAutorises?.includes('livreur')).length,
+        };
+    }, [allUsers]);
+
     if (authLoading || dataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
@@ -161,6 +166,36 @@ export default function AdminPage() {
                         <CardContent>
                             <div className="text-2xl font-bold">{allUsers.length}</div>
                             <p className="text-xs text-muted-foreground">Comptes enregistrés sur la plateforme</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="hover:bg-muted transition-colors">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Clients</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{userStats.clients}</div>
+                            <p className="text-xs text-muted-foreground">Utilisateurs ayant le rôle client</p>
+                        </CardContent>
+                    </Card>
+                     <Card className="hover:bg-muted transition-colors">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Restaurateurs</CardTitle>
+                            <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{userStats.restaurateurs}</div>
+                            <p className="text-xs text-muted-foreground">Utilisateurs ayant le rôle restaurateur</p>
+                        </CardContent>
+                    </Card>
+                     <Card className="hover:bg-muted transition-colors">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Livreurs</CardTitle>
+                            <Bike className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{userStats.livreurs}</div>
+                            <p className="text-xs text-muted-foreground">Utilisateurs ayant le rôle livreur</p>
                         </CardContent>
                     </Card>
                     <Card className="hover:bg-muted transition-colors">
@@ -303,6 +338,3 @@ export default function AdminPage() {
         </>
     );
 }
-
-    
-    
