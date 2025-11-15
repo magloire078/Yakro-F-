@@ -28,7 +28,7 @@
         "match /utilisateurs/{userId}": {
             "allow read": "if isUser(userId) || isSuperAdmin();",
             "allow update": "if isUser(userId) || isSuperAdmin();",
-            "allow create": "if isUserAuthenticated();"
+            "allow create": "if true;"
         },
         "match /utilisateurs": {
           "allow list": "if isSuperAdmin();"

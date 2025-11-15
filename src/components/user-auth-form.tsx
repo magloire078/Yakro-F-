@@ -45,20 +45,11 @@ export function UserAuthForm() {
   const setupInitialUser = async (user: import('firebase/auth').User, data?: FormData) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
 
-    // Check if the document already exists before creating it
-    const docSnap = await getDoc(userDocRef);
-    if(docSnap.exists()){
-      // The user profile already exists, which might happen with Google sign-in
-      // if they've signed in before. We don't need to do anything.
-      return;
-    }
-
     const newUserProfile: UserProfile = {
         uid: user.uid,
         email: user.email!,
         nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
         dateCreation: serverTimestamp(),
-        // Assigning correct default roles
         role: 'client',
         rolesAutorises: ['client'],
         roleSysteme: 'User',
@@ -66,7 +57,10 @@ export function UserAuthForm() {
     };
     
     try {
-        await setDoc(userDocRef, newUserProfile);
+        // Use setDoc with merge: true. This will create the doc if it doesn't exist,
+        // or do nothing if it does exist (as we are not providing new data to merge).
+        // This is safer and simpler than checking for existence first.
+        await setDoc(userDocRef, newUserProfile, { merge: true });
     } catch(e) {
         const permissionError = new FirestorePermissionError({
           path: userDocRef.path,

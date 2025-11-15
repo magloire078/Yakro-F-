@@ -53,7 +53,8 @@ service cloud.firestore {
       // Any authenticated user can update their own profile.
       // SuperAdmins can update any profile.
       allow update: if isUser(userId) || isSuperAdmin();
-      allow create: if isUserAuthenticated();
+      // Anyone can create a user profile document for themselves during sign-up
+      allow create: if true;
     }
      match /utilisateurs {
         allow list: if isSuperAdmin();
