@@ -46,25 +46,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Recovery mechanism: check if a SuperAdmin exists. If not, promote this user.
         const superAdminQuery = query(collection(db, 'utilisateurs'), where('roleSysteme', '==', 'SuperAdmin'), limit(1));
-        const superAdminSnapshot = await getDocs(superAdminQuery);
         
-        if (superAdminSnapshot.empty) {
-            console.log("No SuperAdmin found. Promoting current user.");
-            try {
-                await updateDoc(userDocRef, { roleSysteme: 'SuperAdmin' });
-                toast({
-                    title: "Récupération du compte Super Admin",
-                    description: `Votre compte (${user.email}) a été promu Super Administrateur.`,
-                });
-            } catch (e) {
-                 console.error("Failed to promote user to SuperAdmin:", e);
-                 const permissionError = new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'update',
-                    requestResourceData: { roleSysteme: 'SuperAdmin' },
-                });
-                errorEmitter.emit('permission-error', permissionError);
+        try {
+            const superAdminSnapshot = await getDocs(superAdminQuery);
+            if (superAdminSnapshot.empty) {
+                console.log("No SuperAdmin found. Promoting current user.");
+                try {
+                    await updateDoc(userDocRef, { roleSysteme: 'SuperAdmin' });
+                    toast({
+                        title: "Récupération du compte Super Admin",
+                        description: `Votre compte (${user.email}) a été promu Super Administrateur.`,
+                    });
+                } catch (e) {
+                     console.error("Failed to promote user to SuperAdmin:", e);
+                     const permissionError = new FirestorePermissionError({
+                        path: userDocRef.path,
+                        operation: 'update',
+                        requestResourceData: { roleSysteme: 'SuperAdmin' },
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                }
             }
+        } catch (e) {
+            const permissionError = new FirestorePermissionError({
+                path: 'utilisateurs',
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            console.error("Failed to check for SuperAdmin:", e);
         }
 
 
