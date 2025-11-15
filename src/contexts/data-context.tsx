@@ -114,7 +114,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     onData(list);
                 },
                 (error) => {
-                    // The FirestorePermissionError is constructed and emitted here
                     const permissionError = new FirestorePermissionError({
                         path: (q as any)._query.path.segments.join('/'),
                         operation: 'list'
@@ -138,21 +137,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Conditional subscription for orders based on user role
         if (user && userProfile) {
-            let ordersQuery: Query | null = null;
-            
-            if (userProfile.roleSysteme === 'SuperAdmin') {
-                ordersQuery = query(collection(db, 'commandes'));
-            } else if (userProfile.rolesAutorises?.includes('restaurateur')) {
-                // For restaurateurs, we can't easily query by their restaurants in one go client-side
-                // So we fetch all and filter client-side. This relies on security rules.
-                ordersQuery = query(collection(db, 'commandes'));
-            } else if (userProfile.rolesAutorises?.includes('livreur')) {
-                ordersQuery = query(collection(db, 'commandes'), where('livreurId', '==', user.uid));
-            } else { // 'client'
-                ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
-            }
-
-            if(ordersQuery) {
+            // A SuperAdmin, Restaurateur, or Livreur might need a broader view of orders.
+            // Security rules will ultimately enforce what they can see.
+            // Client users will only see their own orders.
+            // This simplified query relies on security rules to filter the data.
+            const ordersQuery = query(collection(db, 'commandes'));
+             if(ordersQuery) {
                 setupSubscription(
                     ordersQuery,
                     (data) => useDataStore.setState({ orders: data as Order[] })
@@ -183,13 +173,13 @@ export const useData = () => {
   const state = useDataStore();
 
   const addRestaurant = async (
-    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, 
+    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'>, 
     imageFile: File | null
   ) => {
     if (!user) throw new Error("User not authenticated");
     
     // The proprietaireId is added in the server action from the authenticated user
-    await state.addRestaurant({ ...restaurantData }, imageFile);
+    await state.addRestaurant({ ...restaurantData, proprietaireId: user.uid }, imageFile);
   };
   
   return { ...state, addRestaurant };

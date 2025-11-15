@@ -43,10 +43,6 @@ service cloud.firestore {
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           isSuperAdmin();
     }
-    
-    match /commandes {
-       allow list: if isUserAuthenticated();
-    }
 
     match /utilisateurs {
         allow list: if isSuperAdmin();
