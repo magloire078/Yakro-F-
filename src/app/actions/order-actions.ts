@@ -10,13 +10,14 @@ import { errorEmitter } from '@/firebase/error-emitter';
 
 export async function addOrderAction(order: Omit<Order, 'id'>) {
     const docRef = doc(collection(db, "commandes"));
-    try {
-        await setDoc(docRef, order);
-
+    
+    setDoc(docRef, order)
+      .then(() => {
         revalidatePath('/'); // For customer home page status
         revalidatePath('/orders'); // For customer order history
         revalidatePath('/dashboard/orders'); // For restaurateur
-    } catch (e) {
+      })
+      .catch((e) => {
         const permissionError = new FirestorePermissionError({
             path: docRef.path,
             operation: 'create',
@@ -24,8 +25,9 @@ export async function addOrderAction(order: Omit<Order, 'id'>) {
         });
         errorEmitter.emit('permission-error', permissionError);
         console.error("Original error adding order: ", e);
+        // We still throw to let the client know something went wrong.
         throw new Error("Failed to add order.");
-    }
+    });
 }
 
 export async function updateOrderStatusAction({ orderId, status, delivererId }: { orderId: string, status: Order['statut'], delivererId?: string }) {
@@ -34,20 +36,23 @@ export async function updateOrderStatusAction({ orderId, status, delivererId }: 
     if (delivererId) {
         updateData.livreurId = delivererId;
     }
-    try {
-      await updateDoc(orderDocRef, updateData);
-      revalidatePath('/');
-      revalidatePath('/dashboard/orders');
-      revalidatePath('/auth/livreur');
-      revalidatePath('/dashboard/earnings');
-    } catch (e) {
-      const permissionError = new FirestorePermissionError({
-            path: orderDocRef.path,
-            operation: 'update',
-            requestResourceData: updateData,
-        });
-      errorEmitter.emit('permission-error', permissionError);
-      console.error("Original error updating order status: ", e);
-      throw new Error("Failed to update order status.");
-    }
+    
+    updateDoc(orderDocRef, updateData)
+      .then(() => {
+        revalidatePath('/');
+        revalidatePath('/dashboard/orders');
+        revalidatePath('/auth/livreur');
+        revalidatePath('/dashboard/earnings');
+      })
+      .catch((e) => {
+        const permissionError = new FirestorePermissionError({
+              path: orderDocRef.path,
+              operation: 'update',
+              requestResourceData: updateData,
+          });
+        errorEmitter.emit('permission-error', permissionError);
+        console.error("Original error updating order status: ", e);
+        // We still throw to let the client know something went wrong.
+        throw new Error("Failed to update order status.");
+    });
 }
