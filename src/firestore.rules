@@ -17,7 +17,7 @@ service cloud.firestore {
     }
     
     function isSuperAdmin() {
-      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
+      return request.auth != null && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
     }
 
     match /restaurants/{restaurantId} {
