@@ -4,183 +4,58 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, Image as ImageIcon, ChefHat, Trash, Plus, Upload } from 'lucide-react';
+import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, CookingPot, Bike, Users, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type MenuItem, type Restaurant, type MenuOption } from '@/lib/types';
-import { generateMenuItem, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
+import { type MenuItem, type Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Badge } from '../ui/badge';
-import Image from 'next/image';
-
-type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from '@/components/ui/badge';
+import { format }s from 'date-fns';
 
 export default function RestaurateurHomePage() {
-    const { restaurants, addMenuItem, isLoading: isDataLoading } = useData();
-    const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
-    const [loading, setLoading] = React.useState(false);
-    const [generatedItem, setGeneratedItem] = React.useState<GeneratedMenuItem | null>(null);
-    const { toast } = useToast();
+    const { restaurants, menuItems, orders, isLoading: isDataLoading } = useData();
+    const [myRestaurants, setMyRestaurants] = React.useState<Restaurant[]>([]);
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
 
-    // Form state for AI generation
-    const [description, setDescription] = React.useState('');
-    const [name, setName] = React.useState('');
-    const [price, setPrice] = React.useState('');
-    const [imageFile, setImageFile] = React.useState<File | null>(null);
-    const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-
-
-    // Form state for menu item options
-    const [sides, setSides] = React.useState<MenuOption[]>([]);
-    const [drinks, setDrinks] = React.useState<MenuOption[]>([]);
-    const [sideInput, setSideInput] = React.useState({ nom: '', prix: '' });
-    const [drinkInput, setDrinkInput] = React.useState({ nom: '', prix: '' });
-
-
     React.useEffect(() => {
-        if (restaurants.length > 0 && !selectedRestaurant) {
-            setSelectedRestaurant(restaurants[0]);
+        if (user) {
+            const userRestaurants = restaurants.filter(r => r.proprietaireId === user.uid);
+            setMyRestaurants(userRestaurants);
         }
-        if (restaurants.length === 0) {
-            setSelectedRestaurant(null);
-        }
-    }, [restaurants, selectedRestaurant]);
+    }, [restaurants, user]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+    const myRestaurantIds = React.useMemo(() => myRestaurants.map(r => r.id), [myRestaurants]);
 
+    const stats = React.useMemo(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const myOrders = orders.filter(o => myRestaurantIds.includes(o.restaurantId));
+        
+        const ordersToday = myOrders.filter(o => o.date.startsWith(today));
+        const deliveredToday = ordersToday.filter(o => o.statut === 'Livrée');
 
-    const handleGenerateItem = async () => {
-        if (!selectedRestaurant || !description) {
-            toast({
-                variant: 'destructive',
-                title: 'Informations manquantes',
-                description: 'Veuillez sélectionner un restaurant et entrer au minimum une description.',
-            });
-            return;
-        }
-        setLoading(true);
-        setGeneratedItem(null);
-        toast({
-            title: 'Génération de plat en cours...',
-            description: 'L\'IA concocte quelque chose de délicieux pour vous. Cela peut prendre un moment.',
-        });
+        return {
+            revenueToday: deliveredToday.reduce((sum, order) => sum + order.revenuNet, 0),
+            ordersTodayCount: ordersToday.length,
+            pendingCount: myOrders.filter(o => o.statut === 'Placée').length,
+            preparingCount: myOrders.filter(o => o.statut === 'En Préparation').length,
+            inTransitCount: myOrders.filter(o => o.statut === 'En Route').length,
+            latestOrders: myOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
+        };
+    }, [orders, myRestaurantIds]);
 
-        try {
-            const itemDetails: GenerateMenuItemOutput = await generateMenuItem({
-                restaurantName: selectedRestaurant.nom,
-                cuisine: selectedRestaurant.cuisine,
-                description: description,
-                ...(name && { nom: name }),
-                ...(price && { prix: Number(price) }),
-            });
-
-            const newItem: GeneratedMenuItem = {
-                nom: itemDetails.nom,
-                description: itemDetails.description,
-                prix: itemDetails.prix,
-                indiceImage: itemDetails.indiceImage,
-            };
-
-            setGeneratedItem(newItem);
-            toast({
-                title: 'Plat généré avec succès !',
-                description: 'Voici une proposition. Vous pouvez la modifier et l\'ajouter à votre menu.',
-            });
-        } catch (error) {
-            console.error('Failed to generate menu item:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Erreur de génération',
-                description: 'Impossible de générer le plat pour le moment. Le quota de l\'IA est peut-être atteint.',
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleAddItemToMenu = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!generatedItem || !selectedRestaurant) return;
-
-        setLoading(true);
-        try {
-            await addMenuItem(
-                { 
-                    ...generatedItem, 
-                    restaurantId: selectedRestaurant.id,
-                    accompagnementsDisponibles: sides,
-                    boissonsDisponibles: drinks,
-                }, 
-                imageFile
-            );
-            setGeneratedItem(null);
-            setDescription('');
-            setName('');
-            setPrice('');
-            setImageFile(null);
-            setImagePreview(null);
-            setSides([]);
-            setDrinks([]);
-            toast({
-                title: 'Plat ajouté !',
-                description: `${generatedItem.nom} est maintenant disponible dans votre menu.`,
-            });
-        } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: 'Erreur',
-                description: "Impossible d'ajouter le plat à la base de données.",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleItemChange = (field: keyof GeneratedMenuItem, value: string | number) => {
-        if (generatedItem) {
-            setGeneratedItem({ ...generatedItem, [field]: value });
-        }
-    };
-
-    const handleAddOption = (type: 'side' | 'drink') => {
-        if (type === 'side' && sideInput.nom.trim() && sideInput.prix.trim()) {
-            setSides(prev => [...prev, { nom: sideInput.nom.trim(), prix: Number(sideInput.prix) }]);
-            setSideInput({ nom: '', prix: '' });
-        }
-        if (type === 'drink' && drinkInput.nom.trim() && drinkInput.prix.trim()) {
-            setDrinks(prev => [...prev, { nom: drinkInput.nom.trim(), prix: Number(drinkInput.prix) }]);
-            setDrinkInput({ nom: '', prix: '' });
-        }
+    if (isDataLoading || authLoading) {
+        return (
+            <div className="flex h-full w-full items-center justify-center">
+                <Loader className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        );
     }
-
-    const handleRemoveOption = (type: 'side' | 'drink', index: number) => {
-        if (type === 'side') {
-            setSides(prev => prev.filter((_, i) => i !== index));
-        }
-        if (type === 'drink') {
-            setDrinks(prev => prev.filter((_, i) => i !== index));
-        }
-    }
-
-    if (restaurants.length === 0) {
+    
+    if (myRestaurants.length === 0) {
         return (
              <div className="flex h-full w-full items-center justify-center">
                 <Card className="max-w-lg text-center p-8">
@@ -190,7 +65,7 @@ export default function RestaurateurHomePage() {
                     </CardHeader>
                     <CardContent>
                         <CardDescription className="text-base">
-                            Il semble que vous n'ayez pas encore de restaurant. Pour commencer à créer des plats avec notre IA, vous devez d'abord enregistrer votre établissement.
+                            Il semble que vous n'ayez pas encore de restaurant. Pour commencer à gérer vos commandes et créer des plats, vous devez d'abord enregistrer votre établissement.
                         </CardDescription>
                          <Button className="mt-6" asChild>
                            <Link href="/dashboard/new-restaurant">Créer mon premier restaurant</Link>
@@ -203,136 +78,133 @@ export default function RestaurateurHomePage() {
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Dashboard Restaurateur</h1>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-headline text-primary">Tableau de bord</h1>
+                    <p className="text-muted-foreground">Aperçu de l'activité de vos restaurants aujourd'hui.</p>
+                </div>
+                 <div className="flex gap-2">
+                    <Button asChild>
+                       <Link href="/dashboard/orders">
+                            <ClipboardList />
+                            Gérer les commandes
+                        </Link>
+                    </Button>
+                     <Button asChild variant="outline">
+                       <Link href="/dashboard/menu">
+                            <BookOpenCheck />
+                           Voir mes menus
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Revenu Net (Aujourd'hui)</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.revenueToday.toLocaleString('fr-FR')} FCFA</div>
+                        <p className="text-xs text-muted-foreground">Basé sur les commandes livrées</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Commandes (Aujourd'hui)</CardTitle>
+                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.ordersTodayCount}</div>
+                        <p className="text-xs text-muted-foreground">Toutes les commandes reçues ce jour</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Statut des Commandes Actives</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="flex justify-around pt-2">
+                        <div className="text-center">
+                            <p className="text-lg font-bold">{stats.pendingCount}</p>
+                            <p className="text-xs text-muted-foreground">En attente</p>
+                        </div>
+                         <div className="text-center">
+                            <p className="text-lg font-bold">{stats.preparingCount}</p>
+                            <p className="text-xs text-muted-foreground">En prépa.</p>
+                        </div>
+                         <div className="text-center">
+                            <p className="text-lg font-bold">{stats.inTransitCount}</p>
+                            <p className="text-xs text-muted-foreground">En route</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Créateur de Plats</CardTitle>
-                        <CardDescription>Décrivez un plat et laissez l'IA créer les détails. Fournissez un nom ou un prix pour guider l'IA, ou laissez-la faire tout le travail !</CardDescription>
+                        <CardTitle>Dernières Commandes</CardTitle>
+                        <CardDescription>Voici les 5 dernières commandes reçues par vos établissements.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <Label>Restaurant</Label>
-                            <Select
-                                onValueChange={value => setSelectedRestaurant(restaurants.find(r => r.id === value) || null)}
-                                value={selectedRestaurant?.id || ''}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choisissez votre restaurant" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {restaurants.map(r => (
-                                        <SelectItem key={r.id} value={r.id}>{r.nom}</SelectItem>
+                    <CardContent>
+                       {stats.latestOrders.length > 0 ? (
+                           <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Client</TableHead>
+                                        <TableHead>Statut</TableHead>
+                                        <TableHead className="text-right">Montant</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {stats.latestOrders.map(order => (
+                                        <TableRow key={order.id}>
+                                            <TableCell>
+                                                <div className="font-medium">{order.nomRestaurant}</div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    {format(new Date(order.date), "dd/MM/yyyy HH:mm")}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline">{order.statut}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium">{order.total.toLocaleString('fr-FR')} FCFA</TableCell>
+                                        </TableRow>
                                     ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="image-upload" className="cursor-pointer flex items-center gap-2">
-                                <Upload /> Télécharger une image (optionnel)
-                            </Label>
-                             <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                            {imagePreview && <Image src={imagePreview} alt="Aperçu de l'image" width={100} height={100} className="rounded-md object-cover"/>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Description simple du plat (obligatoire pour l'IA)</Label>
-                            <Textarea
-                                id="description"
-                                placeholder="Ex: Un plat de riz traditionnel avec du poulet mariné..."
-                                value={description}
-                                onChange={e => setDescription(e.target.value)}
-                                rows={3}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Nom du plat (optionnel)</Label>
-                                <Input id="name" placeholder="Ex: Poulet Yassa" value={name} onChange={e => setName(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="price">Prix (optionnel)</Label>
-                                <Input id="price" type="number" placeholder="Ex: 3500" value={price} onChange={e => setPrice(e.target.value)} />
-                            </div>
-                        </div>
-
-                         <div className="space-y-2">
-                            <Label>Accompagnements (optionnel)</Label>
-                             <div className="flex gap-2">
-                                <Input value={sideInput.nom} onChange={e => setSideInput({...sideInput, nom: e.target.value})} placeholder="Ex: Alloco"/>
-                                <Input value={sideInput.prix} onChange={e => setSideInput({...sideInput, prix: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
-                                <Button type="button" onClick={() => handleAddOption('side')} size="icon"><Plus /></Button>
-                             </div>
-                             <div className="flex flex-wrap gap-2">
-                                {sides.map((side, i) => <Badge key={i} variant="secondary">{side.nom} (+{side.prix} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('side', i)} /></Badge>)}
-                             </div>
-                        </div>
-
-                         <div className="space-y-2">
-                            <Label>Boissons (optionnel)</Label>
-                             <div className="flex gap-2">
-                                <Input value={drinkInput.nom} onChange={e => setDrinkInput({...drinkInput, nom: e.target.value})} placeholder="Ex: Bissap"/>
-                                <Input value={drinkInput.prix} onChange={e => setDrinkInput({...drinkInput, prix: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
-                                <Button type="button" onClick={() => handleAddOption('drink')} size="icon"><Plus /></Button>
-                             </div>
-                             <div className="flex flex-wrap gap-2">
-                                {drinks.map((drink, i) => <Badge key={i} variant="secondary">{drink.nom} (+{drink.prix} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('drink', i)}/></Badge>)}
-                             </div>
-                        </div>
-
-                        <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
-                            <Wand2 className="mr-2" />
-                            Générer avec l'IA
+                                </TableBody>
+                            </Table>
+                       ) : (
+                           <p className="text-muted-foreground text-center py-8">Aucune commande pour le moment.</p>
+                       )}
+                       <div className="mt-4 flex justify-end">
+                           <Button variant="ghost" asChild>
+                               <Link href="/dashboard/orders">
+                                   Voir toutes les commandes <ArrowRight className="ml-2" />
+                               </Link>
+                           </Button>
+                       </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Créateur de Plats par IA</CardTitle>
+                        <CardDescription>Pas d'inspiration ? Décrivez un plat et laissez l'IA générer un nom, une description et un prix pour vous.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                        <Wand2 className="h-16 w-16 mx-auto text-primary/50 mb-4" />
+                        <p className="text-muted-foreground mb-6">Ajoutez rapidement de nouveaux plats à vos menus en utilisant notre assistant intelligent.</p>
+                        <Button asChild size="lg">
+                           <Link href="/dashboard/new-menu-item">
+                                <Wand2 />
+                                Commencer à créer
+                            </Link>
                         </Button>
                     </CardContent>
                 </Card>
 
-                <div>
-                    <h2 className="text-2xl font-headline mb-4">Aperçu du plat</h2>
-                    <div className="p-4 border-2 border-dashed rounded-lg min-h-[400px] flex items-center justify-center bg-card">
-                        {loading ? (
-                            <div className="text-center text-muted-foreground animate-pulse">
-                                <Wand2 className="h-12 w-12 mx-auto mb-4 text-primary" />
-                                <p>L'IA est en cuisine...</p>
-                            </div>
-                        ) : generatedItem ? (
-                            <form onSubmit={handleAddItemToMenu} className="w-full space-y-4">
-                                <div className="relative h-48 w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                                     {imagePreview ? 
-                                        <Image src={imagePreview} alt="Aperçu du plat" fill className="object-cover" /> :
-                                        <ImageIcon className="h-16 w-16 text-muted-foreground" />
-                                     }
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="itemName">Nom du plat</Label>
-                                    <Input id="itemName" value={generatedItem.nom} onChange={(e) => handleItemChange('nom' as keyof GeneratedMenuItem, e.target.value)} />
-                                </div>
-                                 <div className="space-y-2">
-                                    <Label htmlFor="itemDescription">Description</Label>
-                                    <Textarea id="itemDescription" value={generatedItem.description} onChange={(e) => handleItemChange('description' as keyof GeneratedMenuItem, e.target.value)} rows={3} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="itemPrice">Prix (FCFA)</Label>
-                                    <Input id="itemPrice" type="number" value={generatedItem.prix} onChange={(e) => handleItemChange('prix' as keyof GeneratedMenuItem, Number(e.target.value))} />
-                                </div>
-                                <div className="mt-4 flex justify-end gap-2">
-                                    <Button variant="outline" type="button" onClick={() => setGeneratedItem(null)}>Rejeter</Button>
-                                    <Button type="submit" disabled={loading}>
-                                        {loading ? <Loader className="animate-spin mr-2" /> : null}
-                                        Ajouter au menu
-                                    </Button>
-                                </div>
-                            </form>
-                        ) : (
-                             <div className="text-center text-muted-foreground">
-                                <ImageIcon className="h-12 w-12 mx-auto mb-4" />
-                                <p>Le plat généré par l'IA apparaîtra ici.</p>
-                             </div>
-                        )}
-                    </div>
-                </div>
             </div>
         </div>
     );
 }
-
-    
