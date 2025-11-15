@@ -35,11 +35,13 @@ export default function AdminHomePage() {
             return;
         }
 
+        // Immediately redirect if the user is not a SuperAdmin
         if (!user || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
             router.push('/');
             return;
         }
 
+        // Only set up the listener if the user IS a SuperAdmin
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
 
