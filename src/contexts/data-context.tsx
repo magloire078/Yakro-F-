@@ -107,28 +107,24 @@ const useDataStore = create<DataState>((set, get) => ({
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, userProfile, activeRole } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useDataStore();
+    const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useDataStore();
+    const myRestaurants = useDataStore(state => state.restaurants.filter(r => r.proprietaireId === user?.uid));
     
     React.useEffect(() => {
         setIsLoading(true);
         
         const setupSubscription = <T extends DocumentData>(collectionName: string, setData: (data: T[]) => void): Unsubscribe => {
             const q = query(collection(db, collectionName));
-            const unsubscribe = onSnapshot(q, 
+            return onSnapshot(q, 
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as T[];
                     setData(list);
                 }, 
                 (error) => {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({ path: collectionName, operation: 'list' }));
                     console.error(`Error fetching ${collectionName}:`, error);
-                    const permissionError = new FirestorePermissionError({
-                        path: collectionName,
-                        operation: 'list'
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
                 }
             );
-            return unsubscribe;
         };
 
         const restaurantUnsub = setupSubscription<Restaurant>('restaurants', setRestaurants);
@@ -138,23 +134,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let ordersUnsub: Unsubscribe | undefined;
         if (user && userProfile) {
             const ordersCollectionRef = collection(db, "commandes");
-            let q;
+            let q: ReturnType<typeof query> | null = null;
             
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 q = query(ordersCollectionRef); // SuperAdmin gets all orders
             } else {
-                 const restaurantIdsOwned = restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-
                 switch (activeRole) {
                     case 'restaurateur':
-                        if (restaurantIdsOwned.length > 0) {
-                            q = query(ordersCollectionRef, where("restaurantId", "in", restaurantIdsOwned));
+                        const myRestaurantIds = myRestaurants.map(r => r.id);
+                        if (myRestaurantIds.length > 0) {
+                            q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
                         }
                         break;
                     case 'livreur':
-                        q = query(ordersCollectionRef, where("livreurId", "==", user.uid));
+                        // Combine available for pickup and currently delivering
+                         q = query(ordersCollectionRef, where("statut", "in", ["En Préparation", "En Route"]));
                         break;
                     case 'client':
                     default:
@@ -166,15 +160,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if(q) {
                 ordersUnsub = onSnapshot(q, (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
-                    setOrders(list);
+                     if(activeRole === 'livreur') {
+                        const delivererOrders = list.filter(o => (o.statut === 'En Préparation') || (o.statut === 'En Route' && o.livreurId === user.uid));
+                        setOrders(delivererOrders);
+                    } else {
+                        setOrders(list);
+                    }
                     setIsLoading(false);
                 }, (error) => {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({ path: "commandes", operation: 'list'}));
                     console.error(`Error fetching commandes:`, error);
-                    const permissionError = new FirestorePermissionError({
-                        path: "commandes",
-                        operation: 'list'
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
                     setIsLoading(false);
                 });
             } else {
@@ -195,7 +190,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ordersUnsub();
             }
         };
-    }, [user, userProfile, activeRole, setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants]);
+    }, [user, userProfile, activeRole, setRestaurants, setMenuItems, setOrders, setIsLoading, myRestaurants]);
 
     return <>{children}</>;
 };
