@@ -38,13 +38,15 @@ export default function AdminPage() {
     const [isAddUserDialogOpen, setIsAddUserDialogOpen] = React.useState(false);
 
     React.useEffect(() => {
-        if (authLoading) {
+        if (authLoading) return;
+        if (!user) {
+            router.push('/login');
             return;
         }
-
-        if (!user || userProfile?.roleSysteme !== 'SuperAdmin') {
-            toast({ 
-                variant: 'destructive', 
+        // First, check if the profile is loaded and if the user is a SuperAdmin.
+        if (userProfile && userProfile.roleSysteme !== 'SuperAdmin') {
+            toast({
+                variant: 'destructive',
                 title: 'Accès non autorisé',
                 description: "Cette page est réservée aux Super Administrateurs."
             });
@@ -52,32 +54,34 @@ export default function AdminPage() {
             return;
         }
 
-        // Only proceed to fetch data if the user is a SuperAdmin
-        setDataLoading(true);
-        const usersCollectionRef = collection(db, 'utilisateurs');
-        const unsubscribe = onSnapshot(usersCollectionRef, 
-            (snapshot) => {
-                const users = snapshot.docs.map(doc => ({
-                    uid: doc.id,
-                    ...doc.data()
-                } as UserProfile));
-                setAllUsers(users);
-                setDataLoading(false);
-            }, 
-            (serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: usersCollectionRef.path,
-                    operation: 'list',
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
-                setDataLoading(false);
-            }
-        );
+        // Only proceed if we have a user profile and they are a SuperAdmin.
+        if (userProfile && userProfile.roleSysteme === 'SuperAdmin') {
+            setDataLoading(true);
+            const usersCollectionRef = collection(db, 'utilisateurs');
+            const unsubscribe = onSnapshot(usersCollectionRef,
+                (snapshot) => {
+                    const users = snapshot.docs.map(doc => ({
+                        uid: doc.id,
+                        ...doc.data()
+                    } as UserProfile));
+                    setAllUsers(users);
+                    setDataLoading(false);
+                },
+                (serverError) => {
+                    const permissionError = new FirestorePermissionError({
+                        path: usersCollectionRef.path,
+                        operation: 'list',
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                    toast({ variant: 'destructive', title: 'Erreur de permission', description: "Impossible de charger la liste des utilisateurs." });
+                    setDataLoading(false);
+                }
+            );
 
-        return () => {
-            unsubscribe();
-        };
+            return () => {
+                unsubscribe();
+            };
+        }
     }, [user, userProfile, authLoading, router, toast]);
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
@@ -339,5 +343,3 @@ export default function AdminPage() {
         </>
     );
 }
-
-    
