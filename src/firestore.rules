@@ -38,7 +38,7 @@ service cloud.firestore {
       allow create: if isUser(request.resource.data.userId);
 
       allow update: if 
-          (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || request.resource.data.statut == 'Placée')) ||
+          (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) ||
           (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           isSuperAdmin();
