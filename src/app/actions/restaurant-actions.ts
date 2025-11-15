@@ -6,6 +6,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 
 // Helper function for uploading images
@@ -21,23 +23,25 @@ export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
     const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'>;
+    const collectionRef = collection(db, "restaurants");
 
     if (!data.proprietaireId) {
         throw new Error("Owner ID is missing.");
     }
     
-    let docRef;
+    const restaurantPayload = {
+        ...data,
+        note: 0,
+        enVedette: false,
+        indiceImage: `${data.cuisine} restaurant`,
+        latitude: data.latitude || 6.82,
+        longitude: data.longitude || -5.28,
+        image: "" // Start with empty image URL
+    };
+    
     try {
         // First, add the restaurant document with an empty image URL to get an ID.
-        docRef = await addDoc(collection(db, "restaurants"), {
-            ...data,
-            note: 0,
-            enVedette: false,
-            indiceImage: `${data.cuisine} restaurant`,
-            latitude: data.latitude || 6.82,
-            longitude: data.longitude || -5.28,
-            image: "" // Start with empty image URL
-        });
+        const docRef = await addDoc(collectionRef, restaurantPayload);
         const restaurantId = docRef.id;
 
         // If an image file was provided, upload it now.
@@ -52,7 +56,13 @@ export async function addRestaurantAction(formData: FormData) {
         revalidatePath('/dashboard/new-restaurant');
         revalidatePath('/dashboard/my-restaurants');
     } catch (e: any) {
-        // This makes sure the permission error can be caught by the client
+        const permissionError = new FirestorePermissionError({
+            path: collectionRef.path,
+            operation: 'create',
+            requestResourceData: restaurantPayload,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // Re-throw to let the caller know it failed, it will be caught in the UI
         throw new Error(e.message || "Failed to add restaurant.");
     }
 }
@@ -80,6 +90,12 @@ export async function updateRestaurantAction(formData: FormData) {
         revalidatePath('/dashboard/my-restaurants');
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
     } catch (e: any) {
+         const permissionError = new FirestorePermissionError({
+            path: restaurantDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
         throw new Error(e.message || "Failed to update restaurant.");
     }
 }
