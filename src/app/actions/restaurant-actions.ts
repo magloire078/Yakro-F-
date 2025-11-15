@@ -23,21 +23,18 @@ export async function addRestaurantAction(formData: FormData) {
     const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image'>;
 
     try {
-        // Start with a placeholder for the image URL
-        let imageUrl = "";
-
-        // First, add the restaurant document to get an ID. This makes our image path predictable.
-        // We add it without the image URL for now.
+        // First, add the restaurant document with an empty image URL to get an ID.
         const docRef = await addDoc(collection(db, "restaurants"), {
             ...data,
             note: 0,
             indiceImage: `${data.cuisine} restaurant`,
             latitude: data.latitude || 6.82,
             longitude: data.longitude || -5.28,
-            image: imageUrl // Start with empty image URL
+            image: "" // Start with empty image URL
         });
         const restaurantId = docRef.id;
 
+        let imageUrl = "";
         // If an image file was provided, upload it now.
         if (imageFile) {
             imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
