@@ -21,7 +21,7 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
-  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId' >, imageFile: File | null) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -98,7 +98,7 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, userProfile, activeRole } = useAuth();
+    const { user, userProfile } = useAuth();
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
@@ -106,7 +106,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const setupSubscription = (
             q: Query,
-            collectionName: string,
             onData: (data: DocumentData[]) => void
         ) => {
             const unsubscribe = onSnapshot(q,
@@ -115,8 +114,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     onData(list);
                 },
                 (error) => {
+                    // The FirestorePermissionError is constructed and emitted here
                     const permissionError = new FirestorePermissionError({
-                        path: q.path,
+                        path: (q as any)._query.path.segments.join('/'),
                         operation: 'list'
                     });
                     errorEmitter.emit('permission-error', permissionError);
@@ -125,30 +125,39 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             subscriptions.push(unsubscribe);
         };
 
-        // Abonnements aux données publiques
+        // Public data subscriptions
         setupSubscription(
             query(collection(db, 'restaurants')),
-            'restaurants',
             (data) => useDataStore.setState({ restaurants: data as Restaurant[] })
         );
 
         setupSubscription(
             query(collection(db, 'plats')),
-            'plats',
             (data) => useDataStore.setState({ menuItems: data as MenuItem[] })
         );
         
-        let ordersQuery: Query | null = null;
-        if (user) {
-            ordersQuery = query(collection(db, 'commandes'));
-        }
+        // Conditional subscription for orders based on user role
+        if (user && userProfile) {
+            let ordersQuery: Query | null = null;
+            
+            if (userProfile.roleSysteme === 'SuperAdmin') {
+                ordersQuery = query(collection(db, 'commandes'));
+            } else if (userProfile.rolesAutorises?.includes('restaurateur')) {
+                // For restaurateurs, we can't easily query by their restaurants in one go client-side
+                // So we fetch all and filter client-side. This relies on security rules.
+                ordersQuery = query(collection(db, 'commandes'));
+            } else if (userProfile.rolesAutorises?.includes('livreur')) {
+                ordersQuery = query(collection(db, 'commandes'), where('livreurId', '==', user.uid));
+            } else { // 'client'
+                ordersQuery = query(collection(db, 'commandes'), where('userId', '==', user.uid));
+            }
 
-        if (ordersQuery) {
-            setupSubscription(
-                ordersQuery,
-                'commandes',
-                (data) => useDataStore.setState({ orders: data as Order[] })
-            );
+            if(ordersQuery) {
+                setupSubscription(
+                    ordersQuery,
+                    (data) => useDataStore.setState({ orders: data as Order[] })
+                );
+            }
         } else {
              useDataStore.setState({ orders: [] });
         }
@@ -163,7 +172,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             clearTimeout(loadingTimeout);
             subscriptions.forEach(unsub => unsub());
         };
-    }, [user, userProfile, activeRole]);
+    }, [user, userProfile]);
 
     return <>{children}</>;
 };
@@ -179,8 +188,8 @@ export const useData = () => {
   ) => {
     if (!user) throw new Error("User not authenticated");
     
-    // The proprietaireId is now added on the server action side
-    await state.addRestaurant({ ...restaurantData, proprietaireId: user.uid }, imageFile);
+    // The proprietaireId is added in the server action from the authenticated user
+    await state.addRestaurant({ ...restaurantData }, imageFile);
   };
   
   return { ...state, addRestaurant };
