@@ -130,10 +130,21 @@ function setupSubscription<T extends DocumentData>(
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, userProfile, activeRole } = useAuth();
+    const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useDataStore();
+    const [authReady, setAuthReady] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!authLoading) {
+            setAuthReady(true);
+        }
+    }, [authLoading]);
     
     React.useEffect(() => {
+        if (!authReady) {
+            return; // Don't run subscriptions until auth state is confirmed
+        }
+
         setIsLoading(true);
 
         const restaurantUnsub = setupSubscription<Restaurant>('restaurants', async (restaurants) => {
@@ -159,7 +170,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else if (activeRole === 'livreur') {
                 q = query(ordersCollectionRef, where("statut", "==", "En Préparation"));
             } else if (activeRole === 'restaurateur') {
-                // Get the restaurant IDs synchronously from the Zustand store
                 const myRestaurantIds = useDataStore.getState().restaurants
                     .filter(r => r.proprietaireId === user.uid)
                     .map(r => r.id);
@@ -189,12 +199,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }
                 });
             } else if (activeRole !== 'restaurateur') {
-                 // For roles that might not have a query (e.g. invalid role), clear orders
                  setOrders([]);
             }
 
         } else {
-            // User is not logged in, or profile is not loaded yet.
             setOrders([]);
         }
 
@@ -208,7 +216,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ordersUnsub();
             }
         };
-    }, [user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [authReady, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };
