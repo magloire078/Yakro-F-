@@ -145,7 +145,7 @@ export function Sidebar() {
             <Button variant={pathname === '/dashboard/admin' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
               <Link href="/dashboard/admin">
                 <ShieldCheck className="mr-2 h-5 w-5" />
-                Admin
+                Administration
               </Link>
             </Button>
           )}
@@ -214,5 +214,6 @@ export function Sidebar() {
     </aside>
   );
 }
+
 
 
