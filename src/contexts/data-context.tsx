@@ -5,7 +5,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -15,6 +15,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { addRestaurantAction, updateRestaurantAction } from '@/app/actions/restaurant-actions';
 import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
+import { seedDatabaseAction } from '@/app/actions/seed-actions';
 
 
 interface DataState {
@@ -105,14 +106,12 @@ const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
-function setupSubscription<T extends DocumentData>(collectionName: string, setData: (data: T[]) => void): Unsubscribe;
-function setupSubscription<T extends DocumentData>(q: Query<DocumentData, DocumentData>, setData: (data: T[]) => void): Unsubscribe;
 function setupSubscription<T extends DocumentData>(
   param: string | Query<DocumentData, DocumentData>,
   setData: (data: T[]) => void
 ): Unsubscribe {
   const q = typeof param === 'string' ? query(collection(db, param)) : param;
-  const collectionId = typeof param === 'string' ? param : (param as any)._query.path.segments[0];
+  const collectionId = typeof param === 'string' ? param : (q as any)._query?.path?.segments?.[0] || 'unknown';
 
   return onSnapshot(
     q,
@@ -137,8 +136,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     React.useEffect(() => {
         setIsLoading(true);
-        
-        const restaurantUnsub = setupSubscription<Restaurant>('restaurants', setRestaurants);
+
+        const restaurantUnsub = onSnapshot(collection(db, 'restaurants'), async (snapshot) => {
+            if (snapshot.empty && user?.uid) {
+                // If the database is empty, seed it with initial data.
+                await seedDatabaseAction(user.uid);
+            } else {
+                const restaurants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Restaurant[];
+                setRestaurants(restaurants);
+            }
+        }, (error) => {
+             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'restaurants', operation: 'list'}));
+             console.error(`Error fetching restaurants:`, error);
+        });
+
         const menuItemsUnsub = setupSubscription<MenuItem>('plats', setMenuItems);
         
         let ordersUnsub: Unsubscribe | undefined;
@@ -149,49 +160,45 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 q = query(ordersCollectionRef);
-            } else {
-                 if (activeRole === 'client') {
-                    q = query(ordersCollectionRef, where("userId", "==", user.uid));
-                } else if (activeRole === 'livreur') {
-                     q = query(ordersCollectionRef, where("livreurId", "==", user.uid));
+            } else if (activeRole === 'client') {
+                q = query(ordersCollectionRef, where("userId", "==", user.uid));
+            } else if (activeRole === 'livreur') {
+                q = query(ordersCollectionRef, where("statut", "==", "En Préparation"));
+                // We will add the other orders for the livreur separately
+            } else if (activeRole === 'restaurateur') {
+                const myRestaurantIds = useDataStore.getState().restaurants
+                    .filter(r => r.proprietaireId === user.uid)
+                    .map(r => r.id);
+                if (myRestaurantIds.length > 0) {
+                    q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
                 }
             }
 
-            if(q) {
-                ordersUnsub = setupSubscription<Order>(q, (allOrders) => {
+            if (q) {
+                ordersUnsub = setupSubscription<Order>(q, (initialOrders) => {
                     if (activeRole === 'livreur') {
-                        // Include 'En Préparation' for them to accept new deliveries.
-                        const myDeliveries = allOrders.filter(o => o.statut === 'En Préparation' || o.livreurId === user.uid);
-                        setOrders(myDeliveries);
+                        // For livreurs, we also need to get their accepted orders that are 'En Route'
+                        const enRouteQuery = query(ordersCollectionRef, where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
+                        getDocs(enRouteQuery).then(enRouteSnap => {
+                            const enRouteOrders = enRouteSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
+                            const combinedOrders = [...initialOrders, ...enRouteOrders];
+                            // Remove duplicates
+                            const uniqueOrders = Array.from(new Set(combinedOrders.map(o => o.id))).map(id => combinedOrders.find(o => o.id === id)!);
+                            setOrders(uniqueOrders);
+                        });
                     } else {
-                        setOrders(allOrders);
+                        setOrders(initialOrders);
                     }
                 });
-            } else if (activeRole === 'restaurateur') {
-                // Restaurateur needs to see orders from all their restaurants,
-                // which can't be done with a single "in" query on the client if there are > 30 restaurants.
-                // We fetch all their restaurants and then listen to orders for each one.
-                // This is less efficient but works around Firestore client limitations.
-                 const myRestaurantIds = useDataStore.getState().restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-
-                if (myRestaurantIds.length > 0) {
-                     const q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
-                     ordersUnsub = setupSubscription<Order>(q, setOrders);
-                } else {
-                    setOrders([]);
-                }
-            } else {
-                setOrders([]);
+            } else if (!q && activeRole !== 'restaurateur') {
+                 setOrders([]);
             }
 
         } else {
             setOrders([]);
         }
 
-        // We assume loading is done after initial setup, further updates are background
-        const timer = setTimeout(() => setIsLoading(false), 1500);
+        const timer = setTimeout(() => setIsLoading(false), 2000);
 
         return () => {
             clearTimeout(timer);
@@ -201,7 +208,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ordersUnsub();
             }
         };
-    }, [user, userProfile, activeRole, setRestaurants, setMenuItems, setOrders, setIsLoading]);
+    }, [user?.uid, userProfile?.roleSysteme, activeRole]);
 
     return <>{children}</>;
 };
