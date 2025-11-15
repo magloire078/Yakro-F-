@@ -102,13 +102,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
-
-        const subscriptions: Unsubscribe[] = [];
+        let subscriptions: Unsubscribe[] = [];
 
         const setupSubscription = (
             q: Query,
-            onData: (data: DocumentData[]) => void,
-            onError: (err: Error) => void
+            collectionName: string,
+            onData: (data: DocumentData[]) => void
         ) => {
             const unsubscribe = onSnapshot(q,
                 (snapshot) => {
@@ -116,36 +115,36 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     onData(list);
                 },
                 (error) => {
-                    console.error("Firestore subscription error:", error);
-                    onError(error);
+                    const permissionError = new FirestorePermissionError({
+                        path: collectionName,
+                        operation: 'list'
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
                 }
             );
             subscriptions.push(unsubscribe);
         };
-        
-        // 1. Subscribe to public data
+
+        // Abonnements aux données publiques
         setupSubscription(
             query(collection(db, 'restaurants')),
-            (data) => useDataStore.setState({ restaurants: data as Restaurant[] }),
-            (error) => {
-                const permissionError = new FirestorePermissionError({ path: 'restaurants', operation: 'list' });
-                errorEmitter.emit('permission-error', permissionError);
-            }
+            'restaurants',
+            (data) => useDataStore.setState({ restaurants: data as Restaurant[] })
         );
 
         setupSubscription(
             query(collection(db, 'plats')),
-            (data) => useDataStore.setState({ menuItems: data as MenuItem[] }),
-            (error) => {
-                const permissionError = new FirestorePermissionError({ path: 'plats', operation: 'list' });
-                errorEmitter.emit('permission-error', permissionError);
-            }
+            'plats',
+            (data) => useDataStore.setState({ menuItems: data as MenuItem[] })
         );
 
-        // 2. Subscribe to private data (orders) only if authenticated
+        // Abonnement aux données privées (commandes)
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
-            
+             const myRestaurantIds = useDataStore.getState().restaurants
+                .filter(r => r.proprietaireId === user.uid)
+                .map(r => r.id);
+
             if (activeRole === 'client') {
                 ordersQuery = query(collection(db, "commandes"), where("userId", "==", user.uid));
             } else if (activeRole === 'livreur') {
@@ -154,11 +153,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     where('statut', '==', 'En Préparation')
                 ));
             } else if (activeRole === 'restaurateur') {
-                // We must get the state directly here because we are in the same effect loop
-                const myRestaurantIds = useDataStore.getState().restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-                
                 if (myRestaurantIds.length > 0) {
                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
                 }
@@ -169,28 +163,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (ordersQuery) {
                 setupSubscription(
                     ordersQuery,
-                    (data) => useDataStore.setState({ orders: data as Order[] }),
-                    (error) => {
-                        const permissionError = new FirestorePermissionError({ path: 'commandes', operation: 'list' });
-                        errorEmitter.emit('permission-error', permissionError);
-                    }
+                    'commandes',
+                    (data) => useDataStore.setState({ orders: data as Order[] })
                 );
             } else {
-                // If no query applies (e.g., restaurateur with no restaurants), clear orders
                 useDataStore.setState({ orders: [] });
             }
         } else {
-            // Not logged in, clear orders
             useDataStore.setState({ orders: [] });
         }
 
-        // Finally, set loading to false. This is a simplification. A more robust
-        // solution might wait for the first snapshot of all subscriptions.
-        useDataStore.setState({ isLoading: false });
+        // Simplification de la gestion du chargement
+        const loadingTimeout = setTimeout(() => {
+             useDataStore.setState({ isLoading: false });
+        }, 2000); // Give subscriptions time to get initial data
+       
 
-
-        // Cleanup all subscriptions on unmount
         return () => {
+            clearTimeout(loadingTimeout);
             subscriptions.forEach(unsub => unsub());
         };
     }, [user, userProfile, activeRole]);
