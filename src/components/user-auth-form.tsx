@@ -11,7 +11,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
@@ -44,6 +44,14 @@ export function UserAuthForm() {
   const setupInitialUser = async (user: import('firebase/auth').User, data?: FormData) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
 
+    // Check if the document already exists before creating it
+    const docSnap = await getDoc(userDocRef);
+    if(docSnap.exists()){
+      // The user profile already exists, which might happen with Google sign-in
+      // if they've signed in before. We don't need to do anything.
+      return;
+    }
+
     const newUserProfile: UserProfile = {
         uid: user.uid,
         email: user.email!,
@@ -73,9 +81,8 @@ export function UserAuthForm() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      // The onAuthStateChanged listener in AuthContext will handle redirection
-      // It will also handle profile creation if the user is new.
+      const result = await signInWithPopup(auth, provider);
+      await setupInitialUser(result.user); // This will create the user profile if it doesn't exist
       toast({
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté.',
@@ -113,7 +120,7 @@ export function UserAuthForm() {
         description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
       } else if (error.code === 'auth/email-already-in-use') {
         description = 'Cette adresse e-mail est déjà utilisée.';
-      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         description = 'Email ou mot de passe incorrect.';
       }
       

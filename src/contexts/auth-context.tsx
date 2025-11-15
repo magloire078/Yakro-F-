@@ -146,6 +146,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
     try {
+      // Note: This creates the user in a client-side context which is not ideal for production.
+      // A backend function would be more secure to prevent abuse.
+      // For this prototype, we'll proceed, but with added security rules.
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const newUser = userCredential.user;
 
@@ -157,9 +160,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           dateCreation: serverTimestamp(),
           role: data.rolesAutorises[0] || 'client',
           rolesAutorises: data.rolesAutorises,
-          roleSysteme: 'User',
+          roleSysteme: 'User', // New users created by admins are standard users by default
       };
       
+      // Since this action is initiated by a SuperAdmin, security rules must allow this.
+      // We'll rely on the SuperAdmin's authenticated state to allow this write.
       await setDoc(userDocRef, newUserProfile);
       toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
 

@@ -44,11 +44,17 @@ service cloud.firestore {
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           isSuperAdmin();
     }
-
+    
     match /utilisateurs/{userId} {
       allow read: if isUser(userId) || isSuperAdmin();
       allow update: if isUser(userId) || isSuperAdmin();
+      // Allow user creation for any authenticated user (for sign-up)
+      // OR if the request is coming from a SuperAdmin (for creating users from the admin panel)
       allow create: if isUserAuthenticated();
+    }
+    
+    match /utilisateurs {
+      allow list: if isSuperAdmin();
     }
   }
 }
