@@ -6,6 +6,8 @@ import { db } from '@/lib/firebase';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 export async function seedDatabaseAction(userId: string) {
     const restaurantsRef = collection(db, 'restaurants');
@@ -50,7 +52,16 @@ export async function seedDatabaseAction(userId: string) {
             return { success: true, message: 'Database seeded successfully.' };
         } catch (error) {
             console.error("Error seeding database: ", error);
-            return { success: false, message: 'Error seeding database.' };
+            const permissionError = new FirestorePermissionError({
+                path: `(batch write)`,
+                operation: 'create',
+                requestResourceData: { 
+                    message: "Batch write for initial database seed.",
+                    itemCount: initialRestaurants.length + initialMenuItems.length 
+                },
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw permissionError;
         }
     }
     return { success: false, message: 'Database is not empty, seeding skipped.'};
