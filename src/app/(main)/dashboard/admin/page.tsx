@@ -38,9 +38,8 @@ export default function AdminPage() {
     const [isAddUserDialogOpen, setIsAddUserDialogOpen] = React.useState(false);
 
     React.useEffect(() => {
-        let unsubscribe: Unsubscribe | undefined;
-
         if (authLoading) {
+            setDataLoading(true);
             return;
         }
 
@@ -55,10 +54,10 @@ export default function AdminPage() {
             return;
         }
 
-        // The user is authenticated and is a SuperAdmin. Now we can safely subscribe.
+        // At this point, we are sure the user is a SuperAdmin. We can safely subscribe.
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
-        unsubscribe = onSnapshot(usersCollectionRef, 
+        const unsubscribe = onSnapshot(usersCollectionRef, 
             (snapshot) => {
                 const users = snapshot.docs.map(doc => ({
                     uid: doc.id,
@@ -80,9 +79,7 @@ export default function AdminPage() {
 
         // Cleanup subscription on component unmount
         return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
+            unsubscribe();
         };
     }, [user, userProfile, authLoading, router, toast]);
 
@@ -307,4 +304,5 @@ export default function AdminPage() {
     );
 }
 
+    
     
