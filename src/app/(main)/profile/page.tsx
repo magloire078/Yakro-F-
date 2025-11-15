@@ -4,21 +4,23 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut } from 'lucide-react';
+import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, ShieldAlert } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
-import type { Restaurant } from '@/lib/types';
+import type { Restaurant, UserProfile } from '@/lib/types';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
-  const { user, userProfile, loading: authLoading, activeRole } = useAuth();
+  const { user, userProfile, loading: authLoading, activeRole, updateUserProfile } = useAuth();
   const { orders, restaurants, isLoading: dataLoading } = useData();
   const router = useRouter();
+  const { toast } = useToast();
 
   React.useEffect(() => {
     if (!authLoading && !user) {
@@ -31,6 +33,26 @@ export default function ProfilePage() {
     localStorage.removeItem('activeRole');
     router.push('/login');
   }
+
+  const handleBecomeSuperAdmin = async () => {
+    if (!user || !userProfile) return;
+
+    try {
+      await updateUserProfile(user.uid, { roleSysteme: 'SuperAdmin', rolesAutorises: ['client', 'restaurateur', 'livreur'] });
+      toast({
+        title: 'Promotion réussie !',
+        description: 'Vous êtes maintenant Super Administrateur. Veuillez vous reconnecter pour appliquer les changements.',
+      });
+      // Force sign out to get new token with claims if we were using them, and to reload profile correctly
+      setTimeout(() => handleSignOut(), 2000);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Promotion échouée',
+        description: 'Impossible de vous promouvoir. Un Super Administrateur existe probablement déjà.',
+      });
+    }
+  };
 
   const userDeliveredOrders = React.useMemo(() => {
     if (!user) return [];
@@ -119,10 +141,18 @@ export default function ProfilePage() {
                 </div>
               </div>
                  <Separator />
-                 <Button variant="outline" onClick={handleSignOut} className="w-full sm:w-auto">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Se déconnecter
-                </Button>
+                 <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" onClick={handleSignOut}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Se déconnecter
+                    </Button>
+                    {userProfile.roleSysteme !== 'SuperAdmin' && (
+                      <Button variant="destructive" onClick={handleBecomeSuperAdmin}>
+                        <ShieldAlert className="mr-2 h-4 w-4" />
+                        Devenir Super Admin
+                      </Button>
+                    )}
+                 </div>
             </CardContent>
           </Card>
         </div>
