@@ -8,14 +8,14 @@
         "function isRestaurantOwner(restaurantId)": "return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);",
         "function isSuperAdmin()": "return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';",
         "match /restaurants/{restaurantId}": {
-            "allow read": "if true;",
-            "allow create": "if isUser(request.resource.data.proprietaireId);",
-            "allow update, delete": "if isRestaurantOwner(restaurantId) || isSuperAdmin();"
+          "allow read": "if true;",
+          "allow create": "if isUser(request.resource.data.proprietaireId);",
+          "allow update, delete": "if isRestaurantOwner(restaurantId) || isSuperAdmin();"
         },
         "match /plats/{platId}": {
-            "allow read": "if true;",
-            "allow create": "if isRestaurantOwner(request.resource.data.restaurantId);",
-            "allow update, delete": "if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();"
+          "allow read": "if true;",
+          "allow create": "if isRestaurantOwner(request.resource.data.restaurantId);",
+          "allow update, delete": "if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();"
         },
         "match /commandes": {
           "allow list": "if isUserAuthenticated();"
@@ -25,13 +25,13 @@
           "allow create": "if isUser(request.resource.data.userId);",
           "allow update": "if (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) || (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) || (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') || isSuperAdmin();"
         },
+        "match /utilisateurs/{userId}": {
+            "allow read": "if isUser(userId) || isSuperAdmin();",
+            "allow update": "if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);",
+            "allow create": "if isUserAuthenticated();"
+        },
         "match /utilisateurs": {
           "allow list": "if isSuperAdmin();"
-        },
-        "match /utilisateurs/{userId}": {
-          "allow read": "if isUser(userId) || isSuperAdmin();",
-          "allow update": "if isUser(userId) || isSuperAdmin();",
-          "allow create": "if isUserAuthenticated();"
         }
       }
     }

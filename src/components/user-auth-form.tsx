@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  getAuth,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -80,8 +81,9 @@ export function UserAuthForm() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
+    const clientAuth = getAuth();
     try {
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(clientAuth, provider);
       await setupInitialUser(result.user); // This will create the user profile if it doesn't exist
       toast({
         title: 'Connexion réussie',
@@ -100,14 +102,15 @@ export function UserAuthForm() {
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
+    const clientAuth = getAuth();
     try {
       if (isLoginView) {
-        await signInWithEmailAndPassword(auth, data.email, data.password);
+        await signInWithEmailAndPassword(clientAuth, data.email, data.password);
         toast({
           title: 'Connexion réussie',
         });
       } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const userCredential = await createUserWithEmailAndPassword(clientAuth, data.email, data.password);
         await setupInitialUser(userCredential.user, data);
         toast({
           title: 'Compte créé avec succès',
