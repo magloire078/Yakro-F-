@@ -22,7 +22,7 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
-  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, imageFile: File | null) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId' >, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -121,6 +121,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         operation: 'list'
                     });
                     errorEmitter.emit('permission-error', permissionError);
+                    console.error(`Permission error on ${collectionName}:`, error);
                 }
             );
             subscriptions.push(unsubscribe);
@@ -142,16 +143,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Abonnement aux données privées (commandes)
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
-             const myRestaurantIds = useDataStore.getState().restaurants
+            const myRestaurantIds = useDataStore.getState().restaurants
                 .filter(r => r.proprietaireId === user.uid)
                 .map(r => r.id);
 
             if (activeRole === 'client') {
-                 ordersQuery = query(
-                    collection(db, "commandes"), 
-                    where("userId", "==", user.uid),
-                    where("statut", "in", ["Placée", "En Préparation", "En Route"])
-                );
+                 ordersQuery = query(collection(db, "commandes"), where("userId", "==", user.uid));
             } else if (activeRole === 'livreur') {
                 ordersQuery = query(collection(db, "commandes"), or(
                     where('livreurId', '==', user.uid),
@@ -178,10 +175,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             useDataStore.setState({ orders: [] });
         }
 
-        // Simplification de la gestion du chargement
         const loadingTimeout = setTimeout(() => {
              useDataStore.setState({ isLoading: false });
-        }, 2000); // Give subscriptions time to get initial data
+        }, 2000);
        
 
         return () => {
@@ -199,7 +195,7 @@ export const useData = () => {
   const state = useDataStore();
 
   const addRestaurant = async (
-    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, 
+    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, 
     imageFile: File | null
   ) => {
     if (!user) throw new Error("User not authenticated");
