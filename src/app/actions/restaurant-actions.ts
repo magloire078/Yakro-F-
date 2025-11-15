@@ -35,7 +35,7 @@ export async function addRestaurantAction(formData: FormData) {
         ...data,
         note: 0,
         enVedette: false,
-        indiceImage: `${data.cuisine} restaurant`,
+        indiceImage: data.cuisine ? `${data.cuisine} restaurant` : 'restaurant food',
         latitude: data.latitude || 6.82,
         longitude: data.longitude || -5.28,
         image: "" // Start with empty image URL
@@ -101,6 +101,7 @@ export async function updateRestaurantAction(formData: FormData) {
         throw e; // Re-throw original error to be caught by Next.js action boundary
     }
 }
+
 
 
 
