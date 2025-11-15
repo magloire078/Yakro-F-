@@ -11,6 +11,7 @@ import { revalidatePath } from 'next/cache';
 // Helper function for uploading images
 const uploadImage = async (file: File, path: string): Promise<string> => {
     const storageRef = ref(storage, path);
+    // Use uploadBytes for File objects
     const snapshot = await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
