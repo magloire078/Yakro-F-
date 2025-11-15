@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
@@ -44,38 +44,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(user);
         const userDocRef = doc(db, 'utilisateurs', user.uid);
         
-        // Recovery mechanism: check if a SuperAdmin exists. If not, promote this user.
-        const superAdminQuery = query(collection(db, 'utilisateurs'), where('roleSysteme', '==', 'SuperAdmin'), limit(1));
-        
-        try {
-            const superAdminSnapshot = await getDocs(superAdminQuery);
-            if (superAdminSnapshot.empty) {
-                console.log("No SuperAdmin found. Promoting current user.");
-                try {
-                    await updateDoc(userDocRef, { roleSysteme: 'SuperAdmin' });
-                    toast({
-                        title: "Récupération du compte Super Admin",
-                        description: `Votre compte (${user.email}) a été promu Super Administrateur.`,
-                    });
-                } catch (e) {
-                     console.error("Failed to promote user to SuperAdmin:", e);
-                     const permissionError = new FirestorePermissionError({
-                        path: userDocRef.path,
-                        operation: 'update',
-                        requestResourceData: { roleSysteme: 'SuperAdmin' },
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                }
-            }
-        } catch (e) {
-             const permissionError = new FirestorePermissionError({
-                path: 'utilisateurs',
-                operation: 'list',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            console.error("Failed to check for SuperAdmin:", e);
-        }
-
         unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
           if (docSnap.exists()) {
             const profile = docSnap.data() as UserProfile;
@@ -182,9 +150,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
     try {
-      // Note: This creates the user in a client-side context which is not ideal for production.
-      // A backend function would be more secure to prevent abuse.
-      // For this prototype, we'll proceed, but with added security rules.
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const newUser = userCredential.user;
 
@@ -196,11 +161,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           dateCreation: serverTimestamp(),
           role: data.rolesAutorises[0] || 'client',
           rolesAutorises: data.rolesAutorises,
-          roleSysteme: 'User', // New users created by admins are standard users by default
+          roleSysteme: 'User',
       };
       
-      // Since this action is initiated by a SuperAdmin, security rules must allow this.
-      // We'll rely on the SuperAdmin's authenticated state to allow this write.
       await setDoc(userDocRef, newUserProfile);
       toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
 
@@ -212,14 +175,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (error.code === 'auth/weak-password') {
             description = 'Le mot de passe est trop faible.';
         } else {
-            // Assume it could be a permission error from setDoc
             const permissionError = new FirestorePermissionError({
-                path: `utilisateurs/${data.email}`, // best guess for path
+                path: `utilisateurs/${data.email}`,
                 operation: 'create',
                 requestResourceData: { email: data.email, nom: data.nom },
             });
             errorEmitter.emit('permission-error', permissionError);
-            description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
+            description = "Erreur de permissions lors de la création du profil.";
         }
         toast({
             variant: 'destructive',
