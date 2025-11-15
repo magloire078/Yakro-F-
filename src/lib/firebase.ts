@@ -21,6 +21,10 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const db = getFirestore(app);
 
+auth.onAuthStateChanged(user => {
+    auth.currentUser = user;
+});
+
 export { app, auth, storage, db };
 
 // This is a separate export for use in server-side actions,

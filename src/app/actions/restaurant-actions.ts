@@ -3,7 +3,7 @@
 
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db, storage, auth } from '@/lib/firebase';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
@@ -20,12 +20,19 @@ const uploadImage = async (file: File, path: string): Promise<string> => {
 export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
-    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'enVedette' | 'note'>;
+    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'enVedette' | 'note' | 'proprietaireId'>;
+
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("User not authenticated to perform this action.");
+    }
+    
+    const dataWithOwner = { ...data, proprietaireId: user.uid };
 
     try {
         // First, add the restaurant document with an empty image URL to get an ID.
         const docRef = await addDoc(collection(db, "restaurants"), {
-            ...data,
+            ...dataWithOwner,
             note: 0,
             enVedette: false,
             indiceImage: `${data.cuisine} restaurant`,
