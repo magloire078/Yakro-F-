@@ -108,7 +108,6 @@ const useDataStore = create<DataState>((set, get) => ({
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, userProfile, activeRole } = useAuth();
     const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useDataStore();
-    const myRestaurants = useDataStore(state => state.restaurants.filter(r => r.proprietaireId === user?.uid));
     
     React.useEffect(() => {
         setIsLoading(true);
@@ -130,24 +129,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const restaurantUnsub = setupSubscription<Restaurant>('restaurants', setRestaurants);
         const menuItemsUnsub = setupSubscription<MenuItem>('plats', setMenuItems);
         
-        // Conditional subscription for orders based on user role
         let ordersUnsub: Unsubscribe | undefined;
         if (user && userProfile) {
             const ordersCollectionRef = collection(db, "commandes");
             let q: ReturnType<typeof query> | null = null;
             
             if (userProfile.roleSysteme === 'SuperAdmin') {
-                q = query(ordersCollectionRef); // SuperAdmin gets all orders
+                q = query(ordersCollectionRef);
             } else {
                 switch (activeRole) {
                     case 'restaurateur':
-                        const myRestaurantIds = myRestaurants.map(r => r.id);
+                         const myRestaurantIds = useDataStore.getState().restaurants
+                            .filter(r => r.proprietaireId === user.uid)
+                            .map(r => r.id);
                         if (myRestaurantIds.length > 0) {
                             q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
                         }
                         break;
                     case 'livreur':
-                        // Combine available for pickup and currently delivering
                          q = query(ordersCollectionRef, where("statut", "in", ["En Préparation", "En Route"]));
                         break;
                     case 'client':
@@ -182,7 +181,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoading(false);
         }
 
-        // Cleanup subscriptions on component unmount
         return () => {
             restaurantUnsub();
             menuItemsUnsub();
@@ -190,7 +188,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ordersUnsub();
             }
         };
-    }, [user, userProfile, activeRole, setRestaurants, setMenuItems, setOrders, setIsLoading, myRestaurants]);
+    }, [user?.uid, userProfile, activeRole, setRestaurants, setMenuItems, setOrders, setIsLoading]);
 
     return <>{children}</>;
 };
