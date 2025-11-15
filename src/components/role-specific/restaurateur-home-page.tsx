@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -17,22 +18,24 @@ import { format } from 'date-fns';
 
 export default function RestaurateurHomePage() {
     const { restaurants, menuItems, orders, isLoading: isDataLoading } = useData();
-    const [myRestaurants, setMyRestaurants] = React.useState<Restaurant[]>([]);
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
 
-    React.useEffect(() => {
-        if (user) {
-            const userRestaurants = restaurants.filter(r => r.proprietaireId === user.uid);
-            setMyRestaurants(userRestaurants);
-        }
+    const myRestaurants = React.useMemo(() => {
+        if (!user) return [];
+        return restaurants.filter(r => r.proprietaireId === user.uid);
     }, [restaurants, user]);
 
     const myRestaurantIds = React.useMemo(() => myRestaurants.map(r => r.id), [myRestaurants]);
 
+    const myOrders = React.useMemo(() => {
+        if (myRestaurantIds.length === 0) return [];
+        return orders.filter(o => myRestaurantIds.includes(o.restaurantId));
+    }, [orders, myRestaurantIds]);
+
+
     const stats = React.useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
-        const myOrders = orders.filter(o => myRestaurantIds.includes(o.restaurantId));
         
         const ordersToday = myOrders.filter(o => o.date.startsWith(today));
         const deliveredToday = ordersToday.filter(o => o.statut === 'Livrée');
@@ -45,7 +48,7 @@ export default function RestaurateurHomePage() {
             inTransitCount: myOrders.filter(o => o.statut === 'En Route').length,
             latestOrders: myOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
         };
-    }, [orders, myRestaurantIds]);
+    }, [myOrders]);
 
     if (isDataLoading || authLoading) {
         return (

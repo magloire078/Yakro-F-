@@ -22,7 +22,7 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
-  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, imageFile: File | null) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId' >, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -45,18 +45,7 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
         formData.append('image', imageFile);
     }
-    try {
-        await addRestaurantAction(formData);
-    } catch(e: any) {
-        // This is a generic catch, but we can wrap it for the UI
-         const permissionError = new FirestorePermissionError({
-            path: 'restaurants/[new_id]',
-            operation: 'create',
-            requestResourceData: restaurantData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw e; // Re-throw to let the caller know it failed
-    }
+    await addRestaurantAction(formData);
   },
 
   updateRestaurant: async (restaurantId, data, imageFile) => {
@@ -66,17 +55,7 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
         formData.append('image', imageFile);
     }
-    try {
-        await updateRestaurantAction(formData);
-    } catch(e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: `restaurants/${restaurantId}`,
-            operation: 'update',
-            requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw e;
-    }
+    await updateRestaurantAction(formData);
   },
 
   addMenuItem: async (item, imageFile) => {
@@ -85,17 +64,7 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    try {
-        await addMenuItemAction(formData);
-    } catch(e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: 'plats/[new_id]',
-            operation: 'create',
-            requestResourceData: item,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw e;
-    }
+    await addMenuItemAction(formData);
   },
   
   updateMenuItem: async (itemId, data, imageFile) => {
@@ -105,58 +74,19 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
         formData.append('image', imageFile);
     }
-    try {
-        await updateMenuItemAction(formData);
-    } catch(e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: `plats/${itemId}`,
-            operation: 'update',
-            requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw e;
-    }
+    await updateMenuItemAction(formData);
   },
 
   deleteMenuItem: async (itemId) => {
-     try {
-        await deleteMenuItemAction(itemId);
-    } catch(e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: `plats/${itemId}`,
-            operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw e;
-    }
+     await deleteMenuItemAction(itemId);
   },
 
   addOrder: async (order) => {
-    try {
-        await addOrderAction(order);
-    } catch(e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: 'commandes/[new_id]',
-            operation: 'create',
-            requestResourceData: order,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw e;
-    }
+    await addOrderAction(order);
   },
 
   updateOrderStatus: async (orderId, status, delivererId) => {
-    try {
-        await updateOrderStatusAction({ orderId, status, delivererId });
-    } catch (e:any) {
-        const permissionError = new FirestorePermissionError({
-            path: `commandes/${orderId}`,
-            operation: 'update',
-            requestResourceData: {statut: status, livreurId: delivererId}
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw e;
-    }
+    await updateOrderStatusAction({ orderId, status, delivererId });
   },
 
   getMenuItem: (id: string) => {
@@ -214,25 +144,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
             
-            const myRestaurantIds = userProfile.roleSysteme === 'SuperAdmin' 
-                ? [] // SuperAdmin will get all orders from its own subscription
-                : useDataStore.getState().restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 ordersQuery = query(collection(db, 'commandes'));
             } else if (activeRole === 'client') {
-                 ordersQuery = query(collection(db, "commandes"), where("userId", "==", user.uid));
+                 ordersQuery = query(
+                   collection(db, "commandes"), 
+                   where("userId", "==", user.uid)
+                 );
             } else if (activeRole === 'livreur') {
                 ordersQuery = query(collection(db, "commandes"), or(
                     where('livreurId', '==', user.uid),
                     where('statut', '==', 'En Préparation')
                 ));
             } else if (activeRole === 'restaurateur') {
-                if (myRestaurantIds.length > 0) {
-                    ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                }
+                // For restaurateurs, we fetch all orders and filter on the client
+                // This avoids race conditions with fetching restaurants first.
+                // Security rules will still prevent them from seeing orders they don't own.
+                ordersQuery = query(collection(db, 'commandes'));
             } 
 
             if (ordersQuery) {
@@ -241,8 +169,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     'commandes',
                     (data) => useDataStore.setState({ orders: data as Order[] })
                 );
-            } else if (activeRole === 'restaurateur' && myRestaurantIds.length === 0) {
-                useDataStore.setState({ orders: [] }); // No restaurants, so no orders
             }
         } else {
             useDataStore.setState({ orders: [] });
@@ -268,7 +194,7 @@ export const useData = () => {
   const state = useDataStore();
 
   const addRestaurant = async (
-    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, 
+    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, 
     imageFile: File | null
   ) => {
     if (!user) throw new Error("User not authenticated");
