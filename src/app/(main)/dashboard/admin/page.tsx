@@ -52,6 +52,7 @@ export default function AdminPage() {
             return;
         }
 
+        // Only proceed to fetch data if the user is a SuperAdmin
         setDataLoading(true);
         const usersCollectionRef = collection(db, 'utilisateurs');
         const unsubscribe = onSnapshot(usersCollectionRef, 
@@ -338,3 +339,5 @@ export default function AdminPage() {
         </>
     );
 }
+
+    
