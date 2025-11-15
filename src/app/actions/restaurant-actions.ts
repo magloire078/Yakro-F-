@@ -1,7 +1,7 @@
 
 'use server';
 
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import type { Restaurant } from '@/lib/types';
@@ -23,7 +23,8 @@ export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
     const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'> & { proprietaireId: string };
-    const collectionRef = collection(db, "restaurants");
+    const docRef = doc(collection(db, "restaurants"));
+    const restaurantId = docRef.id;
 
     if (!data.proprietaireId) {
         throw new Error("Owner ID is missing.");
@@ -40,13 +41,15 @@ export async function addRestaurantAction(formData: FormData) {
     };
     
     try {
-        const docRef = await addDoc(collectionRef, restaurantPayload);
-        const restaurantId = docRef.id;
+        const batch = writeBatch(db);
+        let imageUrl = '';
 
         if (imageFile) {
-            const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
-            await updateDoc(docRef, { image: imageUrl });
+            imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
         }
+        
+        batch.set(docRef, { ...restaurantPayload, image: imageUrl });
+        await batch.commit();
         
         revalidatePath('/');
         revalidatePath('/dashboard/new-restaurant');
@@ -54,7 +57,7 @@ export async function addRestaurantAction(formData: FormData) {
 
     } catch (e: any) {
         const permissionError = new FirestorePermissionError({
-            path: collectionRef.path,
+            path: docRef.path,
             operation: 'create',
             requestResourceData: restaurantPayload,
         });
@@ -89,6 +92,7 @@ export async function updateRestaurantAction(formData: FormData) {
         revalidatePath(`/restaurants/${restaurantId}`);
         revalidatePath('/dashboard/my-restaurants');
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
+        revalidatePath('/dashboard/boost');
     } catch (e: any) {
          const permissionError = new FirestorePermissionError({
             path: restaurantDocRef.path,

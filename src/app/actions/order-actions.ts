@@ -1,7 +1,7 @@
 
 'use server';
 
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Order } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
@@ -9,15 +9,18 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
 export async function addOrderAction(order: Omit<Order, 'id'>) {
-    const collectionRef = collection(db, "commandes");
+    const docRef = doc(collection(db, "commandes"));
     try {
-        await addDoc(collectionRef, order);
+        const batch = writeBatch(db);
+        batch.set(docRef, order);
+        await batch.commit();
+
         revalidatePath('/'); // For customer home page status
         revalidatePath('/orders'); // For customer order history
         revalidatePath('/dashboard/orders'); // For restaurateur
     } catch (e) {
         const permissionError = new FirestorePermissionError({
-            path: collectionRef.path,
+            path: docRef.path,
             operation: 'create',
             requestResourceData: order,
         });
@@ -38,6 +41,7 @@ export async function updateOrderStatusAction({ orderId, status, delivererId }: 
       revalidatePath('/');
       revalidatePath('/dashboard/orders');
       revalidatePath('/auth/livreur');
+      revalidatePath('/dashboard/earnings');
     } catch (e) {
       const permissionError = new FirestorePermissionError({
             path: orderDocRef.path,

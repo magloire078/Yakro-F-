@@ -1,8 +1,8 @@
 
 'use server';
 
-import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL, uploadBytes } from "firebase/storage";
+import { collection, addDoc, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage";
 import { db, storage } from '@/lib/firebase';
 import type { MenuItem } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
@@ -33,10 +33,11 @@ export async function addMenuItemAction(formData: FormData) {
     const imageFile = formData.get('image') as File | null;
     const item = JSON.parse(itemJSON) as Omit<MenuItem, 'id'>;
     const collectionRef = collection(db, "plats");
+    const docRef = doc(collectionRef); // generate an ID upfront
+    const docRefId = docRef.id;
 
     try {
         let finalImageUrl: string | undefined = undefined;
-        const docRefId = doc(collectionRef).id; // generate an ID upfront
 
         // If user provides an image, use it.
         if (imageFile) {
@@ -55,15 +56,18 @@ export async function addMenuItemAction(formData: FormData) {
             }
         }
         
-        // Add the item data to Firestore
-        await addDoc(collectionRef, { ...item, image: finalImageUrl || '' });
+        // Use a batch to ensure atomicity
+        const batch = writeBatch(db);
+        const newMenuItemData = { ...item, image: finalImageUrl || '' };
+        batch.set(docRef, newMenuItemData);
+        await batch.commit();
         
         revalidatePath('/dashboard/menu');
         revalidatePath(`/restaurants/${item.restaurantId}`);
 
     } catch (e) {
         const permissionError = new FirestorePermissionError({
-            path: collectionRef.path,
+            path: docRef.path,
             operation: 'create',
             requestResourceData: item,
         });
@@ -113,7 +117,14 @@ export async function deleteMenuItemAction(itemId: string) {
     }
     const itemDocRef = doc(db, 'plats', itemId);
     try {
-      // TODO: Delete image from storage as well
+      const imageRef = ref(storage, `plats/${itemId}`);
+      try {
+        await deleteObject(imageRef);
+      } catch (error: any) {
+         if (error.code !== 'storage/object-not-found') {
+            console.warn("Could not delete image from storage:", error);
+         }
+      }
       await deleteDoc(itemDocRef);
       revalidatePath('/dashboard/menu');
     } catch (e) {
