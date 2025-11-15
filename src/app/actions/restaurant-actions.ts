@@ -61,8 +61,7 @@ export async function addRestaurantAction(formData: FormData) {
             requestResourceData: restaurantPayload,
         });
         errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error in addRestaurantAction: ", e);
-        throw e;
+        throw e; // Re-throw original error to be caught by Next.js action boundary
     }
 }
 
@@ -99,10 +98,10 @@ export async function updateRestaurantAction(formData: FormData) {
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error in updateRestaurantAction: ", e);
-        throw e;
+        throw e; // Re-throw original error to be caught by Next.js action boundary
     }
 }
+
 
 
 
