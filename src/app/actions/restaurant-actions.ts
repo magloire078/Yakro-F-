@@ -20,28 +20,31 @@ const uploadImage = async (file: File, path: string): Promise<string> => {
 export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
-    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id'>;
+    const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image'>;
 
     try {
-        const restaurantData: Omit<Restaurant, 'id' | 'image'> = {
+        // Start with a placeholder for the image URL
+        let imageUrl = "";
+
+        // First, add the restaurant document to get an ID. This makes our image path predictable.
+        // We add it without the image URL for now.
+        const docRef = await addDoc(collection(db, "restaurants"), {
             ...data,
             note: 0,
             indiceImage: `${data.cuisine} restaurant`,
-            // Add dummy coordinates for now if not provided
             latitude: data.latitude || 6.82,
-            longitude: data.longitude || -5.28
-        };
-
-        const docRef = await addDoc(collection(db, "restaurants"), restaurantData);
+            longitude: data.longitude || -5.28,
+            image: imageUrl // Start with empty image URL
+        });
         const restaurantId = docRef.id;
 
-        let imageUrl = ""; // Default to empty string
-
+        // If an image file was provided, upload it now.
         if (imageFile) {
             imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+            // Now, update the document with the correct image URL.
+            await updateDoc(docRef, { image: imageUrl });
         }
 
-        await updateDoc(docRef, { image: imageUrl });
 
         revalidatePath('/');
         revalidatePath('/dashboard/new-restaurant');
