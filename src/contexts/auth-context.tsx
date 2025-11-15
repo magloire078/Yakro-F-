@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -21,7 +20,7 @@ interface AuthContextType {
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => Promise<void>;
   updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
-  createNewUser: (data: {email: string, password: string, nom: string}) => Promise<User | null>;
+  createNewUser: (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}) => Promise<User | null>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -125,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const createNewUser = async (data: {email: string, password: string, nom: string}): Promise<User | null> => {
+  const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
     try {
       // Note: This creates a new user, but doesn't sign them in for the admin.
       // This is a simplified approach. A more robust solution might use Firebase Admin SDK on a backend.
@@ -139,8 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: data.email,
           nom: data.nom,
           dateCreation: serverTimestamp(),
-          role: 'client',
-          rolesAutorises: ['client'],
+          role: data.rolesAutorises[0] || 'client',
+          rolesAutorises: data.rolesAutorises,
           roleSysteme: 'User',
       };
       
@@ -191,5 +190,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-    

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -26,6 +25,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuth } from '@/contexts/auth-context';
+import type { AppRole } from '@/lib/types';
+import { Checkbox } from './ui/checkbox';
 
 
 interface AddUserDialogProps {
@@ -33,10 +34,15 @@ interface AddUserDialogProps {
   onClose: () => void;
 }
 
+const roles: AppRole[] = ['client', 'restaurateur', 'livreur'];
+
 const addUserSchema = z.object({
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   email: z.string().email("Veuillez entrer une adresse email valide."),
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères."),
+  rolesAutorises: z.array(z.string()).refine(value => value.some(item => item), {
+    message: "Vous devez sélectionner au moins un rôle.",
+  }),
 });
 
 type AddUserFormValues = z.infer<typeof addUserSchema>;
@@ -52,6 +58,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
       nom: '',
       email: '',
       password: '',
+      rolesAutorises: ['client'],
     },
   });
 
@@ -63,7 +70,10 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
 
   const onSubmit = async (data: AddUserFormValues) => {
     setIsSubmitting(true);
-    const newUser = await createNewUser(data);
+    const newUser = await createNewUser({
+        ...data,
+        rolesAutorises: data.rolesAutorises as AppRole[],
+    });
     if (newUser) {
         onClose();
     }
@@ -76,7 +86,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
         <DialogHeader>
           <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
           <DialogDescription>
-            Créez un compte utilisateur. Un mot de passe temporaire sera défini.
+            Créez un compte utilisateur et définissez ses rôles et un mot de passe temporaire.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -114,6 +124,54 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
                         </FormItem>
                     )}
                 />
+                 <FormField
+                    control={form.control}
+                    name="rolesAutorises"
+                    render={() => (
+                        <FormItem>
+                        <div className="mb-4">
+                            <FormLabel className="text-base">Rôles Autorisés</FormLabel>
+                            <FormDescription>
+                            Sélectionnez les profils que cet utilisateur pourra utiliser.
+                            </FormDescription>
+                        </div>
+                        {roles.map((role) => (
+                            <FormField
+                            key={role}
+                            control={form.control}
+                            name="rolesAutorises"
+                            render={({ field }) => {
+                                return (
+                                <FormItem
+                                    key={role}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                    <FormControl>
+                                    <Checkbox
+                                        checked={field.value?.includes(role)}
+                                        onCheckedChange={(checked) => {
+                                        return checked
+                                            ? field.onChange([...field.value, role])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                (value) => value !== role
+                                                )
+                                            )
+                                        }}
+                                    />
+                                    </FormControl>
+                                    <FormLabel className="font-normal capitalize">
+                                        {role}
+                                    </FormLabel>
+                                </FormItem>
+                                )
+                            }}
+                            />
+                        ))}
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
                 <DialogFooter className="pt-4">
                     <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
                     <Button type="submit" disabled={isSubmitting}>
@@ -127,5 +185,3 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
     </Dialog>
   );
 }
-
-    
