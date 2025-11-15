@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb', // Default is 1mb, might be needed for image uploads
-      serverActionsBodySizeLimit: '2mb',
+      serverActionsBodySizeLimit: '10mb',
     }
   },
 };

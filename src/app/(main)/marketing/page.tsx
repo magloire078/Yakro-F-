@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -25,9 +24,7 @@ export default function MarketingPage() {
   const router = useRouter();
 
   React.useEffect(() => {
-    if (!authLoading && !user) {
-        router.push('/login');
-    } else if (!authLoading && user && activeRole !== 'restaurateur') {
+    if (!authLoading && user && activeRole !== 'restaurateur') {
         toast({
             variant: 'destructive',
             title: 'Accès non autorisé',
