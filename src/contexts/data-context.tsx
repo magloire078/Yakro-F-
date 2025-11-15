@@ -97,34 +97,33 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, activeRole, userProfile } = useAuth();
+    const { user, activeRole, userProfile, loading: authLoading } = useAuth();
     
+    // Effect for public, non-user-specific data
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
-        const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
-            const path = (q as any)._query.path.segments.join('/');
+        const setupSubscription = (collectionName: string, callback: (data: DocumentData[]) => void) => {
+            const q = query(collection(db, collectionName));
             const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     callback(list);
-                }, 
+                },
                 (serverError) => {
-                    console.error(`Permission error on path: ${path}`, serverError);
-                    const permissionError = new FirestorePermissionError({ path, operation: 'list'});
+                    console.error(`Permission error on path: ${collectionName}`, serverError);
+                    const permissionError = new FirestorePermissionError({ path: collectionName, operation: 'list' });
                     errorEmitter.emit('permission-error', permissionError);
                 }
             );
             return unsubscribe;
         };
         
-        const restaurantsQuery = query(collection(db, 'restaurants'));
-        const unsubRestaurants = setupSubscription(restaurantsQuery, (data) => useDataStore.setState({ restaurants: data as Restaurant[] }));
-
-        const menuItemsQuery = query(collection(db, 'plats'));
-        const unsubMenuItems = setupSubscription(menuItemsQuery, (data) => useDataStore.setState({ menuItems: data as MenuItem[] }));
+        const unsubRestaurants = setupSubscription('restaurants', (data) => useDataStore.setState({ restaurants: data as Restaurant[] }));
+        const unsubMenuItems = setupSubscription('plats', (data) => useDataStore.setState({ menuItems: data as MenuItem[] }));
         
-        useDataStore.setState({ isLoading: false });
+        // We will set loading to false in the user-specific effect
+        // to ensure all data is loaded or attempted to load.
 
         return () => {
             unsubRestaurants();
@@ -132,26 +131,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
     }, []);
 
-    // Separate useEffect for user-dependent data like orders
+    // Effect for user-specific data (orders)
     React.useEffect(() => {
         let unsubOrders: Unsubscribe | null = null;
         
-        const setupSubscription = (q: Query<DocumentData, DocumentData>, callback: (docs: DocumentData[]) => void) => {
-            const path = (q as any)._query.path.segments.join('/');
-            const unsubscribe = onSnapshot(q, 
-                (snapshot) => {
-                    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    callback(list);
-                }, 
-                (serverError) => {
-                    const permissionError = new FirestorePermissionError({ path, operation: 'list'});
-                    errorEmitter.emit('permission-error', permissionError);
-                }
-            );
-            return unsubscribe;
-        };
-        
-        if (user && userProfile) { // Ensure user and profile are loaded
+        if (authLoading) {
+            return; // Wait until authentication status is resolved
+        }
+
+        if (user && userProfile) {
             let ordersQuery: Query<DocumentData, DocumentData> | null = null;
             
             if (activeRole === 'client') {
@@ -162,8 +150,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     where('statut', '==', 'En Préparation')
                 ));
             } else if (activeRole === 'restaurateur') {
-                const allRestaurants = useDataStore.getState().restaurants;
-                const myRestaurantIds = allRestaurants
+                const myRestaurantIds = useDataStore.getState().restaurants
                     .filter(r => r.proprietaireId === user.uid)
                     .map(r => r.id);
                 
@@ -177,18 +164,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             if (ordersQuery) {
-                unsubOrders = setupSubscription(ordersQuery, (data) => useDataStore.setState({ orders: data as Order[] }));
+                const path = (ordersQuery as any)._query.path.segments.join('/');
+                unsubOrders = onSnapshot(ordersQuery,
+                    (snapshot) => {
+                        const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
+                        useDataStore.setState({ orders: ordersData });
+                    },
+                    (serverError) => {
+                        console.error(`Permission error on path: ${path}`, serverError);
+                        const permissionError = new FirestorePermissionError({ path, operation: 'list' });
+                        errorEmitter.emit('permission-error', permissionError);
+                    }
+                );
             }
         } else {
-            // Not logged in or profile not ready, clear orders and cancel any existing subscription
-             if (unsubOrders) unsubOrders();
+            // Not logged in or profile not ready, clear orders
             useDataStore.setState({ orders: [] });
         }
+        
+        // All data fetching logic is complete for this cycle, set loading to false.
+        useDataStore.setState({ isLoading: false });
 
         return () => {
-            if (unsubOrders) unsubOrders();
+            if (unsubOrders) {
+                unsubOrders();
+            }
         };
-    }, [user, userProfile, activeRole, useDataStore.getState().restaurants]); // Rerun when restaurants change for restaurateur role
+    }, [user, userProfile, activeRole, authLoading]); // Depend on authLoading to ensure it runs when auth state is final
 
     return <>{children}</>;
 };
