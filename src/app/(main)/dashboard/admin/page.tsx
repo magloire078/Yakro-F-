@@ -1,9 +1,10 @@
+
 'use client';
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, ShieldCheck, Edit, UserPlus, Home } from 'lucide-react';
+import { Loader, ShieldCheck, Edit, UserPlus, Users, Utensils, ShoppingCart, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
@@ -18,9 +19,16 @@ import { db } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { AddUserDialog } from '@/components/add-user-dialog';
+import { useData } from '@/contexts/data-context';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import {formatDistanceToNow} from 'date-fns';
+import { fr } from 'date-fns/locale';
+
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
+    const { restaurants, orders, isLoading: isPublicDataLoading } = useData();
     const [allUsers, setAllUsers] = React.useState<UserProfile[]>([]);
     const [dataLoading, setDataLoading] = React.useState(true);
     const router = useRouter();
@@ -98,26 +106,46 @@ export default function AdminPage() {
         setUpdatingUserId(null);
     };
 
-    if (authLoading || dataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
+    const getInitials = (name: string | undefined) => {
+        if (!name) return '?';
+        const nameParts = name.split(' ');
+        if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
+            return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    const latestUsers = React.useMemo(() => {
+        if (!allUsers) return [];
+        return [...allUsers]
+            .sort((a, b) => {
+                const dateA = a.dateCreation?.toDate ? a.dateCreation.toDate() : new Date(0);
+                const dateB = b.dateCreation?.toDate ? b.dateCreation.toDate() : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            })
+            .slice(0, 5);
+    }, [allUsers]);
+
+    if (authLoading || dataLoading || isPublicDataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 
     return (
         <>
-            <div className="container mx-auto">
+            <div className="container mx-auto space-y-8">
                  <div className="flex items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-4">
                         <ShieldCheck className="h-10 w-10 text-primary" />
                         <div>
-                            <h1 className="text-3xl md:text-4xl font-headline text-primary">Gestion des Utilisateurs</h1>
-                            <p className="text-muted-foreground">Gérez les permissions et les profils des utilisateurs de la plateforme.</p>
+                            <h1 className="text-3xl md:text-4xl font-headline text-primary">Tableau de Bord Admin</h1>
+                            <p className="text-muted-foreground">Gérez les utilisateurs et supervisez l'activité de la plateforme.</p>
                         </div>
                     </div>
                      <div className="flex gap-2">
                         <Button asChild variant="outline">
-                            <Link href="/auth/admin">
+                            <Link href="/">
                                 <Home className="mr-2" />
-                                Tableau de bord
+                                Accueil Client
                             </Link>
                         </Button>
                         <Button onClick={() => setIsAddUserDialogOpen(true)}>
@@ -127,10 +155,43 @@ export default function AdminPage() {
                     </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Card className="hover:bg-muted transition-colors">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Utilisateurs Totaux</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{allUsers.length}</div>
+                            <p className="text-xs text-muted-foreground">Comptes enregistrés sur la plateforme</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="hover:bg-muted transition-colors">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Restaurants</CardTitle>
+                            <Utensils className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{restaurants.length}</div>
+                            <p className="text-xs text-muted-foreground">Établissements partenaires</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="hover:bg-muted transition-colors">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Commandes Traitées</CardTitle>
+                            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{orders.length}</div>
+                            <p className="text-xs text-muted-foreground">Total des commandes passées via l'app</p>
+                        </CardContent>
+                    </Card>
+                </div>
+
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Utilisateurs</CardTitle>
+                        <CardTitle>Gestion des Utilisateurs</CardTitle>
                         <CardDescription>
                             {allUsers.length} utilisateur(s) trouvé(s) sur la plateforme.
                         </CardDescription>
@@ -143,6 +204,7 @@ export default function AdminPage() {
                                         <TableHead>Utilisateur</TableHead>
                                         <TableHead>Rôle Système</TableHead>
                                         <TableHead>Rôles Fonctionnels</TableHead>
+                                        <TableHead>Date d'inscription</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -188,6 +250,9 @@ export default function AdminPage() {
                                                         </div>
                                                     ))}
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : 'Date inconnue'}
                                             </TableCell>
                                             <TableCell>
                                                 <Button variant="outline" size="icon" onClick={() => setEditingUser(u)} disabled={updatingUserId === u.uid}>

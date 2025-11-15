@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -40,7 +39,7 @@ export function Sidebar() {
   
   const getHomeLink = () => {
     if (!user) return "/login";
-    if (userProfile?.roleSysteme === 'SuperAdmin') return "/auth/admin";
+    if (userProfile?.roleSysteme === 'SuperAdmin') return "/dashboard/admin";
     if (userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1) return '/profile-selection';
     return activeRole ? (activeRole === 'client' ? '/' : `/auth/${activeRole}`) : '/';
   }
@@ -214,6 +213,3 @@ export function Sidebar() {
     </aside>
   );
 }
-
-
-

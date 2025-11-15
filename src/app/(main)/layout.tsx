@@ -1,13 +1,13 @@
 
 'use client';
 
+import * as React from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { MobileHeader } from '@/components/mobile-header';
 import { useData } from '@/contexts/data-context';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import * as React from 'react';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
 
 export default function MainAppLayout({
@@ -25,7 +25,7 @@ export default function MainAppLayout({
     }
   }, [user, authLoading, router]);
 
-  if (isLoading || authLoading) {
+  if (isLoading || authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
           <Loader className="h-16 w-16 animate-spin text-primary" />
