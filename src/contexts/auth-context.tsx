@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         setUser(user);
         const userDocRef = doc(db, 'utilisateurs', user.uid);
-
+        
         // Recovery mechanism: check if a SuperAdmin exists. If not, promote this user.
         const superAdminQuery = query(collection(db, 'utilisateurs'), where('roleSysteme', '==', 'SuperAdmin'), limit(1));
         
@@ -75,7 +75,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             errorEmitter.emit('permission-error', permissionError);
             console.error("Failed to check for SuperAdmin:", e);
         }
-
 
         unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
           if (docSnap.exists()) {
