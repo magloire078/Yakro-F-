@@ -132,23 +132,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
     let newUser: User | null = null;
+    const userDocRef = doc(db, 'utilisateurs', newUser?.uid || 'nouvel-utilisateur');
+    const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
+    const newUserProfile: Omit<UserProfile, 'uid' | 'dateCreation'> = {
+        email: data.email,
+        nom: data.nom,
+        role: roles[0],
+        rolesAutorises: roles,
+        roleSysteme: 'User',
+    };
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       newUser = userCredential.user;
-
-      const userDocRef = doc(db, 'utilisateurs', newUser.uid);
-      const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
-      const newUserProfile: UserProfile = {
+      
+      const finalProfile: UserProfile = {
+          ...newUserProfile,
           uid: newUser.uid,
-          email: data.email,
-          nom: data.nom,
           dateCreation: serverTimestamp(),
-          role: roles[0],
-          rolesAutorises: roles,
-          roleSysteme: 'User',
       };
       
-      await setDoc(userDocRef, newUserProfile);
+      await setDoc(doc(db, 'utilisateurs', newUser.uid), finalProfile);
       toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
 
       return newUser;
@@ -161,10 +165,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
          const permissionError = new FirestorePermissionError({
             path: `utilisateurs/${(newUser?.uid || 'nouvel-utilisateur')}`,
             operation: 'create',
-            requestResourceData: { email: data.email, nom: data.nom, rolesAutorises: data.rolesAutorises },
+            requestResourceData: newUserProfile,
         });
         errorEmitter.emit('permission-error', permissionError);
-        // Let the listener throw the visible error.
+        // Let the listener throw the visible error, but also show a toast for context.
+        toast({ variant: 'destructive', title: 'Erreur de permission', description: 'Impossible de créer le profil utilisateur dans la base de données.'});
       }
       return null;
     }
