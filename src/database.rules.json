@@ -27,11 +27,11 @@
         },
         "match /utilisateurs/{userId}": {
             "allow read": "if isUser(userId) || isSuperAdmin();",
-            "allow update": "if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);",
-            "allow create": "if isUser(userId);"
+            "allow update": "if isUser(userId) || isSuperAdmin();",
+            "allow create": "if true;"
         },
         "match /utilisateurs": {
-          "allow list": "if isSuperAdmin();"
+          "allow read": "if isSuperAdmin();"
         }
       }
     }
