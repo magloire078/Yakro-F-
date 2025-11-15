@@ -22,7 +22,7 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
-  addRestaurant: (data: Omit<Restaurant, 'id'>, imageFile: File | null) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id' | 'proprietaireId'>, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -38,9 +38,14 @@ const useDataStore = create<DataState>((set, get) => ({
   menuItems: [],
   orders: [],
   isLoading: true,
-  addRestaurant: async (data, imageFile) => {
+  addRestaurant: async (restaurantData, imageFile) => {
+    const { user } = useAuth.getState();
+    if (!user) throw new Error("User not authenticated");
+
     const formData = new FormData();
-    formData.append('data', JSON.stringify(data));
+    const dataWithOwner = { ...restaurantData, proprietaireId: user.uid };
+    formData.append('data', JSON.stringify(dataWithOwner));
+
     if (imageFile) {
         formData.append('image', imageFile);
     }
