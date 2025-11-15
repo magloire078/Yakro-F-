@@ -105,3 +105,4 @@ export async function updateRestaurantAction(formData: FormData) {
         throw e;
     }
 }
+
