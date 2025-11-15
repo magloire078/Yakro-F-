@@ -71,12 +71,24 @@ export interface Review {
   commentaire: string;
 }
 
-// AppRole defines the functional capabilities a user can have.
-// A user can switch between these roles if they have the rights.
+/**
+ * @description
+ * AppRole définit les capacités fonctionnelles (le "chapeau") qu'un utilisateur peut avoir.
+ * Un utilisateur peut basculer entre ces rôles s'il en a les droits.
+ * Cela contrôle principalement l'interface utilisateur qui lui est présentée.
+ *
+ * Ex: Un utilisateur peut être à la fois 'client' et 'restaurateur'. Il choisit son rôle actif via l'UI.
+ */
 export type AppRole = 'client' | 'restaurateur' | 'livreur';
 
-// SystemRole defines the user's position in the system hierarchy.
-// This is typically assigned by an admin and is not user-switchable.
+/**
+ * @description
+ * SystemRole définit le niveau d'autorité de l'utilisateur dans la hiérarchie du système.
+ * Ce rôle est généralement attribué par un administrateur et n'est pas modifiable par l'utilisateur.
+ * Il contrôle l'accès aux fonctionnalités d'administration backend.
+ *
+ * Ex: Seul un 'SuperAdmin' peut voir la liste de tous les utilisateurs.
+ */
 export type SystemRole = 'SuperAdmin' | 'Admin' | 'User';
 
 export interface UserProfile {
@@ -86,11 +98,15 @@ export interface UserProfile {
     nom?: string;
     telephone?: string;
     adresseParDefaut?: string;
-    // This is the functional role the user is currently using
+    
+    // Le rôle fonctionnel que l'utilisateur utilise actuellement (son "chapeau" actif).
     role?: AppRole;
-    // This is the user's system-level permissions
+    
+    // Le niveau de permissions de l'utilisateur dans le système.
     roleSysteme?: SystemRole;
-    // The functional roles this user is allowed to access
+    
+    // La liste des rôles fonctionnels que cet utilisateur est autorisé à utiliser.
     rolesAutorises?: AppRole[];
+    
     statutService?: 'En service' | 'Hors service';
 }
