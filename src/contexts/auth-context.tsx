@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, getDocs, collection, query, where, writeBatch } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
@@ -50,40 +50,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUserProfile({ ...profile, uid: docSnap.id });
 
             const savedRole = localStorage.getItem('activeRole') as AppRole;
-            if (savedRole && profile.rolesAutorises?.includes(savedRole)) {
+            // Ensure rolesAutorises is an array and contains valid AppRoles
+            const validRoles = profile.rolesAutorises?.filter(r => ['client', 'restaurateur', 'livreur'].includes(r)) || ['client'];
+
+            if (savedRole && validRoles.includes(savedRole)) {
               setActiveRoleState(savedRole);
-            } else if (profile.role) {
+            } else if (profile.role && validRoles.includes(profile.role)) {
               setActiveRoleState(profile.role);
-            } else if (profile.rolesAutorises && profile.rolesAutorises.length > 0) {
-              setActiveRoleState(profile.rolesAutorises[0]);
+            } else if (validRoles.length > 0) {
+              setActiveRoleState(validRoles[0]);
             } else {
               setActiveRoleState('client');
             }
 
           } else {
-             const newUserProfile: UserProfile = {
-                uid: user.uid,
-                email: user.email!,
-                nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
-                dateCreation: serverTimestamp(),
-                role: 'client',
-                rolesAutorises: ['client'],
-                roleSysteme: 'User',
-            };
-            try {
-                await setDoc(userDocRef, newUserProfile, { merge: true });
-                 toast({
-                    title: "Compte créé",
-                    description: `Votre profil a été initialisé.`,
-                });
-            } catch(e) {
-                const permissionError = new FirestorePermissionError({
-                  path: userDocRef.path,
-                  operation: 'create',
-                  requestResourceData: newUserProfile,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            }
+             // This case is now mainly handled by user-auth-form to ensure roleSysteme is not auto-assigned here
           }
           setLoading(false);
         }, (error) => {
@@ -154,13 +135,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newUser = userCredential.user;
 
       const userDocRef = doc(db, 'utilisateurs', newUser.uid);
+      const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
       const newUserProfile: UserProfile = {
           uid: newUser.uid,
           email: data.email,
           nom: data.nom,
           dateCreation: serverTimestamp(),
-          role: data.rolesAutorises[0] || 'client',
-          rolesAutorises: data.rolesAutorises,
+          role: roles[0],
+          rolesAutorises: roles,
           roleSysteme: 'User',
       };
       

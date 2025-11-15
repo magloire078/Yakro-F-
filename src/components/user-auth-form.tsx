@@ -58,14 +58,15 @@ export function UserAuthForm() {
         email: user.email!,
         nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
         dateCreation: serverTimestamp(),
-        role: 'client', // Default starting role
+        // Assigning correct default roles
+        role: 'client',
         rolesAutorises: ['client'],
         roleSysteme: 'User',
         ...(data?.telephone && { telephone: data.telephone }),
     };
     
     try {
-        await setDoc(userDocRef, newUserProfile, { merge: true });
+        await setDoc(userDocRef, newUserProfile);
     } catch(e) {
         const permissionError = new FirestorePermissionError({
           path: userDocRef.path,
