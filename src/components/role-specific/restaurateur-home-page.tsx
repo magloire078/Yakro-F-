@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { format }s from 'date-fns';
+import { format } from 'date-fns';
 
 export default function RestaurateurHomePage() {
     const { restaurants, menuItems, orders, isLoading: isDataLoading } = useData();
