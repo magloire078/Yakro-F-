@@ -2,7 +2,7 @@
 
 'use server';
 
-import { collection, addDoc, updateDoc, doc, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import type { Restaurant } from '@/lib/types';
@@ -103,5 +103,6 @@ export async function updateRestaurantAction(formData: FormData) {
         throw e;
     }
 }
+
 
 
