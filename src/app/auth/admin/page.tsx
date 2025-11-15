@@ -37,6 +37,7 @@ export default function AdminHomePage() {
         // Redirect non-super-admins immediately
         if (!user || userProfile?.roleSysteme !== 'SuperAdmin') {
             router.push('/');
+            setDataLoading(false);
             return;
         }
 
