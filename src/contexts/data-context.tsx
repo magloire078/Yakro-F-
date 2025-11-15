@@ -132,16 +132,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         setIsLoading(true);
 
-        const restaurantUnsub = onSnapshot(collection(db, 'restaurants'), async (snapshot) => {
-            if (snapshot.empty && user?.uid) {
+        const restaurantUnsub = setupSubscription<Restaurant>('restaurants', async (restaurants) => {
+             if (restaurants.length === 0 && user?.uid) {
                  await seedDatabaseAction(user.uid);
             } else {
-                const restaurants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Restaurant[];
                 setRestaurants(restaurants);
             }
-        }, (error) => {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'restaurants', operation: 'list'}));
-             console.error(`Error fetching restaurants:`, error);
         });
 
         const menuItemsUnsub = setupSubscription<MenuItem>('plats', setMenuItems);
@@ -180,6 +176,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             const combinedOrders = [...initialOrders, ...enRouteOrders];
                             const uniqueOrders = Array.from(new Set(combinedOrders.map(o => o.id))).map(id => combinedOrders.find(o => o.id === id)!);
                             setOrders(uniqueOrders);
+                        }).catch(err => {
+                           errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'commandes', operation: 'list'}));
+                           console.error(`Error fetching 'en route' orders:`, err);
                         });
                     } else {
                         setOrders(initialOrders);
