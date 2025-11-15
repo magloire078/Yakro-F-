@@ -1,7 +1,7 @@
 
 'use server';
 
-import { collection, addDoc, updateDoc, doc, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Order } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
@@ -11,9 +11,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 export async function addOrderAction(order: Omit<Order, 'id'>) {
     const docRef = doc(collection(db, "commandes"));
     try {
-        const batch = writeBatch(db);
-        batch.set(docRef, order);
-        await batch.commit();
+        await setDoc(docRef, order);
 
         revalidatePath('/'); // For customer home page status
         revalidatePath('/orders'); // For customer order history

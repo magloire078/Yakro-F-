@@ -56,11 +56,8 @@ export async function addMenuItemAction(formData: FormData) {
             }
         }
         
-        // Use a batch to ensure atomicity
-        const batch = writeBatch(db);
         const newMenuItemData = { ...item, image: finalImageUrl || '' };
-        batch.set(docRef, newMenuItemData);
-        await batch.commit();
+        await setDoc(docRef, newMenuItemData);
         
         revalidatePath('/dashboard/menu');
         revalidatePath(`/restaurants/${item.restaurantId}`);
