@@ -169,6 +169,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     .map(r => r.id);
                 if (myRestaurantIds.length > 0) {
                     q = query(ordersCollectionRef, where("restaurantId", "in", myRestaurantIds));
+                } else {
+                    // Restaurateur has no restaurants, don't query for orders.
+                    setOrders([]);
                 }
             }
 
@@ -186,7 +189,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setOrders(initialOrders);
                     }
                 });
-            } else if (activeRole === 'restaurateur') {
+            } else if (activeRole !== 'restaurateur') {
+                 // For roles that might not have a query (e.g. invalid role), clear orders
                  setOrders([]);
             }
 
