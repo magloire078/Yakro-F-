@@ -139,8 +139,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const restaurantUnsub = onSnapshot(collection(db, 'restaurants'), async (snapshot) => {
             if (snapshot.empty && user?.uid) {
-                // If the database is empty, seed it with initial data.
-                await seedDatabaseAction(user.uid);
+                 await seedDatabaseAction(user.uid);
             } else {
                 const restaurants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Restaurant[];
                 setRestaurants(restaurants);
@@ -164,7 +163,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 q = query(ordersCollectionRef, where("userId", "==", user.uid));
             } else if (activeRole === 'livreur') {
                 q = query(ordersCollectionRef, where("statut", "==", "En Préparation"));
-                // We will add the other orders for the livreur separately
             } else if (activeRole === 'restaurateur') {
                 const myRestaurantIds = useDataStore.getState().restaurants
                     .filter(r => r.proprietaireId === user.uid)
@@ -177,12 +175,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (q) {
                 ordersUnsub = setupSubscription<Order>(q, (initialOrders) => {
                     if (activeRole === 'livreur') {
-                        // For livreurs, we also need to get their accepted orders that are 'En Route'
                         const enRouteQuery = query(ordersCollectionRef, where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
                         getDocs(enRouteQuery).then(enRouteSnap => {
                             const enRouteOrders = enRouteSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
                             const combinedOrders = [...initialOrders, ...enRouteOrders];
-                            // Remove duplicates
                             const uniqueOrders = Array.from(new Set(combinedOrders.map(o => o.id))).map(id => combinedOrders.find(o => o.id === id)!);
                             setOrders(uniqueOrders);
                         });
@@ -190,7 +186,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setOrders(initialOrders);
                     }
                 });
-            } else if (!q && activeRole !== 'restaurateur') {
+            } else if (activeRole === 'restaurateur') {
                  setOrders([]);
             }
 
@@ -198,7 +194,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setOrders([]);
         }
 
-        const timer = setTimeout(() => setIsLoading(false), 2000);
+        const timer = setTimeout(() => setIsLoading(false), 1500);
 
         return () => {
             clearTimeout(timer);
@@ -208,7 +204,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ordersUnsub();
             }
         };
-    }, [user?.uid, userProfile?.roleSysteme, activeRole]);
+    }, [user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };
