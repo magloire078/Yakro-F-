@@ -103,7 +103,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
-        const setupSubscription = (collectionName: string, callback: (data: DocumentData[]) => void) => {
+        const setupSubscription = (collectionName: 'restaurants' | 'plats', callback: (data: DocumentData[]) => void) => {
             const q = query(collection(db, collectionName));
             const unsubscribe = onSnapshot(q, 
                 (snapshot) => {
@@ -122,8 +122,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubRestaurants = setupSubscription('restaurants', (data) => useDataStore.setState({ restaurants: data as Restaurant[] }));
         const unsubMenuItems = setupSubscription('plats', (data) => useDataStore.setState({ menuItems: data as MenuItem[] }));
         
-        // We will set loading to false in the user-specific effect
-        // to ensure all data is loaded or attempted to load.
+        // Loading will be set to false in the user-specific effect.
 
         return () => {
             unsubRestaurants();
@@ -138,6 +137,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (authLoading) {
             return; // Wait until authentication status is resolved
         }
+
+        useDataStore.setState({ isLoading: true });
 
         if (user && userProfile) {
             let ordersQuery: Query<DocumentData, DocumentData> | null = null;
@@ -156,8 +157,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 
                 if (myRestaurantIds.length > 0) {
                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                } else {
-                    useDataStore.setState({ orders: [] }); // No restaurants, no orders.
                 }
             } else if (userProfile.roleSysteme === 'SuperAdmin') {
                 ordersQuery = query(collection(db, 'commandes'));
@@ -169,28 +168,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     (snapshot) => {
                         const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
                         useDataStore.setState({ orders: ordersData });
+                        useDataStore.setState({ isLoading: false }); // All data loaded
                     },
                     (serverError) => {
                         console.error(`Permission error on path: ${path}`, serverError);
-                        const permissionError = new FirestorePermissionError({ path, operation: 'list' });
+                        const permissionError = new FirestorePermissionError({ path: 'commandes', operation: 'list' });
                         errorEmitter.emit('permission-error', permissionError);
+                        useDataStore.setState({ isLoading: false }); // Stop loading on error
                     }
                 );
+            } else {
+                 useDataStore.setState({ orders: [], isLoading: false }); // No query to run, stop loading.
             }
         } else {
-            // Not logged in or profile not ready, clear orders
-            useDataStore.setState({ orders: [] });
+            // Not logged in or profile not ready, clear orders and stop loading.
+            useDataStore.setState({ orders: [], isLoading: false });
         }
-        
-        // All data fetching logic is complete for this cycle, set loading to false.
-        useDataStore.setState({ isLoading: false });
 
         return () => {
             if (unsubOrders) {
                 unsubOrders();
             }
         };
-    }, [user, userProfile, activeRole, authLoading]); // Depend on authLoading to ensure it runs when auth state is final
+    }, [user, userProfile, activeRole, authLoading]);
 
     return <>{children}</>;
 };
