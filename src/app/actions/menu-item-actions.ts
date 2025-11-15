@@ -36,10 +36,10 @@ export async function addMenuItemAction(formData: FormData) {
 
     try {
         let finalImageUrl: string | undefined = undefined;
+        const docRefId = doc(collectionRef).id; // generate an ID upfront
 
         // If user provides an image, use it.
         if (imageFile) {
-             const docRefId = doc(collectionRef).id; // generate an ID upfront
              finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
         } 
         // If no user image, and there's a hint, generate one with AI
@@ -47,7 +47,6 @@ export async function addMenuItemAction(formData: FormData) {
             try {
                 const generatedImage = await generateImage({ prompt: item.indiceImage });
                 if (generatedImage.imageDataUri) {
-                    const docRefId = doc(collectionRef).id;
                     finalImageUrl = await uploadImage(generatedImage.imageDataUri, `plats/${docRefId}`);
                 }
             } catch (aiError) {
@@ -93,7 +92,9 @@ export async function updateMenuItemAction(formData: FormData) {
         }
         await updateDoc(itemDocRef, updateData);
         revalidatePath('/dashboard/menu');
-        revalidatePath(`/restaurants/${data.restaurantId}`);
+        if (data.restaurantId) {
+          revalidatePath(`/restaurants/${data.restaurantId}`);
+        }
     } catch (e) {
          const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,

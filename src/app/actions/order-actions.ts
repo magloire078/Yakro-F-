@@ -37,6 +37,7 @@ export async function updateOrderStatusAction({ orderId, status, delivererId }: 
       await updateDoc(orderDocRef, updateData);
       revalidatePath('/');
       revalidatePath('/dashboard/orders');
+      revalidatePath('/auth/livreur');
     } catch (e) {
       const permissionError = new FirestorePermissionError({
             path: orderDocRef.path,

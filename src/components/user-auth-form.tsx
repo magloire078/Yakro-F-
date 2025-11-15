@@ -55,8 +55,9 @@ export function UserAuthForm() {
         ...(data?.telephone && { telephone: data.telephone }),
     };
     
-    // Use the .catch() pattern to emit a detailed permission error
-    setDoc(userDocRef, newUserProfile, { merge: true }).catch(async (serverError) => {
+    try {
+        await setDoc(userDocRef, newUserProfile, { merge: true });
+    } catch(e) {
         const permissionError = new FirestorePermissionError({
           path: userDocRef.path,
           operation: 'create',
@@ -65,7 +66,7 @@ export function UserAuthForm() {
         errorEmitter.emit('permission-error', permissionError);
         // Also throw the error to be caught by the general handler below
         throw permissionError;
-    });
+    }
   }
 
   const handleGoogleSignIn = async () => {

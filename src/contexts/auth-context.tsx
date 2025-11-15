@@ -70,14 +70,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 rolesAutorises: ['client'],
                 roleSysteme: 'User',
             };
-            setDoc(userDocRef, newUserProfile, { merge: true }).catch(async (serverError) => {
+            try {
+                await setDoc(userDocRef, newUserProfile, { merge: true });
+            } catch(e) {
                 const permissionError = new FirestorePermissionError({
                   path: userDocRef.path,
                   operation: 'create',
                   requestResourceData: newUserProfile,
                 });
                 errorEmitter.emit('permission-error', permissionError);
-            });
+            }
           }
           setLoading(false);
         }, (error) => {
@@ -86,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 operation: 'get',
             });
             errorEmitter.emit('permission-error', permissionError);
+            console.error("Original error in user profile snapshot:", error);
             setLoading(false);
         });
       } else {
@@ -111,7 +114,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
-      updateDoc(userDocRef, data).catch(async (serverError) => {
+      try {
+        await updateDoc(userDocRef, data);
+      } catch(e) {
           const permissionError = new FirestorePermissionError({
               path: userDocRef.path,
               operation: 'update',
@@ -119,29 +124,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           errorEmitter.emit('permission-error', permissionError);
           throw permissionError;
-      });
+      }
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-    updateDoc(doc(db, 'utilisateurs', uid), data)
-      .then(() => {
+    const userDocRef = doc(db, 'utilisateurs', uid);
+    try {
+        await updateDoc(userDocRef, data);
         toast({ title: 'Succès', description: 'Le profil a été mis à jour.' });
-      })
-      .catch(async (serverError) => {
+    } catch (e) {
         const permissionError = new FirestorePermissionError({
-            path: doc(db, 'utilisateurs', uid).path,
+            path: userDocRef.path,
             operation: 'update',
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
         toast({ variant: 'destructive', title: 'Erreur de permission', description: "Vous n'avez pas les droits pour effectuer cette action." });
         throw permissionError;
-    });
+    }
   };
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
     try {
-      // This is a simplified approach. A more robust solution might use Firebase Admin SDK on a backend.
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const newUser = userCredential.user;
 
@@ -156,31 +160,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           roleSysteme: 'User',
       };
       
-      setDoc(userDocRef, newUserProfile)
-        .then(() => {
-            toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
-        })
-        .catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'create',
-                requestResourceData: newUserProfile,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            // We throw it so it's caught by the outer catch block and displayed in a toast
-            throw permissionError;
-        });
+      await setDoc(userDocRef, newUserProfile);
+      toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
 
       return newUser;
-
     } catch (error: any) {
         let description = "Une erreur est survenue.";
-        if (error instanceof FirestorePermissionError) {
-             description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
-        } else if (error.code === 'auth/email-already-in-use') {
+        if (error.code === 'auth/email-already-in-use') {
             description = 'Cette adresse e-mail est déjà utilisée.';
         } else if (error.code === 'auth/weak-password') {
             description = 'Le mot de passe est trop faible.';
+        } else {
+            // Assume it could be a permission error from setDoc
+            const permissionError = new FirestorePermissionError({
+                path: `utilisateurs/${data.email}`, // best guess for path
+                operation: 'create',
+                requestResourceData: { email: data.email, nom: data.nom },
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
         }
         toast({
             variant: 'destructive',
