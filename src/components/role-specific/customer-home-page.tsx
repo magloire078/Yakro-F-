@@ -335,8 +335,8 @@ export default function CustomerHomePage() {
                 <Star className="text-primary fill-primary" />
                 <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants en vedette</h2>
              </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {isLoading ? renderSkeletons(3) : featuredRestaurants.map(restaurant => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {isLoading ? renderSkeletons(4) : featuredRestaurants.map(restaurant => (
                 <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
               ))}
             </div>
@@ -365,8 +365,8 @@ export default function CustomerHomePage() {
             {getFilterLabel() && <Badge>{getFilterLabel()}</Badge>}
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {isLoading ? renderSkeletons(6) : normalRestaurants.map(restaurant => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+          {isLoading ? renderSkeletons(8) : normalRestaurants.map(restaurant => (
             <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} />
           ))}
         </div>
