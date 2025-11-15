@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -117,11 +116,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 },
                 (error) => {
                     const permissionError = new FirestorePermissionError({
-                        path: collectionName,
+                        path: q.path,
                         operation: 'list'
                     });
                     errorEmitter.emit('permission-error', permissionError);
-                    console.error(`Permission error on ${collectionName}:`, error);
                 }
             );
             subscriptions.push(unsubscribe);
@@ -139,46 +137,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             'plats',
             (data) => useDataStore.setState({ menuItems: data as MenuItem[] })
         );
-
-        // Abonnement aux données privées (commandes)
-        if (user && userProfile) {
-            let ordersQuery: Query | null = null;
-            
-            if (userProfile.roleSysteme === 'SuperAdmin') {
-                ordersQuery = query(collection(db, 'commandes'));
-            } else if (activeRole === 'client') {
-                 ordersQuery = query(
-                   collection(db, "commandes"), 
-                   where("statut", "in", ["Placée", "En Préparation", "En Route"]),
-                   where("userId", "==", user.uid)
-                 );
-            } else if (activeRole === 'livreur') {
-                ordersQuery = query(collection(db, "commandes"), or(
-                    where('livreurId', '==', user.uid),
-                    where('statut', '==', 'En Préparation')
-                ));
-            } else if (activeRole === 'restaurateur') {
-                 const myRestaurantIds = useDataStore.getState().restaurants
-                    .filter(r => r.proprietaireId === user.uid)
-                    .map(r => r.id);
-
-                if (myRestaurantIds.length > 0) {
-                     ordersQuery = query(collection(db, 'commandes'), where('restaurantId', 'in', myRestaurantIds));
-                }
-            } 
-
-            if (ordersQuery) {
-                setupSubscription(
-                    ordersQuery,
-                    'commandes',
-                    (data) => useDataStore.setState({ orders: data as Order[] })
-                );
-            } else {
-                 useDataStore.setState({ orders: [] });
-            }
-        } else {
-            useDataStore.setState({ orders: [] });
+        
+        let ordersQuery: Query | null = null;
+        if (user) {
+            ordersQuery = query(collection(db, 'commandes'));
         }
+
+        if (ordersQuery) {
+            setupSubscription(
+                ordersQuery,
+                'commandes',
+                (data) => useDataStore.setState({ orders: data as Order[] })
+            );
+        } else {
+             useDataStore.setState({ orders: [] });
+        }
+
 
         const loadingTimeout = setTimeout(() => {
              useDataStore.setState({ isLoading: false });

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -82,7 +81,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           setLoading(false);
         }, (error) => {
-            console.error("Error listening to user profile:", error);
             const permissionError = new FirestorePermissionError({
                 path: userDocRef.path,
                 operation: 'get',
@@ -113,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
-      return updateDoc(userDocRef, data).catch(async (serverError) => {
+      updateDoc(userDocRef, data).catch(async (serverError) => {
           const permissionError = new FirestorePermissionError({
               path: userDocRef.path,
               operation: 'update',
@@ -125,14 +123,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-    const userDocRef = doc(db, 'utilisateurs', uid);
-    return updateDoc(userDocRef, data)
+    updateDoc(doc(db, 'utilisateurs', uid), data)
       .then(() => {
         toast({ title: 'Succès', description: 'Le profil a été mis à jour.' });
       })
       .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
+            path: doc(db, 'utilisateurs', uid).path,
             operation: 'update',
             requestResourceData: data,
         });
