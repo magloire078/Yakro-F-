@@ -20,7 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { Loader, ChefHat, Upload } from 'lucide-react';
+import { Loader, ChefHat, Upload, MapPin } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
@@ -45,6 +45,8 @@ export default function NewRestaurantPage() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+    const [isFetchingLocation, setIsFetchingLocation] = React.useState(false);
+
 
      React.useEffect(() => {
         if (activeRole !== 'restaurateur') {
@@ -73,6 +75,39 @@ export default function NewRestaurantPage() {
             };
             reader.readAsDataURL(file);
         }
+    };
+    
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            toast({
+                variant: 'destructive',
+                title: 'Géolocalisation non supportée',
+                description: "Votre navigateur ne permet pas de récupérer votre position.",
+            });
+            return;
+        }
+
+        setIsFetchingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                form.setValue('latitude', parseFloat(latitude.toFixed(6)));
+                form.setValue('longitude', parseFloat(longitude.toFixed(6)));
+                toast({
+                    title: 'Position récupérée !',
+                    description: 'Les coordonnées GPS ont été ajoutées au formulaire.',
+                });
+                setIsFetchingLocation(false);
+            },
+            (error) => {
+                toast({
+                    variant: 'destructive',
+                    title: 'Erreur de géolocalisation',
+                    description: "Impossible de récupérer votre position. Veuillez vérifier les autorisations de votre navigateur.",
+                });
+                setIsFetchingLocation(false);
+            }
+        );
     };
 
 
@@ -206,33 +241,45 @@ export default function NewRestaurantPage() {
                                     )}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="latitude"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Latitude (Optionnel)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" step="any" placeholder="Ex: 6.8213" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                 <FormField
-                                    control={form.control}
-                                    name="longitude"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Longitude (Optionnel)</FormLabel>
-                                            <FormControl>
-                                                 <Input type="number" step="any" placeholder="Ex: -5.2768" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="font-medium">Géolocalisation</h4>
+                                        <p className="text-sm text-muted-foreground">Optionnel, mais recommandé pour les livreurs.</p>
+                                    </div>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleGetLocation} disabled={isFetchingLocation}>
+                                        {isFetchingLocation ? <Loader className="animate-spin" /> : <MapPin />}
+                                        Obtenir la position GPS
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="latitude"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Latitude</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" step="any" placeholder="Ex: 6.8213" {...field} value={field.value ?? ''} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                     <FormField
+                                        control={form.control}
+                                        name="longitude"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Longitude</FormLabel>
+                                                <FormControl>
+                                                     <Input type="number" step="any" placeholder="Ex: -5.2768" {...field} value={field.value ?? ''} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </div>
                             <Button type="submit" disabled={isLoading} className="w-full">
                                 {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
