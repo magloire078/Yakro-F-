@@ -52,7 +52,6 @@ export async function addRestaurantAction(formData: FormData) {
         revalidatePath('/dashboard/new-restaurant');
         revalidatePath('/dashboard/my-restaurants');
     } catch (e: any) {
-        console.error("Error adding restaurant: ", e);
         // This makes sure the permission error can be caught by the client
         throw new Error(e.message || "Failed to add restaurant.");
     }
@@ -81,7 +80,6 @@ export async function updateRestaurantAction(formData: FormData) {
         revalidatePath('/dashboard/my-restaurants');
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
     } catch (e: any) {
-        console.error("Error updating restaurant: ", e);
         throw new Error(e.message || "Failed to update restaurant.");
     }
 }

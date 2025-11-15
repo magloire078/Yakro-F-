@@ -22,7 +22,7 @@ interface DataState {
   menuItems: MenuItem[];
   orders: Order[];
   isLoading: boolean;
-  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId' >, imageFile: File | null) => Promise<void>;
+  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' >, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -45,7 +45,18 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
         formData.append('image', imageFile);
     }
-    await addRestaurantAction(formData);
+    try {
+        await addRestaurantAction(formData);
+    } catch(e: any) {
+        // This is a generic catch, but we can wrap it for the UI
+         const permissionError = new FirestorePermissionError({
+            path: 'restaurants/[new_id]',
+            operation: 'create',
+            requestResourceData: restaurantData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e; // Re-throw to let the caller know it failed
+    }
   },
 
   updateRestaurant: async (restaurantId, data, imageFile) => {
@@ -55,7 +66,17 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
         formData.append('image', imageFile);
     }
-    await updateRestaurantAction(formData);
+    try {
+        await updateRestaurantAction(formData);
+    } catch(e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: `restaurants/${restaurantId}`,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
   },
 
   addMenuItem: async (item, imageFile) => {
@@ -64,7 +85,17 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    await addMenuItemAction(formData);
+    try {
+        await addMenuItemAction(formData);
+    } catch(e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: 'plats/[new_id]',
+            operation: 'create',
+            requestResourceData: item,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
   },
   
   updateMenuItem: async (itemId, data, imageFile) => {
@@ -74,19 +105,58 @@ const useDataStore = create<DataState>((set, get) => ({
     if (imageFile) {
         formData.append('image', imageFile);
     }
-    await updateMenuItemAction(formData);
+    try {
+        await updateMenuItemAction(formData);
+    } catch(e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: `plats/${itemId}`,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
   },
 
   deleteMenuItem: async (itemId) => {
-    await deleteMenuItemAction(itemId);
+     try {
+        await deleteMenuItemAction(itemId);
+    } catch(e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: `plats/${itemId}`,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
   },
 
   addOrder: async (order) => {
-    await addOrderAction(order);
+    try {
+        await addOrderAction(order);
+    } catch(e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: 'commandes/[new_id]',
+            operation: 'create',
+            requestResourceData: order,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
   },
 
   updateOrderStatus: async (orderId, status, delivererId) => {
-    await updateOrderStatusAction({ orderId, status, delivererId });
+    try {
+        await updateOrderStatusAction({ orderId, status, delivererId });
+    } catch (e:any) {
+        const permissionError = new FirestorePermissionError({
+            path: `commandes/${orderId}`,
+            operation: 'update',
+            requestResourceData: {statut: status, livreurId: delivererId}
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
   },
 
   getMenuItem: (id: string) => {
@@ -143,7 +213,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Abonnement aux données privées (commandes)
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
-            const myRestaurantIds = useDataStore.getState().restaurants
+            const restaurants = useDataStore.getState().restaurants;
+            const myRestaurantIds = restaurants
                 .filter(r => r.proprietaireId === user.uid)
                 .map(r => r.id);
 
