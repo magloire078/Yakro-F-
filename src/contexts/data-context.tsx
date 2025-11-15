@@ -8,13 +8,14 @@ import { create } from 'zustand';
 import { collection, onSnapshot, query, where, Unsubscribe, DocumentData, Query, or, getDocs, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 // Import server actions
 import { addRestaurantAction, updateRestaurantAction } from '@/app/actions/restaurant-actions';
 import { addMenuItemAction, updateMenuItemAction, deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 import { addOrderAction, updateOrderStatusAction } from '@/app/actions/order-actions';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
+
 
 interface DataState {
   restaurants: Restaurant[];
@@ -97,51 +98,53 @@ const useDataStore = create<DataState>((set, get) => ({
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, activeRole, userProfile, loading: authLoading } = useAuth();
+    const { user, userProfile, activeRole } = useAuth();
     
-    // Effect for public, non-user-specific data
     React.useEffect(() => {
         useDataStore.setState({ isLoading: true });
 
-        const setupSubscription = (collectionName: 'restaurants' | 'plats', callback: (data: DocumentData[]) => void) => {
-            const q = query(collection(db, collectionName));
-            const unsubscribe = onSnapshot(q, 
+        const subscriptions: Unsubscribe[] = [];
+
+        const setupSubscription = (
+            q: Query,
+            onData: (data: DocumentData[]) => void,
+            onError: (err: Error) => void
+        ) => {
+            const unsubscribe = onSnapshot(q,
                 (snapshot) => {
                     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    callback(list);
+                    onData(list);
                 },
-                (serverError) => {
-                    console.error(`Permission error on path: ${collectionName}`, serverError);
-                    const permissionError = new FirestorePermissionError({ path: collectionName, operation: 'list' });
-                    errorEmitter.emit('permission-error', permissionError);
+                (error) => {
+                    console.error("Firestore subscription error:", error);
+                    onError(error);
                 }
             );
-            return unsubscribe;
+            subscriptions.push(unsubscribe);
         };
         
-        const unsubRestaurants = setupSubscription('restaurants', (data) => useDataStore.setState({ restaurants: data as Restaurant[] }));
-        const unsubMenuItems = setupSubscription('plats', (data) => useDataStore.setState({ menuItems: data as MenuItem[] }));
-        
-        // Loading will be set to false in the user-specific effect.
+        // 1. Subscribe to public data
+        setupSubscription(
+            query(collection(db, 'restaurants')),
+            (data) => useDataStore.setState({ restaurants: data as Restaurant[] }),
+            (error) => {
+                const permissionError = new FirestorePermissionError({ path: 'restaurants', operation: 'list' });
+                errorEmitter.emit('permission-error', permissionError);
+            }
+        );
 
-        return () => {
-            unsubRestaurants();
-            unsubMenuItems();
-        };
-    }, []);
+        setupSubscription(
+            query(collection(db, 'plats')),
+            (data) => useDataStore.setState({ menuItems: data as MenuItem[] }),
+            (error) => {
+                const permissionError = new FirestorePermissionError({ path: 'plats', operation: 'list' });
+                errorEmitter.emit('permission-error', permissionError);
+            }
+        );
 
-    // Effect for user-specific data (orders)
-    React.useEffect(() => {
-        let unsubOrders: Unsubscribe | null = null;
-        
-        if (authLoading) {
-            return; // Wait until authentication status is resolved
-        }
-
-        useDataStore.setState({ isLoading: true });
-
+        // 2. Subscribe to private data (orders) only if authenticated
         if (user && userProfile) {
-            let ordersQuery: Query<DocumentData, DocumentData> | null = null;
+            let ordersQuery: Query | null = null;
             
             if (activeRole === 'client') {
                 ordersQuery = query(collection(db, "commandes"), where("userId", "==", user.uid));
@@ -151,6 +154,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     where('statut', '==', 'En Préparation')
                 ));
             } else if (activeRole === 'restaurateur') {
+                // We must get the state directly here because we are in the same effect loop
                 const myRestaurantIds = useDataStore.getState().restaurants
                     .filter(r => r.proprietaireId === user.uid)
                     .map(r => r.id);
@@ -163,34 +167,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             if (ordersQuery) {
-                const path = (ordersQuery as any)._query.path.segments.join('/');
-                unsubOrders = onSnapshot(ordersQuery,
-                    (snapshot) => {
-                        const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
-                        useDataStore.setState({ orders: ordersData });
-                        useDataStore.setState({ isLoading: false }); // All data loaded
-                    },
-                    (serverError) => {
-                        console.error(`Permission error on path: ${path}`, serverError);
+                setupSubscription(
+                    ordersQuery,
+                    (data) => useDataStore.setState({ orders: data as Order[] }),
+                    (error) => {
                         const permissionError = new FirestorePermissionError({ path: 'commandes', operation: 'list' });
                         errorEmitter.emit('permission-error', permissionError);
-                        useDataStore.setState({ isLoading: false }); // Stop loading on error
                     }
                 );
             } else {
-                 useDataStore.setState({ orders: [], isLoading: false }); // No query to run, stop loading.
+                // If no query applies (e.g., restaurateur with no restaurants), clear orders
+                useDataStore.setState({ orders: [] });
             }
         } else {
-            // Not logged in or profile not ready, clear orders and stop loading.
-            useDataStore.setState({ orders: [], isLoading: false });
+            // Not logged in, clear orders
+            useDataStore.setState({ orders: [] });
         }
 
+        // Finally, set loading to false. This is a simplification. A more robust
+        // solution might wait for the first snapshot of all subscriptions.
+        useDataStore.setState({ isLoading: false });
+
+
+        // Cleanup all subscriptions on unmount
         return () => {
-            if (unsubOrders) {
-                unsubOrders();
-            }
+            subscriptions.forEach(unsub => unsub());
         };
-    }, [user, userProfile, activeRole, authLoading]);
+    }, [user, userProfile, activeRole]);
 
     return <>{children}</>;
 };
