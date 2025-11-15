@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 roleSysteme: 'User',
             };
             try {
-                await setDoc(userDocRef, newUserProfile);
+                await setDoc(userDocRef, newUserProfile, { merge: true });
                 setUserProfile(newUserProfile);
                 setActiveRoleState('client');
             } catch(e) {
@@ -150,9 +150,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
+    let newUser: User | null = null;
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-      const newUser = userCredential.user;
+      newUser = userCredential.user;
 
       const userDocRef = doc(db, 'utilisateurs', newUser.uid);
       const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
@@ -177,10 +178,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (error.code === 'auth/weak-password') {
             description = 'Le mot de passe est trop faible.';
         } else {
-            const permissionError = new FirestorePermissionError({
-                path: `utilisateurs/${data.email}`,
+             const permissionError = new FirestorePermissionError({
+                path: `utilisateurs/${(newUser?.uid || 'nouvel-utilisateur')}`,
                 operation: 'create',
-                requestResourceData: { email: data.email, nom: data.nom },
+                requestResourceData: { email: data.email, nom: data.nom, roles: data.rolesAutorises },
             });
             errorEmitter.emit('permission-error', permissionError);
             description = "Erreur de permissions lors de la création du profil.";
