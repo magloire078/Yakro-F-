@@ -34,10 +34,9 @@ export async function addRestaurantAction(formData: FormData) {
         });
         const restaurantId = docRef.id;
 
-        let imageUrl = "";
         // If an image file was provided, upload it now.
         if (imageFile) {
-            imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+            const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
             // Now, update the document with the correct image URL.
             await updateDoc(docRef, { image: imageUrl });
         }
