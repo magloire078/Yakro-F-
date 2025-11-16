@@ -1,7 +1,7 @@
 
 'use server';
 
-import { collection, addDoc, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage";
 import { db, storage } from '@/firebase/client';
 import type { MenuItem } from '@/lib/types';
@@ -65,15 +65,16 @@ export async function addMenuItemAction(formData: FormData) {
         revalidatePath('/dashboard/menu');
         revalidatePath(`/restaurants/${item.restaurantId}`);
 
-    } catch (e) {
+    } catch (e: any) {
+        const path = docRefId ? `plats/${docRefId}` : 'plats';
         const permissionError = new FirestorePermissionError({
-            path: docRefId ? doc(db, "plats", docRefId).path : collectionRef.path,
+            path,
             operation: 'create',
             requestResourceData: item,
         });
         errorEmitter.emit('permission-error', permissionError);
         console.error("Original error adding menu item: ", e);
-        throw e; // Re-throw the original error
+        throw e; // Re-throw the original error to be caught by client
     }
 }
 
@@ -99,15 +100,15 @@ export async function updateMenuItemAction(formData: FormData) {
         if (data.restaurantId) {
           revalidatePath(`/restaurants/${data.restaurantId}`);
         }
-    } catch (e) {
-         const permissionError = new FirestorePermissionError({
+    } catch (e: any) {
+        const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,
             operation: 'update',
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
         console.error("Original error updating menu item: ", e);
-        throw e; // Re-throw the original error
+        throw e; // Re-throw the original error to be caught by client
     }
 }
 
@@ -127,13 +128,13 @@ export async function deleteMenuItemAction(itemId: string) {
       }
       await deleteDoc(itemDocRef);
       revalidatePath('/dashboard/menu');
-    } catch (e) {
+    } catch (e: any) {
         const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,
             operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
         console.error("Original error deleting menu item: ", e);
-        throw e; // Re-throw the original error
+        throw e; // Re-throw the original error to be caught by client
     }
 }

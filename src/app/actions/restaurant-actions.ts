@@ -1,7 +1,7 @@
 
 'use server';
 
-import { collection, addDoc, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage';
 import { db, storage } from '@/firebase/client';
 import type { Restaurant } from '@/lib/types';
@@ -10,18 +10,14 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 
-
-// Helper function for uploading images
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
     const storageRef = ref(storage, path);
     let downloadURL: string;
 
     if (typeof fileOrDataUrl === 'string') {
-        // It's a data URL from AI generation
         const snapshot = await uploadString(storageRef, fileOrDataUrl, 'data_url');
         downloadURL = await getDownloadURL(snapshot.ref);
     } else {
-        // It's a File object from user upload
         const snapshot = await uploadBytes(storageRef, fileOrDataUrl);
         downloadURL = await getDownloadURL(snapshot.ref);
     }
@@ -29,11 +25,11 @@ const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<
     return downloadURL;
 };
 
-
 export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
     const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'> & { proprietaireId: string };
+    
     const docRef = doc(collection(db, "restaurants"));
     const restaurantId = docRef.id;
 
@@ -48,14 +44,12 @@ export async function addRestaurantAction(formData: FormData) {
         indiceImage: data.indiceImage || (data.cuisine ? `${data.cuisine} restaurant` : 'restaurant food'),
         latitude: data.latitude || 6.82,
         longitude: data.longitude || -5.28,
-        image: "" // Start with empty image URL
+        image: "" 
     };
     
     try {
-        // 1. Create document with payload
         await setDoc(docRef, restaurantPayload);
         
-        // 2. Determine image URL
         let finalImageUrl: string | undefined = undefined;
 
         if (imageFile) {
@@ -70,31 +64,24 @@ export async function addRestaurantAction(formData: FormData) {
                 }
             } catch (aiError) {
                 console.error("AI image generation for restaurant failed:", aiError);
-                // Continue without an image if AI fails
             }
         }
         
-        // 3. Update document with final image URL if it exists
         if (finalImageUrl) {
             await updateDoc(docRef, { image: finalImageUrl });
         }
         
-        revalidatePath('/');
-        revalidatePath('/dashboard/new-restaurant');
-        revalidatePath('/dashboard/my-restaurants');
+        revalidatePath('/', 'layout');
 
     } catch (e: any) {
-        // Check if it's a Firestore permission error
-        if (e.code === 'permission-denied' || e.name === 'FirebaseError') {
-             const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'create',
-                requestResourceData: restaurantPayload,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        }
-       
-        throw e; // Re-throw original error to be caught by Next.js action boundary
+        const permissionError = new FirestorePermissionError({
+            path: 'restaurants',
+            operation: 'create',
+            requestResourceData: restaurantPayload,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        console.error("Original error adding restaurant: ", e);
+        throw e;
     }
 }
 
@@ -119,20 +106,17 @@ export async function updateRestaurantAction(formData: FormData) {
 
         await updateDoc(restaurantDocRef, updateData);
         
-        revalidatePath('/');
+        revalidatePath('/', 'layout');
         revalidatePath(`/restaurants/${restaurantId}`);
-        revalidatePath('/dashboard/my-restaurants');
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
-        revalidatePath('/dashboard/boost');
     } catch (e: any) {
-        if (e.code === 'permission-denied' || e.name === 'FirebaseError') {
-             const permissionError = new FirestorePermissionError({
-                path: restaurantDocRef.path,
-                operation: 'update',
-                requestResourceData: data,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        }
-        throw e; // Re-throw original error to be caught by Next.js action boundary
+        const permissionError = new FirestorePermissionError({
+            path: restaurantDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        console.error("Original error updating restaurant: ", e);
+        throw e;
     }
 }
