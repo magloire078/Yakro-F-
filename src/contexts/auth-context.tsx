@@ -2,34 +2,14 @@
 'use client';
 
 import * as React from 'react';
-import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, getDocs, collection, query, where, writeBatch, getDoc, Timestamp } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import type { AppRole, UserProfile, SystemRole } from '@/lib/types';
+import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserProfileAction } from '@/app/actions/user-actions';
-
-
-// --- MOCK DATA FOR DEVELOPMENT ---
-const mockUser = {
-  uid: 'mock-user-id',
-  email: 'dev@yakrofe.com',
-  displayName: 'Dev User',
-  // Add other User properties if needed, but they are mostly nullable
-} as User;
-
-const mockUserProfile: UserProfile = {
-  uid: 'mock-user-id',
-  email: 'dev@yakrofe.com',
-  nom: 'Utilisateur de Dév.',
-  dateCreation: Timestamp.now(),
-  role: 'restaurateur', // Changed to 'restaurateur' to facilitate development
-  roleSysteme: 'SuperAdmin',
-  adresseParDefaut: 'Yamoussoukro, Quartier des Développeurs'
-};
-// --- END MOCK DATA ---
 
 interface AuthContextType {
   user: User | null;
@@ -43,47 +23,73 @@ interface AuthContextType {
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
+const getInitialActiveRole = (): AppRole => {
+  if (typeof window === 'undefined') return 'client';
+  return (localStorage.getItem('activeRole') as AppRole) || 'client';
+};
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = React.useState<User | null>(mockUser);
-  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(mockUserProfile);
-  const [loading, setLoading] = React.useState(false); // Set to false to bypass loading screen
-  const [activeRole, setActiveRoleState] = React.useState<AppRole>('restaurateur');
+  const [user, setUser] = React.useState<User | null>(null);
+  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [activeRole, setActiveRoleState] = React.useState<AppRole>(getInitialActiveRole);
   const router = useRouter();
   const { toast } = useToast();
 
-  React.useEffect(() => {
-    // This effect ensures the active role is set from the mock profile on initial load.
-    if (userProfile) {
-        setActiveRoleState(userProfile.role);
-    }
-  }, [userProfile]);
+   React.useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
+    return () => unsubscribeAuth();
+  }, []);
 
+  React.useEffect(() => {
+    let unsubscribeProfile: Unsubscribe | undefined;
+    if (user) {
+      setLoading(true);
+      const userDocRef = doc(db, 'utilisateurs', user.uid);
+      unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
+          setUserProfile(profile);
+          // Set the active role from the profile if it hasn't been set by the user yet
+          if (localStorage.getItem('activeRole') !== profile.role) {
+             setActiveRoleState(profile.role);
+             localStorage.setItem('activeRole', profile.role);
+          }
+        } else {
+          // This can happen briefly during signup before the profile is created.
+          setUserProfile(null);
+        }
+        setLoading(false);
+      });
+    } else {
+      setUserProfile(null);
+    }
+    return () => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
+    };
+  }, [user]);
 
   const setActiveRole = (role: AppRole) => {
-      // With a single role system, this just updates the state.
       setActiveRoleState(role);
-      // We also update the mock profile for consistency during the session.
-      if (userProfile) {
-        setUserProfile({...userProfile, role: role });
+      localStorage.setItem('activeRole', role);
+      if (userProfile && userProfile.role !== role) {
+        // Optimistically update UI, and persist change to DB
+        setUserProfile({...userProfile, role});
+        updateUserProfileAction(userProfile.uid, { role });
       }
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
-      if(uid !== mockUser.uid) {
-        console.warn("Attempted to update a different user's profile in mock mode.");
-        return;
-      }
-      setUserProfile(prev => prev ? { ...prev, ...data } : null);
-      toast({ title: "Profil mis à jour (simulation)" });
       await updateUserProfileAction(uid, data);
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-    // This now calls the server action directly.
-    // In a real app with real auth, the server action would use the Admin SDK.
-    // Here, it uses the client SDK, so it will be subject to security rules.
-    // This is good for testing our new rules.
     await updateUserProfileAction(uid, data);
   };
 
