@@ -68,17 +68,18 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <ScrollArea className="flex-1 pr-4">
               <div className="flex flex-col gap-4 py-4">
                 {cartItems.map((item, index) => {
-                    const imageSrc = (item.image && !item.image.includes('placehold.co'))
+                    const placeholder = getPlaceholderImage(item.indiceImage);
+                    const imageSrc = (item.image && !item.image.includes('picsum.photos'))
                         ? item.image
-                        : getPlaceholderImage(item.indiceImage, 100, 100);
+                        : placeholder.url;
                     return (
                         <div key={`${item.id}-${item.accompagnementSelectionne?.nom}-${item.boissonSelectionnee?.nom}-${index}`} className="flex items-start gap-4">
                             <Image
                             src={imageSrc}
                             alt={item.nom}
-                            width={64}
-                            height={64}
-                            className="rounded-md object-cover"
+                            width={placeholder.width}
+                            height={placeholder.height}
+                            className="rounded-md object-cover w-16 h-16"
                             data-ai-hint={item.indiceImage}
                             />
                             <div className="flex-1">

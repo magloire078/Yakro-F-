@@ -149,9 +149,10 @@ export default function RestaurantPage() {
     }
 
     const restaurantMenu = menuItems.filter(item => item.restaurantId === params.id);
-    const imageSrc = restaurant.image.includes('placehold.co')
-        ? getPlaceholderImage(restaurant.indiceImage, 1200, 400)
-        : restaurant.image;
+    const placeholder = getPlaceholderImage(restaurant.indiceImage);
+    const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
+        ? restaurant.image
+        : placeholder.url;
 
     return (
         <div>

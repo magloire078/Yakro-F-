@@ -23,11 +23,10 @@ import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface AddToCartDialogProps {
   item: MenuItem;
-  imageSrc: string;
   children: React.ReactNode;
 }
 
-export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogProps) {
+export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [quantity, setQuantity] = React.useState(1);
   const [selectedSide, setSelectedSide] = React.useState<MenuOption | undefined>(
@@ -55,7 +54,6 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
     addToCart({
       ...item,
       quantite: quantity,
-      image: imageSrc,
       accompagnementSelectionne: selectedSide,
       boissonSelectionnee: selectedDrink,
     });
@@ -74,7 +72,6 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
         addToCart({
             ...item,
             quantite: 1,
-            image: imageSrc,
         });
          toast({
             title: 'Ajouté au panier !',
@@ -99,10 +96,11 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
     const drinkPrice = selectedDrink?.prix || 0;
     return (basePrice + sidePrice + drinkPrice) * quantity;
   }
-
-  const dialogImageSrc = (item.image && !item.image.includes('placehold.co'))
+  
+  const placeholder = getPlaceholderImage(item.indiceImage);
+  const dialogImageSrc = (item.image && !item.image.includes('picsum.photos'))
     ? item.image
-    : getPlaceholderImage(item.indiceImage, 400, 200);
+    : placeholder.url;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -111,7 +109,7 @@ export function AddToCartDialog({ item, imageSrc, children }: AddToCartDialogPro
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <div className="relative w-full h-32 rounded-lg overflow-hidden mb-4">
-                <Image src={dialogImageSrc} alt={item.nom} fill className="object-cover" data-ai-hint={item.indiceImage}/>
+                <Image src={dialogImageSrc} alt={item.nom} width={placeholder.width} height={placeholder.height} className="object-cover w-full h-full" data-ai-hint={item.indiceImage}/>
             </div>
             <DialogTitle>{item.nom}</DialogTitle>
             <DialogDescription>{item.description}</DialogDescription>

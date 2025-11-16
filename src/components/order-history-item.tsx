@@ -25,11 +25,8 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const handleReorder = () => {
     order.plats.forEach(item => {
         const menuItem = getMenuItem(item.id);
-        const imageSrc = (item.image && !item.image.includes('placehold.co'))
-            ? item.image
-            : getPlaceholderImage(item.indiceImage, 100, 100);
         if (menuItem) {
-            addToCart({...item, image: imageSrc });
+            addToCart({...item });
         }
     });
     toast({
@@ -68,9 +65,10 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 {order.plats.map((item, index) => {
                     const menuItem = getMenuItem(item.id);
                     if (!menuItem) return null;
-                    const imageSrc = (item.image && !item.image.includes('placehold.co'))
+                    const placeholder = getPlaceholderImage(item.indiceImage);
+                    const imageSrc = (item.image && !item.image.includes('picsum.photos'))
                         ? item.image
-                        : getPlaceholderImage(item.indiceImage, 100, 100);
+                        : placeholder.url;
                     return (
                         <div key={`${item.id}-${index}`} className="flex justify-between items-center">
                             <div className="flex items-center gap-4">

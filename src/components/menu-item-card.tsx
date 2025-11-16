@@ -16,9 +16,10 @@ interface MenuItemCardProps {
 }
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
-  const imageSrc = (item.image && !item.image.includes('placehold.co'))
+  const placeholder = getPlaceholderImage(item.indiceImage);
+  const imageSrc = (item.image && !item.image.includes('picsum.photos'))
     ? item.image 
-    : getPlaceholderImage(item.indiceImage, 100, 100);
+    : placeholder.url;
 
   return (
     <Card className="flex items-center p-4 gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 group">
@@ -26,8 +27,9 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
         <Image
           src={imageSrc}
           alt={item.nom}
-          fill
-          className="rounded-lg object-cover"
+          width={placeholder.width}
+          height={placeholder.height}
+          className="rounded-lg object-cover w-full h-full"
           data-ai-hint={item.indiceImage}
         />
       </div>
@@ -36,7 +38,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
         <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
         <div className="flex justify-between items-center mt-2">
           <p className="text-lg font-semibold text-primary">{item.prix.toLocaleString('fr-FR')} FCFA</p>
-          <AddToCartDialog item={item} imageSrc={imageSrc}>
+          <AddToCartDialog item={item}>
             <Button variant="ghost" size="icon" className="text-primary hover:text-primary">
               <PlusCircle className="w-6 h-6" />
             </Button>

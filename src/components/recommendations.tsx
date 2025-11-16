@@ -48,13 +48,9 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   const handleAddToCart = (recommendedItemName: string) => {
     const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === recommendedItemName.toLowerCase());
     if (menuItem) {
-      const imageSrc = (menuItem.image && !menuItem.image.includes('placehold.co'))
-        ? menuItem.image
-        : getPlaceholderImage(menuItem.indiceImage, 100, 100);
       const cartItem: CartItem = {
         ...menuItem,
         quantite: 1,
-        image: imageSrc
       };
       addToCart(cartItem);
       toast({
@@ -72,7 +68,8 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   
   const RecommendationCard = ({ rec }: { rec: any}) => {
     const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === rec.item.toLowerCase());
-    const imageSrc = menuItem ? ((menuItem.image && !menuItem.image.includes('placehold.co')) ? menuItem.image : getPlaceholderImage(menuItem.indiceImage, 600, 400)) : getPlaceholderImage(rec.cuisine, 600, 400);
+    const placeholder = getPlaceholderImage(menuItem?.indiceImage || rec.cuisine);
+    const imageSrc = menuItem?.image && !menuItem.image.includes('picsum.photos') ? menuItem.image : placeholder.url;
     
     return (
         <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
@@ -80,8 +77,8 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
               <Image
                   src={imageSrc}
                   alt={rec.item || 'plat recommandé'}
-                  width={600}
-                  height={400}
+                  width={placeholder.width}
+                  height={placeholder.height}
                   className="w-full h-48 object-cover"
                   data-ai-hint={`${rec.cuisine} food`}
                 />

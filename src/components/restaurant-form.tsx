@@ -63,9 +63,10 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
     React.useEffect(() => {
         if (initialData) {
             form.reset(initialData);
-            const imageSrc = (initialData.image && !initialData.image.includes('placehold.co'))
+            const placeholder = getPlaceholderImage(initialData.indiceImage);
+            const imageSrc = (initialData.image && !initialData.image.includes('picsum.photos'))
                 ? initialData.image
-                : getPlaceholderImage(initialData.indiceImage, 600, 400);
+                : placeholder.url;
             setImagePreview(imageSrc);
         }
     }, [initialData, form]);

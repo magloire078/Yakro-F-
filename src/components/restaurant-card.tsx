@@ -16,9 +16,10 @@ interface RestaurantCardProps {
 }
 
 export function RestaurantCard({ restaurant, featured = false, matchReason, distance }: RestaurantCardProps) {
-  const imageSrc = restaurant.image.includes('placehold.co') 
-    ? getPlaceholderImage(restaurant.indiceImage, 600, 400) 
-    : restaurant.image;
+  const placeholder = getPlaceholderImage(restaurant.indiceImage);
+  const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
+    ? restaurant.image 
+    : placeholder.url;
 
   return (
     <Link href={`/restaurants/${restaurant.id}`}>
@@ -30,9 +31,10 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
           <Image
             src={imageSrc}
             alt={restaurant.nom || ''}
-            fill
+            width={placeholder.width}
+            height={placeholder.height}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
             data-ai-hint={restaurant.indiceImage}
           />
            {featured && <Badge className="absolute top-2 right-2" variant="default">En vedette</Badge>}

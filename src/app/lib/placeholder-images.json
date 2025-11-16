@@ -1,0 +1,82 @@
+{
+  "maquis restaurant african": {
+    "url": "https://picsum.photos/seed/6/600/400",
+    "width": 600,
+    "height": 400
+  },
+  "french bistro fine dining": {
+    "url": "https://picsum.photos/seed/22/600/400",
+    "width": 600,
+    "height": 400
+  },
+  "pizza oven italy": {
+    "url": "https://picsum.photos/seed/27/600/400",
+    "width": 600,
+    "height": 400
+  },
+  "grilled chicken barbecue": {
+    "url": "https://picsum.photos/seed/36/600/400",
+    "width": 600,
+    "height": 400
+  },
+  "french pastries cakes": {
+    "url": "https://picsum.photos/seed/34/600/400",
+    "width": 600,
+    "height": 400
+  },
+  "braised chicken ivorian": {
+    "url": "https://picsum.photos/seed/49/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "grilled fish african food": {
+    "url": "https://picsum.photos/seed/40/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "beef fillet pepper sauce": {
+    "url": "https://picsum.photos/seed/46/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "nicoise salad gourmet": {
+    "url": "https://picsum.photos/seed/55/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "regina pizza classic": {
+    "url": "https://picsum.photos/seed/55/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "four seasons pizza": {
+    "url": "https://picsum.photos/seed/47/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "fish skewers grilled": {
+    "url": "https://picsum.photos/seed/50/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "lamb diby african barbecue": {
+    "url": "https://picsum.photos/seed/67/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "lemon tart meringue": {
+    "url": "https://picsum.photos/seed/85/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "mille feuille pastry": {
+    "url": "https://picsum.photos/seed/75/400/300",
+    "width": 400,
+    "height": 300
+  },
+  "default": {
+    "url": "https://picsum.photos/seed/1000/400/300",
+    "width": 400,
+    "height": 300
+  }
+}

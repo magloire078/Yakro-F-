@@ -7,10 +7,11 @@ import type { CartItem, MenuItem, Order, MenuOption } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: Omit<CartItem, 'image'>) => void;
   removeFromCart: (itemId: string, side?: string, drink?: string) => void;
   updateQuantity: (itemId: string, quantity: number, side?: string, drink?: string) => void;
   clearCart: () => void;
@@ -75,7 +76,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cartItems]);
 
 
-  const addToCart = (item: CartItem) => {
+  const addToCart = (item: Omit<CartItem, 'image'>) => {
     // If cart is not empty and new item is from a different restaurant, clear the cart.
     if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
         setCartItems([{ ...item, quantite: 1 }]);
@@ -176,10 +177,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Commission is calculated on the subtotal (food items only), not on the delivery fee.
     const commissionAmount = cartSubtotal * COMMISSION_RATE;
     const netRevenue = cartSubtotal - commissionAmount;
+    
+    const itemsForOrder = cartItems.map(item => {
+        const placeholder = getPlaceholderImage(item.indiceImage);
+        const image = (item.image && !item.image.includes('picsum.photos')) ? item.image : placeholder.url;
+        return {
+            ...item,
+            image, // Ensure the final URL is in the order data
+        }
+    });
 
     const newOrder: Omit<Order, 'id'> = {
         userId: user.uid,
-        plats: cartItems,
+        plats: itemsForOrder,
         sousTotal: cartSubtotal,
         fraisDeLivraison: cartDeliveryFee,
         total: cartTotal,

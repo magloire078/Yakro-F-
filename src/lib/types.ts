@@ -33,9 +33,9 @@ export interface Restaurant {
   longitude?: number;
 }
 
-export interface CartItem extends MenuItem {
+export interface CartItem extends Omit<MenuItem, 'image'> {
   quantite: number;
-  image: string; // Garde une URL pour l'affichage, même si c'est un placeholder
+  image?: string;
   accompagnementSelectionne?: MenuOption;
   boissonSelectionnee?: MenuOption;
 }

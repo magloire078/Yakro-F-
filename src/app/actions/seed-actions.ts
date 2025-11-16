@@ -8,6 +8,7 @@ import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export async function seedDatabaseAction(userId: string) {
     const restaurantsRef = collection(db, 'restaurants');
@@ -37,9 +38,11 @@ export async function seedDatabaseAction(userId: string) {
 
             if (assignedRestaurant) {
                 const itemDocRef = doc(collection(db, 'plats'));
+                const placeholder = getPlaceholderImage(item.indiceImage);
                 batch.set(itemDocRef, {
                     ...item,
-                    restaurantId: assignedRestaurant.id
+                    restaurantId: assignedRestaurant.id,
+                    image: placeholder.url
                 });
             }
         });

@@ -109,9 +109,10 @@ export default function DashboardMenuPage() {
             ) : myMenuItems.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {myMenuItems.map(item => {
-                        const imageSrc = (item.image && !item.image.includes('placehold.co'))
+                        const placeholder = getPlaceholderImage(item.indiceImage);
+                        const imageSrc = (item.image && !item.image.includes('picsum.photos'))
                             ? item.image
-                            : getPlaceholderImage(item.indiceImage, 400, 300);
+                            : placeholder.url;
                         return (
                             <Card key={item.id} className="flex flex-col">
                                 <CardHeader>
@@ -119,8 +120,9 @@ export default function DashboardMenuPage() {
                                         <Image
                                             src={imageSrc}
                                             alt={item.nom}
-                                            fill
-                                            className="object-cover"
+                                            width={placeholder.width}
+                                            height={placeholder.height}
+                                            className="object-cover w-full h-full"
                                             data-ai-hint={item.indiceImage}
                                         />
                                     </div>
