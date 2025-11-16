@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query, or } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -91,7 +91,40 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Restaurants & MenuItems are public
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
-        const unsubOrders = setupSubscription<Order>(query(collectionRef('commandes')), setOrders, 'commandes');
+        
+        let unsubOrders: Unsubscribe;
+        if(user) {
+             const myRestaurantIds = restaurants
+                .filter(r => r.proprietaireId === user.uid)
+                .map(r => r.id);
+
+            // Base query for orders related to the user as a customer or deliverer
+            let orderQuery = query(
+                collectionRef('commandes'),
+                or(
+                  where('userId', '==', user.uid),
+                  where('livreurId', '==', user.uid)
+                )
+            );
+            
+            // If the user is a restaurateur and has restaurants, we also get their orders
+            if (activeRole === 'restaurateur' && myRestaurantIds.length > 0) {
+                 orderQuery = query(
+                    collectionRef('commandes'),
+                    or(
+                      where('userId', '==', user.uid),
+                      where('livreurId', '==', user.uid),
+                      where('restaurantId', 'in', myRestaurantIds)
+                    )
+                 )
+            }
+             unsubOrders = setupSubscription<Order>(orderQuery, setOrders, 'commandes');
+
+        } else {
+            // If no user, don't subscribe to orders
+            setOrders([]);
+            unsubOrders = () => {};
+        }
 
 
         const timer = setTimeout(() => setIsLoading(false), 500);
@@ -102,7 +135,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             unsubOrders();
             clearTimeout(timer);
         };
-    }, [authReady, db, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [authReady, db, user, activeRole, restaurants, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };
