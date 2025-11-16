@@ -46,9 +46,13 @@ service cloud.firestore {
       allow create: if isUser(request.resource.data.userId);
 
       allow update: if 
-          (isRestaurantOwner(resource.data.restaurantId) && (request.resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée')) ||
+          // Le restaurateur peut accepter une commande (Placée -> En Préparation)
+          (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
+          // Un livreur peut prendre en charge une commande (En Préparation -> En Route)
           (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
+          // Le livreur peut marquer une commande comme livrée (En Route -> Livrée)
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
+          // Un SuperAdmin peut tout faire
           isSuperAdmin();
     }
 
