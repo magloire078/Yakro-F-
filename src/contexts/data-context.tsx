@@ -71,7 +71,7 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
+    const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
     const [authReady, setAuthReady] = React.useState(false);
 
     React.useEffect(() => {
@@ -88,42 +88,43 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(true);
         const collectionRef = (path: string) => collection(db, path);
         
-        // Restaurants & MenuItems are public
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
         
         let unsubOrders: Unsubscribe = () => {};
         
         if (user && userProfile) {
-             // Define base queries for each role
-            const clientQuery = where('userId', '==', user.uid);
-            const livreurQuery = where('livreurId', '==', user.uid);
-            
-            const myRestaurantIds = userProfile.role === 'restaurateur'
-              ? useData.getState().restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id)
-              : [];
-
-            let finalQuery;
-            
-            // Build the query based on the user's roles
-            // A user can be a client AND a restaurateur, or a client AND a livreur.
-            const queryConstraints = [];
-            queryConstraints.push(clientQuery);
-            if (userProfile.role === 'livreur') {
-                queryConstraints.push(livreurQuery);
-            }
-            if (userProfile.role === 'restaurateur' && myRestaurantIds.length > 0) {
-                 queryConstraints.push(where('restaurantId', 'in', myRestaurantIds));
-            }
+            let ordersQuery: Query | null = null;
             
             if (userProfile.roleSysteme === 'SuperAdmin') {
-                // SuperAdmin sees all orders
-                finalQuery = query(collectionRef('commandes'));
+                ordersQuery = query(collectionRef('commandes'));
             } else {
-                 finalQuery = query(collectionRef('commandes'), or(...queryConstraints));
+                switch (activeRole) {
+                    case 'client':
+                        ordersQuery = query(collectionRef('commandes'), where('userId', '==', user.uid));
+                        break;
+                    case 'restaurateur':
+                        const myRestaurantIds = restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
+                        if (myRestaurantIds.length > 0) {
+                            ordersQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
+                        }
+                        break;
+                    case 'livreur':
+                        // A livreur should see orders ready to be picked up, and their own active deliveries
+                         ordersQuery = query(collectionRef('commandes'), or(
+                            where('statut', '==', 'En Préparation'),
+                            where('livreurId', '==', user.uid)
+                        ));
+                        break;
+                }
             }
 
-            unsubOrders = setupSubscription<Order>(finalQuery, setOrders, 'commandes');
+            if (ordersQuery) {
+                unsubOrders = setupSubscription<Order>(ordersQuery, setOrders, 'commandes');
+            } else {
+                // If no query could be formed (e.g., restaurateur with no restaurants yet), clear orders
+                setOrders([]);
+            }
 
         } else {
             // If no user, don't subscribe to orders
@@ -139,7 +140,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             unsubOrders();
             clearTimeout(timer);
         };
-    }, [authReady, db, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [authReady, db, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders, restaurants]);
 
     return <>{children}</>;
 };
+
