@@ -10,7 +10,6 @@ import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
@@ -177,7 +176,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      <FirebaseErrorListener />
       {children}
     </AuthContext.Provider>
   );
