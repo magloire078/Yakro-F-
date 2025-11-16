@@ -1,9 +1,8 @@
 
-
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign, Users } from 'lucide-react';
@@ -16,14 +15,14 @@ const clientLinks = [
 ];
 
 const restaurateurLinks = [
-    { href: '/auth/restaurateur', label: 'Dashboard', icon: Home },
+    { href: '/restaurateur', label: 'Dashboard', icon: Home },
     { href: '/dashboard/menu', label: 'Menus', icon: BookOpenCheck },
     { href: '/dashboard/orders', label: 'Commandes', icon: ClipboardList },
     { href: '/dashboard/analytics', label: 'Stats', icon: BarChart },
 ];
 
 const livreurLinks = [
-    { href: '/auth/livreur', label: 'Courses', icon: Bike },
+    { href: '/livreur', label: 'Courses', icon: Bike },
     { href: '/dashboard/earnings', label: 'Gains', icon: DollarSign },
 ];
 
@@ -31,6 +30,7 @@ const livreurLinks = [
 export function BottomNavBar() {
     const { activeRole, userProfile } = useAuth();
     const pathname = usePathname();
+    const router = useRouter();
 
     let links;
     switch(activeRole) {
@@ -44,8 +44,9 @@ export function BottomNavBar() {
         default:
             links = clientLinks;
     }
-
-    if (!activeRole || userProfile?.roleSysteme === 'SuperAdmin') return null;
+    
+    // Don't render if user isn't logged in, or is a super admin, or has no active role
+    if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
 
     const hasMultipleRoles = userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1;
 

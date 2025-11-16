@@ -50,7 +50,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   
   const isAuthPage = pathname === '/login' || pathname === '/profile-selection';
 
-  if (dataLoading || authLoading) {
+  if (authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader className="h-16 w-16 animate-spin text-primary" />

@@ -35,7 +35,7 @@ export default function DashboardOrdersPage() {
 
     const myRestaurantIds = React.useMemo(() => {
         if (activeRole !== 'restaurateur' || !user) return [];
-        return restaurants.map(r => r.id);
+        return restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
     }, [restaurants, activeRole, user]);
 
     const myOrders = React.useMemo(() => {
@@ -126,7 +126,7 @@ export default function DashboardOrdersPage() {
         </Card>
     );
 
-    if (authLoading || isLoading || activeRole !== 'restaurateur') {
+    if (isLoading) {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 

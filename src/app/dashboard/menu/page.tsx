@@ -61,7 +61,7 @@ export default function DashboardMenuPage() {
         return menuItems.filter(item => myRestaurantIds.includes(item.restaurantId));
     }, [menuItems, myRestaurantIds]);
 
-    if (authLoading || isLoading) {
+    if (isLoading) {
         return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 

@@ -21,7 +21,7 @@ export default function LoginPage() {
             setIsRedirecting(true);
 
             if (userProfile.roleSysteme === 'SuperAdmin') {
-                router.replace('/auth/admin');
+                router.replace('/dashboard/admin');
                 return;
             }
             
@@ -32,7 +32,9 @@ export default function LoginPage() {
             } else {
                 const roleToSet = allowedRoles[0] || 'client';
                 setActiveRole(roleToSet);
-                const redirectPath = roleToSet === 'client' ? '/' : `/auth/${roleToSet}`;
+                let redirectPath = '/';
+                if (roleToSet === 'restaurateur') redirectPath = '/restaurateur';
+                if (roleToSet === 'livreur') redirectPath = '/livreur';
                 router.replace(redirectPath);
             }
         }

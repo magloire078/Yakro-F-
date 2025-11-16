@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader, User, Utensils, Bike, Shield } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const roleConfig = {
     client: { icon: User, name: 'Client', description: 'Commander des plats' },
@@ -17,6 +18,7 @@ const roleConfig = {
 export default function ProfileSelectionPage() {
     const { user, userProfile, loading: authLoading, setActiveRole } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
 
     React.useEffect(() => {
         if (!authLoading && !user) {
@@ -26,10 +28,12 @@ export default function ProfileSelectionPage() {
 
     const handleRoleSelect = (role: 'client' | 'restaurateur' | 'livreur') => {
         setActiveRole(role);
-        if (role === 'client') {
-            router.push('/');
+        if (role === 'restaurateur') {
+            router.push('/restaurateur');
+        } else if (role === 'livreur') {
+            router.push('/livreur');
         } else {
-            router.push(`/auth/${role}`);
+            router.push('/');
         }
     };
     
@@ -42,6 +46,25 @@ export default function ProfileSelectionPage() {
     }
 
     const availableRoles = userProfile.rolesAutorises || ['client'];
+    
+     if (availableRoles.length <= 1 && userProfile.roleSysteme !== 'SuperAdmin') {
+        const role = availableRoles[0] || 'client';
+        setActiveRole(role);
+        toast({ title: "Redirection...", description: `Vous n'avez qu'un seul rôle disponible.`});
+        if (role === 'restaurateur') {
+            router.replace('/restaurateur');
+        } else if (role === 'livreur') {
+            router.replace('/livreur');
+        } else {
+            router.replace('/');
+        }
+        return (
+             <div className="flex h-screen w-full items-center justify-center">
+                <Loader className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        )
+    }
+
 
     return (
         <div className="container flex min-h-screen flex-col items-center justify-center">

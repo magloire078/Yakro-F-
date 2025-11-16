@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -20,6 +19,8 @@ export default function EarningsPage() {
     React.useEffect(() => {
         if (!authLoading && user && activeRole !== 'livreur') {
             router.push('/');
+        } else if (!authLoading && !user) {
+            router.push('/login');
         }
     }, [user, authLoading, activeRole, router]);
     
@@ -40,7 +41,7 @@ export default function EarningsPage() {
         };
     }, [myCompletedDeliveries]);
 
-    if (authLoading || dataLoading) {
+    if (dataLoading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
