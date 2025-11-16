@@ -201,10 +201,11 @@ export function UserAuthForm() {
         {isGoogleLoading ? (
           <Loader className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          <Icons.logo className="mr-2 h-4 w-4" />
+          // Using a generic logo icon as a placeholder
+          <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 110.3 512 0 401.7 0 265.4 0 129.1 110.3 18.8 244 18.8c71.2 0 132.8 29 178.7 75.4l-75.4 64.5c-23.5-21.7-56.9-35.9-96.2-35.9-74.1 0-134.4 60.3-134.4 134.4s60.3 134.4 134.4 134.4c87.3 0 112.5-65.7 116.8-99.2H244v-87.1h244c2.5 13.1 3.9 26.6 3.9 40.8z"></path></svg>
         )}
         Google
-      </Button>
+      </a_syntax_fix>
        <p className="px-8 text-center text-sm text-muted-foreground">
         <button
           className="underline underline-offset-4 hover:text-primary"
