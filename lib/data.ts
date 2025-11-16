@@ -1,0 +1,182 @@
+
+
+import type { MenuItem, Restaurant, Order } from './types';
+import { getPlaceholderImage } from './placeholder-images';
+
+// These are used for seeding the database on first run and for providing static data
+// for features that don't require real-time updates.
+
+export const pastOrders: Order[] = [
+    
+];
+
+// Data for seeding the database if it's empty
+export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
+    {
+        proprietaireId: 'placeholderOwnerId1',
+        nom: 'Maquis du Val',
+        cuisine: 'Ivoirienne',
+        note: 4.5,
+        tempsDeLivraison: 35,
+        fraisDeLivraison: 1000,
+        image: getPlaceholderImage('maquis restaurant african', 600, 400),
+        indiceImage: 'maquis restaurant african',
+        adresse: 'Quartier 2000, Yamoussoukro',
+        latitude: 6.824,
+        longitude: -5.27,
+    },
+    {
+        proprietaireId: 'placeholderOwnerId2',
+        nom: 'Le Grand Large',
+        cuisine: 'Française',
+        note: 4.8,
+        tempsDeLivraison: 45,
+        fraisDeLivraison: 1500,
+        image: getPlaceholderImage('french bistro fine dining', 600, 400),
+        indiceImage: 'french bistro fine dining',
+        adresse: 'Rue des Lacs, Yamoussoukro',
+        latitude: 6.815,
+        longitude: -5.28
+    },
+    {
+        proprietaireId: 'placeholderOwnerId3',
+        nom: 'Pizza Bella',
+        cuisine: 'Pizzeria',
+        note: 4.2,
+        tempsDeLivraison: 30,
+        fraisDeLivraison: 500,
+        image: getPlaceholderImage('pizza oven italy', 600, 400),
+        indiceImage: 'pizza oven italy',
+        adresse: 'Centre-ville, près du marché',
+        latitude: 6.818,
+        longitude: -5.275
+    },
+    {
+        proprietaireId: 'placeholderOwnerId4',
+        nom: 'Le Régal d\'Afrique',
+        cuisine: 'Grillades',
+        note: 4.6,
+        tempsDeLivraison: 40,
+        fraisDeLivraison: 1000,
+        image: getPlaceholderImage('grilled chicken barbecue', 600, 400),
+        indiceImage: 'grilled chicken barbecue',
+        adresse: 'Route de l\'aéroport, Yamoussoukro',
+        latitude: 6.80,
+        longitude: -5.26
+    },
+    {
+        proprietaireId: 'placeholderOwnerId5',
+        nom: 'La Pâtisserie Gourmande',
+        cuisine: 'Pâtisserie',
+        note: 4.9,
+        tempsDeLivraison: 25,
+        fraisDeLivraison: 500,
+        image: getPlaceholderImage('french pastries cakes', 600, 400),
+        indiceImage: 'french pastries cakes',
+        adresse: 'Quartier Millionnaire, Yamoussoukro',
+        latitude: 6.83,
+        longitude: -5.29
+    }
+];
+
+export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
+    // Maquis du Val
+    {
+        nom: 'Poulet Braisé Complet',
+        description: 'Un poulet entier mariné aux épices locales et braisé à la perfection, servi avec frites et salade.',
+        prix: 7500,
+        image: getPlaceholderImage('braised chicken ivorian', 400, 300),
+        indiceImage: 'braised chicken ivorian',
+        accompagnementsDisponibles: [
+            { nom: 'Alloco', prix: 500 },
+            { nom: 'Attiéké', prix: 500 }
+        ],
+        boissonsDisponibles: [
+            { nom: 'Coca-Cola', prix: 500 },
+            { nom: 'Bissap', prix: 500 }
+        ]
+    },
+    {
+        nom: 'Poisson Braisé',
+        description: 'Belle carpe braisée, accompagnée de sa sauce spéciale et d\'attiéké frais.',
+        prix: 6000,
+        image: getPlaceholderImage('grilled fish african food', 400, 300),
+        indiceImage: 'grilled fish african food',
+        accompagnementsDisponibles: [
+            { nom: 'Frites de Patate Douce', prix: 700 },
+            { nom: 'Riz Blanc', prix: 300 }
+        ],
+        boissonsDisponibles: [
+            { nom: 'Guinness', prix: 1000 },
+            { nom: 'Eau Minérale', prix: 500 }
+        ]
+    },
+    // Le Grand Large
+    {
+        nom: 'Filet de Boeuf et sa sauce au poivre',
+        description: 'Tendre filet de bœuf poêlé, nappé d\'une onctueuse sauce au poivre vert, et accompagné de gratin dauphinois.',
+        prix: 12500,
+        image: getPlaceholderImage('beef fillet pepper sauce', 400, 300),
+        indiceImage: 'beef fillet pepper sauce',
+        boissonsDisponibles: [
+            { nom: 'Verre de vin rouge', prix: 2500 },
+            { nom: 'Perrier', prix: 1000 }
+        ]
+    },
+    {
+        nom: 'Salade Niçoise Revisitée',
+        description: 'Une version gastronomique de la célèbre salade niçoise, avec du thon frais mi-cuit.',
+        prix: 8500,
+        image: getPlaceholderImage('nicoise salad gourmet', 400, 300),
+        indiceImage: 'nicoise salad gourmet'
+    },
+    // Pizza Bella
+    {
+        nom: 'Pizza Reine',
+        description: 'La classique et indémodable : sauce tomate, mozzarella, jambon, et champignons frais.',
+        prix: 5500,
+        image: getPlaceholderImage('regina pizza classic', 400, 300),
+        indiceImage: 'regina pizza classic',
+        boissonsDisponibles: [
+            { nom: 'Fanta', prix: 500 },
+            { nom: 'Bière locale', prix: 1000 }
+        ]
+    },
+    {
+        nom: 'Pizza 4 Saisons',
+        description: 'Un quart de chaque saveur : artichauts, jambon, champignons, et poivrons.',
+        prix: 6500,
+        image: getPlaceholderImage('four seasons pizza', 400, 300),
+        indiceImage: 'four seasons pizza'
+    },
+    // Le Régal d'Afrique
+    {
+        nom: 'Brochettes de Mérou',
+        description: 'Tendres cubes de mérou marinés et grillés, servis avec une sauce chien et de l\'alloco.',
+        prix: 7000,
+        image: getPlaceholderImage('fish skewers grilled', 400, 300),
+        indiceImage: 'fish skewers grilled'
+    },
+    {
+        nom: 'Agneau Diby',
+        description: 'Fines tranches d\'agneau marinées à la sénégalaise et grillées, un délice !',
+        prix: 8000,
+        image: getPlaceholderImage('lamb diby african barbecue', 400, 300),
+        indiceImage: 'lamb diby african barbecue'
+    },
+    // La Pâtisserie Gourmande
+    {
+        nom: 'Tarte au citron meringuée',
+        description: 'Un équilibre parfait entre l\'acidité du citron et la douceur de la meringue italienne.',
+        prix: 2500,
+        image: getPlaceholderImage('lemon tart meringue', 400, 300),
+        indiceImage: 'lemon tart meringue'
+    },
+    {
+        nom: 'Mille-feuille',
+        description: 'Pâte feuilletée croustillante et crème pâtissière légère à la vanille de Madagascar.',
+        prix: 3000,
+        image: getPlaceholderImage('mille feuille pastry', 400, 300),
+        indiceImage: 'mille feuille pastry'
+    }
+];
