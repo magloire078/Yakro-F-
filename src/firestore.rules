@@ -3,71 +3,8 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    function isUserAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isUser(uid) {
-      return isUserAuthenticated() && request.auth.uid == uid;
-    }
-    
-    function isRestaurantOwner(restaurantId) {
-       return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
-    }
-    
-    function isSuperAdmin() {
-      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
-    }
-
-    match /restaurants {
-      allow list: if true;
-    }
-
-    match /restaurants/{restaurantId} {
-      allow read: if true;
-      allow create: if isUser(request.resource.data.proprietaireId);
-      allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
-    }
-    
-    match /plats {
-      allow list: if true;
-    }
-
-    match /plats/{platId} {
-        allow read: if true;
-        allow create: if isRestaurantOwner(request.resource.data.restaurantId);
-        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
-    }
-
-    match /commandes/{orderId} {
-      allow read: if request.auth.uid == resource.data.userId || request.auth.uid == resource.data.livreurId || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
-
-      allow create: if isUser(request.resource.data.userId);
-
-      allow update: if 
-          // Le restaurateur peut accepter une commande (Placée -> En Préparation)
-          (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
-          // Un livreur peut prendre en charge une commande (En Préparation -> En Route)
-          (isUserAuthenticated() && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
-          // Le livreur peut marquer une commande comme livrée (En Route -> Livrée)
-          (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          // Un SuperAdmin peut tout faire
-          isSuperAdmin();
-    }
-
-    match /utilisateurs/{userId} {
-      allow read: if isUser(userId) || isSuperAdmin();
-      // Any authenticated user can update their own profile.
-      // SuperAdmins can update any profile.
-      // The auto-recovery mechanism needs to be able to promote a user, 
-      // so we also allow writes if the database has no SuperAdmin yet.
-      allow update: if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);
-      allow create: if request.auth.uid == userId || isSuperAdmin();
-    }
-     match /utilisateurs {
-        allow list: if isSuperAdmin();
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
-    

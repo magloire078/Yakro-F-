@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, getDocs, collection, query, where, writeBatch, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, getDocs, collection, query, where, writeBatch, getDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
@@ -11,6 +11,27 @@ import { useRouter } from 'next/navigation';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useToast } from '@/hooks/use-toast';
+
+
+// --- MOCK DATA FOR DEVELOPMENT ---
+const mockUser = {
+  uid: 'mock-user-id',
+  email: 'dev@yakrofe.com',
+  displayName: 'Dev User',
+  // Add other User properties if needed, but they are mostly nullable
+} as User;
+
+const mockUserProfile: UserProfile = {
+  uid: 'mock-user-id',
+  email: 'dev@yakrofe.com',
+  nom: 'Utilisateur de Dév.',
+  dateCreation: Timestamp.now(),
+  role: 'client',
+  rolesAutorises: ['client', 'restaurateur', 'livreur'],
+  roleSysteme: 'SuperAdmin',
+  adresseParDefaut: 'Yamoussoukro, Quartier des Développeurs'
+};
+// --- END MOCK DATA ---
 
 interface AuthContextType {
   user: User | null;
@@ -27,13 +48,15 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = React.useState<User | null>(null);
-  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [user, setUser] = React.useState<User | null>(mockUser);
+  const [userProfile, setUserProfile] = React.useState<UserProfile | null>(mockUserProfile);
+  const [loading, setLoading] = React.useState(false); // Set to false to bypass loading screen
   const [activeRole, setActiveRoleState] = React.useState<AppRole>('client');
   const router = useRouter();
   const { toast } = useToast();
 
+  // The original useEffect for Firebase Auth is commented out to enable mock mode.
+  /*
   React.useEffect(() => {
     let unsubscribeProfile: Unsubscribe | undefined;
 
@@ -61,8 +84,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setActiveRoleState('client');
             }
           } else {
-            // This case should ideally not happen if signup flow is robust.
-            // But as a fallback, we can clear the state.
             setUserProfile(null);
             console.warn("User is authenticated but has no profile document.");
           }
@@ -90,77 +111,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
   }, []);
+  */
   
+  React.useEffect(() => {
+    // This part remains to handle role switching even in mock mode
+    const savedRole = localStorage.getItem('activeRole') as AppRole;
+    if (savedRole && mockUserProfile.rolesAutorises?.includes(savedRole)) {
+      setActiveRoleState(savedRole);
+    }
+  }, []);
+
   const setActiveRole = (role: AppRole) => {
       localStorage.setItem('activeRole', role);
       setActiveRoleState(role);
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
-      const userDocRef = doc(db, 'utilisateurs', uid);
-      try {
-        await updateDoc(userDocRef, data);
-      } catch(e) {
-          const permissionError = new FirestorePermissionError({
-              path: userDocRef.path,
-              operation: 'update',
-              requestResourceData: data,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          // Re-throw the error so the calling component knows the operation failed.
-          throw permissionError;
-      }
+      console.log("Mock updateUserProfile:", uid, data);
+      setUserProfile(prev => prev ? { ...prev, ...data } : null);
+      toast({ title: "Profil mis à jour (simulation)" });
+      await Promise.resolve();
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-    const userDocRef = doc(db, 'utilisateurs', uid);
-    try {
-        await updateDoc(userDocRef, data);
-        toast({ title: 'Succès', description: 'Le profil a été mis à jour.' });
-    } catch (e) {
-        const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'update',
-            requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        // Do not toast here, let the listener handle it.
-        throw permissionError;
-    }
+    console.log("Mock updateOtherUserProfile:", uid, data);
+    toast({ title: 'Profil mis à jour (simulation)' });
+    await Promise.resolve();
   };
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}): Promise<void> => {
-    const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
-    
-    // This function is for admins to create users. Client-side SDKs cannot create Firebase Auth users 
-    // on behalf of others. This is a prototype simulation. We'll create the Firestore document only.
-    // In a real app, this would be a server-side Cloud Function.
-
-    const userDocRef = doc(collection(db, 'utilisateurs')); // Create a new doc ref to get an ID
-    const newUserProfile: UserProfile = {
-        uid: userDocRef.id,
-        email: data.email,
-        nom: data.nom,
-        dateCreation: serverTimestamp(),
-        role: 'client', // Default active role is always 'client' for a good UX on first login
-        rolesAutorises: roles,
-        roleSysteme: 'User',
-        ...(data.telephone && { telephone: data.telephone }),
-    };
-
-    try {
-        await setDoc(userDocRef, newUserProfile);
-        toast({ title: 'Utilisateur créé (Profil Firestore)', description: `Le profil pour ${data.email} a été créé. La création de l'authentification est simulée.`});
-    } catch (error: any) {
-       const permissionError = new FirestorePermissionError({
-          path: userDocRef.path,
-          operation: 'create',
-          requestResourceData: newUserProfile,
-      });
-      errorEmitter.emit('permission-error', permissionError);
-      toast({ variant: 'destructive', title: 'Erreur de permission', description: 'Impossible de créer le profil utilisateur dans la base de données.'});
-      throw error; // Re-throw for the form to handle its loading state
-    }
+    console.log("Mock createNewUser:", data);
+    toast({ title: 'Utilisateur créé (simulation)' });
+    await Promise.resolve();
   }
 
 
