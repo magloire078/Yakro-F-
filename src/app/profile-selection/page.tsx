@@ -8,7 +8,7 @@ import { Loader } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProfileSelectionPage() {
-    const { user, userProfile, loading: authLoading } = useAuth();
+    const { user, userProfile, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
 
@@ -19,8 +19,7 @@ export default function ProfileSelectionPage() {
         }
 
         if (userProfile) {
-            const role = userProfile.role || 'client';
-            toast({ title: "Redirection...", description: `Connexion en tant que ${role}.`});
+            const role = activeRole || userProfile.role || 'client';
             
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 router.replace('/dashboard/admin');
@@ -32,7 +31,7 @@ export default function ProfileSelectionPage() {
                 router.replace('/');
             }
         }
-    }, [user, userProfile, authLoading, router, toast]);
+    }, [user, userProfile, authLoading, router, activeRole]);
     
     return (
         <div className="flex h-screen w-full items-center justify-center">

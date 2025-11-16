@@ -5,9 +5,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, CookingPot, Bike, Users, ArrowRight } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { type MenuItem, type Restaurant } from '@/lib/types';
+import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, Users, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -16,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 
 export default function RestaurateurHomePage() {
-    const { restaurants, menuItems, orders, isLoading: isDataLoading } = useData();
+    const { restaurants, orders, isLoading: isDataLoading } = useData();
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
 

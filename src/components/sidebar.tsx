@@ -169,7 +169,7 @@ export function Sidebar() {
 
           {/* Super Admin Link */}
           {userProfile?.roleSysteme === 'SuperAdmin' && (
-            <Button variant={pathname === '/dashboard/admin' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+            <Button variant={pathname.startsWith('/dashboard/admin') ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
               <Link href="/dashboard/admin">
                 <ShieldCheck className="mr-2 h-5 w-5" />
                 Administration

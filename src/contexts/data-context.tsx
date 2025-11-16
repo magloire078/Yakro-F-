@@ -71,7 +71,7 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { restaurants, setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
+    const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
     const [authReady, setAuthReady] = React.useState(false);
 
     React.useEffect(() => {
@@ -92,38 +92,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
         
-        let unsubOrders: Unsubscribe;
-        if(user) {
-             const myRestaurantIds = restaurants
-                .filter(r => r.proprietaireId === user.uid)
-                .map(r => r.id);
-
-            // Base query for orders related to the user as a customer or deliverer
-            let orderQuery = query(
-                collectionRef('commandes'),
-                or(
-                  where('userId', '==', user.uid),
-                  where('livreurId', '==', user.uid)
-                )
-            );
+        let unsubOrders: Unsubscribe = () => {};
+        
+        if (user && userProfile) {
+             // Define base queries for each role
+            const clientQuery = where('userId', '==', user.uid);
+            const livreurQuery = where('livreurId', '==', user.uid);
             
-            // If the user is a restaurateur and has restaurants, we also get their orders
-            if (activeRole === 'restaurateur' && myRestaurantIds.length > 0) {
-                 orderQuery = query(
-                    collectionRef('commandes'),
-                    or(
-                      where('userId', '==', user.uid),
-                      where('livreurId', '==', user.uid),
-                      where('restaurantId', 'in', myRestaurantIds)
-                    )
-                 )
+            const myRestaurantIds = userProfile.role === 'restaurateur'
+              ? useData.getState().restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id)
+              : [];
+
+            let finalQuery;
+            
+            // Build the query based on the user's roles
+            // A user can be a client AND a restaurateur, or a client AND a livreur.
+            const queryConstraints = [];
+            queryConstraints.push(clientQuery);
+            if (userProfile.role === 'livreur') {
+                queryConstraints.push(livreurQuery);
             }
-             unsubOrders = setupSubscription<Order>(orderQuery, setOrders, 'commandes');
+            if (userProfile.role === 'restaurateur' && myRestaurantIds.length > 0) {
+                 queryConstraints.push(where('restaurantId', 'in', myRestaurantIds));
+            }
+            
+            if (userProfile.roleSysteme === 'SuperAdmin') {
+                // SuperAdmin sees all orders
+                finalQuery = query(collectionRef('commandes'));
+            } else {
+                 finalQuery = query(collectionRef('commandes'), or(...queryConstraints));
+            }
+
+            unsubOrders = setupSubscription<Order>(finalQuery, setOrders, 'commandes');
 
         } else {
             // If no user, don't subscribe to orders
             setOrders([]);
-            unsubOrders = () => {};
         }
 
 
@@ -135,7 +139,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             unsubOrders();
             clearTimeout(timer);
         };
-    }, [authReady, db, user, activeRole, restaurants, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [authReady, db, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };
