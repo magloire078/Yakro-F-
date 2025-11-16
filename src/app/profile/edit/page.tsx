@@ -31,7 +31,7 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function EditProfilePage() {
-    const { user, userProfile, updateUserProfile, loading: authLoading } = useAuth();
+    const { user, userProfile, updateUserProfile } = useAuth();
     const { toast } = useToast();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -46,9 +46,6 @@ export default function EditProfilePage() {
     });
 
     React.useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        }
         if (userProfile) {
             form.reset({
                 nom: userProfile.nom || '',
@@ -56,7 +53,7 @@ export default function EditProfilePage() {
                 adresseParDefaut: userProfile.adresseParDefaut || '',
             });
         }
-    }, [user, userProfile, authLoading, router, form]);
+    }, [userProfile, form]);
 
 
     const onSubmit = async (data: ProfileFormValues) => {
@@ -81,12 +78,8 @@ export default function EditProfilePage() {
         }
     }
     
-    if (authLoading || !userProfile) {
-        return (
-             <div className="flex h-screen w-full items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-primary" />
-            </div>
-        )
+    if (!userProfile) {
+        return null;
     }
 
   return (

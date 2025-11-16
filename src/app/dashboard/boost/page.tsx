@@ -15,8 +15,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function BoostPage() {
-    const { user, loading: authLoading, activeRole } = useAuth();
-    const { restaurants, updateRestaurant, isLoading } = useData();
+    const { user, activeRole } = useAuth();
+    const { restaurants, updateRestaurant } = useData();
     const { toast } = useToast();
     const [updatingId, setUpdatingId] = React.useState<string | null>(null);
     const router = useRouter();
@@ -27,12 +27,10 @@ export default function BoostPage() {
     }, [restaurants, user, activeRole]);
 
      React.useEffect(() => {
-        if (!authLoading && user && activeRole !== 'restaurateur') {
+        if (user && activeRole !== 'restaurateur') {
             router.push('/');
-        } else if (!authLoading && !user) {
-            router.push('/login');
         }
-    }, [user, authLoading, activeRole, router]);
+    }, [user, activeRole, router]);
     
     const handleBoostToggle = async (restaurant: Restaurant) => {
         setUpdatingId(restaurant.id);
@@ -55,10 +53,6 @@ export default function BoostPage() {
         }
     };
     
-    if (isLoading) {
-        return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
-    }
-
     return (
         <div className="container mx-auto">
             <div className="flex items-center gap-4 mb-8">

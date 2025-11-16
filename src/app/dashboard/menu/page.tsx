@@ -29,9 +29,9 @@ import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 
 export default function DashboardMenuPage() {
-    const { user, loading: authLoading, activeRole } = useAuth();
+    const { user, activeRole } = useAuth();
     const router = useRouter();
-    const { restaurants, menuItems, isLoading, deleteMenuItem } = useData();
+    const { restaurants, menuItems, deleteMenuItem } = useData();
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
 
@@ -39,9 +39,7 @@ export default function DashboardMenuPage() {
     const [editingItem, setEditingItem] = React.useState<MenuItem | null>(null);
 
     React.useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        } else if (!authLoading && user && activeRole !== 'restaurateur') {
+        if (user && activeRole !== 'restaurateur') {
             toast({
                 variant: 'destructive',
                 title: 'Accès non autorisé',
@@ -49,7 +47,7 @@ export default function DashboardMenuPage() {
             });
             router.push('/');
         }
-    }, [user, authLoading, router, activeRole, toast]);
+    }, [user, router, activeRole, toast]);
 
     const myRestaurantIds = React.useMemo(() => {
         if (!user || activeRole !== 'restaurateur') return [];
@@ -60,10 +58,6 @@ export default function DashboardMenuPage() {
         if (myRestaurantIds.length === 0) return [];
         return menuItems.filter(item => myRestaurantIds.includes(item.restaurantId));
     }, [menuItems, myRestaurantIds]);
-
-    if (isLoading) {
-        return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
-    }
 
     const getRestaurantName = (restaurantId: string) => {
         return restaurants.find(r => r.id === restaurantId)?.nom || 'Restaurant inconnu';

@@ -12,28 +12,14 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function OrdersPage() {
-    const { user, loading: authLoading } = useAuth();
-    const { orders, isLoading } = useData();
+    const { user } = useAuth();
+    const { orders } = useData();
     const router = useRouter();
-    
-    React.useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        }
-    }, [user, authLoading, router]);
 
     const userOrders = React.useMemo(() => {
         if (!user) return [];
         return orders.filter(o => o.userId === user.uid);
     }, [orders, user]);
-
-    if (isLoading || authLoading) {
-        return (
-            <div className="flex h-full w-full items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-primary" />
-            </div>
-        );
-    }
     
     if (!user) {
          return (

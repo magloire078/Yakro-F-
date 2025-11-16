@@ -15,27 +15,20 @@ import Link from 'next/link';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export default function MyRestaurantsPage() {
-    const { user, loading: authLoading, activeRole } = useAuth();
-    const { restaurants, isLoading: dataLoading } = useData();
+    const { user, activeRole } = useAuth();
+    const { restaurants } = useData();
     const router = useRouter();
-    const { toast } = useToast();
 
     React.useEffect(() => {
-        if (!authLoading && user && activeRole !== 'restaurateur') {
+        if (user && activeRole !== 'restaurateur') {
             router.push('/');
-        } else if (!authLoading && !user) {
-            router.push('/login');
         }
-    }, [user, authLoading, activeRole, router]);
+    }, [user, activeRole, router]);
 
     const myRestaurants = React.useMemo(() => {
         if (!user) return [];
         return restaurants.filter(r => r.proprietaireId === user.uid);
     }, [restaurants, user]);
-
-    if (dataLoading) {
-        return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
-    }
 
     return (
         <div className="container mx-auto">

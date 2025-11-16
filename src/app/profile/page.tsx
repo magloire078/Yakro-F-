@@ -17,16 +17,10 @@ import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
-  const { user, userProfile, loading: authLoading, activeRole, updateUserProfile } = useAuth();
-  const { orders, restaurants, isLoading: dataLoading } = useData();
+  const { user, userProfile, activeRole, updateUserProfile } = useAuth();
+  const { orders, restaurants } = useData();
   const router = useRouter();
   const { toast } = useToast();
-
-  React.useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
   
   const handleSignOut = async () => {
     await signOut(auth);
@@ -68,12 +62,9 @@ export default function ProfilePage() {
     return nameOrEmail.substring(0, 2).toUpperCase();
   }
 
-  if (authLoading || dataLoading || !user || !userProfile) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader className="h-16 w-16 animate-spin text-primary" />
-      </div>
-    );
+  if (!user || !userProfile) {
+    // This should be handled by layout, but as a fallback
+    return null;
   }
 
   return (

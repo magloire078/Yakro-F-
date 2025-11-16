@@ -15,27 +15,25 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 
 export default function MarketingPage() {
-  const { restaurants, isLoading: dataLoading } = useData();
+  const { restaurants } = useData();
   const [myRestaurants, setMyRestaurants] = React.useState<Restaurant[]>([]);
   const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
-  const { user, loading: authLoading, activeRole } = useAuth();
+  const { user, activeRole } = useAuth();
   const router = useRouter();
 
   React.useEffect(() => {
-    if (!authLoading && user && activeRole !== 'restaurateur') {
+    if (user && activeRole !== 'restaurateur') {
         toast({
             variant: 'destructive',
             title: 'Accès non autorisé',
             description: 'Veuillez sélectionner le profil "Restaurateur" pour accéder à cette page.',
         })
         router.push('/');
-    } else if (!authLoading && !user) {
-        router.push('/login');
     }
-  }, [user, authLoading, router, activeRole, toast]);
+  }, [user, router, activeRole, toast]);
 
    React.useEffect(() => {
     if (user && activeRole === 'restaurateur') {
@@ -81,14 +79,6 @@ export default function MarketingPage() {
       setLoading(false);
     }
   };
-  
-  if (dataLoading) {
-    return (
-        <div className="flex h-full w-full items-center justify-center">
-            <Loader className="h-16 w-16 animate-spin text-primary" />
-        </div>
-    )
-  }
 
   return (
     <div className="container mx-auto">

@@ -12,17 +12,15 @@ import { Badge } from '@/components/ui/badge';
 import type { Order } from '@/lib/types';
 
 export default function EarningsPage() {
-    const { user, loading: authLoading, activeRole } = useAuth();
+    const { user, activeRole } = useAuth();
     const router = useRouter();
-    const { orders, isLoading: dataLoading } = useData();
+    const { orders } = useData();
     
     React.useEffect(() => {
-        if (!authLoading && user && activeRole !== 'livreur') {
+        if (user && activeRole !== 'livreur') {
             router.push('/');
-        } else if (!authLoading && !user) {
-            router.push('/login');
         }
-    }, [user, authLoading, activeRole, router]);
+    }, [user, activeRole, router]);
     
     const myCompletedDeliveries = React.useMemo(() => {
         if (!user || activeRole !== 'livreur') return [];
@@ -40,14 +38,6 @@ export default function EarningsPage() {
             averageEarning,
         };
     }, [myCompletedDeliveries]);
-
-    if (dataLoading) {
-        return (
-            <div className="flex h-full w-full items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-primary" />
-            </div>
-        );
-    }
     
     return (
         <div className="container mx-auto space-y-8">

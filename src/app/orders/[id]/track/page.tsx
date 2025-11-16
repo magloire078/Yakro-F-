@@ -18,47 +18,55 @@ import Link from 'next/link';
 export default function TrackOrderPage() {
     const params = useParams();
     const router = useRouter();
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const { getOrder, getRestaurant } = useData();
 
     const orderId = params.id as string;
-    const order = getOrder ? getOrder(orderId) : undefined; // The hook might not be loaded yet
     
+    // We get the order from the store but also subscribe to real-time updates for its status
+    const [liveOrder, setLiveOrder] = React.useState<Order | null>(getOrder(orderId) || null);
     const [livreur, setLivreur] = React.useState<UserProfile | null>(null);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
-    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        if (!order || !order.livreurId) {
-            if (!authLoading && order) { // If order exists but no livreurId
-                router.push('/'); // Redirect if there's no delivery to track
-            }
+      const orderDocRef = doc(db, 'commandes', orderId);
+      const unsubscribeOrder = onSnapshot(orderDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const orderData = { id: docSnap.id, ...docSnap.data() } as Order;
+           // Security check
+          if (user && orderData.userId !== user.uid) {
+            router.push('/');
             return;
-        };
+          }
+          setLiveOrder(orderData);
 
-        setRestaurant(getRestaurant(order.restaurantId) || null);
-        
-        const livreurDocRef = doc(db, 'utilisateurs', order.livreurId);
-        const unsubscribe = onSnapshot(livreurDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-                setLivreur(docSnap.data() as UserProfile);
-            }
-            setLoading(false);
-        });
+          // Once we have the order, fetch related data
+          if (orderData.restaurantId) {
+            setRestaurant(getRestaurant(orderData.restaurantId) || null);
+          }
+          
+          if (orderData.livreurId) {
+              const livreurDocRef = doc(db, 'utilisateurs', orderData.livreurId);
+              const unsubscribeLivreur = onSnapshot(livreurDocRef, (livreurSnap) => {
+                  if (livreurSnap.exists()) {
+                      setLivreur(livreurSnap.data() as UserProfile);
+                  }
+              });
+              return () => unsubscribeLivreur(); // Clean up livreur listener
+          } else {
+              setLivreur(null);
+          }
+        } else {
+            router.push('/');
+        }
+      });
+      return () => unsubscribeOrder();
+    }, [orderId, user, router, getRestaurant]);
 
-        return () => unsubscribe();
-
-    }, [order, getRestaurant, authLoading, router]);
-
-    if (loading || authLoading) {
-        return <div className="flex h-screen w-full items-center justify-center"><Loader className="animate-spin h-16 w-16 text-primary" /></div>;
-    }
-
-    if (!order || !user || order.userId !== user.uid) {
+    if (!liveOrder) {
         return (
-            <div className="container mx-auto text-center py-10">
-                <p>Commande non trouvée ou accès non autorisé.</p>
-                <Button asChild className="mt-4"><Link href="/">Retour à l'accueil</Link></Button>
+            <div className="flex h-screen w-full items-center justify-center">
+                <p>Chargement de la commande...</p>
             </div>
         );
     }
@@ -70,9 +78,6 @@ export default function TrackOrderPage() {
             return 'https://picsum.photos/seed/map/1200/800';
         }
         
-        // Simple static map representation - NOT A REAL MAP API
-        // For a real app, use Google Maps Static API or a library like react-map-gl
-        // This is a placeholder to demonstrate the concept
         const path = `path=color:0x0000ff|weight:5|${restaurant.latitude},${restaurant.longitude}|${livreur.latitude},${livreur.longitude}`;
         const markers = `markers=color:red|label:R|${restaurant.latitude},${restaurant.longitude}&markers=color:green|label:L|${livreur.latitude},${livreur.longitude}`;
 
@@ -88,7 +93,7 @@ export default function TrackOrderPage() {
             </Button>
              <Card>
                 <CardHeader>
-                    <CardTitle>Suivi de votre commande n°{order.id.slice(0, 6)}...</CardTitle>
+                    <CardTitle>Suivi de votre commande n°{liveOrder.id.slice(0, 6)}...</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-2 relative h-96 md:h-full min-h-[400px] rounded-lg overflow-hidden bg-muted">
@@ -117,7 +122,7 @@ export default function TrackOrderPage() {
                             <Bike className="h-8 w-8 text-primary mt-1" />
                             <div>
                                 <p className="font-bold">Livreur</p>
-                                <p className="text-muted-foreground">{livreur?.nom}</p>
+                                <p className="text-muted-foreground">{livreur?.nom || "En attente d'assignation..."}</p>
                                 {livreur?.latitude ? (
                                     <p className="text-sm text-primary animate-pulse">En mouvement...</p>
                                 ) : (
@@ -129,7 +134,7 @@ export default function TrackOrderPage() {
                             <Home className="h-8 w-8 text-green-600 mt-1" />
                             <div>
                                 <p className="font-bold">Votre Adresse</p>
-                                <p className="text-muted-foreground">{order.adresseClient}</p>
+                                <p className="text-muted-foreground">{liveOrder.adresseClient}</p>
                             </div>
                         </div>
                     </div>

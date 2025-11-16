@@ -41,7 +41,7 @@ export default function NewRestaurantPage() {
     const { addRestaurant } = useData();
     const { toast } = useToast();
     const router = useRouter();
-    const { user, activeRole, loading: authLoading } = useAuth();
+    const { user, activeRole } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
@@ -49,12 +49,10 @@ export default function NewRestaurantPage() {
 
 
      React.useEffect(() => {
-        if (!authLoading && activeRole !== 'restaurateur') {
+        if (user && activeRole !== 'restaurateur') {
             router.push('/');
-        } else if (!authLoading && !user) {
-            router.push('/login');
         }
-    }, [activeRole, router, user, authLoading]);
+    }, [activeRole, router, user]);
 
     const form = useForm<RestaurantFormValues>({
         resolver: zodResolver(restaurantFormSchema),

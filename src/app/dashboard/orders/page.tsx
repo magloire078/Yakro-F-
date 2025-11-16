@@ -14,16 +14,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 export default function DashboardOrdersPage() {
-    const { user, loading: authLoading, activeRole } = useAuth();
+    const { user, activeRole } = useAuth();
     const router = useRouter();
-    const { orders, restaurants, isLoading, updateOrderStatus } = useData();
+    const { orders, restaurants, updateOrderStatus } = useData();
     const { toast } = useToast();
     const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
 
     React.useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        } else if (!authLoading && user && activeRole !== 'restaurateur') {
+        if (user && activeRole !== 'restaurateur') {
             toast({
                 variant: 'destructive',
                 title: 'Accès non autorisé',
@@ -31,7 +29,7 @@ export default function DashboardOrdersPage() {
             })
             router.push('/profile-selection');
         }
-    }, [user, authLoading, router, activeRole, toast]);
+    }, [user, router, activeRole, toast]);
 
     const myRestaurantIds = React.useMemo(() => {
         if (activeRole !== 'restaurateur' || !user) return [];
@@ -125,10 +123,6 @@ export default function DashboardOrdersPage() {
             </CardContent>
         </Card>
     );
-
-    if (isLoading) {
-        return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
-    }
 
     return (
         <div className="container mx-auto">

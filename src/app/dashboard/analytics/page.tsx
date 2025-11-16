@@ -12,17 +12,15 @@ import type { Order } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 export default function AnalyticsPage() {
-    const { user, loading: authLoading, activeRole } = useAuth();
+    const { user, activeRole } = useAuth();
     const router = useRouter();
-    const { orders, restaurants, isLoading: dataLoading } = useData();
+    const { orders, restaurants } = useData();
     
     React.useEffect(() => {
-        if (!authLoading && user && activeRole !== 'restaurateur') {
+        if (user && activeRole !== 'restaurateur') {
             router.push('/');
-        } else if (!authLoading && !user) {
-            router.push('/login');
         }
-    }, [user, authLoading, activeRole, router]);
+    }, [user, activeRole, router]);
 
     const myRestaurantIds = React.useMemo(() => {
         if (activeRole !== 'restaurateur' || !user) return [];
@@ -78,15 +76,6 @@ export default function AnalyticsPage() {
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);
     }, [myOrders]);
-
-
-    if (dataLoading) {
-        return (
-            <div className="flex h-full w-full items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-primary" />
-            </div>
-        );
-    }
     
     return (
         <div className="container mx-auto space-y-8">
