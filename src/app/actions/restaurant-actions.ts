@@ -3,19 +3,30 @@
 'use server';
 
 import { collection, addDoc, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { generateImage } from '@/ai/flows/generate-image-flow';
 
 
 // Helper function for uploading images
-const uploadImage = async (file: File, path: string): Promise<string> => {
+const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
     const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    let downloadURL: string;
+
+    if (typeof fileOrDataUrl === 'string') {
+        // It's a data URL from AI generation
+        const snapshot = await uploadString(storageRef, fileOrDataUrl, 'data_url');
+        downloadURL = await getDownloadURL(snapshot.ref);
+    } else {
+        // It's a File object from user upload
+        const snapshot = await uploadBytes(storageRef, fileOrDataUrl);
+        downloadURL = await getDownloadURL(snapshot.ref);
+    }
+    
     return downloadURL;
 };
 
@@ -31,7 +42,7 @@ export async function addRestaurantAction(formData: FormData) {
         throw new Error("Owner ID is missing.");
     }
     
-    const restaurantPayload = {
+    const restaurantPayload: Omit<Restaurant, 'id'> = {
         ...data,
         note: 0,
         enVedette: false,
@@ -42,13 +53,32 @@ export async function addRestaurantAction(formData: FormData) {
     };
     
     try {
-        let imageUrl = '';
+        // 1. Create document without image to get ID
+        await setDoc(docRef, restaurantPayload);
+        
+        // 2. Determine image URL
+        let finalImageUrl: string | undefined = undefined;
 
         if (imageFile) {
-            imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+             finalImageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+        } 
+        else {
+            try {
+                const imagePrompt = `restaurant de cuisine ${data.cuisine}, photorealistic, professional food photography`;
+                const generatedImage = await generateImage({ prompt: imagePrompt });
+                if (generatedImage.imageDataUri) {
+                    finalImageUrl = await uploadImage(generatedImage.imageDataUri, `restaurants/${restaurantId}`);
+                }
+            } catch (aiError) {
+                console.error("AI image generation for restaurant failed:", aiError);
+                // Continue without an image if AI fails
+            }
         }
         
-        await setDoc(docRef, { ...restaurantPayload, image: imageUrl });
+        // 3. Update document with final image URL if it exists
+        if (finalImageUrl) {
+            await updateDoc(docRef, { image: finalImageUrl });
+        }
         
         revalidatePath('/');
         revalidatePath('/dashboard/new-restaurant');
@@ -101,10 +131,3 @@ export async function updateRestaurantAction(formData: FormData) {
         throw e; // Re-throw original error to be caught by Next.js action boundary
     }
 }
-
-
-
-
-
-
-
