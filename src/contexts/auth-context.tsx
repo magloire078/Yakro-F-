@@ -25,7 +25,7 @@ const mockUserProfile: UserProfile = {
   email: 'dev@yakrofe.com',
   nom: 'Utilisateur de Dév.',
   dateCreation: Timestamp.now(),
-  role: 'client',
+  role: 'restaurateur', // Changed to 'restaurateur' to facilitate development
   roleSysteme: 'SuperAdmin',
   adresseParDefaut: 'Yamoussoukro, Quartier des Développeurs'
 };
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = React.useState<User | null>(mockUser);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(mockUserProfile);
   const [loading, setLoading] = React.useState(false); // Set to false to bypass loading screen
-  const [activeRole, setActiveRoleState] = React.useState<AppRole>('client');
+  const [activeRole, setActiveRoleState] = React.useState<AppRole>('restaurateur');
   const router = useRouter();
   const { toast } = useToast();
 

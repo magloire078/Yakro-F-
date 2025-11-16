@@ -21,6 +21,7 @@ export async function seedDatabaseAction(userId: string) {
         // 1. Seed Restaurants
         const restaurantDocs = initialRestaurants.map((resto) => {
              const docRef = doc(collection(db, 'restaurants'));
+             // We assign the current user as owner, but we don't check their role during seed.
              const newResto: Omit<Restaurant, 'id'> = {
                 ...resto,
                 proprietaireId: userId, // Assign to the current user
