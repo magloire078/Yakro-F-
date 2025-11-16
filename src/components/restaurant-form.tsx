@@ -244,7 +244,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                             <FormItem>
                                 <FormLabel>Latitude</FormLabel>
                                 <FormControl>
-                                    <Input type="number" step="any" placeholder="Ex: 6.8213" {...field} value={field.value ?? ''} />
+                                    <Input type="number" step="any" placeholder="Ex: 6.8213" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -257,7 +257,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                             <FormItem>
                                 <FormLabel>Longitude</FormLabel>
                                 <FormControl>
-                                        <Input type="number" step="any" placeholder="Ex: -5.2768" {...field} value={field.value ?? ''} />
+                                        <Input type="number" step="any" placeholder="Ex: -5.2768" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
