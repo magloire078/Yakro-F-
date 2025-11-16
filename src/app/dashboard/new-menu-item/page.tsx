@@ -2,6 +2,8 @@
 'use client';
 
 import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,25 +11,22 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, Image as ImageIcon, ChefHat, Trash, Plus, Upload } from 'lucide-react';
+import { Loader, Wand2, Image as ImageIcon, ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type MenuItem, type Restaurant, type MenuOption } from '@/lib/types';
+import { type MenuItem, type Restaurant } from '@/lib/types';
 import { generateMenuItem, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-
-type GeneratedMenuItem = Omit<MenuItem, 'id' | 'restaurantId'>;
+import { MenuItemForm, menuItemFormSchema, type MenuItemFormValues } from '@/components/menu-item-form';
 
 export default function NewMenuItemPage() {
-    const { restaurants, addMenuItem, isLoading: isDataLoading } = useData();
+    const { restaurants, addMenuItem } = useData();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
-    const [generatedItem, setGeneratedItem] = React.useState<GeneratedMenuItem | null>(null);
     const { toast } = useToast();
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
 
     // Form state for AI generation
@@ -37,14 +36,17 @@ export default function NewMenuItemPage() {
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
 
-
-    // Form state for menu item options
-    const [sides, setSides] = React.useState<MenuOption[]>([]);
-    const [drinks, setDrinks] = React.useState<MenuOption[]>([]);
-    const [sideInput, setSideInput] = React.useState({ nom: '', prix: '' });
-    const [drinkInput, setDrinkInput] = React.useState({ nom: '', prix: '' });
-
-
+    const form = useForm<MenuItemFormValues>({
+        resolver: zodResolver(menuItemFormSchema),
+        defaultValues: {
+            nom: '',
+            description: '',
+            prix: 0,
+            accompagnementsDisponibles: [],
+            boissonsDisponibles: [],
+        },
+    });
+    
     const myRestaurants = React.useMemo(() => {
         if (!user) return [];
         return restaurants.filter(r => r.proprietaireId === user.uid);
@@ -53,9 +55,6 @@ export default function NewMenuItemPage() {
     React.useEffect(() => {
         if (myRestaurants.length > 0 && !selectedRestaurant) {
             setSelectedRestaurant(myRestaurants[0]);
-        }
-        if (myRestaurants.length === 0) {
-            setSelectedRestaurant(null);
         }
     }, [myRestaurants, selectedRestaurant]);
 
@@ -66,6 +65,7 @@ export default function NewMenuItemPage() {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
+                form.setValue('image', reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -82,7 +82,6 @@ export default function NewMenuItemPage() {
             return;
         }
         setLoading(true);
-        setGeneratedItem(null);
         toast({
             title: 'Génération de plat en cours...',
             description: 'L\'IA concocte quelque chose de délicieux pour vous. Cela peut prendre un moment.',
@@ -97,14 +96,15 @@ export default function NewMenuItemPage() {
                 ...(price && { prix: Number(price) }),
             });
 
-            const newItem: GeneratedMenuItem = {
+            form.reset({
                 nom: itemDetails.nom,
                 description: itemDetails.description,
                 prix: itemDetails.prix,
                 indiceImage: itemDetails.indiceImage,
-            };
+                accompagnementsDisponibles: [],
+                boissonsDisponibles: [],
+            });
 
-            setGeneratedItem(newItem);
             toast({
                 title: 'Plat généré avec succès !',
                 description: 'Voici une proposition. Vous pouvez la modifier et l\'ajouter à votre menu.',
@@ -121,32 +121,34 @@ export default function NewMenuItemPage() {
         }
     };
 
-    const handleAddItemToMenu = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!generatedItem || !selectedRestaurant) return;
+    const handleAddItemToMenu = async (data: MenuItemFormValues, imageFile: File | null) => {
+        if (!selectedRestaurant) return;
 
         setLoading(true);
         try {
-            await addMenuItem(
-                { 
-                    ...generatedItem, 
-                    restaurantId: selectedRestaurant.id,
-                    accompagnementsDisponibles: sides,
-                    boissonsDisponibles: drinks,
-                }, 
-                imageFile
-            );
-            setGeneratedItem(null);
+            const finalItemData: Omit<MenuItem, 'id'> = {
+                nom: data.nom,
+                description: data.description,
+                prix: data.prix,
+                indiceImage: data.indiceImage || `${data.nom} ${selectedRestaurant.cuisine}`,
+                restaurantId: selectedRestaurant.id,
+                accompagnementsDisponibles: data.accompagnementsDisponibles,
+                boissonsDisponibles: data.boissonsDisponibles,
+            };
+
+            await addMenuItem(finalItemData, imageFile);
+            
+            // Reset state
             setDescription('');
             setName('');
             setPrice('');
             setImageFile(null);
             setImagePreview(null);
-            setSides([]);
-            setDrinks([]);
+            form.reset();
+
             toast({
                 title: 'Plat ajouté !',
-                description: `${generatedItem.nom} est maintenant disponible dans votre menu.`,
+                description: `${data.nom} est maintenant disponible dans votre menu.`,
             });
              router.push('/dashboard/menu');
         } catch (error) {
@@ -159,32 +161,6 @@ export default function NewMenuItemPage() {
             setLoading(false);
         }
     };
-
-    const handleItemChange = (field: keyof GeneratedMenuItem, value: string | number) => {
-        if (generatedItem) {
-            setGeneratedItem({ ...generatedItem, [field]: value });
-        }
-    };
-
-    const handleAddOption = (type: 'side' | 'drink') => {
-        if (type === 'side' && sideInput.nom.trim() && sideInput.prix.trim()) {
-            setSides(prev => [...prev, { nom: sideInput.nom.trim(), prix: Number(sideInput.prix) }]);
-            setSideInput({ nom: '', prix: '' });
-        }
-        if (type === 'drink' && drinkInput.nom.trim() && drinkInput.prix.trim()) {
-            setDrinks(prev => [...prev, { nom: drinkInput.nom.trim(), prix: Number(drinkInput.prix) }]);
-            setDrinkInput({ nom: '', prix: '' });
-        }
-    }
-
-    const handleRemoveOption = (type: 'side' | 'drink', index: number) => {
-        if (type === 'side') {
-            setSides(prev => prev.filter((_, i) => i !== index));
-        }
-        if (type === 'drink') {
-            setDrinks(prev => prev.filter((_, i) => i !== index));
-        }
-    }
 
     if (myRestaurants.length === 0) {
         return (
@@ -206,6 +182,8 @@ export default function NewMenuItemPage() {
             </div>
         )
     }
+    
+    const isGenerated = !!form.getValues('nom');
 
     return (
         <div className="container mx-auto">
@@ -233,13 +211,6 @@ export default function NewMenuItemPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="image-upload" className="cursor-pointer flex items-center gap-2">
-                                <Upload /> Télécharger une image (optionnel)
-                            </Label>
-                             <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                            {imagePreview && <Image src={imagePreview} alt="Aperçu de l'image" width={100} height={100} className="rounded-md object-cover"/>}
-                        </div>
                         <div className="space-y-2">
                             <Label htmlFor="description">Description simple du plat (obligatoire pour l'IA)</Label>
                             <Textarea
@@ -261,30 +232,6 @@ export default function NewMenuItemPage() {
                             </div>
                         </div>
 
-                         <div className="space-y-2">
-                            <Label>Accompagnements (optionnel)</Label>
-                             <div className="flex gap-2">
-                                <Input value={sideInput.nom} onChange={e => setSideInput({...sideInput, nom: e.target.value})} placeholder="Ex: Alloco"/>
-                                <Input value={sideInput.prix} onChange={e => setSideInput({...sideInput, prix: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
-                                <Button type="button" onClick={() => handleAddOption('side')} size="icon"><Plus /></Button>
-                             </div>
-                             <div className="flex flex-wrap gap-2">
-                                {sides.map((side, i) => <Badge key={i} variant="secondary">{side.nom} (+{side.prix} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('side', i)} /></Badge>)}
-                             </div>
-                        </div>
-
-                         <div className="space-y-2">
-                            <Label>Boissons (optionnel)</Label>
-                             <div className="flex gap-2">
-                                <Input value={drinkInput.nom} onChange={e => setDrinkInput({...drinkInput, nom: e.target.value})} placeholder="Ex: Bissap"/>
-                                <Input value={drinkInput.prix} onChange={e => setDrinkInput({...drinkInput, prix: e.target.value})} placeholder="Prix" type="number" className="w-24"/>
-                                <Button type="button" onClick={() => handleAddOption('drink')} size="icon"><Plus /></Button>
-                             </div>
-                             <div className="flex flex-wrap gap-2">
-                                {drinks.map((drink, i) => <Badge key={i} variant="secondary">{drink.nom} (+{drink.prix} F) <Trash className="ml-2 h-3 w-3 cursor-pointer" onClick={() => handleRemoveOption('drink', i)}/></Badge>)}
-                             </div>
-                        </div>
-
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
                             <Wand2 className="mr-2" />
                             Générer avec l'IA
@@ -299,39 +246,27 @@ export default function NewMenuItemPage() {
                             <CardDescription>Le plat généré par l'IA apparaîtra ici. Vous pourrez le modifier avant de l'ajouter.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-4 border-2 border-dashed rounded-lg min-h-[400px] flex items-center justify-center bg-card">
-                            {loading && !generatedItem ? (
+                            {loading && !isGenerated ? (
                                 <div className="text-center text-muted-foreground animate-pulse">
                                     <Wand2 className="h-12 w-12 mx-auto mb-4 text-primary" />
                                     <p>L'IA est en cuisine...</p>
                                 </div>
-                            ) : generatedItem ? (
-                                <form onSubmit={handleAddItemToMenu} className="w-full space-y-4">
-                                    <div className="relative h-48 w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                                        {imagePreview ? 
-                                            <Image src={imagePreview} alt="Aperçu du plat" fill className="object-cover" /> :
-                                            <ImageIcon className="h-16 w-16 text-muted-foreground" />
-                                        }
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="itemName">Nom du plat</Label>
-                                        <Input id="itemName" value={generatedItem.nom} onChange={(e) => handleItemChange('nom' as keyof GeneratedMenuItem, e.target.value)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="itemDescription">Description</Label>
-                                        <Textarea id="itemDescription" value={generatedItem.description} onChange={(e) => handleItemChange('description' as keyof GeneratedMenuItem, e.target.value)} rows={3} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="itemPrice">Prix (FCFA)</Label>
-                                        <Input id="itemPrice" type="number" value={generatedItem.prix} onChange={(e) => handleItemChange('prix' as keyof GeneratedMenuItem, Number(e.target.value))} />
-                                    </div>
+                            ) : isGenerated ? (
+                                <MenuItemForm
+                                    form={form}
+                                    onSubmit={handleAddItemToMenu}
+                                    isLoading={loading}
+                                    imageFile={imageFile}
+                                    onImageChange={handleImageChange}
+                                >
                                     <div className="mt-4 flex justify-end gap-2">
-                                        <Button variant="outline" type="button" onClick={() => setGeneratedItem(null)}>Rejeter</Button>
+                                        <Button variant="outline" type="button" onClick={() => form.reset()}>Rejeter</Button>
                                         <Button type="submit" disabled={loading}>
                                             {loading ? <Loader className="animate-spin mr-2" /> : null}
                                             Ajouter au menu
                                         </Button>
                                     </div>
-                                </form>
+                                </MenuItemForm>
                             ) : (
                                 <div className="text-center text-muted-foreground">
                                     <ImageIcon className="h-12 w-12 mx-auto mb-4" />
