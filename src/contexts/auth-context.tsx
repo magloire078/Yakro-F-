@@ -143,7 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: data.email,
         nom: data.nom,
         dateCreation: serverTimestamp(),
-        role: roles[0],
+        role: 'client', // Default active role is always 'client' for a good UX on first login
         rolesAutorises: roles,
         roleSysteme: 'User',
         ...(data.telephone && { telephone: data.telephone }),
