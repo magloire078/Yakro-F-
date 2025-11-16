@@ -9,24 +9,24 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   getAuth,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { cn } from '@/lib/utils';
-import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
-import { errorEmitter } from '@/firebase/error-emitter';
+import type { AppRole, UserProfile } from '@/lib/types';
+import { useAuth } from '@/contexts/auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 const authSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
   password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
+  nom: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères.'}),
   telephone: z.string().optional(),
 });
 
@@ -37,16 +37,20 @@ export function UserAuthForm() {
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const [isLoginView, setIsLoginView] = React.useState(true);
   const { toast } = useToast();
+  const { createNewUser } = useAuth();
   
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(authSchema),
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+    resolver: zodResolver(authSchema.omit({ nom: isLoginView })),
   });
   
-  const setupInitialUser = async (user: import('firebase/auth').User, data?: FormData) => {
+  React.useEffect(() => {
+    reset();
+  }, [isLoginView, reset]);
+
+  const setupGoogleUser = async (user: import('firebase/auth').User) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
     const userDoc = await getDoc(userDocRef);
 
-    // Only create profile if it does not exist
     if (!userDoc.exists()) {
         const newUserProfile: UserProfile = {
             uid: user.uid,
@@ -56,7 +60,6 @@ export function UserAuthForm() {
             role: 'client',
             rolesAutorises: ['client'],
             roleSysteme: 'User',
-            ...(data?.telephone && { telephone: data.telephone }),
         };
         
         try {
@@ -73,13 +76,14 @@ export function UserAuthForm() {
     }
   }
 
+
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     const clientAuth = getAuth();
     try {
       const result = await signInWithPopup(clientAuth, provider);
-      await setupInitialUser(result.user);
+      await setupGoogleUser(result.user);
       toast({
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté.',
@@ -105,11 +109,12 @@ export function UserAuthForm() {
           title: 'Connexion réussie',
         });
       } else {
-        const userCredential = await createUserWithEmailAndPassword(clientAuth, data.email, data.password);
-        await setupInitialUser(userCredential.user, data);
-        toast({
-          title: 'Compte créé avec succès',
-          description: 'Votre profil a été initialisé.',
+        await createNewUser({
+          email: data.email,
+          password: data.password,
+          nom: data.nom,
+          rolesAutorises: ['client'],
+          telephone: data.telephone,
         });
       }
     } catch (error: any) {
@@ -136,6 +141,18 @@ export function UserAuthForm() {
     <div className="grid gap-6">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-4">
+          {!isLoginView && (
+            <div className="grid gap-2">
+                <Label htmlFor="nom">Nom complet</Label>
+                <Input
+                id="nom"
+                placeholder="Ex: Aïcha Koné"
+                disabled={isLoading || isGoogleLoading}
+                {...register('nom')}
+                />
+                {errors.nom && <p className="text-sm text-destructive">{errors.nom.message}</p>}
+            </div>
+           )}
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input

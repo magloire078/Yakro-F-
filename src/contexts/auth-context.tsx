@@ -21,7 +21,7 @@ interface AuthContextType {
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => Promise<void>;
   updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
-  createNewUser: (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}) => Promise<User | null>;
+  createNewUser: (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}) => Promise<User | null>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -130,32 +130,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[]}): Promise<User | null> => {
+  const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}): Promise<User | null> => {
     let newUser: User | null = null;
-    const userDocRef = doc(db, 'utilisateurs', newUser?.uid || 'nouvel-utilisateur');
     const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
-    const newUserProfile: Omit<UserProfile, 'uid' | 'dateCreation'> = {
-        email: data.email,
-        nom: data.nom,
-        role: roles[0],
-        rolesAutorises: roles,
-        roleSysteme: 'User',
-    };
-
+    
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       newUser = userCredential.user;
       
-      const finalProfile: UserProfile = {
-          ...newUserProfile,
+      const newUserProfile: UserProfile = {
           uid: newUser.uid,
+          email: data.email,
+          nom: data.nom,
           dateCreation: serverTimestamp(),
+          role: roles[0],
+          rolesAutorises: roles,
+          roleSysteme: 'User',
+          ...(data.telephone && { telephone: data.telephone }),
       };
       
-      await setDoc(doc(db, 'utilisateurs', newUser.uid), finalProfile);
-      toast({ title: 'Utilisateur créé', description: `${data.email} a été ajouté.`});
-
+      await setDoc(doc(db, 'utilisateurs', newUser.uid), newUserProfile);
+      
+      toast({ title: 'Utilisateur créé', description: `Le compte pour ${data.email} a été créé.`});
+      
       return newUser;
+
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
         toast({ variant: 'destructive', title: 'Erreur de création', description: 'Cette adresse e-mail est déjà utilisée.'});
@@ -165,13 +164,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
          const permissionError = new FirestorePermissionError({
             path: `utilisateurs/${(newUser?.uid || 'nouvel-utilisateur')}`,
             operation: 'create',
-            requestResourceData: newUserProfile,
+            requestResourceData: { email: data.email, nom: data.nom },
         });
         errorEmitter.emit('permission-error', permissionError);
         // Let the listener throw the visible error, but also show a toast for context.
         toast({ variant: 'destructive', title: 'Erreur de permission', description: 'Impossible de créer le profil utilisateur dans la base de données.'});
       }
-      return null;
+      // rethrow to be caught by the form
+      throw error;
     }
   }
 

@@ -28,7 +28,7 @@ service cloud.firestore {
     
     match /plats/{platId} {
         allow read: if true;
-        allow create: if isRestaurantOwner(request.resource.data.restaurantId) || request.auth.uid == getAfter(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.proprietaireId;
+        allow create: if isRestaurantOwner(request.resource.data.restaurantId);
         allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
     }
 
@@ -46,14 +46,11 @@ service cloud.firestore {
 
     match /utilisateurs/{userId} {
       allow read: if isUser(userId) || isSuperAdmin();
-      // Any authenticated user can update their own profile.
-      // SuperAdmins can update any profile.
-      // The auto-recovery mechanism needs to be able to promote a user, 
-      // so we also allow writes if the database has no SuperAdmin yet.
-      allow update: if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);
-      allow create: if isUser(userId);
+      allow update: if isUser(userId) || isSuperAdmin();
+      allow create: if request.auth.uid == userId;
     }
-     match /utilisateurs {
+
+    match /utilisateurs {
         allow list: if isSuperAdmin();
     }
   }
