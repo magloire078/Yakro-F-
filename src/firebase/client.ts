@@ -15,22 +15,16 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 
-function getFirebaseClient() {
-    if (getApps().length) {
-        const app = getApp();
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        return { app, auth, db, storage };
-    } else {
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        return { app, auth, db, storage };
-    }
+// Initialize Firebase
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// This function can be used in components to get the initialized services.
+export function getFirebaseClient() {
+    return { app, auth, db, storage };
 }
 
-// Re-exporting the initialized services
-const { app, auth, db, storage } = getFirebaseClient();
-export { app, auth, db, storage, getFirebaseClient };
+// Re-exporting for direct import if needed, though getFirebaseClient is preferred.
+export { app, auth, db, storage };

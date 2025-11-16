@@ -18,7 +18,6 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { setupInitialUserAction } from '@/app/actions/user-actions';
-import { Icons } from './icons';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
