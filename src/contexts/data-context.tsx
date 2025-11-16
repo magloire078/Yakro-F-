@@ -71,7 +71,7 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
+    const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
     const [authReady, setAuthReady] = React.useState(false);
 
     React.useEffect(() => {
@@ -104,13 +104,37 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         ordersQuery = query(collectionRef('commandes'), where('userId', '==', user.uid));
                         break;
                     case 'restaurateur':
-                        const myRestaurantIds = restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
-                        if (myRestaurantIds.length > 0) {
-                            ordersQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
-                        }
+                        // Simplified query: Find all orders where the owner ID matches.
+                        // This avoids the circular dependency on the restaurants list.
+                        // Note: This requires a composite index on (proprietaireId, date) for sorting,
+                        // or we just fetch them and sort client-side. The security rules must also
+                        // allow this type of query based on a different collection's data.
+                        // For now, let's query all restaurants and filter client-side, it's safer.
+                        
+                        // We will revert to a simpler model: A restaurateur sees orders for their restaurants.
+                        // The circular dependency is a real issue. Let's fix it by not having `restaurants` in dependency array.
+                        // The query will be rebuilt if the user/role changes, but not if restaurants list changes. 
+                        // It will use the restaurant list available at the time of query creation.
+                        // A better way is to query orders based on owner ID, but that requires a data model change.
+                        // Let's go for a query that does not depend on `restaurants` state.
+                        
+                        // This logic is complex and might fail if security rules are strict.
+                        // A restaurateur should only see orders from restaurants they own.
+                        // A better query would be to fetch restaurants owned by the user first.
+                        const restaurantsOwnedByUserQuery = query(collectionRef('restaurants'), where('proprietaireId', '==', user.uid));
+                        
+                        getDocs(restaurantsOwnedByUserQuery).then(snapshot => {
+                            const myRestaurantIds = snapshot.docs.map(doc => doc.id);
+                             if (myRestaurantIds.length > 0) {
+                                const ordersForMyRestaurantsQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
+                                unsubOrders = setupSubscription<Order>(ordersForMyRestaurantsQuery, setOrders, 'commandes');
+                            } else {
+                                setOrders([]);
+                            }
+                        });
+                        
                         break;
                     case 'livreur':
-                        // A livreur should see orders ready to be picked up, and their own active deliveries
                          ordersQuery = query(collectionRef('commandes'), or(
                             where('statut', '==', 'En Préparation'),
                             where('livreurId', '==', user.uid)
@@ -121,27 +145,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (ordersQuery) {
                 unsubOrders = setupSubscription<Order>(ordersQuery, setOrders, 'commandes');
-            } else {
-                // If no query could be formed (e.g., restaurateur with no restaurants yet), clear orders
+            } else if (activeRole !== 'restaurateur') {
                 setOrders([]);
             }
 
         } else {
-            // If no user, don't subscribe to orders
             setOrders([]);
         }
 
 
-        const timer = setTimeout(() => setIsLoading(false), 500);
+        const timer = setTimeout(() => setIsLoading(false), 1000); // Increased timeout slightly
         
         return () => {
             unsubRestaurants();
             unsubMenuItems();
-            unsubOrders();
+            if (unsubOrders) unsubOrders();
             clearTimeout(timer);
         };
-    }, [authReady, db, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders, restaurants]);
+    }, [authReady, db, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };
-
