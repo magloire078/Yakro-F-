@@ -13,9 +13,11 @@ import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { RestaurantForm, type RestaurantFormValues } from '@/components/restaurant-form';
+import { updateRestaurantAction } from '@/app/actions/restaurant-actions';
+
 
 export default function EditRestaurantPage() {
-    const { getRestaurant, updateRestaurant } = useData();
+    const { getRestaurant } = useData();
     const { toast } = useToast();
     const router = useRouter();
     const params = useParams();
@@ -41,7 +43,14 @@ export default function EditRestaurantPage() {
         if(!user || !restaurant) return;
         setIsLoading(true);
         try {
-            await updateRestaurant(restaurant.id, data, imageFile);
+            const formData = new FormData();
+            formData.append('restaurantId', restaurant.id);
+            formData.append('data', JSON.stringify(data));
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            await updateRestaurantAction(formData);
+
             toast({
                 title: 'Restaurant mis à jour !',
                 description: 'Vos modifications ont été enregistrées.',

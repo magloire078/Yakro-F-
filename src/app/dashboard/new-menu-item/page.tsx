@@ -20,9 +20,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuItemForm, menuItemFormSchema, type MenuItemFormValues } from '@/components/menu-item-form';
+import { addMenuItemAction } from '@/app/actions/menu-item-actions';
 
 export default function NewMenuItemPage() {
-    const { restaurants, addMenuItem } = useData();
+    const { restaurants } = useData();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
     const { toast } = useToast();
@@ -136,7 +137,12 @@ export default function NewMenuItemPage() {
                 boissonsDisponibles: data.boissonsDisponibles,
             };
 
-            await addMenuItem(finalItemData, imageFile);
+            const formData = new FormData();
+            formData.append('item', JSON.stringify(finalItemData));
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            await addMenuItemAction(formData);
             
             // Reset state
             setDescription('');

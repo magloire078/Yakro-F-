@@ -14,12 +14,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { updateOrderStatusAction } from '@/app/actions/order-actions';
 
 
 export default function LivreurHomePage() {
     const { user, userProfile, updateUserProfile, loading: authLoading } = useAuth();
     const router = useRouter();
-    const { orders, isLoading, updateOrderStatus } = useData();
+    const { orders, isLoading } = useData();
     const [currentDelivery, setCurrentDelivery] = React.useState<Order | null>(null);
     const { toast } = useToast();
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
@@ -46,7 +47,7 @@ export default function LivreurHomePage() {
         if (!user) return;
         setIsAccepting(delivery.id);
         try {
-            await updateOrderStatus(delivery.id, 'En Route', user.uid);
+            await updateOrderStatusAction({ orderId: delivery.id, status: 'En Route', delivererId: user.uid });
             setCurrentDelivery({ ...delivery, statut: 'En Route', livreurId: user.uid });
             toast({
                 title: "Course acceptée !",
@@ -67,7 +68,7 @@ export default function LivreurHomePage() {
         if (!currentDelivery) return;
         setIsCompleting(true);
         try {
-            await updateOrderStatus(currentDelivery.id, 'Livrée');
+            await updateOrderStatusAction({ orderId: currentDelivery.id, status: 'Livrée' });
             setCurrentDelivery(null);
             toast({
                 title: "Livraison terminée !",

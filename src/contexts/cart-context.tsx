@@ -8,6 +8,8 @@ import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { addOrderAction } from '@/app/actions/order-actions';
+
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -62,9 +64,8 @@ const getUserLocation = (): Promise<{ latitude: number; longitude: number } | nu
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
-  const { addOrder, getRestaurant } = useData();
+  const { getRestaurant } = useData();
   const { user, userProfile } = useAuth();
-  const { toast } = useToast();
 
 
   React.useEffect(() => {
@@ -211,7 +212,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...(restaurant?.longitude && { longitudeRestaurant: restaurant.longitude }),
     };
 
-    await addOrder(newOrder);
+    await addOrderAction(newOrder);
     clearCart();
     window.dispatchEvent(new CustomEvent('place-order'));
   };

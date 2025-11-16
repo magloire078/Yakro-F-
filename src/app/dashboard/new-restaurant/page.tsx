@@ -5,25 +5,20 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { ChefHat } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { RestaurantForm, type RestaurantFormValues } from '@/components/restaurant-form';
+import type { Restaurant } from '@/lib/types';
+import { addRestaurantAction } from '@/app/actions/restaurant-actions';
+
 
 export default function NewRestaurantPage() {
-    const { addRestaurant } = useData();
     const { toast } = useToast();
     const router = useRouter();
     const { user, activeRole } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
-
-     React.useEffect(() => {
-        if (user && activeRole !== 'restaurateur') {
-            router.push('/');
-        }
-    }, [activeRole, router, user]);
 
     const onSubmit = async (data: RestaurantFormValues, imageFile: File | null) => {
         if(!user) {
@@ -32,7 +27,19 @@ export default function NewRestaurantPage() {
         }
         setIsLoading(true);
         try {
-            await addRestaurant({ ...data, proprietaireId: user.uid }, imageFile);
+            const restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'> & { proprietaireId: string } = {
+                ...data,
+                proprietaireId: user.uid
+            };
+
+            const formData = new FormData();
+            formData.append('data', JSON.stringify(restaurantData));
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            await addRestaurantAction(formData);
+
             toast({
                 title: 'Restaurant créé avec succès !',
                 description: `${data.nom} a été ajouté à notre plateforme.`,

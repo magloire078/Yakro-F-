@@ -12,24 +12,15 @@ import { useData } from '@/contexts/data-context';
 import { type Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { updateOrderStatusAction } from '@/app/actions/order-actions';
+
 
 export default function DashboardOrdersPage() {
     const { user, activeRole } = useAuth();
     const router = useRouter();
-    const { orders, restaurants, updateOrderStatus } = useData();
+    const { orders, restaurants } = useData();
     const { toast } = useToast();
     const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
-
-    React.useEffect(() => {
-        if (user && activeRole !== 'restaurateur') {
-            toast({
-                variant: 'destructive',
-                title: 'Accès non autorisé',
-                description: 'Veuillez sélectionner le profil "Restaurateur" pour accéder à cette page.',
-            })
-            router.push('/profile-selection');
-        }
-    }, [user, router, activeRole, toast]);
 
     const myRestaurantIds = React.useMemo(() => {
         if (activeRole !== 'restaurateur' || !user) return [];
@@ -57,7 +48,7 @@ export default function DashboardOrdersPage() {
     const handleAcceptOrder = async (orderId: string) => {
         setIsUpdating(orderId);
         try {
-            await updateOrderStatus(orderId, 'En Préparation');
+            await updateOrderStatusAction({ orderId, status: 'En Préparation' });
             toast({
                 title: "Commande acceptée !",
                 description: "La commande est maintenant marquée comme étant en préparation.",

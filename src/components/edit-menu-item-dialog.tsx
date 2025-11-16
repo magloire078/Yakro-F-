@@ -13,11 +13,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuItem } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { MenuItemForm, type MenuItemFormValues, menuItemFormSchema } from './menu-item-form';
+import { updateMenuItemAction } from '@/app/actions/menu-item-actions';
 
 
 interface EditMenuItemDialogProps {
@@ -27,7 +27,6 @@ interface EditMenuItemDialogProps {
 }
 
 export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDialogProps) {
-  const { updateMenuItem } = useData();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -59,7 +58,14 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
   const onSubmit = async (data: MenuItemFormValues, imageFile: File | null) => {
     setIsSubmitting(true);
     try {
-      await updateMenuItem(menuItem.id, data, imageFile);
+        const formData = new FormData();
+        formData.append('itemId', menuItem.id);
+        formData.append('data', JSON.stringify(data));
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+        await updateMenuItemAction(formData);
+
       toast({
         title: 'Plat mis à jour',
         description: 'Les modifications ont été enregistrées.',
