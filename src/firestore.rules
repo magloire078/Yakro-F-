@@ -27,7 +27,7 @@ service cloud.firestore {
     }
     
     match /plats/{platId} {
-        allow read: if true;
+        allow read, list: if true;
         allow create: if isRestaurantOwner(request.resource.data.restaurantId);
         allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
     }
