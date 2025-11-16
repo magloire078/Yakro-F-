@@ -20,8 +20,12 @@ service cloud.firestore {
       return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
     }
 
+    match /restaurants {
+      allow list: if true;
+    }
+
     match /restaurants/{restaurantId} {
-      allow read, list: if true;
+      allow read: if true;
       allow create: if isUser(request.resource.data.proprietaireId);
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
