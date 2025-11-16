@@ -25,7 +25,7 @@
         "match /utilisateurs/{userId}": {
             "allow read": "if isUser(userId) || isSuperAdmin();",
             "allow update": "if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);",
-            "allow create": "if isUser(userId) || isSuperAdmin();"
+            "allow create": "if request.auth.uid == userId || isSuperAdmin();"
         },
         "match /utilisateurs": {
           "allow list": "if isSuperAdmin();"

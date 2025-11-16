@@ -33,21 +33,10 @@ const authSchema = z.object({
 
 type FormData = z.infer<typeof authSchema>;
 
-export function UserAuthForm() {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
-  const [isLoginView, setIsLoginView] = React.useState(true);
-  const { toast } = useToast();
-  
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    resolver: zodResolver(authSchema.omit({ nom: isLoginView, telephone: isLoginView })),
-  });
-  
-  React.useEffect(() => {
-    reset();
-  }, [isLoginView, reset]);
-
-  const setupInitialUser = async (user: import('firebase/auth').User) => {
+const setupInitialUser = async (
+    user: import('firebase/auth').User, 
+    additionalData: Partial<UserProfile> = {}
+) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
     const userDoc = await getDoc(userDocRef);
 
@@ -55,11 +44,12 @@ export function UserAuthForm() {
         const newUserProfile: UserProfile = {
             uid: user.uid,
             email: user.email!,
-            nom: user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
+            nom: additionalData.nom || user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
             dateCreation: serverTimestamp(),
             role: 'client',
             rolesAutorises: ['client'],
             roleSysteme: 'User',
+            ...additionalData,
         };
         
         try {
@@ -74,8 +64,21 @@ export function UserAuthForm() {
             throw permissionError;
         }
     }
-  }
+}
 
+export function UserAuthForm() {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [isLoginView, setIsLoginView] = React.useState(true);
+  const { toast } = useToast();
+  
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+    resolver: zodResolver(authSchema.omit({ nom: isLoginView, telephone: isLoginView })),
+  });
+  
+  React.useEffect(() => {
+    reset();
+  }, [isLoginView, reset]);
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
@@ -110,7 +113,11 @@ export function UserAuthForm() {
         });
       } else {
         const userCredential = await createUserWithEmailAndPassword(clientAuth, data.email, data.password);
-        await setupInitialUser(userCredential.user);
+        await setupInitialUser(userCredential.user, { nom: data.nom, telephone: data.telephone });
+        toast({
+            title: 'Compte créé avec succès!',
+            description: "Bienvenue sur Yakro Fê."
+        });
       }
     } catch (error: any) {
       let description = "Une erreur inattendue s'est produite.";
