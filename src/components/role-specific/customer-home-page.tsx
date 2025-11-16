@@ -97,6 +97,7 @@ export default function CustomerHomePage() {
   const [recommendationError, setRecommendationError] = React.useState(false);
   const [activeFilter, setActiveFilter] = React.useState<SortFilter>(null);
   const [userLocation, setUserLocation] = React.useState<Coordinates | null>(null);
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
 
 
   const userDeliveredOrders = React.useMemo(() => {
@@ -180,7 +181,7 @@ export default function CustomerHomePage() {
 
 
     if (!isLoading && validRestaurants && validRestaurants.length > 0) {
-      if (!searchQuery && !interpretedSearch) {
+      if (!searchQuery && !interpretedSearch && !selectedCategory) {
         filteredRestaurants = validRestaurants;
       } else {
         const searchTerms = [
@@ -199,6 +200,11 @@ export default function CustomerHomePage() {
         filteredRestaurants = validRestaurants
           .filter(r => {
             if (!r || !r.nom || !r.cuisine) return false;
+            
+            // Category filter
+            if (selectedCategory && r.cuisine.toLowerCase() !== selectedCategory.toLowerCase()) {
+                return false;
+            }
 
             const matchesCuisine =
               lowerCuisines.length > 0 &&
@@ -226,6 +232,14 @@ export default function CustomerHomePage() {
             if (itemMatch) {
               matchReasons.set(r.id, `Propose "${itemMatch.nom}"`);
               return true;
+            }
+
+            // If a category is selected, we don't need other criteria to match unless there's a search term
+            if (selectedCategory) {
+                if (searchQuery || interpretedSearch) {
+                     return (matchesCuisine || matchesNameOrQuery) && matchesRating && matchesDeliveryTime;
+                }
+                return true;
             }
 
             return (
@@ -274,7 +288,7 @@ export default function CustomerHomePage() {
         categories: dynamicCategories,
     }
 
-  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation]);
+  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation, selectedCategory]);
 
   const handleLocationFilter = () => {
     if (activeFilter === 'distance') {
@@ -300,6 +314,14 @@ export default function CustomerHomePage() {
       }
     );
   };
+  
+  const handleCategorySelect = (categoryName: string) => {
+    if (selectedCategory === categoryName) {
+        setSelectedCategory(null); // Unselect if clicked again
+    } else {
+        setSelectedCategory(categoryName);
+    }
+  };
 
 
   const renderSkeletons = (count: number) => Array.from({ length: count }).map((_, i) => (
@@ -313,6 +335,7 @@ export default function CustomerHomePage() {
   ));
 
    const getFilterLabel = () => {
+    if (selectedCategory) return selectedCategory;
     switch (activeFilter) {
       case 'rating': return 'Bien notés';
       case 'time': return 'Plus rapides';
@@ -373,7 +396,13 @@ export default function CustomerHomePage() {
         <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Explorer par catégories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {categories.map((category) => (
-            <Card key={category.name} className="flex flex-col items-center justify-center p-6 hover:bg-primary/10 hover:shadow-lg transition-all duration-300 cursor-pointer">
+            <Card 
+                key={category.name} 
+                className={cn("flex flex-col items-center justify-center p-6 hover:bg-primary/10 hover:shadow-lg transition-all duration-300 cursor-pointer",
+                    selectedCategory === category.name && "bg-primary/10 border-primary"
+                )}
+                onClick={() => handleCategorySelect(category.name)}
+            >
               <category.icon className="w-12 h-12 text-primary mb-2"/>
               <p className="font-semibold text-lg">{category.name}</p>
             </Card>
@@ -385,7 +414,7 @@ export default function CustomerHomePage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl md:text-3xl font-headline text-foreground">
-              {searchQuery || interpretedSearch || activeFilter ? 'Résultats' : 'Tous les Restaurants'}
+              {searchQuery || interpretedSearch || activeFilter || selectedCategory ? 'Résultats' : 'Tous les Restaurants'}
             </h2>
             {getFilterLabel() && <Badge>{getFilterLabel()}</Badge>}
           </div>
