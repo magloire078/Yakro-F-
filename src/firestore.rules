@@ -54,7 +54,7 @@ service cloud.firestore {
       allow create: if request.auth.uid == userId;
     }
      match /utilisateurs {
-        allow read: if isSuperAdmin();
+        allow list: if isSuperAdmin();
     }
   }
 }
