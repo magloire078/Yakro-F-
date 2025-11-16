@@ -84,12 +84,16 @@ export async function addRestaurantAction(formData: FormData) {
         revalidatePath('/dashboard/my-restaurants');
 
     } catch (e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'create',
-            requestResourceData: restaurantPayload,
-        });
-        errorEmitter.emit('permission-error', permissionError);
+        // Check if it's a Firestore permission error
+        if (e.code === 'permission-denied') {
+             const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'create',
+                requestResourceData: restaurantPayload,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
+       
         throw e; // Re-throw original error to be caught by Next.js action boundary
     }
 }
@@ -121,12 +125,14 @@ export async function updateRestaurantAction(formData: FormData) {
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
         revalidatePath('/dashboard/boost');
     } catch (e: any) {
-         const permissionError = new FirestorePermissionError({
-            path: restaurantDocRef.path,
-            operation: 'update',
-            requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
+        if (e.code === 'permission-denied') {
+             const permissionError = new FirestorePermissionError({
+                path: restaurantDocRef.path,
+                operation: 'update',
+                requestResourceData: data,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
         throw e; // Re-throw original error to be caught by Next.js action boundary
     }
 }
