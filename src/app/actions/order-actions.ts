@@ -2,7 +2,7 @@
 'use server';
 
 import { collection, addDoc, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase/client';
 import type { Order } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FirestorePermissionError } from '@/firebase/errors';

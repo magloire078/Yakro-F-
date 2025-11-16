@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 import Link from 'next/link';
 import { collection, onSnapshot, Unsubscribe, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { AddUserDialog } from '@/components/add-user-dialog';
@@ -27,6 +27,7 @@ import { fr } from 'date-fns/locale';
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
+    const { db } = useFirebase();
     const { restaurants, orders, isLoading: isPublicDataLoading } = useData();
     const [allUsers, setAllUsers] = React.useState<UserProfile[]>([]);
     const [dataLoading, setDataLoading] = React.useState(true);
@@ -88,7 +89,7 @@ export default function AdminPage() {
                 setDataLoading(false);
              }
         }
-    }, [user, userProfile, authLoading, router, toast]);
+    }, [user, userProfile, authLoading, router, toast, db]);
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         setUpdatingUserId(userId);

@@ -3,7 +3,7 @@
 
 import { collection, addDoc, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage";
-import { db, storage } from '@/lib/firebase';
+import { db, storage } from '@/firebase/client';
 import type { MenuItem } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { generateImage } from '@/ai/flows/generate-image-flow';

@@ -3,7 +3,7 @@
 
 import { collection, addDoc, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db, storage } from '@/firebase/client';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FirestorePermissionError } from '@/firebase/errors';

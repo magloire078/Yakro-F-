@@ -30,10 +30,10 @@ import { useAuth } from '@/contexts/auth-context';
 import type { AppRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { useFirebase } from '@/contexts/firebase-provider';
 
 interface AddUserDialogProps {
   isOpen: boolean;
@@ -51,6 +51,7 @@ type AddUserFormValues = z.infer<typeof addUserSchema>;
 
 export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
   const { toast } = useToast();
+  const { db } = useFirebase();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<AddUserFormValues>({

@@ -2,7 +2,7 @@
 'use server';
 
 import { collection, getDocs, writeBatch, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase/client';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
@@ -56,11 +56,13 @@ export async function seedDatabaseAction(userId: string) {
             return { success: true, message: 'Database seeded successfully.' };
         } catch (error) {
             console.error("Error seeding database: ", error);
+            // This is a special case for seeding. We can't easily get the context for all writes.
+            // A simplified error is acceptable here.
             const permissionError = new FirestorePermissionError({
                 path: `(batch write)`,
                 operation: 'create',
                 requestResourceData: { 
-                    message: "Batch write for initial database seed.",
+                    message: "Batch write for initial database seed failed. Check that the user has permissions to write to 'restaurants' and 'plats'.",
                     itemCount: initialRestaurants.length + initialMenuItems.length 
                 },
             });

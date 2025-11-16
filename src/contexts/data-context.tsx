@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
 import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -69,6 +69,7 @@ function setupSubscription<T extends DocumentData>(
 
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     const { restaurants, setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
     const [authReady, setAuthReady] = React.useState(false);
@@ -80,7 +81,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [authLoading]);
     
     React.useEffect(() => {
-        if (!authReady) {
+        if (!authReady || !db) {
             return;
         }
 
@@ -101,7 +102,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             unsubOrders();
             clearTimeout(timer);
         };
-    }, [authReady, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [authReady, db, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };

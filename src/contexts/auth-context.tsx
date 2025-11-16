@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { useFirebase } from './firebase-provider';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -30,6 +30,7 @@ const getInitialActiveRole = (): AppRole => {
 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { auth, db } = useFirebase();
   const [user, setUser] = React.useState<User | null>(null);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -43,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
     return () => unsubscribeAuth();
-  }, []);
+  }, [auth]);
 
   React.useEffect(() => {
     let unsubscribeProfile: Unsubscribe | undefined;
@@ -55,7 +56,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
           setUserProfile(profile);
           // Set the active role from the profile if it hasn't been set by the user yet
-          if (localStorage.getItem('activeRole') !== profile.role) {
+          const storedRole = localStorage.getItem('activeRole') as AppRole | null;
+          if (storedRole !== profile.role) {
              setActiveRoleState(profile.role);
              localStorage.setItem('activeRole', profile.role);
           }
@@ -73,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubscribeProfile();
       }
     };
-  }, [user]);
+  }, [user, db]);
 
   const setActiveRole = (role: AppRole) => {
       setActiveRoleState(role);
@@ -95,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile };
 
-  if (loading) {
+  if (loading && !userProfile) { // Show loading only on initial load
     return (
         <div className="flex h-screen w-full items-center justify-center">
            <Loader className="h-16 w-16 animate-spin text-primary" />

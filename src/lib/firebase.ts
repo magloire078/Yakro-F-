@@ -1,5 +1,9 @@
 
 
+// This file is being deprecated in favor of src/firebase/client.ts
+// It is kept for now to avoid breaking server-side actions that still import from it.
+// All new client-side Firebase code should use the `useFirebase` hook from `firebase-provider.tsx`.
+
 import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
@@ -23,8 +27,3 @@ const storage = getStorage(app);
 const db = getFirestore(app);
 
 export { app, auth, storage, db };
-
-// This is a separate export for use in server-side actions,
-// where we might use a server-initialized app in the future.
-// For now, it shares the client-side instance.
-export const firestore = db;

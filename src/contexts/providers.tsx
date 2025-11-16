@@ -7,6 +7,7 @@ import { CartProvider } from '@/contexts/cart-context';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import * as React from 'react';
+import { FirebaseProvider } from './firebase-provider';
 
 const ThemeRoleProvider = ({ children }: { children: React.ReactNode }) => {
   const { userProfile, activeRole } = useAuth();
@@ -25,16 +26,18 @@ const ThemeRoleProvider = ({ children }: { children: React.ReactNode }) => {
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
-      <AuthProvider>
-        <ThemeRoleProvider>
-          <DataProvider>
-            <CartProvider>
-              {children}
-              <Toaster />
-            </CartProvider>
-          </DataProvider>
-        </ThemeRoleProvider>
-      </AuthProvider>
+      <FirebaseProvider>
+        <AuthProvider>
+          <ThemeRoleProvider>
+            <DataProvider>
+              <CartProvider>
+                {children}
+                <Toaster />
+              </CartProvider>
+            </DataProvider>
+          </ThemeRoleProvider>
+        </AuthProvider>
+      </FirebaseProvider>
     </NextThemesProvider>
   );
 }

@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useData } from '@/contexts/data-context';
 import { useAuth } from '@/contexts/auth-context';
 import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirebase } from '@/contexts/firebase-provider';
 import type { Order, UserProfile, Restaurant } from '@/lib/types';
 import { Loader, MapPin, Bike, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ export default function TrackOrderPage() {
     const router = useRouter();
     const { user } = useAuth();
     const { getOrder, getRestaurant } = useData();
+    const { db } = useFirebase();
 
     const orderId = params.id as string;
     
@@ -61,7 +62,7 @@ export default function TrackOrderPage() {
         }
       });
       return () => unsubscribeOrder();
-    }, [orderId, user, router, getRestaurant]);
+    }, [orderId, user, router, getRestaurant, db]);
 
     if (!liveOrder) {
         return (

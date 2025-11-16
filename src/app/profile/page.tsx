@@ -12,18 +12,18 @@ import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import type { Restaurant, UserProfile } from '@/lib/types';
 import Link from 'next/link';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
   const { user, userProfile, activeRole, updateUserProfile } = useAuth();
   const { orders, restaurants } = useData();
+  const { auth } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
   
   const handleSignOut = async () => {
-    await signOut(auth);
+    await auth.signOut();
     router.push('/login');
   }
 

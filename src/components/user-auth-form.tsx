@@ -9,10 +9,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
-  getAuth,
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { Button } from './ui/button';
@@ -38,6 +37,7 @@ export function UserAuthForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const [isLoginView, setIsLoginView] = React.useState(true);
+  const { auth } = useFirebase();
   const { toast } = useToast();
   
   const form = useForm({
@@ -57,9 +57,8 @@ export function UserAuthForm() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
-    const clientAuth = getAuth();
     try {
-      const result = await signInWithPopup(clientAuth, provider);
+      const result = await signInWithPopup(auth, provider);
       await setupInitialUserAction({
           uid: result.user.uid,
           email: result.user.email!,
@@ -82,13 +81,12 @@ export function UserAuthForm() {
 
   const onSubmit = async (data: any) => {
     setIsLoading(true);
-    const clientAuth = getAuth();
     try {
       if (isLoginView) {
-        await signInWithEmailAndPassword(clientAuth, data.email, data.password);
+        await signInWithEmailAndPassword(auth, data.email, data.password);
         toast({ title: 'Connexion réussie' });
       } else {
-        const userCredential = await createUserWithEmailAndPassword(clientAuth, data.email, data.password);
+        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
         await setupInitialUserAction({
             uid: userCredential.user.uid,
             email: userCredential.user.email!,

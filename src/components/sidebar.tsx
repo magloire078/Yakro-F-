@@ -8,22 +8,22 @@ import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
 import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck, UtensilsCrossed } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import type { AppRole } from '@/lib/types';
 import { ThemeToggle } from './theme-toggle';
+import { useFirebase } from '@/contexts/firebase-provider';
 
 export function Sidebar() {
   const { cartCount } = useCart();
+  const { auth } = useFirebase();
   const { user, loading, activeRole, setActiveRole, userProfile } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   
   const handleSignOut = async () => {
-    await signOut(auth);
+    await auth.signOut();
     router.push('/login');
   }
   
