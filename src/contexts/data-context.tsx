@@ -142,6 +142,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setOrders([]);
             }
         } else {
+            // No user, no orders. This prevents permission errors for unauthenticated users.
             setOrders([]);
         }
 
