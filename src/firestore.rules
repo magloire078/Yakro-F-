@@ -21,7 +21,7 @@ service cloud.firestore {
     }
 
     match /restaurants/{restaurantId} {
-      allow read: if true;
+      allow read, list: if true;
       allow create: if isUser(request.resource.data.proprietaireId);
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }

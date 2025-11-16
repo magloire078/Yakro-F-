@@ -8,7 +8,7 @@
         "function isRestaurantOwner(restaurantId)": "return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);",
         "function isSuperAdmin()": "return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';",
         "match /restaurants/{restaurantId}": {
-          "allow read": "if true;",
+          "allow read, list": "if true;",
           "allow create": "if isUser(request.resource.data.proprietaireId);",
           "allow update, delete": "if isRestaurantOwner(restaurantId) || isSuperAdmin();"
         },
