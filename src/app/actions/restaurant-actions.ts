@@ -45,7 +45,7 @@ export async function addRestaurantAction(formData: FormData) {
         ...data,
         note: 0,
         enVedette: false,
-        indiceImage: data.cuisine ? `${data.cuisine} restaurant` : 'restaurant food',
+        indiceImage: data.indiceImage || (data.cuisine ? `${data.cuisine} restaurant` : 'restaurant food'),
         latitude: data.latitude || 6.82,
         longitude: data.longitude || -5.28,
         image: "" // Start with empty image URL
@@ -63,7 +63,7 @@ export async function addRestaurantAction(formData: FormData) {
         } 
         else {
             try {
-                const imagePrompt = `restaurant de cuisine ${data.cuisine}, photorealistic, professional food photography`;
+                const imagePrompt = `professional food photography of a ${restaurantPayload.indiceImage}`;
                 const generatedImage = await generateImage({ prompt: imagePrompt });
                 if (generatedImage.imageDataUri) {
                     finalImageUrl = await uploadImage(generatedImage.imageDataUri, `restaurants/${restaurantId}`);

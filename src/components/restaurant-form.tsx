@@ -162,7 +162,23 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                             <Input placeholder="Ex: Ivoirienne, Grillades, Pizzeria" {...field} />
                         </FormControl>
                         <FormDescription>
-                            Soyez simple et descriptif.
+                            Soyez simple et descriptif. Ceci peut être utilisé pour générer une image.
+                        </FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+             <FormField
+                control={form.control}
+                name="indiceImage"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Indice pour l'image IA (optionnel)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Ex: maquis chic african" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                            Si aucune image n'est choisie, l'IA utilisera cet indice pour en créer une.
                         </FormDescription>
                         <FormMessage />
                     </FormItem>
