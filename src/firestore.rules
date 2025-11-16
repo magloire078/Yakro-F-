@@ -51,10 +51,10 @@ service cloud.firestore {
       // The auto-recovery mechanism needs to be able to promote a user, 
       // so we also allow writes if the database has no SuperAdmin yet.
       allow update: if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);
-      allow create: if isUserAuthenticated();
+      allow create: if isUser(userId);
     }
      match /utilisateurs {
-        allow list: if isSuperAdmin();
+        allow read: if isSuperAdmin();
     }
   }
 }
