@@ -33,17 +33,16 @@ export async function addMenuItemAction(formData: FormData) {
     const imageFile = formData.get('image') as File | null;
     const item = JSON.parse(itemJSON) as Omit<MenuItem, 'id'>;
     const collectionRef = collection(db, "plats");
-    let docRef;
+    let docRefId: string | null = null;
+    let finalImageUrl: string | undefined = undefined;
 
     try {
         // 1. Add document without image URL to get an ID
         const newMenuItemData = { ...item, image: '' }; // Start with an empty image URL
-        docRef = await addDoc(collectionRef, newMenuItemData);
-        const docRefId = docRef.id;
+        const docRef = await addDoc(collectionRef, newMenuItemData);
+        docRefId = docRef.id;
 
         // 2. Determine the image URL
-        let finalImageUrl: string | undefined = undefined;
-
         if (imageFile) {
              finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
         } 
@@ -60,7 +59,7 @@ export async function addMenuItemAction(formData: FormData) {
         
         // 3. Update the document with the final image URL if it exists
         if (finalImageUrl) {
-            await updateDoc(docRef, { image: finalImageUrl });
+            await updateDoc(doc(db, "plats", docRefId), { image: finalImageUrl });
         }
         
         revalidatePath('/dashboard/menu');
@@ -68,13 +67,13 @@ export async function addMenuItemAction(formData: FormData) {
 
     } catch (e) {
         const permissionError = new FirestorePermissionError({
-            path: docRef ? docRef.path : collectionRef.path,
+            path: docRefId ? doc(db, "plats", docRefId).path : collectionRef.path,
             operation: 'create',
             requestResourceData: item,
         });
         errorEmitter.emit('permission-error', permissionError);
         console.error("Original error adding menu item: ", e);
-        throw new Error("Failed to add menu item.");
+        throw e; // Re-throw the original error
     }
 }
 
@@ -108,7 +107,7 @@ export async function updateMenuItemAction(formData: FormData) {
         });
         errorEmitter.emit('permission-error', permissionError);
         console.error("Original error updating menu item: ", e);
-        throw new Error("Failed to update menu item.");
+        throw e; // Re-throw the original error
     }
 }
 
@@ -135,6 +134,6 @@ export async function deleteMenuItemAction(itemId: string) {
         });
         errorEmitter.emit('permission-error', permissionError);
         console.error("Original error deleting menu item: ", e);
-        throw new Error("Failed to delete menu item.");
+        throw e; // Re-throw the original error
     }
 }

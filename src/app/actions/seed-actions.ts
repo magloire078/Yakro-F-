@@ -64,7 +64,7 @@ export async function seedDatabaseAction(userId: string) {
                 },
             });
             errorEmitter.emit('permission-error', permissionError);
-            throw permissionError;
+            throw permissionError; // Re-throw so the client knows it failed
         }
     }
     return { success: false, message: 'Database is not empty, seeding skipped.'};

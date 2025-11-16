@@ -11,6 +11,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 export async function addOrderAction(order: Omit<Order, 'id'>) {
     const docRef = doc(collection(db, "commandes"));
     
+    // Don't await, use .catch() for error handling
     setDoc(docRef, order)
       .then(() => {
         revalidatePath('/'); // For customer home page status
@@ -37,6 +38,7 @@ export async function updateOrderStatusAction({ orderId, status, delivererId }: 
         updateData.livreurId = delivererId;
     }
     
+    // Don't await, use .catch() for error handling
     updateDoc(orderDocRef, updateData)
       .then(() => {
         revalidatePath('/');

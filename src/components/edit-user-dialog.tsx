@@ -26,7 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useAuth } from '@/contexts/auth-context';
+import { updateUserProfileAction } from '@/app/actions/user-actions';
 
 
 interface EditUserDialogProps {
@@ -44,7 +44,6 @@ const editUserSchema = z.object({
 type EditUserFormValues = z.infer<typeof editUserSchema>;
 
 export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogProps) {
-  const { updateOtherUserProfile } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -70,17 +69,19 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
   const onSubmit = async (data: EditUserFormValues) => {
     setIsSubmitting(true);
     try {
-      await updateOtherUserProfile(userProfile.uid, data);
+      await updateUserProfileAction(userProfile.uid, data);
       toast({
         title: 'Profil utilisateur mis à jour',
         description: 'Les modifications ont été enregistrées.',
       });
       onClose();
     } catch (error) {
+       // Error is handled by the action via the emitter, but we can show a generic toast here.
+       // The developer will see the rich error in the console.
       toast({
         variant: 'destructive',
         title: 'Erreur',
-        description: 'Impossible de mettre à jour le profil.',
+        description: 'Impossible de mettre à jour le profil. Vérifiez les permissions.',
       });
     } finally {
       setIsSubmitting(false);

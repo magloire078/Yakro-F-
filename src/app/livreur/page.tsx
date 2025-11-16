@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -36,7 +37,7 @@ export default function LivreurHomePage() {
              toast({
                 variant: 'destructive',
                 title: "Erreur",
-                description: "Impossible d'accepter cette course pour le moment.",
+                description: "Impossible d'accepter cette course. Vérifiez les permissions.",
             });
         }
     };
@@ -54,7 +55,7 @@ export default function LivreurHomePage() {
              toast({
                 variant: 'destructive',
                 title: "Erreur",
-                description: "Impossible de marquer cette course comme livrée.",
+                description: "Impossible de marquer cette course comme livrée. Vérifiez les permissions.",
             });
         }
     }

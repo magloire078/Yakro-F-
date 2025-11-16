@@ -67,11 +67,12 @@ export default function EditProfilePage() {
             });
             router.push('/profile');
         } catch (error) {
-            console.error(error);
+            // The auth context now handles the server action which emits the error
+            // so we just show a generic message here.
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: 'Impossible de mettre à jour votre profil pour le moment.'
+                description: 'Impossible de mettre à jour votre profil. Vérifiez les permissions.'
             });
         } finally {
             setIsSubmitting(false);

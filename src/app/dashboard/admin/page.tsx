@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 import Link from 'next/link';
-import { collection, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { collection, onSnapshot, Unsubscribe, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -56,7 +56,7 @@ export default function AdminPage() {
 
         if (userProfile?.roleSysteme === 'SuperAdmin') {
             setDataLoading(true);
-            const usersCollectionRef = collection(db, 'utilisateurs');
+            const usersCollectionRef = query(collection(db, 'utilisateurs'));
             const unsubscribe = onSnapshot(usersCollectionRef,
                 (snapshot) => {
                     const users = snapshot.docs.map(doc => ({
@@ -68,7 +68,7 @@ export default function AdminPage() {
                 },
                 (serverError) => {
                     const permissionError = new FirestorePermissionError({
-                        path: usersCollectionRef.path,
+                        path: 'utilisateurs',
                         operation: 'list',
                     });
                     errorEmitter.emit('permission-error', permissionError);

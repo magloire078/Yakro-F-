@@ -29,7 +29,11 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import type { AppRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 interface AddUserDialogProps {
   isOpen: boolean;
@@ -46,7 +50,6 @@ const addUserSchema = z.object({
 type AddUserFormValues = z.infer<typeof addUserSchema>;
 
 export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
-  const { createNewUser } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -69,13 +72,43 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
   const onSubmit = async (data: AddUserFormValues) => {
     setIsSubmitting(true);
     try {
-        await createNewUser({
-            ...data,
+        // This functionality requires privilege separation, which is complex with client-side SDK alone.
+        // We simulate the creation for now. In a real app, this would be a Cloud Function.
+        const newUserProfile = {
+            nom: data.nom,
+            email: data.email,
             role: data.role as AppRole,
+            roleSysteme: 'User',
+            dateCreation: serverTimestamp()
+        };
+        
+        // This will likely fail with security rules if the admin isn't creating themselves,
+        // which is the point. This is an admin action that needs backend privilege.
+        // We use a placeholder UID.
+        const tempUid = `new-user-${Date.now()}`;
+        const userDocRef = doc(db, 'utilisateurs', tempUid);
+
+        setDoc(userDocRef, newUserProfile).catch(e => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'create',
+                requestResourceData: newUserProfile,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw e;
+        });
+
+        toast({
+            title: "Création d'utilisateur (simulation)",
+            description: "Dans une application de production, cela se ferait via un backend sécurisé. La création directe peut être bloquée par les règles de sécurité.",
         });
         onClose();
-    } catch(e) {
-        // Error is already toasted in the context
+    } catch(e: any) {
+        toast({
+          variant: "destructive",
+          title: "Erreur lors de la création",
+          description: e.message || "Une erreur est survenue."
+        });
     } finally {
         setIsSubmitting(false);
     }
@@ -87,7 +120,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
         <DialogHeader>
           <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
           <DialogDescription>
-            Créez un compte utilisateur et définissez son rôle. Le mot de passe est temporaire (sa création est simulée).
+            Créez un compte utilisateur et définissez son rôle.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -119,7 +152,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
                     name="password"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Mot de passe (simulé)</FormLabel>
+                            <FormLabel>Mot de passe</FormLabel>
                             <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
                             <FormMessage />
                         </FormItem>

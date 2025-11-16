@@ -57,7 +57,7 @@ export default function DashboardOrdersPage() {
             toast({
                 variant: 'destructive',
                 title: "Erreur",
-                description: "Impossible de mettre à jour le statut de la commande.",
+                description: "Impossible de mettre à jour le statut. Vérifiez les permissions.",
             });
         } finally {
             setIsUpdating(null);
