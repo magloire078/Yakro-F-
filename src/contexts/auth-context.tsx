@@ -131,13 +131,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}): Promise<User | null> => {
-    let newUser: User | null = null;
     const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
     
     try {
+      // Create user in Auth
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-      newUser = userCredential.user;
+      const newUser = userCredential.user;
       
+      // Create user profile in Firestore
       const newUserProfile: UserProfile = {
           uid: newUser.uid,
           email: data.email,
@@ -162,16 +163,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast({ variant: 'destructive', title: 'Erreur de création', description: 'Le mot de passe est trop faible.'});
       } else {
          const permissionError = new FirestorePermissionError({
-            path: `utilisateurs/${(newUser?.uid || 'nouvel-utilisateur')}`,
+            path: `utilisateurs/NOUVEL_UTILISATEUR`,
             operation: 'create',
             requestResourceData: { email: data.email, nom: data.nom },
         });
         errorEmitter.emit('permission-error', permissionError);
-        // Let the listener throw the visible error, but also show a toast for context.
         toast({ variant: 'destructive', title: 'Erreur de permission', description: 'Impossible de créer le profil utilisateur dans la base de données.'});
       }
-      // rethrow to be caught by the form
-      throw error;
+      throw error; // Re-throw for the form to handle its loading state
     }
   }
 

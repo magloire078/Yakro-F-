@@ -40,7 +40,7 @@ export function UserAuthForm() {
   const { createNewUser } = useAuth();
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    resolver: zodResolver(authSchema.omit({ nom: isLoginView })),
+    resolver: zodResolver(authSchema.omit({ nom: isLoginView, telephone: isLoginView })),
   });
   
   React.useEffect(() => {
@@ -118,13 +118,15 @@ export function UserAuthForm() {
         });
       }
     } catch (error: any) {
-      let description = error.message;
+      let description = "Une erreur inattendue s'est produite.";
       if (error instanceof FirestorePermissionError) {
         description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
       } else if (error.code === 'auth/email-already-in-use') {
         description = 'Cette adresse e-mail est déjà utilisée.';
       } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         description = 'Email ou mot de passe incorrect.';
+      } else if (error.message) {
+        description = error.message;
       }
       
       toast({
