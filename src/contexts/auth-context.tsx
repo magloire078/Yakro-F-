@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUserProfile(profile);
           
           const storedRole = localStorage.getItem('activeRole') as AppRole | null;
-          // Sync active role with profile if they differ, profile is source of truth.
+          // Always sync active role with the profile's role, as it's the source of truth.
           if (storedRole !== profile.role) {
              setActiveRoleState(profile.role);
              localStorage.setItem('activeRole', profile.role);
