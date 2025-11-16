@@ -22,7 +22,7 @@ const ThemeRoleProvider = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthProvider>

@@ -26,7 +26,7 @@ interface DataState {
   setMenuItems: (menuItems: MenuItem[]) => void;
   setOrders: (orders: Order[]) => void;
   setIsLoading: (isLoading: boolean) => void;
-  addRestaurant: (data: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, imageFile: File | null) => Promise<void>;
+  addRestaurant: (restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'> & { proprietaireId: string }, imageFile: File | null) => Promise<void>;
   updateRestaurant: (restaurantId: string, data: Partial<Restaurant>, imageFile: File | null) => Promise<void>;
   addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile: File | null) => Promise<void>;
   updateMenuItem: (itemId: string, data: Partial<MenuItem>, imageFile: File | null) => Promise<void>;
@@ -38,7 +38,7 @@ interface DataState {
   getOrder: (id: string) => Order | undefined;
 }
 
-const useDataStore = create<DataState>((set, get) => ({
+export const useData = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
@@ -47,9 +47,13 @@ const useDataStore = create<DataState>((set, get) => ({
   setMenuItems: (menuItems) => set({ menuItems }),
   setOrders: (orders) => set({ orders }),
   setIsLoading: (isLoading) => set({ isLoading }),
-  addRestaurant: async (restaurantData, imageFile) => {
-    // This is handled by the useData hook now to get user context
-    throw new Error("addRestaurant should not be called directly from the store.");
+  addRestaurant: async (fullRestaurantData, imageFile) => {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(fullRestaurantData));
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    await addRestaurantAction(formData);
   },
 
   updateRestaurant: async (restaurantId, data, imageFile) => {
@@ -124,7 +128,7 @@ function setupSubscription<T extends DocumentData>(
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { restaurants, setRestaurants, setMenuItems, setOrders, setIsLoading } = useDataStore();
+    const { restaurants, setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
     const [authReady, setAuthReady] = React.useState(false);
 
     React.useEffect(() => {
@@ -222,27 +226,4 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [authReady, user, userProfile, activeRole, restaurants, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
-};
-
-
-export const useData = () => {
-  const { user } = useAuth();
-  const state = useDataStore();
-
-  const addRestaurant = async (
-    restaurantData: Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette' | 'proprietaireId'>, 
-    imageFile: File | null
-  ) => {
-    if (!user) throw new Error("User not authenticated");
-    
-    const formData = new FormData();
-    const fullData = { ...restaurantData, proprietaireId: user.uid };
-    formData.append('data', JSON.stringify(fullData));
-    if (imageFile) {
-        formData.append('image', imageFile);
-    }
-    await addRestaurantAction(formData);
-  };
-  
-  return { ...state, addRestaurant };
 };

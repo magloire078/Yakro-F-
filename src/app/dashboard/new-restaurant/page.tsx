@@ -119,7 +119,7 @@ export default function NewRestaurantPage() {
         }
         setIsLoading(true);
         try {
-            await addRestaurant(data, imageFile);
+            await addRestaurant({ ...data, proprietaireId: user.uid }, imageFile);
             toast({
                 title: 'Restaurant créé avec succès !',
                 description: `${data.nom} a été ajouté à notre plateforme.`,
