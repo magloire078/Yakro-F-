@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck, UtensilsCrossed, Users } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck, UtensilsCrossed } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -24,7 +24,6 @@ export function Sidebar() {
   
   const handleSignOut = async () => {
     await signOut(auth);
-    localStorage.removeItem('activeRole');
     router.push('/login');
   }
   
@@ -40,7 +39,6 @@ export function Sidebar() {
   const getHomeLink = () => {
     if (!user) return "/login";
     if (userProfile?.roleSysteme === 'SuperAdmin') return "/dashboard/admin";
-    if (userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1) return '/profile-selection';
     if (activeRole === 'restaurateur') return '/restaurateur';
     if (activeRole === 'livreur') return '/livreur';
     return '/';
@@ -182,14 +180,6 @@ export function Sidebar() {
                           Mon Profil
                         </Link>
                     </DropdownMenuItem>
-                    {userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1 && (
-                        <DropdownMenuItem asChild>
-                            <Link href="/profile-selection">
-                                <Users className="mr-2 h-4 w-4"/>
-                                Changer de profil
-                            </Link>
-                        </DropdownMenuItem>
-                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                         <LogOut className="mr-2 h-4 w-4"/>

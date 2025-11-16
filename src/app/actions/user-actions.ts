@@ -19,13 +19,12 @@ export async function setupInitialUserAction(userData: SetupInitialUserParams) {
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
-        const newUserProfile: UserProfile = {
+        const newUserProfile: Omit<UserProfile, 'uid'> & {uid: string} = {
             uid: userData.uid,
             email: userData.email,
             nom: userData.nom || userData.email.split('@')[0] || 'Nouvel utilisateur',
             dateCreation: serverTimestamp(),
             role: 'client',
-            rolesAutorises: ['client'],
             roleSysteme: 'User',
             ...(userData.telephone && { telephone: userData.telephone }),
         };

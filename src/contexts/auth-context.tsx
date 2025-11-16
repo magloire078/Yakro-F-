@@ -27,7 +27,6 @@ const mockUserProfile: UserProfile = {
   nom: 'Utilisateur de Dév.',
   dateCreation: Timestamp.now(),
   role: 'client',
-  rolesAutorises: ['client', 'restaurateur', 'livreur'],
   roleSysteme: 'SuperAdmin',
   adresseParDefaut: 'Yamoussoukro, Quartier des Développeurs'
 };
@@ -41,7 +40,7 @@ interface AuthContextType {
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => Promise<void>;
   updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
-  createNewUser: (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}) => Promise<void>;
+  createNewUser: (data: {email: string, password: string, nom: string, role: AppRole, telephone?: string}) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -70,19 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (docSnap.exists()) {
             const profile = docSnap.data() as UserProfile;
             setUserProfile({ ...profile, uid: docSnap.id });
+            setActiveRoleState(profile.role || 'client');
 
-            const savedRole = localStorage.getItem('activeRole') as AppRole;
-            const validRoles = profile.rolesAutorises?.filter(r => ['client', 'restaurateur', 'livreur'].includes(r)) || ['client'];
-
-            if (savedRole && validRoles.includes(savedRole)) {
-              setActiveRoleState(savedRole);
-            } else if (profile.role && validRoles.includes(profile.role)) {
-              setActiveRoleState(profile.role);
-            } else if (validRoles.length > 0) {
-              setActiveRoleState(validRoles[0]);
-            } else {
-              setActiveRoleState('client');
-            }
           } else {
             setUserProfile(null);
             console.warn("User is authenticated but has no profile document.");
@@ -115,15 +103,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   React.useEffect(() => {
     // This part remains to handle role switching even in mock mode
-    const savedRole = localStorage.getItem('activeRole') as AppRole;
-    if (savedRole && mockUserProfile.rolesAutorises?.includes(savedRole)) {
-      setActiveRoleState(savedRole);
+    if (mockUserProfile) {
+      setActiveRoleState(mockUserProfile.role);
     }
   }, []);
 
+
   const setActiveRole = (role: AppRole) => {
-      localStorage.setItem('activeRole', role);
+      // In a single-role system, this doesn't do much but we keep it for potential future flexibility
+      // It mainly ensures the state is correct if changed from an admin panel, for example
       setActiveRoleState(role);
+      // We no longer need localStorage for the active role.
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
@@ -139,7 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await Promise.resolve();
   };
 
-  const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}): Promise<void> => {
+  const createNewUser = async (data: {email: string, password: string, nom: string, role: AppRole, telephone?: string}): Promise<void> => {
     console.log("Mock createNewUser:", data);
     toast({ title: 'Utilisateur créé (simulation)' });
     await Promise.resolve();

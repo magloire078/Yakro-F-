@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign, Users } from 'lucide-react';
+import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign } from 'lucide-react';
 import * as React from 'react';
 
 const clientLinks = [
@@ -45,14 +45,11 @@ export function BottomNavBar() {
             links = clientLinks;
     }
     
-    // Don't render if user isn't logged in, or is a super admin, or has no active role
     if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
-
-    const hasMultipleRoles = userProfile?.rolesAutorises && userProfile.rolesAutorises.length > 1;
 
     return (
         <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t md:hidden">
-            <div className={cn("grid h-full mx-auto font-medium", hasMultipleRoles ? `grid-cols-${links.length + 2}` : `grid-cols-${links.length + 1}`)}>
+            <div className={cn("grid h-full mx-auto font-medium", `grid-cols-${links.length + 1}`)}>
                 {links.map((link) => {
                      const isActive = pathname === link.href;
                      return (
@@ -68,17 +65,6 @@ export function BottomNavBar() {
                         </Link>
                      )
                 })}
-                 {hasMultipleRoles && (
-                    <Link 
-                        href="/profile-selection" 
-                        className={cn(
-                            "inline-flex flex-col items-center justify-center px-5 hover:bg-muted group",
-                            pathname === '/profile-selection' ? "text-primary" : "text-muted-foreground"
-                        )}>
-                        <Users className="w-5 h-5 mb-1" />
-                        <span className="text-xs">Profils</span>
-                    </Link>
-                )}
                  <Link 
                     href="/profile" 
                     className={cn(

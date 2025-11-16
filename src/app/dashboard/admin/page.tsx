@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
@@ -97,17 +96,9 @@ export default function AdminPage() {
         setUpdatingUserId(null);
     };
 
-    const handleAllowedRoleChange = async (userId: string, role: AppRole, isChecked: boolean) => {
+    const handleRoleChange = async (userId: string, newRole: AppRole) => {
         setUpdatingUserId(userId);
-        const targetUser = allUsers.find(u => u.uid === userId);
-        if (!targetUser) return;
-
-        const currentRoles = targetUser.rolesAutorises || [];
-        const newRoles = isChecked
-            ? [...currentRoles, role]
-            : currentRoles.filter(r => r !== role);
-        
-        await updateOtherUserProfile(userId, { rolesAutorises: newRoles });
+        await updateOtherUserProfile(userId, { role: newRole });
         setUpdatingUserId(null);
     };
 
@@ -134,9 +125,9 @@ export default function AdminPage() {
     const userStats = React.useMemo(() => {
         if (!allUsers) return { clients: 0, restaurateurs: 0, livreurs: 0 };
         return {
-            clients: allUsers.filter(u => u.rolesAutorises?.includes('client')).length,
-            restaurateurs: allUsers.filter(u => u.rolesAutorises?.includes('restaurateur')).length,
-            livreurs: allUsers.filter(u => u.rolesAutorises?.includes('livreur')).length,
+            clients: allUsers.filter(u => u.role === 'client').length,
+            restaurateurs: allUsers.filter(u => u.role === 'restaurateur').length,
+            livreurs: allUsers.filter(u => u.role === 'livreur').length,
         };
     }, [allUsers]);
 
@@ -249,7 +240,7 @@ export default function AdminPage() {
                                             <TableRow>
                                                 <TableHead>Utilisateur</TableHead>
                                                 <TableHead>Rôle Système</TableHead>
-                                                <TableHead>Rôles Fonctionnels</TableHead>
+                                                <TableHead>Rôle Fonctionnel</TableHead>
                                                 <TableHead>Date d'inscription</TableHead>
                                                 <TableHead>Actions</TableHead>
                                             </TableRow>
@@ -278,24 +269,20 @@ export default function AdminPage() {
                                                         </Select>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="flex items-center gap-4">
-                                                            {(['client', 'restaurateur', 'livreur'] as AppRole[]).map(role => (
-                                                                <div key={role} className="flex items-center space-x-2">
-                                                                    <Checkbox
-                                                                        id={`${u.uid}-${role}`}
-                                                                        checked={(u.rolesAutorises || []).includes(role)}
-                                                                        onCheckedChange={(checked) => handleAllowedRoleChange(u.uid, role, !!checked)}
-                                                                        disabled={updatingUserId === u.uid || (u.roleSysteme === 'SuperAdmin' && u.uid === user?.uid)}
-                                                                    />
-                                                                    <label
-                                                                        htmlFor={`${u.uid}-${role}`}
-                                                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-                                                                    >
-                                                                        {role}
-                                                                    </label>
-                                                                </div>
-                                                            ))}
-                                                        </div>
+                                                        <Select
+                                                            value={u.role}
+                                                            onValueChange={(value: AppRole) => handleRoleChange(u.uid, value)}
+                                                            disabled={updatingUserId === u.uid}
+                                                        >
+                                                            <SelectTrigger className="w-[180px]">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="client">Client</SelectItem>
+                                                                <SelectItem value="restaurateur">Restaurateur</SelectItem>
+                                                                <SelectItem value="livreur">Livreur</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
                                                     </TableCell>
                                                      <TableCell>
                                                         {u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : 'Date inconnue'}

@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -27,7 +28,7 @@ import {
 } from "@/components/ui/form";
 import { useAuth } from '@/contexts/auth-context';
 import type { AppRole } from '@/lib/types';
-import { Checkbox } from './ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 interface AddUserDialogProps {
@@ -35,15 +36,11 @@ interface AddUserDialogProps {
   onClose: () => void;
 }
 
-const roles: AppRole[] = ['client', 'restaurateur', 'livreur'];
-
 const addUserSchema = z.object({
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
   email: z.string().email("Veuillez entrer une adresse email valide."),
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères."),
-  rolesAutorises: z.array(z.string()).refine(value => value.some(item => item), {
-    message: "Vous devez sélectionner au moins un rôle.",
-  }),
+  role: z.enum(['client', 'restaurateur', 'livreur']),
 });
 
 type AddUserFormValues = z.infer<typeof addUserSchema>;
@@ -59,7 +56,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
       nom: '',
       email: '',
       password: '',
-      rolesAutorises: ['client'],
+      role: 'client',
     },
   });
 
@@ -74,7 +71,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
     try {
         await createNewUser({
             ...data,
-            rolesAutorises: data.rolesAutorises as AppRole[],
+            role: data.role as AppRole,
         });
         onClose();
     } catch(e) {
@@ -90,7 +87,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
         <DialogHeader>
           <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
           <DialogDescription>
-            Créez un compte utilisateur et définissez ses rôles. Le mot de passe est temporaire (sa création est simulée).
+            Créez un compte utilisateur et définissez son rôle. Le mot de passe est temporaire (sa création est simulée).
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -128,54 +125,28 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
                         </FormItem>
                     )}
                 />
-                 <FormField
-                    control={form.control}
-                    name="rolesAutorises"
-                    render={() => (
-                        <FormItem>
-                        <div className="mb-4">
-                            <FormLabel className="text-base">Rôles Autorisés</FormLabel>
-                            <FormDescription>
-                            Sélectionnez les profils que cet utilisateur pourra utiliser.
-                            </FormDescription>
-                        </div>
-                        {roles.map((role) => (
-                            <FormField
-                            key={role}
-                            control={form.control}
-                            name="rolesAutorises"
-                            render={({ field }) => {
-                                return (
-                                <FormItem
-                                    key={role}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                    <FormControl>
-                                    <Checkbox
-                                        checked={field.value?.includes(role)}
-                                        onCheckedChange={(checked) => {
-                                        return checked
-                                            ? field.onChange([...field.value, role])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                (value) => value !== role
-                                                )
-                                            )
-                                        }}
-                                    />
-                                    </FormControl>
-                                    <FormLabel className="font-normal capitalize">
-                                        {role}
-                                    </FormLabel>
-                                </FormItem>
-                                )
-                            }}
-                            />
-                        ))}
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rôle</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez un rôle" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="client">Client</SelectItem>
+                          <SelectItem value="restaurateur">Restaurateur</SelectItem>
+                          <SelectItem value="livreur">Livreur</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <DialogFooter className="pt-4">
                     <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
                     <Button type="submit" disabled={isSubmitting}>

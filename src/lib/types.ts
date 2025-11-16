@@ -75,10 +75,7 @@ export interface Review {
 /**
  * @description
  * AppRole définit les capacités fonctionnelles (le "chapeau") qu'un utilisateur peut avoir.
- * Un utilisateur peut basculer entre ces rôles s'il en a les droits.
- * Cela contrôle principalement l'interface utilisateur qui lui est présentée.
- *
- * Ex: Un utilisateur peut être à la fois 'client' et 'restaurateur'. Il choisit son rôle actif via l'UI.
+ * Un utilisateur a désormais un et un seul rôle.
  */
 export type AppRole = 'client' | 'restaurateur' | 'livreur';
 
@@ -100,14 +97,11 @@ export interface UserProfile {
     telephone?: string;
     adresseParDefaut?: string;
     
-    // Le rôle fonctionnel que l'utilisateur utilise actuellement (son "chapeau" actif).
-    role?: AppRole;
+    // Le rôle fonctionnel unique de l'utilisateur.
+    role: AppRole;
     
     // Le niveau de permissions de l'utilisateur dans le système.
     roleSysteme?: SystemRole;
-    
-    // La liste des rôles fonctionnels que cet utilisateur est autorisé à utiliser.
-    rolesAutorises?: AppRole[];
     
     statutService?: 'En service' | 'Hors service';
     

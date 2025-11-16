@@ -24,7 +24,6 @@ export default function ProfilePage() {
   
   const handleSignOut = async () => {
     await signOut(auth);
-    localStorage.removeItem('activeRole');
     router.push('/login');
   }
 
