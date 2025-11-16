@@ -20,20 +20,24 @@ service cloud.firestore {
       return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
     }
 
+    match /restaurants {
+      allow list: if true;
+    }
+
     match /restaurants/{restaurantId} {
       allow read: if true;
       allow create: if isUser(request.resource.data.proprietaireId);
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
     
+    match /plats {
+      allow list: if true;
+    }
+
     match /plats/{platId} {
         allow read: if true;
         allow create: if isRestaurantOwner(request.resource.data.restaurantId);
         allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
-    }
-
-    match /commandes {
-      allow list: if isUserAuthenticated();
     }
 
     match /commandes/{orderId} {
@@ -55,10 +59,10 @@ service cloud.firestore {
       // The auto-recovery mechanism needs to be able to promote a user, 
       // so we also allow writes if the database has no SuperAdmin yet.
       allow update: if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);
-      allow create: if isUserAuthenticated();
+      allow create: if request.auth.uid == userId || isSuperAdmin();
     }
      match /utilisateurs {
-        allow read: if isSuperAdmin();
+        allow list: if isSuperAdmin();
     }
   }
 }
