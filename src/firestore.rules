@@ -56,6 +56,10 @@ service cloud.firestore {
      match /utilisateurs {
         allow list: if isSuperAdmin();
     }
+    
+    match /commandes {
+      allow list: if isUserAuthenticated();
+    }
   }
 }
     

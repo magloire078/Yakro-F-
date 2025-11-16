@@ -150,7 +150,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...(data.telephone && { telephone: data.telephone }),
       };
       
-      await setDoc(doc(db, 'utilisateurs', newUser.uid), newUserProfile);
+      const userDocRef = doc(db, 'utilisateurs', newUser.uid);
+      await setDoc(userDocRef, newUserProfile);
       
       toast({ title: 'Utilisateur créé', description: `Le compte pour ${data.email} a été créé.`});
       
