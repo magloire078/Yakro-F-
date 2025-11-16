@@ -33,17 +33,20 @@ export async function addMenuItemAction(formData: FormData) {
     const imageFile = formData.get('image') as File | null;
     const item = JSON.parse(itemJSON) as Omit<MenuItem, 'id'>;
     const collectionRef = collection(db, "plats");
-    const docRef = doc(collectionRef); // generate an ID upfront
-    const docRefId = docRef.id;
+    let docRef;
 
     try {
+        // 1. Add document without image URL to get an ID
+        const newMenuItemData = { ...item, image: '' }; // Start with an empty image URL
+        docRef = await addDoc(collectionRef, newMenuItemData);
+        const docRefId = docRef.id;
+
+        // 2. Determine the image URL
         let finalImageUrl: string | undefined = undefined;
 
-        // If user provides an image, use it.
         if (imageFile) {
              finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
         } 
-        // If no user image, and there's a hint, generate one with AI
         else if (item.indiceImage) {
             try {
                 const generatedImage = await generateImage({ prompt: item.indiceImage });
@@ -52,19 +55,20 @@ export async function addMenuItemAction(formData: FormData) {
                 }
             } catch (aiError) {
                 console.error("AI image generation failed:", aiError);
-                // Continue without an image if AI fails
             }
         }
         
-        const newMenuItemData = { ...item, image: finalImageUrl || '' };
-        await setDoc(docRef, newMenuItemData);
+        // 3. Update the document with the final image URL if it exists
+        if (finalImageUrl) {
+            await updateDoc(docRef, { image: finalImageUrl });
+        }
         
         revalidatePath('/dashboard/menu');
         revalidatePath(`/restaurants/${item.restaurantId}`);
 
     } catch (e) {
         const permissionError = new FirestorePermissionError({
-            path: docRef.path,
+            path: docRef ? docRef.path : collectionRef.path,
             operation: 'create',
             requestResourceData: item,
         });
