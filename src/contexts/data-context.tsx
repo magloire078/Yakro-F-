@@ -124,7 +124,7 @@ function setupSubscription<T extends DocumentData>(
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useDataStore();
+    const { restaurants, setRestaurants, setMenuItems, setOrders, setIsLoading } = useDataStore();
     const [authReady, setAuthReady] = React.useState(false);
 
     React.useEffect(() => {
@@ -139,37 +139,35 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         setIsLoading(true);
-        let unsubscribers: Unsubscribe[] = [];
         const collectionRef = (path: string) => collection(db, path);
         const getErrorHandler = (path: string) => (error: any) => {
             const permissionError = new FirestorePermissionError({ path, operation: 'list' });
             errorEmitter.emit('permission-error', permissionError);
             console.error(`Error subscribing to ${path}:`, error);
         };
-
+        
         // Restaurants & MenuItems are public
-        unsubscribers.push(setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, getErrorHandler('restaurants')));
-        unsubscribers.push(setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, getErrorHandler('plats')));
-
+        const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, getErrorHandler('restaurants'));
+        const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, getErrorHandler('plats'));
+        let unsubOrders: Unsubscribe | null = null;
+        
         // Orders require role-based queries.
         if (user && userProfile) {
             switch(activeRole) {
                 case 'client': {
                     const q = query(collectionRef('commandes'), where("userId", "==", user.uid));
-                    unsubscribers.push(setupSubscription<Order>(q, setOrders, getErrorHandler('commandes')));
+                    unsubOrders = setupSubscription<Order>(q, setOrders, getErrorHandler('commandes'));
                     break;
                 }
                 case 'restaurateur': {
-                    getDocs(query(collectionRef('restaurants'), where('proprietaireId', '==', user.uid)))
-                        .then(restoSnap => {
-                            const myRestaurantIds = restoSnap.docs.map(doc => doc.id);
-                            if (myRestaurantIds.length > 0) {
-                                const q = query(collectionRef('commandes'), where("restaurantId", "in", myRestaurantIds));
-                                unsubscribers.push(setupSubscription<Order>(q, setOrders, getErrorHandler('commandes')));
-                            } else {
-                                setOrders([]);
-                            }
-                        });
+                    // This logic is now dependent on `restaurants` which is updated in real-time
+                    const myRestaurantIds = restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
+                    if (myRestaurantIds.length > 0) {
+                        const q = query(collectionRef('commandes'), where("restaurantId", "in", myRestaurantIds));
+                        unsubOrders = setupSubscription<Order>(q, setOrders, getErrorHandler('commandes'));
+                    } else {
+                        setOrders([]);
+                    }
                     break;
                 }
                 case 'livreur': {
@@ -183,22 +181,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     };
 
                     const q1 = query(collectionRef('commandes'), where("statut", "==", "En Préparation"));
-                    unsubscribers.push(setupSubscription<Order>(q1, (data) => {
+                    const unsubAvailable = setupSubscription<Order>(q1, (data) => {
                         availableOrders = data;
                         mergeAndSetOrders();
-                    }, getErrorHandler('commandes')));
+                    }, getErrorHandler('commandes'));
 
                     const q2 = query(collectionRef('commandes'), where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
-                    unsubscribers.push(setupSubscription<Order>(q2, (data) => {
+                    const unsubAssigned = setupSubscription<Order>(q2, (data) => {
                         assignedOrders = data;
                         mergeAndSetOrders();
-                    }, getErrorHandler('commandes')));
+                    }, getErrorHandler('commandes'));
                     
+                    unsubOrders = () => {
+                        unsubAvailable();
+                        unsubAssigned();
+                    };
                     break;
                 }
                 default: {
                     if (userProfile.roleSysteme === 'SuperAdmin') {
-                        unsubscribers.push(setupSubscription<Order>(query(collectionRef('commandes')), setOrders, getErrorHandler('commandes')));
+                        unsubOrders = setupSubscription<Order>(query(collectionRef('commandes')), setOrders, getErrorHandler('commandes'));
                     } else {
                         setOrders([]);
                     }
@@ -210,12 +212,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
         const timer = setTimeout(() => setIsLoading(false), 1500);
-        unsubscribers.push(() => clearTimeout(timer));
-
+        
         return () => {
-            unsubscribers.forEach(unsub => unsub && unsub());
+            unsubRestaurants();
+            unsubMenuItems();
+            if (unsubOrders) unsubOrders();
+            clearTimeout(timer);
         };
-    }, [authReady, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [authReady, user, userProfile, activeRole, restaurants, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };
