@@ -17,7 +17,7 @@ interface AuthContextType {
   loading: boolean;
   activeRole: AppRole;
   setActiveRole: (role: AppRole) => void;
-  updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => Promise<void>;
+  updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
   updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -41,7 +41,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    React.useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      setLoading(false);
+      if (!firebaseUser) {
+          // If user logs out, we can clear the profile and set loading to false.
+          setUserProfile(null);
+          setLoading(false);
+      }
     });
     return () => unsubscribeAuth();
   }, [auth]);
@@ -55,8 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (docSnap.exists()) {
           const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
           setUserProfile(profile);
-          // Set the active role from the profile if it hasn't been set by the user yet
+          
           const storedRole = localStorage.getItem('activeRole') as AppRole | null;
+          // Sync active role with profile if they differ, profile is source of truth.
           if (storedRole !== profile.role) {
              setActiveRoleState(profile.role);
              localStorage.setItem('activeRole', profile.role);
@@ -69,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } else {
       setUserProfile(null);
+      setLoading(false); // No user, so not loading.
     }
     return () => {
       if (unsubscribeProfile) {
@@ -80,14 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setActiveRole = (role: AppRole) => {
       setActiveRoleState(role);
       localStorage.setItem('activeRole', role);
-      if (userProfile && userProfile.role !== role) {
-        // Optimistically update UI, and persist change to DB
-        setUserProfile({...userProfile, role});
-        updateUserProfileAction(userProfile.uid, { role });
-      }
   }
   
-  const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
+  const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
       await updateUserProfileAction(uid, data);
   };
   
@@ -97,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile };
 
-  if (loading && !userProfile) { // Show loading only on initial load
+  if (loading) { 
     return (
         <div className="flex h-screen w-full items-center justify-center">
            <Loader className="h-16 w-16 animate-spin text-primary" />

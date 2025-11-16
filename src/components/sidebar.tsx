@@ -14,13 +14,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import type { AppRole } from '@/lib/types';
 import { ThemeToggle } from './theme-toggle';
 import { useFirebase } from '@/contexts/firebase-provider';
+import { useToast } from '@/hooks/use-toast';
 
 export function Sidebar() {
   const { cartCount } = useCart();
   const { auth } = useFirebase();
-  const { user, loading, activeRole, setActiveRole, userProfile } = useAuth();
+  const { user, loading, activeRole, setActiveRole, userProfile, updateUserProfile } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { toast } = useToast();
   
   const handleSignOut = async () => {
     await auth.signOut();
@@ -43,6 +45,32 @@ export function Sidebar() {
     if (activeRole === 'livreur') return '/livreur';
     return '/';
   }
+  
+  const handleRoleChange = async (newRole: AppRole) => {
+    if (!userProfile) return;
+    try {
+      await updateUserProfile(userProfile.uid, { role: newRole });
+      setActiveRole(newRole); // This will also update localStorage
+      toast({
+        title: 'Rôle mis à jour',
+        description: `Vous êtes maintenant en mode ${newRole}.`,
+      });
+      // Redirect to the appropriate homepage for the new role
+      if (newRole === 'restaurateur') {
+        router.push('/restaurateur');
+      } else if (newRole === 'livreur') {
+        router.push('/livreur');
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Impossible de changer de rôle pour le moment.',
+      });
+    }
+  };
 
   const homeLink = getHomeLink();
 
@@ -179,6 +207,20 @@ export function Sidebar() {
                           <User className="mr-2 h-4 w-4"/>
                           Mon Profil
                         </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Changer de rôle</DropdownMenuLabel>
+                     <DropdownMenuItem onClick={() => handleRoleChange('client')} disabled={activeRole === 'client'}>
+                        <User className="mr-2 h-4 w-4"/>
+                        Client
+                    </DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => handleRoleChange('restaurateur')} disabled={activeRole === 'restaurateur'}>
+                        <ChefHat className="mr-2 h-4 w-4"/>
+                        Restaurateur
+                    </DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => handleRoleChange('livreur')} disabled={activeRole === 'livreur'}>
+                        <Bike className="mr-2 h-4 w-4"/>
+                        Livreur
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
