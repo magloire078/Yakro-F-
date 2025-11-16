@@ -105,17 +105,15 @@ const useDataStore = create<DataState>((set, get) => ({
 }));
 
 function setupSubscription<T extends DocumentData>(
-  q: Query<DocumentData, DocumentData> | string,
-  setData: (data: T[]) => void,
+  q: Query<DocumentData, DocumentData>,
+  callback: (data: T[]) => void,
   onError: (error: any) => void
 ): Unsubscribe {
-  const queryToExecute = typeof q === 'string' ? query(collection(db, q)) : q;
-  
   return onSnapshot(
-    queryToExecute,
+    q,
     (snapshot) => {
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as T[];
-      setData(list);
+      callback(list);
     },
     (error) => {
         onError(error);
@@ -142,83 +140,74 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setIsLoading(true);
         let unsubscribers: Unsubscribe[] = [];
-        
-        const createSubscription = <T extends DocumentData>(
-            collectionPath: string, 
-            setData: (data: T[]) => void, 
-            queryBuilder?: (ref: Query) => Query | Promise<Query | null>
-        ) => {
-            const collectionRef = collection(db, collectionPath);
-            const onError = (error: any) => {
-                const permissionError = new FirestorePermissionError({
-                    path: collectionPath,
-                    operation: 'list',
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                console.error(`Error subscribing to ${collectionPath}:`, error);
-            };
-
-            if (queryBuilder) {
-                const queryOrPromise = queryBuilder(collectionRef);
-                if (queryOrPromise instanceof Promise) {
-                    queryOrPromise.then(q => {
-                        if (q) {
-                            unsubscribers.push(setupSubscription<T>(q, setData, onError));
-                        } else {
-                            setData([]);
-                        }
-                    }).catch(onError);
-                } else {
-                     unsubscribers.push(setupSubscription<T>(queryOrPromise, setData, onError));
-                }
-            } else {
-                 unsubscribers.push(setupSubscription<T>(collectionRef, setData, onError));
-            }
+        const collectionRef = (path: string) => collection(db, path);
+        const getErrorHandler = (path: string) => (error: any) => {
+            const permissionError = new FirestorePermissionError({ path, operation: 'list' });
+            errorEmitter.emit('permission-error', permissionError);
+            console.error(`Error subscribing to ${path}:`, error);
         };
 
-        // Restaurants & MenuItems are public, so simple subscriptions are fine.
-        createSubscription<Restaurant>('restaurants', setRestaurants);
-        createSubscription<MenuItem>('plats', setMenuItems);
+        // Restaurants & MenuItems are public
+        unsubscribers.push(setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, getErrorHandler('restaurants')));
+        unsubscribers.push(setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, getErrorHandler('plats')));
 
         // Orders require role-based queries.
-        createSubscription<Order>('commandes', setOrders, async (ref) => {
-            if (!user || !userProfile) return null; // No user, no orders.
-            
-            switch (activeRole) {
-                case 'client':
-                    return query(ref, where("userId", "==", user.uid));
-                
-                case 'restaurateur':
-                    const restoQuery = query(collection(db, 'restaurants'), where('proprietaireId', '==', user.uid));
-                    const restoSnap = await getDocs(restoQuery);
-                    const myRestaurantIds = restoSnap.docs.map(doc => doc.id);
-                    return myRestaurantIds.length > 0 ? query(ref, where("restaurantId", "in", myRestaurantIds)) : null;
+        if (user && userProfile) {
+            switch(activeRole) {
+                case 'client': {
+                    const q = query(collectionRef('commandes'), where("userId", "==", user.uid));
+                    unsubscribers.push(setupSubscription<Order>(q, setOrders, getErrorHandler('commandes')));
+                    break;
+                }
+                case 'restaurateur': {
+                    getDocs(query(collectionRef('restaurants'), where('proprietaireId', '==', user.uid)))
+                        .then(restoSnap => {
+                            const myRestaurantIds = restoSnap.docs.map(doc => doc.id);
+                            if (myRestaurantIds.length > 0) {
+                                const q = query(collectionRef('commandes'), where("restaurantId", "in", myRestaurantIds));
+                                unsubscribers.push(setupSubscription<Order>(q, setOrders, getErrorHandler('commandes')));
+                            } else {
+                                setOrders([]);
+                            }
+                        });
+                    break;
+                }
+                case 'livreur': {
+                    let availableOrders: Order[] = [];
+                    let assignedOrders: Order[] = [];
 
-                case 'livreur':
-                    // Livreur sees orders ready for pickup OR orders they are currently delivering.
-                    const q1 = query(ref, where("statut", "==", "En Préparation"));
-                    const q2 = query(ref, where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
-                    
-                    const [availableSnap, assignedSnap] = await Promise.all([getDocs(q1), getDocs(q2)]);
-                    const availableOrders = availableSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
-                    const assignedOrders = assignedSnap.docs.map(d => ({id: d.id, ...d.data()}) as Order);
+                    const mergeAndSetOrders = () => {
+                        const combined = [...availableOrders, ...assignedOrders];
+                        const uniqueOrders = Array.from(new Map(combined.map(o => [o.id, o])).values());
+                        setOrders(uniqueOrders);
+                    };
 
-                    const combined = [...availableOrders, ...assignedOrders];
-                    const uniqueOrders = Array.from(new Map(combined.map(o => [o.id, o])).values());
-                    setOrders(uniqueOrders);
+                    const q1 = query(collectionRef('commandes'), where("statut", "==", "En Préparation"));
+                    unsubscribers.push(setupSubscription<Order>(q1, (data) => {
+                        availableOrders = data;
+                        mergeAndSetOrders();
+                    }, getErrorHandler('commandes')));
+
+                    const q2 = query(collectionRef('commandes'), where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
+                    unsubscribers.push(setupSubscription<Order>(q2, (data) => {
+                        assignedOrders = data;
+                        mergeAndSetOrders();
+                    }, getErrorHandler('commandes')));
                     
-                    // Since we're fetching manually for livreur for now to combine queries,
-                    // we return null to prevent setting up a persistent listener that might be incorrect.
-                    // A more advanced implementation could use multiple listeners and merge client-side.
-                    return null;
-                
-                default:
-                     if (userProfile.roleSysteme === 'SuperAdmin') {
-                        return query(ref); // SuperAdmin can see all orders.
+                    break;
+                }
+                default: {
+                    if (userProfile.roleSysteme === 'SuperAdmin') {
+                        unsubscribers.push(setupSubscription<Order>(query(collectionRef('commandes')), setOrders, getErrorHandler('commandes')));
+                    } else {
+                        setOrders([]);
                     }
-                    return null;
+                }
             }
-        });
+        } else {
+            setOrders([]);
+        }
+
 
         const timer = setTimeout(() => setIsLoading(false), 1500);
         unsubscribers.push(() => clearTimeout(timer));
