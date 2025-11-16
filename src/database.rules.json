@@ -25,13 +25,10 @@
         "match /utilisateurs/{userId}": {
             "allow read": "if isUser(userId) || isSuperAdmin();",
             "allow update": "if isUser(userId) || isSuperAdmin() || !exists(/databases/$(database)/documents/utilisateurs?roleSysteme=SuperAdmin);",
-            "allow create": "if request.auth.uid == userId;"
+            "allow create": "if isUserAuthenticated();"
         },
         "match /utilisateurs": {
           "allow list": "if isSuperAdmin();"
-        },
-        "match /commandes": {
-          "allow list": "if isUserAuthenticated();"
         }
       }
     }
