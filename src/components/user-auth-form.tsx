@@ -19,16 +19,20 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { setupInitialUserAction } from '@/app/actions/user-actions';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { Icons } from './icons';
 
-const authSchema = z.object({
+const loginSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
   password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
+});
+
+const signupSchema = z.object({
   nom: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères.'}),
+  email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
+  password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
   telephone: z.string().optional(),
 });
 
-type FormData = z.infer<typeof authSchema>;
 
 export function UserAuthForm() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -36,13 +40,19 @@ export function UserAuthForm() {
   const [isLoginView, setIsLoginView] = React.useState(true);
   const { toast } = useToast();
   
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    resolver: zodResolver(authSchema.omit({ nom: isLoginView, telephone: isLoginView })),
+  const form = useForm({
+    resolver: zodResolver(isLoginView ? loginSchema : signupSchema),
+    defaultValues: {
+        nom: '',
+        email: '',
+        password: '',
+        telephone: ''
+    }
   });
   
   React.useEffect(() => {
-    reset();
-  }, [isLoginView, reset]);
+    form.reset();
+  }, [isLoginView, form]);
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
@@ -57,12 +67,12 @@ export function UserAuthForm() {
       });
       toast({
         title: 'Connexion réussie',
-        description: 'Vous êtes maintenant connecté.',
+        description: 'Vous êtes maintenant connecté via Google.',
       });
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Erreur de connexion',
+        title: 'Erreur de connexion Google',
         description: error.message || 'Une erreur est survenue lors de la connexion.',
       });
     } finally {
@@ -70,15 +80,13 @@ export function UserAuthForm() {
     }
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: any) => {
     setIsLoading(true);
     const clientAuth = getAuth();
     try {
       if (isLoginView) {
         await signInWithEmailAndPassword(clientAuth, data.email, data.password);
-        toast({
-          title: 'Connexion réussie',
-        });
+        toast({ title: 'Connexion réussie' });
       } else {
         const userCredential = await createUserWithEmailAndPassword(clientAuth, data.email, data.password);
         await setupInitialUserAction({
@@ -92,14 +100,22 @@ export function UserAuthForm() {
             description: "Bienvenue sur Yakro Fê."
         });
       }
+      // Redirection will be handled by the login page
     } catch (error: any) {
       let description = "Une erreur inattendue s'est produite.";
-      if (error instanceof FirestorePermissionError) {
-        description = "Erreur de permissions lors de la création du profil. L'erreur a été enregistrée pour analyse.";
-      } else if (error.code === 'auth/email-already-in-use') {
-        description = 'Cette adresse e-mail est déjà utilisée.';
-      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        description = 'Email ou mot de passe incorrect.';
+      if (error.code) {
+          switch(error.code) {
+              case 'auth/email-already-in-use':
+                description = 'Cette adresse e-mail est déjà utilisée.';
+                break;
+              case 'auth/wrong-password':
+              case 'auth/user-not-found':
+              case 'auth/invalid-credential':
+                description = 'Email ou mot de passe incorrect.';
+                break;
+              default:
+                description = `Erreur: ${error.code}`;
+          }
       } else if (error.message) {
         description = error.message;
       }
@@ -116,7 +132,7 @@ export function UserAuthForm() {
 
   return (
     <div className="grid gap-6">
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid gap-4">
           {!isLoginView && (
             <div className="grid gap-2">
@@ -125,9 +141,9 @@ export function UserAuthForm() {
                 id="nom"
                 placeholder="Ex: Aïcha Koné"
                 disabled={isLoading || isGoogleLoading}
-                {...register('nom')}
+                {...form.register('nom')}
                 />
-                {errors.nom && <p className="text-sm text-destructive">{errors.nom.message}</p>}
+                {form.formState.errors.nom && <p className="text-sm text-destructive">{String(form.formState.errors.nom.message)}</p>}
             </div>
            )}
           <div className="grid gap-2">
@@ -140,9 +156,9 @@ export function UserAuthForm() {
               autoComplete="email"
               autoCorrect="off"
               disabled={isLoading || isGoogleLoading}
-              {...register('email')}
+              {...form.register('email')}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {form.formState.errors.email && <p className="text-sm text-destructive">{String(form.formState.errors.email.message)}</p>}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Mot de passe</Label>
@@ -150,9 +166,9 @@ export function UserAuthForm() {
               id="password"
               type="password"
               disabled={isLoading || isGoogleLoading}
-              {...register('password')}
+              {...form.register('password')}
             />
-            {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+            {form.formState.errors.password && <p className="text-sm text-destructive">{String(form.formState.errors.password.message)}</p>}
           </div>
            {!isLoginView && (
             <div className="grid gap-2">
@@ -162,12 +178,12 @@ export function UserAuthForm() {
                 type="tel"
                 placeholder="Ex: 07 01 02 03 04"
                 disabled={isLoading || isGoogleLoading}
-                {...register('telephone')}
+                {...form.register('telephone')}
                 />
-                {errors.telephone && <p className="text-sm text-destructive">{errors.telephone.message}</p>}
+                {form.formState.errors.telephone && <p className="text-sm text-destructive">{String(form.formState.errors.telephone.message)}</p>}
             </div>
           )}
-          <Button disabled={isLoading || isGoogleLoading}>
+          <Button disabled={isLoading || isGoogleLoading} type="submit">
             {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             {isLoginView ? 'Se connecter' : 'Créer un compte'}
           </Button>
@@ -187,9 +203,7 @@ export function UserAuthForm() {
         {isGoogleLoading ? (
           <Loader className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-            <path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 111.8 512 0 400.2 0 264.4S111.8 16.8 244 16.8c70.3 0 129.8 27.8 174.3 71.9l-67.8 67.8C314.6 114.5 282.8 96 244 96c-80.6 0-146 65.4-146 146s65.4 146 146 146c92.3 0 128.9-67.9 132.8-101.4H244v-86.8h243.2c1.6 14.5 2.8 29.3 2.8 44.4z"></path>
-          </svg>
+          <Icons.logo className="mr-2 h-4 w-4" />
         )}
         Google
       </Button>

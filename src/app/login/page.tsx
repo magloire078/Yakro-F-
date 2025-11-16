@@ -6,41 +6,22 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Icons } from '@/components/icons';
 import { UserAuthForm } from '@/components/user-auth-form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader } from 'lucide-react';
-import type { AppRole } from '@/lib/types';
 import Link from 'next/link';
 
 export default function LoginPage() {
-    const { user, userProfile, loading: authLoading, setActiveRole, updateUserProfile } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [isRedirecting, setIsRedirecting] = React.useState(false);
 
     React.useEffect(() => {
-        if (user && userProfile && !isRedirecting) {
+        if (!authLoading && user && !isRedirecting) {
             setIsRedirecting(true);
-
-            if (userProfile.roleSysteme === 'SuperAdmin') {
-                router.replace('/dashboard/admin');
-                return;
-            }
-            
-            const allowedRoles = userProfile.rolesAutorises || ['client'];
-
-            if (allowedRoles.length > 1) {
-                router.replace('/profile-selection');
-            } else {
-                const roleToSet = allowedRoles[0] || 'client';
-                setActiveRole(roleToSet);
-                let redirectPath = '/';
-                if (roleToSet === 'restaurateur') redirectPath = '/restaurateur';
-                if (roleToSet === 'livreur') redirectPath = '/livreur';
-                router.replace(redirectPath);
-            }
+            router.replace('/profile-selection');
         }
-    }, [user, userProfile, isRedirecting, router, setActiveRole]);
+    }, [user, authLoading, isRedirecting, router]);
     
-    if (authLoading || (user && userProfile) || isRedirecting) {
+    if (authLoading || isRedirecting || (!authLoading && user)) {
         return (
             <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
@@ -70,10 +51,10 @@ export default function LoginPage() {
                  <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                     <div className="flex flex-col space-y-2 text-center">
                         <h1 className="text-2xl font-semibold tracking-tight">
-                            Connectez-vous à votre compte
+                            Accédez à votre compte
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Entrez vos identifiants pour accéder à votre espace
+                            Entrez vos identifiants ou créez un nouveau compte.
                         </p>
                     </div>
                     <UserAuthForm />
