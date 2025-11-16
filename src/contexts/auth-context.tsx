@@ -21,7 +21,7 @@ interface AuthContextType {
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => Promise<void>;
   updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
-  createNewUser: (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}) => Promise<User | null>;
+  createNewUser: (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -130,44 +130,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}): Promise<User | null> => {
+  const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}): Promise<void> => {
     const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
     
-    // We can't create a user on behalf of someone else with client-side SDKs easily.
-    // This function is now intended to be called by an admin. For a production app,
-    // this would be a server-side Cloud Function. For this prototype, we rely on security rules
-    // that allow a SuperAdmin to create users.
-    
-    try {
-      const userDocRef = doc(collection(db, 'utilisateurs')); // Create a new doc ref to get an ID
-      const newUserProfile: UserProfile = {
-          uid: userDocRef.id,
-          email: data.email,
-          nom: data.nom,
-          dateCreation: serverTimestamp(),
-          role: roles[0],
-          rolesAutorises: roles,
-          roleSysteme: 'User',
-          ...(data.telephone && { telephone: data.telephone }),
-      };
-      
-      // In a real app, we'd call a Cloud Function to create the Auth user and Firestore doc transactionally.
-      // For this prototype, we'll just create the Firestore doc. The admin would provide a temporary password
-      // or a password reset link would be sent. We are simulating only the DB part.
-      // Since we can't create an Auth user without being that user, we'll skip that for admin creation.
-      // This is a limitation of client-side operations.
-      await setDoc(userDocRef, newUserProfile);
-      
-      toast({ title: 'Utilisateur créé (Profil Firestore)', description: `Le profil pour ${data.email} a été créé. La création de l'authentification est simulée.`});
-      
-      // We can't return a `User` object as we didn't create one in Auth.
-      return null;
+    // This function is for admins to create users. Client-side SDKs cannot create Firebase Auth users 
+    // on behalf of others. This is a prototype simulation. We'll create the Firestore document only.
+    // In a real app, this would be a server-side Cloud Function.
 
+    const userDocRef = doc(collection(db, 'utilisateurs')); // Create a new doc ref to get an ID
+    const newUserProfile: UserProfile = {
+        uid: userDocRef.id,
+        email: data.email,
+        nom: data.nom,
+        dateCreation: serverTimestamp(),
+        role: roles[0],
+        rolesAutorises: roles,
+        roleSysteme: 'User',
+        ...(data.telephone && { telephone: data.telephone }),
+    };
+
+    try {
+        await setDoc(userDocRef, newUserProfile);
+        toast({ title: 'Utilisateur créé (Profil Firestore)', description: `Le profil pour ${data.email} a été créé. La création de l'authentification est simulée.`});
     } catch (error: any) {
        const permissionError = new FirestorePermissionError({
-          path: `utilisateurs/NOUVEL_UTILISATEUR`,
+          path: userDocRef.path,
           operation: 'create',
-          requestResourceData: { email: data.email, nom: data.nom },
+          requestResourceData: newUserProfile,
       });
       errorEmitter.emit('permission-error', permissionError);
       toast({ variant: 'destructive', title: 'Erreur de permission', description: 'Impossible de créer le profil utilisateur dans la base de données.'});
