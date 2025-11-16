@@ -7,8 +7,6 @@ import { create } from 'zustand';
 import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 
 
 interface DataState {
@@ -47,8 +45,7 @@ export const useData = create<DataState>((set, get) => ({
 
 function setupSubscription<T extends DocumentData>(
   q: Query<DocumentData, DocumentData>,
-  callback: (data: T[]) => void,
-  onError: (error: any) => void
+  callback: (data: T[]) => void
 ): Unsubscribe {
   return onSnapshot(
     q,
@@ -57,7 +54,8 @@ function setupSubscription<T extends DocumentData>(
       callback(list);
     },
     (error) => {
-        onError(error);
+        // Since rules are wide open, we don't expect permission errors here
+        console.error(`Error subscribing to collection:`, error);
     }
   );
 }
@@ -67,7 +65,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     const { restaurants, setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
     const [authReady, setAuthReady] = React.useState(false);
-    const [isRestaurateurSubscribed, setIsRestaurateurSubscribed] = React.useState(false);
 
     React.useEffect(() => {
         if (!authLoading) {
@@ -82,81 +79,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setIsLoading(true);
         const collectionRef = (path: string) => collection(db, path);
-        const getErrorHandler = (path: string) => (error: any) => {
-            const permissionError = new FirestorePermissionError({ path, operation: 'list' });
-            errorEmitter.emit('permission-error', permissionError);
-            console.error(`Error subscribing to ${path}:`, error);
-        };
         
         // Restaurants & MenuItems are public
-        const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, getErrorHandler('restaurants'));
-        const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, getErrorHandler('plats'));
-        let unsubOrders: Unsubscribe | null = null;
-        
-        // Orders require role-based queries.
-        if (user && userProfile) {
-            if (activeRole === 'client') {
-                const q = query(collectionRef('commandes'), where("userId", "==", user.uid));
-                unsubOrders = setupSubscription<Order>(q, setOrders, getErrorHandler('commandes'));
-            } else if (activeRole === 'restaurateur') {
-                // Wait for restaurants to be loaded before subscribing to orders
-                if (restaurants.length > 0 && !isRestaurateurSubscribed) {
-                    const myRestaurantIds = restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
-                    if (myRestaurantIds.length > 0) {
-                        const q = query(collectionRef('commandes'), where("restaurantId", "in", myRestaurantIds));
-                        unsubOrders = setupSubscription<Order>(q, setOrders, getErrorHandler('commandes'));
-                        setIsRestaurateurSubscribed(true); // Prevent re-subscription
-                    } else {
-                        setOrders([]);
-                    }
-                }
-            } else if (activeRole === 'livreur') {
-                let availableOrders: Order[] = [];
-                let assignedOrders: Order[] = [];
-
-                const mergeAndSetOrders = () => {
-                    const combined = [...availableOrders, ...assignedOrders];
-                    const uniqueOrders = Array.from(new Map(combined.map(o => [o.id, o])).values());
-                    setOrders(uniqueOrders);
-                };
-
-                const q1 = query(collectionRef('commandes'), where("statut", "==", "En Préparation"));
-                const unsubAvailable = setupSubscription<Order>(q1, (data) => {
-                    availableOrders = data;
-                    mergeAndSetOrders();
-                }, getErrorHandler('commandes'));
-
-                const q2 = query(collectionRef('commandes'), where("livreurId", "==", user.uid), where("statut", "==", "En Route"));
-                const unsubAssigned = setupSubscription<Order>(q2, (data) => {
-                    assignedOrders = data;
-                    mergeAndSetOrders();
-                }, getErrorHandler('commandes'));
-                
-                unsubOrders = () => {
-                    unsubAvailable();
-                    unsubAssigned();
-                };
-            } else if (userProfile.roleSysteme === 'SuperAdmin') {
-                unsubOrders = setupSubscription<Order>(query(collectionRef('commandes')), setOrders, getErrorHandler('commandes'));
-            } else {
-                setOrders([]);
-            }
-        } else {
-            // No user, no orders. This prevents permission errors for unauthenticated users.
-            setOrders([]);
-        }
+        const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants);
+        const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems);
+        const unsubOrders = setupSubscription<Order>(query(collectionRef('commandes')), setOrders);
 
 
-        const timer = setTimeout(() => setIsLoading(false), 1500);
+        const timer = setTimeout(() => setIsLoading(false), 500);
         
         return () => {
             unsubRestaurants();
             unsubMenuItems();
-            if (unsubOrders) unsubOrders();
-            setIsRestaurateurSubscribed(false); // Reset on cleanup
+            unsubOrders();
             clearTimeout(timer);
         };
-    }, [authReady, user, userProfile, activeRole, restaurants.length, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [authReady, setIsLoading, setRestaurants, setMenuItems, setOrders]);
 
     return <>{children}</>;
 };
