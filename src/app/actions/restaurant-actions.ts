@@ -52,7 +52,7 @@ export async function addRestaurantAction(formData: FormData) {
     };
     
     try {
-        // 1. Create document without image to get ID
+        // 1. Create document with payload
         await setDoc(docRef, restaurantPayload);
         
         // 2. Determine image URL
@@ -61,7 +61,7 @@ export async function addRestaurantAction(formData: FormData) {
         if (imageFile) {
              finalImageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
         } 
-        else {
+        else if (restaurantPayload.indiceImage) {
             try {
                 const imagePrompt = `professional food photography of a ${restaurantPayload.indiceImage}`;
                 const generatedImage = await generateImage({ prompt: imagePrompt });
@@ -85,7 +85,7 @@ export async function addRestaurantAction(formData: FormData) {
 
     } catch (e: any) {
         // Check if it's a Firestore permission error
-        if (e.code === 'permission-denied') {
+        if (e.code === 'permission-denied' || e.name === 'FirebaseError') {
              const permissionError = new FirestorePermissionError({
                 path: docRef.path,
                 operation: 'create',
@@ -125,7 +125,7 @@ export async function updateRestaurantAction(formData: FormData) {
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
         revalidatePath('/dashboard/boost');
     } catch (e: any) {
-        if (e.code === 'permission-denied') {
+        if (e.code === 'permission-denied' || e.name === 'FirebaseError') {
              const permissionError = new FirestorePermissionError({
                 path: restaurantDocRef.path,
                 operation: 'update',
