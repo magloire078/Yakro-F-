@@ -5,11 +5,9 @@ import * as React from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp, Unsubscribe, getDocs, collection, query, where, writeBatch, getDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import type { AppRole, UserProfile } from '@/lib/types';
+import type { AppRole, UserProfile, SystemRole } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -54,66 +52,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
   const { toast } = useToast();
 
-  // The original useEffect for Firebase Auth is commented out to enable mock mode.
-  /*
   React.useEffect(() => {
-    let unsubscribeProfile: Unsubscribe | undefined;
-
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      setLoading(true);
-      if (user) {
-        setUser(user);
-        const userDocRef = doc(db, 'utilisateurs', user.uid);
-        
-        unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const profile = docSnap.data() as UserProfile;
-            setUserProfile({ ...profile, uid: docSnap.id });
-            setActiveRoleState(profile.role || 'client');
-
-          } else {
-            setUserProfile(null);
-            console.warn("User is authenticated but has no profile document.");
-          }
-          setLoading(false);
-        }, (error) => {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'get',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            setLoading(false);
-        });
-      } else {
-        setUser(null);
-        setUserProfile(null);
-        setLoading(false);
-        if (unsubscribeProfile) unsubscribeProfile();
-      }
-    });
-
-    return () => {
-      unsubscribeAuth();
-      if (unsubscribeProfile) {
-        unsubscribeProfile();
-      }
-    };
-  }, []);
-  */
-  
-  React.useEffect(() => {
-    // This part remains to handle role switching even in mock mode
-    if (mockUserProfile) {
-      setActiveRoleState(mockUserProfile.role);
+    // This effect ensures the active role is set from the mock profile on initial load.
+    if (userProfile) {
+        setActiveRoleState(userProfile.role);
     }
-  }, []);
+  }, [userProfile]);
 
 
   const setActiveRole = (role: AppRole) => {
-      // In a single-role system, this doesn't do much but we keep it for potential future flexibility
-      // It mainly ensures the state is correct if changed from an admin panel, for example
+      // With a single role system, this just updates the state.
       setActiveRoleState(role);
-      // We no longer need localStorage for the active role.
+      // We also update the mock profile for consistency during the session.
+      if (userProfile) {
+        setUserProfile({...userProfile, role: role });
+      }
   }
   
   const updateUserProfile = async (uid: string, data: Partial<Omit<UserProfile, 'uid' | 'email' | 'dateCreation'>>) => {
