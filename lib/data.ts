@@ -19,7 +19,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.5,
         tempsDeLivraison: 35,
         fraisDeLivraison: 1000,
-        image: getPlaceholderImage('maquis restaurant african', 600, 400),
+        image: getPlaceholderImage('maquis restaurant african').url,
         indiceImage: 'maquis restaurant african',
         adresse: 'Quartier 2000, Yamoussoukro',
         latitude: 6.824,
@@ -32,7 +32,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.8,
         tempsDeLivraison: 45,
         fraisDeLivraison: 1500,
-        image: getPlaceholderImage('french bistro fine dining', 600, 400),
+        image: getPlaceholderImage('french bistro fine dining').url,
         indiceImage: 'french bistro fine dining',
         adresse: 'Rue des Lacs, Yamoussoukro',
         latitude: 6.815,
@@ -45,7 +45,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.2,
         tempsDeLivraison: 30,
         fraisDeLivraison: 500,
-        image: getPlaceholderImage('pizza oven italy', 600, 400),
+        image: getPlaceholderImage('pizza oven italy').url,
         indiceImage: 'pizza oven italy',
         adresse: 'Centre-ville, près du marché',
         latitude: 6.818,
@@ -58,7 +58,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.6,
         tempsDeLivraison: 40,
         fraisDeLivraison: 1000,
-        image: getPlaceholderImage('grilled chicken barbecue', 600, 400),
+        image: getPlaceholderImage('grilled chicken barbecue').url,
         indiceImage: 'grilled chicken barbecue',
         adresse: 'Route de l\'aéroport, Yamoussoukro',
         latitude: 6.80,
@@ -71,7 +71,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.9,
         tempsDeLivraison: 25,
         fraisDeLivraison: 500,
-        image: getPlaceholderImage('french pastries cakes', 600, 400),
+        image: getPlaceholderImage('french pastries cakes').url,
         indiceImage: 'french pastries cakes',
         adresse: 'Quartier Millionnaire, Yamoussoukro',
         latitude: 6.83,
@@ -79,13 +79,12 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
     }
 ];
 
-export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
+export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[] = [
     // Maquis du Val
     {
         nom: 'Poulet Braisé Complet',
         description: 'Un poulet entier mariné aux épices locales et braisé à la perfection, servi avec frites et salade.',
         prix: 7500,
-        image: getPlaceholderImage('braised chicken ivorian', 400, 300),
         indiceImage: 'braised chicken ivorian',
         accompagnementsDisponibles: [
             { nom: 'Alloco', prix: 500 },
@@ -100,7 +99,6 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
         nom: 'Poisson Braisé',
         description: 'Belle carpe braisée, accompagnée de sa sauce spéciale et d\'attiéké frais.',
         prix: 6000,
-        image: getPlaceholderImage('grilled fish african food', 400, 300),
         indiceImage: 'grilled fish african food',
         accompagnementsDisponibles: [
             { nom: 'Frites de Patate Douce', prix: 700 },
@@ -116,7 +114,6 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
         nom: 'Filet de Boeuf et sa sauce au poivre',
         description: 'Tendre filet de bœuf poêlé, nappé d\'une onctueuse sauce au poivre vert, et accompagné de gratin dauphinois.',
         prix: 12500,
-        image: getPlaceholderImage('beef fillet pepper sauce', 400, 300),
         indiceImage: 'beef fillet pepper sauce',
         boissonsDisponibles: [
             { nom: 'Verre de vin rouge', prix: 2500 },
@@ -127,7 +124,6 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
         nom: 'Salade Niçoise Revisitée',
         description: 'Une version gastronomique de la célèbre salade niçoise, avec du thon frais mi-cuit.',
         prix: 8500,
-        image: getPlaceholderImage('nicoise salad gourmet', 400, 300),
         indiceImage: 'nicoise salad gourmet'
     },
     // Pizza Bella
@@ -135,7 +131,6 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
         nom: 'Pizza Reine',
         description: 'La classique et indémodable : sauce tomate, mozzarella, jambon, et champignons frais.',
         prix: 5500,
-        image: getPlaceholderImage('regina pizza classic', 400, 300),
         indiceImage: 'regina pizza classic',
         boissonsDisponibles: [
             { nom: 'Fanta', prix: 500 },
@@ -146,7 +141,6 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
         nom: 'Pizza 4 Saisons',
         description: 'Un quart de chaque saveur : artichauts, jambon, champignons, et poivrons.',
         prix: 6500,
-        image: getPlaceholderImage('four seasons pizza', 400, 300),
         indiceImage: 'four seasons pizza'
     },
     // Le Régal d'Afrique
@@ -154,14 +148,12 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
         nom: 'Brochettes de Mérou',
         description: 'Tendres cubes de mérou marinés et grillés, servis avec une sauce chien et de l\'alloco.',
         prix: 7000,
-        image: getPlaceholderImage('fish skewers grilled', 400, 300),
         indiceImage: 'fish skewers grilled'
     },
     {
         nom: 'Agneau Diby',
         description: 'Fines tranches d\'agneau marinées à la sénégalaise et grillées, un délice !',
         prix: 8000,
-        image: getPlaceholderImage('lamb diby african barbecue', 400, 300),
         indiceImage: 'lamb diby african barbecue'
     },
     // La Pâtisserie Gourmande
@@ -169,14 +161,12 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId'>[] = [
         nom: 'Tarte au citron meringuée',
         description: 'Un équilibre parfait entre l\'acidité du citron et la douceur de la meringue italienne.',
         prix: 2500,
-        image: getPlaceholderImage('lemon tart meringue', 400, 300),
         indiceImage: 'lemon tart meringue'
     },
     {
         nom: 'Mille-feuille',
         description: 'Pâte feuilletée croustillante et crème pâtissière légère à la vanille de Madagascar.',
         prix: 3000,
-        image: getPlaceholderImage('mille feuille pastry', 400, 300),
         indiceImage: 'mille feuille pastry'
     }
 ];
