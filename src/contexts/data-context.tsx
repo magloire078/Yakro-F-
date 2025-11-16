@@ -71,28 +71,39 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setIsLoading } = useData();
-    const [authReady, setAuthReady] = React.useState(false);
+    const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
 
+    // Step 1: Subscribe to public data that everyone can see.
     React.useEffect(() => {
-        if (!authLoading) {
-            setAuthReady(true);
-        }
-    }, [authLoading]);
-    
-    React.useEffect(() => {
-        if (!authReady || !db) {
-            return;
-        }
-
+        if (!db) return;
+        
         setIsLoading(true);
         const collectionRef = (path: string) => collection(db, path);
         
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
         
-        let unsubOrders: Unsubscribe = () => {};
-        
+        // We set a timer to ensure loading state isn't stuck if orders never load
+        const timer = setTimeout(() => setIsLoading(false), 2000);
+
+        return () => {
+            unsubRestaurants();
+            unsubMenuItems();
+            clearTimeout(timer);
+        };
+    }, [db, setRestaurants, setMenuItems, setIsLoading]);
+
+
+    // Step 2: Subscribe to user-specific/role-specific data (like orders)
+    // This useEffect depends on the user, their role, and the already loaded restaurants
+    React.useEffect(() => {
+        if (authLoading || !db) {
+            return;
+        }
+
+        let unsubOrders: Unsubscribe | undefined;
+        const collectionRef = (path: string) => collection(db, path);
+
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
             
@@ -104,35 +115,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         ordersQuery = query(collectionRef('commandes'), where('userId', '==', user.uid));
                         break;
                     case 'restaurateur':
-                        // Simplified query: Find all orders where the owner ID matches.
-                        // This avoids the circular dependency on the restaurants list.
-                        // Note: This requires a composite index on (proprietaireId, date) for sorting,
-                        // or we just fetch them and sort client-side. The security rules must also
-                        // allow this type of query based on a different collection's data.
-                        // For now, let's query all restaurants and filter client-side, it's safer.
-                        
-                        // We will revert to a simpler model: A restaurateur sees orders for their restaurants.
-                        // The circular dependency is a real issue. Let's fix it by not having `restaurants` in dependency array.
-                        // The query will be rebuilt if the user/role changes, but not if restaurants list changes. 
-                        // It will use the restaurant list available at the time of query creation.
-                        // A better way is to query orders based on owner ID, but that requires a data model change.
-                        // Let's go for a query that does not depend on `restaurants` state.
-                        
-                        // This logic is complex and might fail if security rules are strict.
-                        // A restaurateur should only see orders from restaurants they own.
-                        // A better query would be to fetch restaurants owned by the user first.
-                        const restaurantsOwnedByUserQuery = query(collectionRef('restaurants'), where('proprietaireId', '==', user.uid));
-                        
-                        getDocs(restaurantsOwnedByUserQuery).then(snapshot => {
-                            const myRestaurantIds = snapshot.docs.map(doc => doc.id);
-                             if (myRestaurantIds.length > 0) {
-                                const ordersForMyRestaurantsQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
-                                unsubOrders = setupSubscription<Order>(ordersForMyRestaurantsQuery, setOrders, 'commandes');
+                        // Only run this if restaurants are loaded
+                        if (restaurants.length > 0) {
+                            const myRestaurantIds = restaurants
+                                .filter(r => r.proprietaireId === user.uid)
+                                .map(r => r.id);
+
+                            if (myRestaurantIds.length > 0) {
+                                // Firestore 'in' queries are limited to 30 elements. If a user has more, this would need pagination.
+                                ordersQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
                             } else {
+                                // No restaurants owned by this user, so no orders to fetch.
                                 setOrders([]);
                             }
-                        });
-                        
+                        }
+                        // If restaurants are not loaded yet, this effect will re-run when they are.
                         break;
                     case 'livreur':
                          ordersQuery = query(collectionRef('commandes'), or(
@@ -144,25 +141,28 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             if (ordersQuery) {
-                unsubOrders = setupSubscription<Order>(ordersQuery, setOrders, 'commandes');
-            } else if (activeRole !== 'restaurateur') {
+                unsubOrders = setupSubscription<Order>(ordersQuery, (fetchedOrders) => {
+                    setOrders(fetchedOrders);
+                    setIsLoading(false); // Stop loading once orders are fetched/updated
+                }, 'commandes');
+            } else if (activeRole !== 'restaurateur') { // for restaurateur, query might be pending restaurant load
                 setOrders([]);
+                setIsLoading(false);
             }
 
         } else {
+            // No user, clear orders and stop loading.
             setOrders([]);
+            setIsLoading(false);
         }
 
-
-        const timer = setTimeout(() => setIsLoading(false), 1000); // Increased timeout slightly
-        
         return () => {
-            unsubRestaurants();
-            unsubMenuItems();
-            if (unsubOrders) unsubOrders();
-            clearTimeout(timer);
+            if (unsubOrders) {
+                unsubOrders();
+            }
         };
-    }, [authReady, db, user, userProfile, activeRole, setIsLoading, setRestaurants, setMenuItems, setOrders]);
+    }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setIsLoading]);
+
 
     return <>{children}</>;
 };
