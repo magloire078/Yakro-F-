@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   getAuth,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -37,7 +38,6 @@ export function UserAuthForm() {
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const [isLoginView, setIsLoginView] = React.useState(true);
   const { toast } = useToast();
-  const { createNewUser } = useAuth();
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
     resolver: zodResolver(authSchema.omit({ nom: isLoginView, telephone: isLoginView })),
@@ -47,7 +47,7 @@ export function UserAuthForm() {
     reset();
   }, [isLoginView, reset]);
 
-  const setupGoogleUser = async (user: import('firebase/auth').User) => {
+  const setupInitialUser = async (user: import('firebase/auth').User) => {
     const userDocRef = doc(db, 'utilisateurs', user.uid);
     const userDoc = await getDoc(userDocRef);
 
@@ -83,7 +83,7 @@ export function UserAuthForm() {
     const clientAuth = getAuth();
     try {
       const result = await signInWithPopup(clientAuth, provider);
-      await setupGoogleUser(result.user);
+      await setupInitialUser(result.user);
       toast({
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté.',
@@ -109,13 +109,8 @@ export function UserAuthForm() {
           title: 'Connexion réussie',
         });
       } else {
-        await createNewUser({
-          email: data.email,
-          password: data.password,
-          nom: data.nom,
-          rolesAutorises: ['client'],
-          telephone: data.telephone,
-        });
+        const userCredential = await createUserWithEmailAndPassword(clientAuth, data.email, data.password);
+        await setupInitialUser(userCredential.user);
       }
     } catch (error: any) {
       let description = "Une erreur inattendue s'est produite.";

@@ -133,14 +133,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const createNewUser = async (data: {email: string, password: string, nom: string, rolesAutorises: AppRole[], telephone?: string}): Promise<User | null> => {
     const roles = data.rolesAutorises.length > 0 ? data.rolesAutorises : ['client'];
     
+    // We can't create a user on behalf of someone else with client-side SDKs easily.
+    // This function is now intended to be called by an admin. For a production app,
+    // this would be a server-side Cloud Function. For this prototype, we rely on security rules
+    // that allow a SuperAdmin to create users.
+    
     try {
-      // Create user in Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-      const newUser = userCredential.user;
-      
-      // Create user profile in Firestore
+      const userDocRef = doc(collection(db, 'utilisateurs')); // Create a new doc ref to get an ID
       const newUserProfile: UserProfile = {
-          uid: newUser.uid,
+          uid: userDocRef.id,
           email: data.email,
           nom: data.nom,
           dateCreation: serverTimestamp(),
@@ -150,27 +151,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...(data.telephone && { telephone: data.telephone }),
       };
       
-      const userDocRef = doc(db, 'utilisateurs', newUser.uid);
+      // In a real app, we'd call a Cloud Function to create the Auth user and Firestore doc transactionally.
+      // For this prototype, we'll just create the Firestore doc. The admin would provide a temporary password
+      // or a password reset link would be sent. We are simulating only the DB part.
+      // Since we can't create an Auth user without being that user, we'll skip that for admin creation.
+      // This is a limitation of client-side operations.
       await setDoc(userDocRef, newUserProfile);
       
-      toast({ title: 'Utilisateur créé', description: `Le compte pour ${data.email} a été créé.`});
+      toast({ title: 'Utilisateur créé (Profil Firestore)', description: `Le profil pour ${data.email} a été créé. La création de l'authentification est simulée.`});
       
-      return newUser;
+      // We can't return a `User` object as we didn't create one in Auth.
+      return null;
 
     } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-        toast({ variant: 'destructive', title: 'Erreur de création', description: 'Cette adresse e-mail est déjà utilisée.'});
-      } else if (error.code === 'auth/weak-password') {
-        toast({ variant: 'destructive', title: 'Erreur de création', description: 'Le mot de passe est trop faible.'});
-      } else {
-         const permissionError = new FirestorePermissionError({
-            path: `utilisateurs/NOUVEL_UTILISATEUR`,
-            operation: 'create',
-            requestResourceData: { email: data.email, nom: data.nom },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        toast({ variant: 'destructive', title: 'Erreur de permission', description: 'Impossible de créer le profil utilisateur dans la base de données.'});
-      }
+       const permissionError = new FirestorePermissionError({
+          path: `utilisateurs/NOUVEL_UTILISATEUR`,
+          operation: 'create',
+          requestResourceData: { email: data.email, nom: data.nom },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+      toast({ variant: 'destructive', title: 'Erreur de permission', description: 'Impossible de créer le profil utilisateur dans la base de données.'});
       throw error; // Re-throw for the form to handle its loading state
     }
   }

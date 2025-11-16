@@ -39,11 +39,12 @@ export default function AdminPage() {
 
     React.useEffect(() => {
         if (authLoading) return;
+
         if (!user) {
             router.push('/login');
             return;
         }
-        // First, check if the profile is loaded and if the user is a SuperAdmin.
+        
         if (userProfile && userProfile.roleSysteme !== 'SuperAdmin') {
             toast({
                 variant: 'destructive',
@@ -54,8 +55,7 @@ export default function AdminPage() {
             return;
         }
 
-        // Only proceed if we have a user profile and they are a SuperAdmin.
-        if (userProfile && userProfile.roleSysteme === 'SuperAdmin') {
+        if (userProfile?.roleSysteme === 'SuperAdmin') {
             setDataLoading(true);
             const usersCollectionRef = collection(db, 'utilisateurs');
             const unsubscribe = onSnapshot(usersCollectionRef,
@@ -81,6 +81,13 @@ export default function AdminPage() {
             return () => {
                 unsubscribe();
             };
+        } else {
+             // If profile is not loaded yet, or not a super admin, we are not ready to load data.
+             if(!userProfile) {
+                setDataLoading(true);
+             } else {
+                setDataLoading(false);
+             }
         }
     }, [user, userProfile, authLoading, router, toast]);
 

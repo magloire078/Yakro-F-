@@ -71,14 +71,17 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
 
   const onSubmit = async (data: AddUserFormValues) => {
     setIsSubmitting(true);
-    const newUser = await createNewUser({
-        ...data,
-        rolesAutorises: data.rolesAutorises as AppRole[],
-    });
-    if (newUser) {
+    try {
+        await createNewUser({
+            ...data,
+            rolesAutorises: data.rolesAutorises as AppRole[],
+        });
         onClose();
+    } catch(e) {
+        // Error is already toasted in the context
+    } finally {
+        setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -87,7 +90,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
         <DialogHeader>
           <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
           <DialogDescription>
-            Créez un compte utilisateur et définissez ses rôles et un mot de passe temporaire.
+            Créez un compte utilisateur et définissez ses rôles. Le mot de passe est temporaire (sa création est simulée).
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -119,7 +122,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
                     name="password"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Mot de passe</FormLabel>
+                            <FormLabel>Mot de passe (simulé)</FormLabel>
                             <FormControl><Input {...field} placeholder="••••••••" type="password" /></FormControl>
                             <FormMessage />
                         </FormItem>
