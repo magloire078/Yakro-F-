@@ -12,17 +12,14 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import type { AppRole, UserProfile } from '@/lib/types';
-import { useAuth } from '@/contexts/auth-context';
+import { setupInitialUserAction } from '@/app/actions/user-actions';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 
 const authSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
@@ -32,39 +29,6 @@ const authSchema = z.object({
 });
 
 type FormData = z.infer<typeof authSchema>;
-
-const setupInitialUser = async (
-    user: import('firebase/auth').User, 
-    additionalData: Partial<UserProfile> = {}
-) => {
-    const userDocRef = doc(db, 'utilisateurs', user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists()) {
-        const newUserProfile: UserProfile = {
-            uid: user.uid,
-            email: user.email!,
-            nom: additionalData.nom || user.displayName || user.email?.split('@')[0] || 'Nouvel utilisateur',
-            dateCreation: serverTimestamp(),
-            role: 'client',
-            rolesAutorises: ['client'],
-            roleSysteme: 'User',
-            ...additionalData,
-        };
-        
-        try {
-            await setDoc(userDocRef, newUserProfile);
-        } catch(e) {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'create',
-                requestResourceData: newUserProfile,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw permissionError;
-        }
-    }
-}
 
 export function UserAuthForm() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -86,7 +50,11 @@ export function UserAuthForm() {
     const clientAuth = getAuth();
     try {
       const result = await signInWithPopup(clientAuth, provider);
-      await setupInitialUser(result.user);
+      await setupInitialUserAction({
+          uid: result.user.uid,
+          email: result.user.email!,
+          nom: result.user.displayName,
+      });
       toast({
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté.',
@@ -113,7 +81,12 @@ export function UserAuthForm() {
         });
       } else {
         const userCredential = await createUserWithEmailAndPassword(clientAuth, data.email, data.password);
-        await setupInitialUser(userCredential.user, { nom: data.nom, telephone: data.telephone });
+        await setupInitialUserAction({
+            uid: userCredential.user.uid,
+            email: userCredential.user.email!,
+            nom: data.nom,
+            telephone: data.telephone,
+        });
         toast({
             title: 'Compte créé avec succès!',
             description: "Bienvenue sur Yakro Fê."
