@@ -7,6 +7,8 @@ import { create } from 'zustand';
 import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './auth-context';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 
 interface DataState {
@@ -45,7 +47,8 @@ export const useData = create<DataState>((set, get) => ({
 
 function setupSubscription<T extends DocumentData>(
   q: Query<DocumentData, DocumentData>,
-  callback: (data: T[]) => void
+  callback: (data: T[]) => void,
+  collectionPath: string
 ): Unsubscribe {
   return onSnapshot(
     q,
@@ -53,9 +56,13 @@ function setupSubscription<T extends DocumentData>(
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as T[];
       callback(list);
     },
-    (error) => {
-        // Since rules are wide open, we don't expect permission errors here
-        console.error(`Error subscribing to collection:`, error);
+    (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: collectionPath,
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        console.error(`Error subscribing to ${collectionPath}:`, serverError);
     }
   );
 }
@@ -81,9 +88,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const collectionRef = (path: string) => collection(db, path);
         
         // Restaurants & MenuItems are public
-        const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants);
-        const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems);
-        const unsubOrders = setupSubscription<Order>(query(collectionRef('commandes')), setOrders);
+        const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
+        const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
+        const unsubOrders = setupSubscription<Order>(query(collectionRef('commandes')), setOrders, 'commandes');
 
 
         const timer = setTimeout(() => setIsLoading(false), 500);
