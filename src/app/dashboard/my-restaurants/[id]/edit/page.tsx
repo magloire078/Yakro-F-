@@ -3,43 +3,16 @@
 'use client';
 
 import * as React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useParams } from 'next/navigation';
-import { Loader, ChefHat, Upload, ArrowLeft, MapPin } from 'lucide-react';
+import { Loader, ChefHat, ArrowLeft } from 'lucide-react';
 import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Label } from '@/components/ui/label';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
-
-const restaurantFormSchema = z.object({
-  nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
-  cuisine: z.string().min(3, { message: "Le type de cuisine doit contenir au moins 3 caractères." }),
-  adresse: z.string().min(10, { message: "L'adresse doit contenir au moins 10 caractères." }),
-  tempsDeLivraison: z.coerce.number().min(5, { message: "Le temps de livraison doit être d'au moins 5 minutes."}),
-  fraisDeLivraison: z.coerce.number().min(0, { message: "Les frais de livraison ne peuvent être négatifs."}),
-  latitude: z.coerce.number().optional(),
-  longitude: z.coerce.number().optional(),
-});
-
-type RestaurantFormValues = z.infer<typeof restaurantFormSchema>;
+import { RestaurantForm, type RestaurantFormValues } from '@/components/restaurant-form';
 
 export default function EditRestaurantPage() {
     const { getRestaurant, updateRestaurant } = useData();
@@ -51,21 +24,7 @@ export default function EditRestaurantPage() {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
-    const [imageFile, setImageFile] = React.useState<File | null>(null);
-    const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-    const [isFetchingLocation, setIsFetchingLocation] = React.useState(false);
 
-    const form = useForm<RestaurantFormValues>({
-        resolver: zodResolver(restaurantFormSchema),
-        defaultValues: {
-            nom: '',
-            cuisine: '',
-            adresse: '',
-            tempsDeLivraison: 30,
-            fraisDeLivraison: 1000,
-        },
-    });
-    
     React.useEffect(() => {
         const r = getRestaurant(restaurantId);
         if (r) {
@@ -75,65 +34,10 @@ export default function EditRestaurantPage() {
                 return;
             }
             setRestaurant(r);
-            form.reset({
-                ...r,
-                latitude: r.latitude ?? undefined,
-                longitude: r.longitude ?? undefined
-            });
-            const imageSrc = r.image.includes('placehold.co')
-                ? getPlaceholderImage(r.indiceImage, 600, 400)
-                : r.image;
-            setImagePreview(imageSrc);
         }
-    }, [restaurantId, getRestaurant, user, router, toast, form]);
+    }, [restaurantId, getRestaurant, user, router, toast]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-    
-    const handleGetLocation = () => {
-        if (!navigator.geolocation) {
-            toast({
-                variant: 'destructive',
-                title: 'Géolocalisation non supportée',
-                description: "Votre navigateur ne permet pas de récupérer votre position.",
-            });
-            return;
-        }
-
-        setIsFetchingLocation(true);
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                form.setValue('latitude', parseFloat(latitude.toFixed(6)));
-                form.setValue('longitude', parseFloat(longitude.toFixed(6)));
-                toast({
-                    title: 'Position récupérée !',
-                    description: 'Les coordonnées GPS ont été mises à jour.',
-                });
-                setIsFetchingLocation(false);
-            },
-            (error) => {
-                toast({
-                    variant: 'destructive',
-                    title: 'Erreur de géolocalisation',
-                    description: "Impossible de récupérer votre position. Veuillez vérifier les autorisations de votre navigateur.",
-                });
-                setIsFetchingLocation(false);
-            }
-        );
-    };
-
-
-    const onSubmit = async (data: RestaurantFormValues) => {
+    const onSubmit = async (data: RestaurantFormValues, imageFile: File | null) => {
         if(!user || !restaurant) return;
         setIsLoading(true);
         try {
@@ -156,7 +60,7 @@ export default function EditRestaurantPage() {
     }
 
     if (!restaurant) {
-        return <div className="flex h-screen w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
+        return <div className="flex h-full w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>;
     }
 
   return (
@@ -179,138 +83,12 @@ export default function EditRestaurantPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                             <div>
-                                <Label htmlFor="image-upload-edit" className="cursor-pointer">
-                                    Image du restaurant
-                                    <div className="relative mt-2 w-full h-48 rounded-md border border-dashed flex items-center justify-center text-muted-foreground hover:bg-muted/50">
-                                        {imagePreview ? (
-                                            <Image src={imagePreview} alt="Aperçu" fill className="object-cover rounded-md" />
-                                        ) : (
-                                        <div className="text-center">
-                                            <Upload />
-                                            <p>Changer l'image</p>
-                                        </div>
-                                        )}
-                                    </div>
-                                </Label>
-                                <Input id="image-upload-edit" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                            </div>
-
-                            <FormField
-                                control={form.control}
-                                name="nom"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nom du restaurant</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name="cuisine"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Type de cuisine</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="adresse"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Adresse de récupération</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="tempsDeLivraison"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Temps de livraison (min)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                 <FormField
-                                    control={form.control}
-                                    name="fraisDeLivraison"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Frais de livraison (FCFA)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                             <div className="space-y-4 rounded-lg border p-4">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <h4 className="font-medium">Géolocalisation</h4>
-                                        <p className="text-sm text-muted-foreground">Optionnel, mais recommandé pour les livreurs.</p>
-                                    </div>
-                                    <Button type="button" variant="outline" size="sm" onClick={handleGetLocation} disabled={isFetchingLocation}>
-                                        {isFetchingLocation ? <Loader className="animate-spin" /> : <MapPin />}
-                                        Obtenir la position GPS
-                                    </Button>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="latitude"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Latitude</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" step="any" {...field} value={field.value ?? ''} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                     <FormField
-                                        control={form.control}
-                                        name="longitude"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Longitude</FormLabel>
-                                                <FormControl>
-                                                     <Input type="number" step="any" {...field} value={field.value ?? ''} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                            <Button type="submit" disabled={isLoading} className="w-full">
-                                {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                Enregistrer les modifications
-                            </Button>
-                        </form>
-                    </Form>
+                    <RestaurantForm 
+                        onSubmit={onSubmit} 
+                        initialData={restaurant} 
+                        isLoading={isLoading} 
+                        submitButtonText="Enregistrer les modifications"
+                    />
                 </CardContent>
             </Card>
         </div>
