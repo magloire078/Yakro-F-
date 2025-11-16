@@ -143,8 +143,8 @@
     --card-foreground: 225 25% 10%;
     --popover: 220 60% 100%;
     --popover-foreground: 225 25% 10%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 216 93% 25%; /* Dark Blue #03224c */
+    --primary-foreground: 0 0% 100%;
     --secondary: 220 20% 92%;
     --secondary-foreground: 220 25% 10%;
     --muted: 220 20% 92%;
@@ -155,7 +155,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 220 20% 90%;
     --input: 220 20% 95%;
-    --ring: 221 83% 53%;
+    --ring: 216 93% 25%;
   }
 
   .dark [data-theme="admin"] {
@@ -165,8 +165,8 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 216 70% 65%; /* Lighter blue for dark mode contrast */
+    --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
@@ -177,7 +177,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 84% 59.4%;
+    --ring: 216 70% 65%;
   }
 }
 
