@@ -117,7 +117,7 @@ export default function DashboardOrdersPage() {
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Gestion des Commandes</h1>
+            <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Gestion des Commandes</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                 <div>
                     <h2 className="text-2xl font-headline mb-4">Nouvelles Commandes ({newOrders.length})</h2>

@@ -83,7 +83,7 @@ export default function MarketingPage() {
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-3xl md:text-4xl font-headline text-primary">Marketing Vidéo IA</h1>
+        <h1 className="text-2xl md:text-3xl font-headline text-primary">Marketing Vidéo IA</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

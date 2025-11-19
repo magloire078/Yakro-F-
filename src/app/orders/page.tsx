@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -36,7 +35,7 @@ export default function OrdersPage() {
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Historique des commandes</h1>
+            <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Historique des commandes</h1>
             <div className="space-y-6">
                 {userOrders.length > 0 ? (
                     userOrders.map(order => (

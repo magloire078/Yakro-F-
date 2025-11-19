@@ -193,7 +193,7 @@ export default function NewMenuItemPage() {
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Créateur de Plats IA</h1>
+            <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Créateur de Plats IA</h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <Card>
                     <CardHeader>

@@ -143,7 +143,7 @@ export default function AdminPage() {
                     <div className="flex items-center gap-4">
                         <ShieldCheck className="h-10 w-10 text-primary" />
                         <div>
-                            <h1 className="text-3xl md:text-4xl font-headline text-primary">Tableau de Bord Admin</h1>
+                            <h1 className="text-2xl md:text-3xl font-headline text-primary">Tableau de Bord Admin</h1>
                             <p className="text-muted-foreground">Gérez les utilisateurs et supervisez l'activité de la plateforme.</p>
                         </div>
                     </div>

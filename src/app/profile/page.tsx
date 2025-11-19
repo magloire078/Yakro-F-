@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Mon Profil</h1>
+      <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Mon Profil</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Profile Info & Details */}
         <div className="lg:col-span-2 space-y-8">

@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -350,7 +351,7 @@ export default function CustomerHomePage() {
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
         <section className="text-center bg-card p-6 md:p-12 rounded-2xl shadow-lg">
-          <h1 className="text-3xl md:text-5xl font-headline text-primary">Les saveurs de Yakro, chez vous.</h1>
+          <h1 className="text-2xl md:text-4xl font-headline text-primary">Les saveurs de Yakro, chez vous.</h1>
           <p className="mt-2 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous.
           </p>
@@ -431,7 +432,7 @@ export default function CustomerHomePage() {
       <section>
         <Card className="bg-primary text-primary-foreground p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h2 className="text-3xl font-headline">Vous êtes un restaurateur ?</h2>
+            <h2 className="text-2xl md:text-3xl font-headline">Vous êtes un restaurateur ?</h2>
             <p className="mt-2 max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité.</p>
           </div>
           <Button variant="secondary" size="lg" className="shrink-0" asChild>
