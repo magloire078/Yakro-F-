@@ -3,7 +3,7 @@
 
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase/client';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, AppRole } from '@/lib/types';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { revalidatePath } from 'next/cache';
@@ -13,6 +13,7 @@ type SetupInitialUserParams = {
     email: string;
     nom?: string | null;
     telephone?: string;
+    role: AppRole;
 }
 
 export async function setupInitialUserAction(userData: SetupInitialUserParams) {
@@ -27,7 +28,7 @@ export async function setupInitialUserAction(userData: SetupInitialUserParams) {
                 email: userData.email,
                 nom: userData.nom || userData.email.split('@')[0] || 'Nouvel utilisateur',
                 dateCreation: serverTimestamp(),
-                role: 'client',
+                role: userData.role || 'client',
                 roleSysteme: 'User',
                 ...(userData.telephone && { telephone: userData.telephone }),
             };

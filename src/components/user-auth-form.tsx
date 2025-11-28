@@ -18,6 +18,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { setupInitialUserAction } from '@/app/actions/user-actions';
+import type { AppRole } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
@@ -29,6 +31,7 @@ const signupSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
   password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
   telephone: z.string().optional(),
+  role: z.enum(['client', 'restaurateur', 'livreur']),
 });
 
 
@@ -45,12 +48,19 @@ export function UserAuthForm() {
         nom: '',
         email: '',
         password: '',
-        telephone: ''
+        telephone: '',
+        role: 'client' as AppRole,
     }
   });
   
   React.useEffect(() => {
-    form.reset();
+    form.reset({
+        nom: '',
+        email: '',
+        password: '',
+        telephone: '',
+        role: 'client' as AppRole,
+    });
   }, [isLoginView, form]);
 
   const handleGoogleSignIn = async () => {
@@ -62,6 +72,7 @@ export function UserAuthForm() {
           uid: result.user.uid,
           email: result.user.email!,
           nom: result.user.displayName,
+          role: 'client', // Google sign-in defaults to client
       });
       toast({
         title: 'Connexion réussie',
@@ -91,10 +102,11 @@ export function UserAuthForm() {
             email: userCredential.user.email!,
             nom: data.nom,
             telephone: data.telephone,
+            role: data.role,
         });
         toast({
             title: 'Compte créé avec succès!',
-            description: "Bienvenue sur Yakro Fê."
+            description: `Bienvenue sur Yakro Fê. Votre profil ${data.role} a été créé.`,
         });
       }
       // Redirection will be handled by the login page
@@ -132,7 +144,8 @@ export function UserAuthForm() {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid gap-4">
           {!isLoginView && (
-            <div className="grid gap-2">
+            <>
+              <div className="grid gap-2">
                 <Label htmlFor="nom">Nom complet</Label>
                 <Input
                 id="nom"
@@ -141,7 +154,22 @@ export function UserAuthForm() {
                 {...form.register('nom')}
                 />
                 {form.formState.errors.nom && <p className="text-sm text-destructive">{String(form.formState.errors.nom.message)}</p>}
-            </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Je suis un...</Label>
+                <Select onValueChange={(value: AppRole) => form.setValue('role', value)} defaultValue={form.getValues('role')}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un rôle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="client">Client</SelectItem>
+                        <SelectItem value="restaurateur">Restaurateur</SelectItem>
+                        <SelectItem value="livreur">Livreur</SelectItem>
+                    </SelectContent>
+                </Select>
+                 {form.formState.errors.role && <p className="text-sm text-destructive">{String(form.formState.errors.role.message)}</p>}
+              </div>
+            </>
            )}
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
