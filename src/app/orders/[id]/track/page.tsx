@@ -72,18 +72,27 @@ export default function TrackOrderPage() {
         );
     }
     
-    // Static map image URL
+    // Interactive map URL
     const getMapUrl = () => {
-        if (!restaurant?.latitude || !restaurant?.longitude || !livreur?.latitude || !livreur?.longitude) {
-            // Return a default map if some coordinates are missing
-            return 'https://picsum.photos/seed/map/1200/800';
+        if (!restaurant?.latitude || !restaurant?.longitude || !liveOrder.latitudeClient || !liveOrder.longitudeClient) {
+            // Can't show directions without both points, maybe show restaurant location?
+            if (restaurant?.latitude && restaurant?.longitude) {
+                 return `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${restaurant.latitude},${restaurant.longitude}`;
+            }
+            return null; // No map if no coords
         }
         
-        const path = `path=color:0x0000ff|weight:5|${restaurant.latitude},${restaurant.longitude}|${livreur.latitude},${livreur.longitude}`;
-        const markers = `markers=color:red|label:R|${restaurant.latitude},${restaurant.longitude}&markers=color:green|label:L|${livreur.latitude},${livreur.longitude}`;
+        let url = `https://www.google.com/maps/embed/v1/directions?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&origin=${restaurant.latitude},${restaurant.longitude}&destination=${liveOrder.latitudeClient},${liveOrder.longitudeClient}`;
 
-        return `https://maps.googleapis.com/maps/api/staticmap?size=1200x800&${path}&${markers}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
+        // Add livreur as a waypoint if available
+        if (livreur?.latitude && livreur?.longitude) {
+            url += `&waypoints=${livreur.latitude},${livreur.longitude}`;
+        }
+        
+        return url;
     }
+    
+    const mapUrl = getMapUrl();
 
     return (
         <div className="container mx-auto">
@@ -98,15 +107,18 @@ export default function TrackOrderPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-2 relative h-96 md:h-full min-h-[400px] rounded-lg overflow-hidden bg-muted">
-                        <Image 
-                            src={getMapUrl()}
-                            alt="Carte de suivi"
-                            layout="fill"
-                            objectFit="cover"
-                        />
-                         {livreur?.latitude && livreur?.longitude && (
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <Bike className="h-10 w-10 text-primary animate-bounce" />
+                        {mapUrl ? (
+                           <iframe
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                loading="lazy"
+                                allowFullScreen
+                                src={mapUrl}>
+                            </iframe>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                                <p>La carte de suivi est indisponible.</p>
                             </div>
                         )}
                     </div>
@@ -144,3 +156,4 @@ export default function TrackOrderPage() {
         </div>
     );
 }
+
