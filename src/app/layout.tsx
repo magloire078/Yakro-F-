@@ -11,6 +11,9 @@ import * as React from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
 import { usePathname } from 'next/navigation';
+import { belleza, alegreya } from '@/app/fonts';
+import { cn } from '@/lib/utils';
+
 
 const metadata = {
   title: 'Yakro Go',
@@ -29,12 +32,9 @@ export default function RootLayout({
         <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
         <link rel="manifest" href={metadata.manifest} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Belleza&family=Alegreya:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
         <meta name="theme-color" content="#FF8C00" />
       </head>
-      <body className="font-body antialiased">
+      <body className={cn("font-body antialiased", belleza.variable, alegreya.variable)}>
         <Providers>
           <MainLayout>{children}</MainLayout>
         </Providers>
