@@ -32,17 +32,17 @@ export default function LoginPage() {
         )
     }
     
-    const placeholder = getPlaceholderImage('login page delivery');
+    const placeholder = getPlaceholderImage('login delivery');
 
     return (
         <div className="container relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
              <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
                 <Image
                     src={placeholder.url}
-                    alt="Livreur remettant une commande à un client satisfait"
+                    alt="Un jeune livreur souriant d'origine ouest-africaine remet un sac de livraison en papier à un client satisfait à sa porte."
                     fill
                     className="object-cover"
-                    data-ai-hint="Photographie professionnelle et lumineuse d'un jeune livreur souriant, d'origine ouest-africaine, remettant un sac de livraison. Le client est heureux à sa porte. Le livreur porte un polo orange vif. L'arrière-plan est un quartier moderne et ensoleillé de Yamoussoukro."
+                    data-ai-hint="login delivery"
                     priority
                 />
                 <div className="absolute inset-0 bg-primary/70" />
