@@ -74,6 +74,11 @@
     "width": 400,
     "height": 300
   },
+  "login page delivery": {
+    "url": "https://picsum.photos/seed/789/1080/1920",
+    "width": 1080,
+    "height": 1920
+  },
   "default": {
     "url": "https://picsum.photos/seed/1000/400/300",
     "width": 400,

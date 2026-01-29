@@ -37,11 +37,9 @@ const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async ({ prompt }) => {
-    const fullPrompt = `A high-quality, professional food photography shot of ${prompt}, presented on a clean plate in a restaurant setting.`;
-    
     const { media } = await ai.generate({
       model: googleAI.model('imagen-4.0-fast-generate-001'),
-      prompt: fullPrompt,
+      prompt: prompt,
     });
     
     const imageUrl = media?.url;
