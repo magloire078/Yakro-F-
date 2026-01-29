@@ -33,23 +33,28 @@ export function BottomNavBar() {
     const router = useRouter();
 
     let links;
+    let gridColsClass;
+    
     switch(activeRole) {
         case 'restaurateur':
             links = restaurateurLinks;
+            gridColsClass = 'grid-cols-5';
             break;
         case 'livreur':
             links = livreurLinks;
+            gridColsClass = 'grid-cols-3';
             break;
         case 'client':
         default:
             links = clientLinks;
+            gridColsClass = 'grid-cols-4';
     }
     
     if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
 
     return (
         <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t md:hidden">
-            <div className={cn("grid h-full mx-auto font-medium", `grid-cols-${links.length + 1}`)}>
+            <div className={cn("grid h-full mx-auto font-medium", gridColsClass)}>
                 {links.map((link) => {
                      const isActive = pathname === link.href;
                      return (
