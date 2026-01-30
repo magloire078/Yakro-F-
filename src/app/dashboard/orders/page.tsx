@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, CheckCircle } from 'lucide-react';
+import { Loader, CheckCircle, QrCode } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { type Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
+import { QrCodeDialog } from '@/components/qr-code-dialog';
 
 
 export default function DashboardOrdersPage() {
@@ -110,6 +111,14 @@ export default function DashboardOrdersPage() {
                         {isUpdating === order.id ? <Loader className="animate-spin" /> : <CheckCircle />}
                         Commencer la préparation
                     </Button>
+                )}
+                 {order.statut === 'En Préparation' && (
+                    <QrCodeDialog orderId={order.id}>
+                        <Button variant="outline" className="w-full mt-4">
+                           <QrCode className="mr-2"/>
+                           Afficher le QR Code pour le livreur
+                        </Button>
+                    </QrCodeDialog>
                 )}
             </CardContent>
         </Card>
