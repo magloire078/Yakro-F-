@@ -1,12 +1,6 @@
 
 import type {NextConfig} from 'next';
 
-const withPWA = require('@ducanh2912/next-pwa').default({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-});
-
-
 const nextConfig: NextConfig = {
   /* config options here */
   typescript: {
@@ -40,4 +34,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+let finalConfig: NextConfig = nextConfig;
+
+// The PWA plugin uses Webpack, which is not compatible with Turbopack in development.
+// We only apply the PWA wrapper for production builds.
+if (process.env.NODE_ENV === 'production') {
+  const withPWA = require('@ducanh2912/next-pwa').default({
+    dest: 'public'
+  });
+  finalConfig = withPWA(nextConfig);
+}
+
+export default finalConfig;
