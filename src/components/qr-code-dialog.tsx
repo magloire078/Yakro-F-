@@ -36,7 +36,7 @@ export function QrCodeDialog({ orderId, children }: QrCodeDialogProps) {
       });
       setQrCodeUrl(url);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to generate QR code:", err);
     } finally {
       setIsLoading(false);
     }
@@ -53,9 +53,11 @@ export function QrCodeDialog({ orderId, children }: QrCodeDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center justify-center p-4">
-          {isLoading && <Loader className="animate-spin h-16 w-16" />}
+          {isLoading && <Loader className="animate-spin h-16 w-16 text-primary" />}
           {qrCodeUrl && (
-            <Image src={qrCodeUrl} alt={`QR Code for order ${orderId}`} width={256} height={256} />
+            <div className="relative w-64 h-64 border-4 border-primary rounded-lg overflow-hidden">
+                <Image src={qrCodeUrl} alt={`QR Code order ${orderId}`} fill className="object-contain" />
+            </div>
           )}
         </div>
       </DialogContent>

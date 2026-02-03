@@ -13,12 +13,20 @@ import { BottomNavBar } from '@/components/bottom-nav-bar';
 import { usePathname } from 'next/navigation';
 import { belleza, alegreya } from '@/app/fonts';
 import { cn } from '@/lib/utils';
-
+import type { Viewport } from 'next';
 
 const metadata = {
-  title: 'Yakro Go',
-  description: 'Votre ville, livrée.',
+  title: 'Yakro Fê',
+  description: 'Votre ville, livrée intelligemment.',
   manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#FF8C00',
 };
 
 export default function RootLayout({
@@ -29,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
         <link rel="manifest" href={metadata.manifest} />
@@ -64,13 +72,13 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background">
       <div className="hidden md:flex">
         <Sidebar />
       </div>
       <div className="flex-1 flex flex-col">
         <MobileHeader />
-        <main className="flex-1 p-4 md:p-8 bg-background pb-24 md:pb-8">{children}</main>
+        <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">{children}</main>
         <BottomNavBar />
       </div>
     </div>

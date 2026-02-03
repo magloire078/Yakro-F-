@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Html5QrcodeScanner, Html5QrcodeError, Html5QrcodeResult } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5QrcodeResult } from 'html5-qrcode';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CameraOff } from 'lucide-react';
+import { CameraOff, Loader } from 'lucide-react';
 
 interface QrScannerDialogProps {
   isOpen: boolean;
@@ -31,23 +31,23 @@ const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number) => {
 export function QrScannerDialog({ isOpen, onClose, onScanSuccess }: QrScannerDialogProps) {
   const scannerRef = React.useRef<Html5QrcodeScanner | null>(null);
   const [hasPermission, setHasPermission] = React.useState<boolean | null>(null);
+  const [isInitializing, setIsInitializing] = React.useState(true);
 
   React.useEffect(() => {
     if (isOpen) {
-      // Check for camera permissions first
+      setIsInitializing(true);
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(() => {
           setHasPermission(true);
-          // Initialize scanner
           const scanner = new Html5QrcodeScanner(
             'reader',
             {
               fps: 10,
               qrbox: qrboxFunction,
               rememberLastUsedCamera: true,
-              supportedScanTypes: [], // Use all supported types
+              supportedScanTypes: [],
             },
-            false // verbose
+            false
           );
 
           const handleSuccess = (decodedText: string, result: Html5QrcodeResult) => {
@@ -56,23 +56,24 @@ export function QrScannerDialog({ isOpen, onClose, onScanSuccess }: QrScannerDia
           };
 
           const handleError = (errorMessage: string) => {
-            // ignore errors
+            // ignore constant scanning errors
           };
 
           scanner.render(handleSuccess, handleError);
           scannerRef.current = scanner;
+          setIsInitializing(false);
         })
         .catch(() => {
           setHasPermission(false);
+          setIsInitializing(false);
         });
     }
 
     return () => {
       if (scannerRef.current) {
-        // Checking state before clearing to avoid errors on fast close
-        if (scannerRef.current.getState() !== 1) { // 1 is NOT_STARTED
+        if (scannerRef.current.getState() !== 1) {
             scannerRef.current.clear().catch(error => {
-                console.error("Failed to clear html5-qrcode-scanner.", error);
+                console.error("Failed to clear scanner.", error);
             });
         }
         scannerRef.current = null;
@@ -82,20 +83,29 @@ export function QrScannerDialog({ isOpen, onClose, onScanSuccess }: QrScannerDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Scanner la commande</DialogTitle>
           <DialogDescription>
-            Scannez le QR code présenté par le restaurateur pour récupérer la commande.
+            Scannez le QR code présenté par le restaurateur pour valider la prise en charge.
           </DialogDescription>
         </DialogHeader>
-        <div id="reader" className="w-full"></div>
-        {hasPermission === false && (
+        
+        {isInitializing && (
+            <div className="flex flex-col items-center justify-center p-8 gap-4">
+                <Loader className="animate-spin h-12 w-12 text-primary" />
+                <p className="text-sm text-muted-foreground">Initialisation de la caméra...</p>
+            </div>
+        )}
+
+        <div id="reader" className={cn("w-full overflow-hidden rounded-lg", isInitializing && "hidden")}></div>
+        
+        {hasPermission === false && !isInitializing && (
           <Alert variant="destructive">
             <CameraOff className="h-4 w-4" />
-            <AlertTitle>Accès à la caméra refusé</AlertTitle>
+            <AlertTitle>Accès caméra refusé</AlertTitle>
             <AlertDescription>
-              Veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur pour utiliser le scanner.
+              Veuillez autoriser l'accès à la caméra dans vos paramètres système pour scanner les commandes.
             </AlertDescription>
           </Alert>
         )}

@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   },
   devIndicators: {
     allowedDevOrigins: [
-        'https://6000-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev'
+        '6000-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev'
     ],
   },
   images: {
@@ -39,15 +39,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-let finalConfig: NextConfig = nextConfig;
-
-// The PWA plugin uses Webpack, which is not compatible with Turbopack in development.
-// We only apply the PWA wrapper for production builds.
-if (process.env.NODE_ENV === 'production') {
-  const withPWA = require('@ducanh2912/next-pwa').default({
-    dest: 'public'
-  });
-  finalConfig = withPWA(nextConfig);
-}
-
-export default finalConfig;
+export default nextConfig;

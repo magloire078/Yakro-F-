@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { QrScannerDialog } from '@/components/qr-scanner-dialog';
+import { cn } from '@/lib/utils';
 
 interface AvailableDeliveriesProps {
     orders: Order[];
@@ -44,8 +45,13 @@ export function AvailableDeliveries({
 
     const handleAccept = async (delivery: Order) => {
         setIsAccepting(delivery.id);
-        await onAcceptDelivery(delivery);
-        setIsAccepting(null);
+        try {
+            await onAcceptDelivery(delivery);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsAccepting(null);
+        }
     }
     
     const updateLocation = React.useCallback(() => {
@@ -56,7 +62,7 @@ export function AvailableDeliveries({
                 onUpdateUserProfile(userId, { latitude, longitude });
             },
             (error) => {
-                console.error("Erreur de géolocalisation: ", error.message);
+                console.error("Loc error:", error.message);
             }
         );
     }, [userId, onUpdateUserProfile]);
@@ -69,7 +75,7 @@ export function AvailableDeliveries({
 
         if (checked) {
             if (!navigator.geolocation) {
-                toast({ variant: 'destructive', title: 'Géolocalisation non supportée' });
+                toast({ variant: 'destructive', title: 'GPS non supporté' });
                 setIsUpdatingStatus(false);
                 return;
             }
@@ -77,12 +83,16 @@ export function AvailableDeliveries({
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     onUpdateUserProfile(userId, { statutService: newStatus, latitude, longitude });
-                    locationIntervalRef.current = setInterval(updateLocation, 10000); // Mettre à jour toutes les 10s
-                    toast({ title: `Vous êtes maintenant en service.` });
+                    locationIntervalRef.current = setInterval(updateLocation, 10000);
+                    toast({ title: `Vous êtes en ligne !` });
                     setIsUpdatingStatus(false);
                 },
                 (error) => {
-                    toast({ variant: 'destructive', title: 'Accès à la localisation refusé', description: "Veuillez autoriser la géolocalisation pour passer en service." });
+                    toast({ 
+                        variant: 'destructive', 
+                        title: 'Position requise', 
+                        description: "Activez le GPS pour passer en service." 
+                    });
                     setIsUpdatingStatus(false);
                 }
             );
@@ -92,7 +102,7 @@ export function AvailableDeliveries({
                 locationIntervalRef.current = null;
             }
             await onUpdateUserProfile(userId, { statutService: newStatus });
-            toast({ title: `Vous êtes maintenant hors service.` });
+            toast({ title: `Déconnecté.` });
             setIsUpdatingStatus(false);
         }
     }
@@ -102,96 +112,132 @@ export function AvailableDeliveries({
         const orderToAccept = availableDeliveries.find(o => o.id === orderId);
         if (orderToAccept) {
             handleAccept(orderToAccept);
+            toast({
+                title: "Commande scannée !",
+                description: "Validation réussie, bonne route !",
+            });
         } else {
             toast({
                 variant: 'destructive',
-                title: 'Commande inconnue',
-                description: "Ce QR code ne correspond à aucune commande prête à être récupérée.",
+                title: 'QR Code invalide',
+                description: "Cette commande n'est pas prête ou ne vous est pas destinée.",
             });
         }
     };
     
     React.useEffect(() => {
         return () => {
-            if(locationIntervalRef.current) {
-                clearInterval(locationIntervalRef.current);
-            }
+            if(locationIntervalRef.current) clearInterval(locationIntervalRef.current);
         }
     }, [])
 
 
     return (
-        <>
-            <div className="container mx-auto">
-                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                     <h1 className="text-3xl md:text-4xl font-headline text-primary">Courses disponibles</h1>
-                     <div className="flex items-center gap-2">
-                        {isEnService && (
-                            <Button variant="outline" onClick={() => setIsScannerOpen(true)}>
-                                <ScanLine />
-                                Scanner une commande
-                            </Button>
-                        )}
-                        <Card className="p-3">
-                             <div className="flex items-center space-x-2">
-                                <Switch id="service-status" checked={isEnService} onCheckedChange={handleStatusToggle} disabled={isUpdatingStatus}/>
-                                <Label htmlFor="service-status" className="text-lg">{isEnService ? 'En service' : 'Hors service'}</Label>
-                                {isUpdatingStatus && <Loader className="animate-spin text-primary" />}
-                            </div>
-                        </Card>
+        <div className="container mx-auto pb-20">
+            <div className="flex flex-col gap-6 mb-8">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-headline text-primary">Courses</h1>
+                    <div className="flex items-center gap-3 bg-card px-4 py-2 rounded-full border shadow-sm">
+                        <Label htmlFor="service-status" className="text-sm font-semibold">
+                            {isEnService ? 'En ligne' : 'Hors ligne'}
+                        </Label>
+                        <Switch id="service-status" checked={isEnService} onCheckedChange={handleStatusToggle} disabled={isUpdatingStatus}/>
+                        {isUpdatingStatus && <Loader className="animate-spin h-4 w-4 text-primary" />}
                     </div>
                 </div>
-                <div className="space-y-4">
-                    {isLoading && isEnService && (
-                        <div className="flex justify-center items-center p-8"><Loader className="animate-spin text-primary" /></div>
-                    )}
-                    
-                    {isEnService && !isLoading && availableDeliveries.length > 0 && availableDeliveries.map(delivery => (
-                        <Card key={delivery.id}>
-                            <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
-                               <div className="md:col-span-1">
-                                 <p className="font-bold text-lg">{delivery.nomRestaurant}</p>
-                                 <p className="text-sm text-muted-foreground">De: {delivery.adresseRestaurant}</p>
-                                 <p className="text-sm text-muted-foreground">À: {delivery.adresseClient}</p>
-                               </div>
-                               <div className="md:col-span-1 flex flex-row md:flex-col items-start md:items-center justify-between gap-2 text-sm">
-                                    <Badge variant="secondary" className="text-base font-bold">{delivery.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</Badge>
-                                    <div className="flex items-center gap-2">
-                                        <span>{delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)</span>
-                                    </div>
-                               </div>
-                               <div className="md:col-span-1 flex justify-start md:justify-end">
-                                   <Button onClick={() => handleAccept(delivery)} disabled={isAccepting !== null} size="lg">
-                                     {isAccepting === delivery.id && <Loader className="animate-spin mr-2"/>}
-                                     Accepter la course
-                                   </Button>
-                               </div>
-                            </CardContent>
-                        </Card>
-                    ))}
 
-                     {isEnService && !isLoading && availableDeliveries.length === 0 && (
-                        <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
-                            <Bike className="w-16 h-16"/>
-                            <p className="text-lg font-medium">Aucune course disponible pour le moment</p>
-                            <p>Les commandes prêtes à être livrées apparaîtront ici.</p>
-                        </div>
-                    )}
-
-                    {!isEnService && (
-                        <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
-                            <Bike className="w-16 h-16"/>
-                            <p className="text-lg font-medium">Vous êtes hors service.</p>
-                            <p>Activez votre statut pour commencer à recevoir des propositions de courses.</p>
-                        </div>
-                    )}
-                </div>
+                {isEnService && (
+                    <Button variant="default" size="lg" className="w-full btn-mobile shadow-lg" onClick={() => setIsScannerOpen(true)}>
+                        <ScanLine className="mr-2" />
+                        Scanner pour récupérer
+                    </Button>
+                )}
             </div>
+
+            <div className="space-y-4">
+                {isLoading && isEnService && (
+                    <div className="flex justify-center p-12"><Loader className="animate-spin h-10 w-10 text-primary" /></div>
+                )}
+                
+                {isEnService && !isLoading && availableDeliveries.length > 0 && availableDeliveries.map(delivery => (
+                    <Card key={delivery.id} className="overflow-hidden hover:shadow-md transition-soft">
+                        <CardContent className="p-4 space-y-4">
+                           <div className="flex justify-between items-start">
+                                <div className="space-y-1">
+                                    <p className="font-bold text-lg leading-tight">{delivery.nomRestaurant}</p>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 italic">
+                                        Commande n°{delivery.id.slice(0,5)}
+                                    </p>
+                                </div>
+                                <Badge variant="secondary" className="text-lg font-bold text-primary">
+                                    {delivery.fraisDeLivraison.toLocaleString('fr-FR')} F
+                                </Badge>
+                           </div>
+
+                           <div className="space-y-2 py-2 border-y border-dashed">
+                                <div className="flex gap-3">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <div className="w-2 h-2 rounded-full bg-primary" />
+                                        <div className="w-0.5 h-full bg-muted" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs text-muted-foreground">Départ</p>
+                                        <p className="text-sm font-medium">{delivery.adresseRestaurant}</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs text-muted-foreground">Arrivée</p>
+                                        <p className="text-sm font-medium">{delivery.adresseClient}</p>
+                                    </div>
+                                </div>
+                           </div>
+
+                           <div className="flex items-center justify-between pt-2">
+                                <span className="text-xs font-semibold text-muted-foreground">
+                                    {delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)
+                                </span>
+                               <Button onClick={() => handleAccept(delivery)} disabled={isAccepting !== null} size="sm">
+                                 {isAccepting === delivery.id ? <Loader className="animate-spin h-4 w-4" /> : "Prendre la course"}
+                               </Button>
+                           </div>
+                        </CardContent>
+                    </Card>
+                ))}
+
+                 {isEnService && !isLoading && availableDeliveries.length === 0 && (
+                    <div className="text-center py-16 px-6 bg-card rounded-2xl border-2 border-dashed flex flex-col items-center gap-4">
+                        <div className="bg-muted p-4 rounded-full">
+                            <Bike className="w-12 h-12 text-muted-foreground"/>
+                        </div>
+                        <p className="text-lg font-bold">Zone calme...</p>
+                        <p className="text-sm text-muted-foreground max-w-[200px]">
+                            Aucune commande prête à proximité. Restez en ligne pour être alerté.
+                        </p>
+                    </div>
+                )}
+
+                {!isEnService && !isUpdatingStatus && (
+                    <div className="text-center py-16 px-6 bg-primary/5 rounded-2xl border-2 border-primary/20 flex flex-col items-center gap-4">
+                        <div className="bg-primary/10 p-4 rounded-full">
+                            <Bike className="w-12 h-12 text-primary"/>
+                        </div>
+                        <p className="text-xl font-bold text-primary">Hors ligne</p>
+                        <p className="text-sm text-muted-foreground max-w-[250px]">
+                            Passez en service pour commencer à gagner de l'argent et recevoir des courses.
+                        </p>
+                    </div>
+                )}
+            </div>
+
             <QrScannerDialog
                 isOpen={isScannerOpen}
                 onClose={() => setIsScannerOpen(false)}
                 onScanSuccess={handleScanSuccess}
             />
-        </>
+        </div>
     );
 }
