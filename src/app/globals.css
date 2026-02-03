@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -99,13 +98,13 @@
     --ring: 170 80% 40%;
   }
 
-  /* Mobile ergonomic improvements */
+  /* Améliorations ergonomie mobile */
   input, textarea, select {
-    font-size: 16px !important; /* Prevents auto-zoom on iOS */
+    font-size: 16px !important; /* Empêche le zoom automatique sur iOS */
   }
 
   .btn-mobile {
-    @apply min-h-[48px] px-6 text-base; /* Larger touch target */
+    @apply min-h-[48px] px-6 text-base; /* Cible tactile plus large */
   }
 }
 
