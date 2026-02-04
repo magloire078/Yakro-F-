@@ -61,9 +61,15 @@ service cloud.firestore {
       allow create: if isUserAuthenticated() && isUser(request.resource.data.userId);
 
       allow update: if isUserAuthenticated() && (
+          // Le restaurateur accepte (Placée -> En Préparation)
           (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
+          
+          // Le livreur prend en charge (En Préparation -> En Route)
           (getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
+          
+          // Le livreur termine (En Route -> Livrée)
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
+          
           isSuperAdmin()
       );
     }
