@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -12,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CameraOff, Loader } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface QrScannerDialogProps {
   isOpen: boolean;
@@ -51,19 +51,22 @@ export function QrScannerDialog({ isOpen, onClose, onScanSuccess }: QrScannerDia
           );
 
           const handleSuccess = (decodedText: string, result: Html5QrcodeResult) => {
-            scanner.clear();
+            if (scannerRef.current) {
+                scannerRef.current.clear().catch(console.error);
+            }
             onScanSuccess(decodedText);
           };
 
           const handleError = (errorMessage: string) => {
-            // ignore constant scanning errors
+            // silent errors during scan
           };
 
           scanner.render(handleSuccess, handleError);
           scannerRef.current = scanner;
           setIsInitializing(false);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("Camera access denied:", err);
           setHasPermission(false);
           setIsInitializing(false);
         });
@@ -71,11 +74,9 @@ export function QrScannerDialog({ isOpen, onClose, onScanSuccess }: QrScannerDia
 
     return () => {
       if (scannerRef.current) {
-        if (scannerRef.current.getState() !== 1) {
-            scannerRef.current.clear().catch(error => {
-                console.error("Failed to clear scanner.", error);
-            });
-        }
+        scannerRef.current.clear().catch(error => {
+            console.error("Failed to clear scanner on unmount", error);
+        });
         scannerRef.current = null;
       }
     };

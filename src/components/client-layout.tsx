@@ -4,7 +4,6 @@ import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useData } from '@/contexts/data-context';
 import { Sidebar } from '@/components/sidebar';
 import { MobileHeader } from '@/components/mobile-header';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
