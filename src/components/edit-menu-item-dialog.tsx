@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -17,7 +16,11 @@ import { useToast } from '@/hooks/use-toast';
 import type { MenuItem } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { MenuItemForm, type MenuItemFormValues, menuItemFormSchema } from './menu-item-form';
-import { updateMenuItemAction } from '@/app/actions/menu-item-actions';
+import { useFirebase } from '@/contexts/firebase-provider';
+import { doc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 
 interface EditMenuItemDialogProps {
@@ -27,6 +30,7 @@ interface EditMenuItemDialogProps {
 }
 
 export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDialogProps) {
+  const { db, storage } = useFirebase();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -57,14 +61,25 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
 
   const onSubmit = async (data: MenuItemFormValues, imageFile: File | null) => {
     setIsSubmitting(true);
+    const itemDocRef = doc(db, 'plats', menuItem.id);
+    const updateData: Partial<MenuItem> = { ...data };
+
     try {
-        const formData = new FormData();
-        formData.append('itemId', menuItem.id);
-        formData.append('data', JSON.stringify(data));
         if (imageFile) {
-            formData.append('image', imageFile);
+            const storageRef = ref(storage, `plats/${menuItem.id}`);
+            const snapshot = await uploadBytes(storageRef, imageFile);
+            updateData.image = await getDownloadURL(snapshot.ref);
         }
-        await updateMenuItemAction(formData);
+
+        await updateDoc(itemDocRef, updateData).catch(e => {
+            const permissionError = new FirestorePermissionError({
+                path: itemDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw e;
+        });
 
       toast({
         title: 'Plat mis à jour',

@@ -1,9 +1,8 @@
-
 'use client';
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useData } from '@/contexts/data-context';
+import { useData, deleteMenuItem as deleteItemFn } from '@/contexts/data-context';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -26,16 +25,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { useFirebase } from '@/contexts/firebase-provider';
 
 
 export default function DashboardMenuPage() {
     const { user, activeRole } = useAuth();
+    const { db, storage } = useFirebase();
     const router = useRouter();
-    const { restaurants, menuItems, deleteMenuItem } = useData();
+    const { restaurants, menuItems } = useData();
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
 
-    // State for dialogs
     const [editingItem, setEditingItem] = React.useState<MenuItem | null>(null);
 
     React.useEffect(() => {
@@ -66,7 +66,7 @@ export default function DashboardMenuPage() {
     const handleDeleteItem = async (itemId: string) => {
         setIsDeleting(itemId);
         try {
-            await deleteMenuItem(itemId);
+            await deleteItemFn(db, storage, itemId);
             toast({
                 title: 'Plat supprimé',
                 description: 'Le plat a été retiré de votre menu.',

@@ -3,7 +3,8 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc } from 'firebase/firestore';
+import { deleteObject, ref } from 'firebase/storage';
 import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -65,7 +66,7 @@ function setupSubscription<T extends DocumentData>(
 }
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { db } = useFirebase();
+    const { db, storage } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
 
@@ -78,7 +79,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
         
-        // Timer de sécurité pour l'état de chargement
         const timer = setTimeout(() => setIsLoading(false), 2000);
 
         return () => {
@@ -149,4 +149,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setIsLoading]);
 
     return <>{children}</>;
+};
+
+export const deleteMenuItem = async (db: any, storage: any, itemId: string) => {
+    const itemDocRef = doc(db, 'plats', itemId);
+    const imageRef = ref(storage, `plats/${itemId}`);
+    
+    try {
+        await deleteObject(imageRef).catch(e => {
+            if (e.code !== 'storage/object-not-found') console.warn("Image delete failed:", e);
+        });
+        await deleteDoc(itemDocRef);
+    } catch (e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: itemDocRef.path,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
 };

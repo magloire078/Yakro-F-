@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import * as React from 'react';
@@ -13,11 +11,15 @@ import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { RestaurantForm, type RestaurantFormValues } from '@/components/restaurant-form';
-import { updateRestaurantAction } from '@/app/actions/restaurant-actions';
-
+import { useFirebase } from '@/contexts/firebase-provider';
+import { doc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function EditRestaurantPage() {
     const { getRestaurant } = useData();
+    const { db, storage } = useFirebase();
     const { toast } = useToast();
     const router = useRouter();
     const params = useParams();
@@ -42,14 +44,26 @@ export default function EditRestaurantPage() {
     const onSubmit = async (data: RestaurantFormValues, imageFile: File | null) => {
         if(!user || !restaurant) return;
         setIsLoading(true);
+        
+        const restaurantDocRef = doc(db, 'restaurants', restaurantId);
+        const updateData: Partial<Restaurant> = { ...data };
+
         try {
-            const formData = new FormData();
-            formData.append('restaurantId', restaurant.id);
-            formData.append('data', JSON.stringify(data));
             if (imageFile) {
-                formData.append('image', imageFile);
+                const storageRef = ref(storage, `restaurants/${restaurantId}`);
+                const snapshot = await uploadBytes(storageRef, imageFile);
+                updateData.image = await getDownloadURL(snapshot.ref);
             }
-            await updateRestaurantAction(formData);
+
+            await updateDoc(restaurantDocRef, updateData).catch(e => {
+                const permissionError = new FirestorePermissionError({
+                    path: restaurantDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                throw e;
+            });
 
             toast({
                 title: 'Restaurant mis à jour !',
