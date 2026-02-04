@@ -40,7 +40,7 @@ service cloud.firestore {
 
     match /restaurants/{restaurantId} {
       allow read: if true;
-      allow create: if isUserAuthenticated() && isUser(request.resource.data.proprietaireId) && getUserData().role == 'restaurateur';
+      allow create: if isUserAuthenticated() && isUser(request.resource.data.proprietaireId) && userExists() && getUserData().role == 'restaurateur';
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
     
@@ -76,7 +76,7 @@ service cloud.firestore {
           // Le livreur prend en charge
           (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           
-          // Le livreur termine
+          // Le livreur ou restaurateur termine (validation par livreur ou super admin)
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           
           isSuperAdmin()
