@@ -26,9 +26,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-      </head>
       <body className={cn("font-body antialiased", belleza.variable, alegreya.variable)}>
         <Providers>
           <ClientLayout>{children}</ClientLayout>

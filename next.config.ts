@@ -3,7 +3,7 @@ import withPWAInit from '@ducanh2912/next-pwa';
 
 const withPWA = withPWAInit({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development', // Désactivé en développement pour éviter les conflits Turbopack
+  disable: process.env.NODE_ENV === 'development',
 });
 
 const nextConfig: NextConfig = {
@@ -14,18 +14,22 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   devIndicators: {
+    appIsrStatus: false,
+  },
+  experimental: {
     allowedDevOrigins: [
         '6000-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
         '9002-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev'
     ],
+    serverActions: {
+      bodySizeLimit: '10mb',
+    }
   },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
@@ -36,11 +40,6 @@ const nextConfig: NextConfig = {
         hostname: 'picsum.photos',
       }
     ],
-  },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
-    }
   },
 };
 
