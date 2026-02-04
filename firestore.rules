@@ -40,7 +40,7 @@ service cloud.firestore {
 
     match /restaurants/{restaurantId} {
       allow read: if true;
-      allow create: if isUserAuthenticated() && isUser(request.resource.data.proprietaireId) && userExists() && getUserData().role == 'restaurateur';
+      allow create: if isUserAuthenticated() && isUser(request.resource.data.proprietaireId);
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
     
@@ -82,9 +82,7 @@ service cloud.firestore {
           isSuperAdmin()
       );
       
-      allow list: if isUserAuthenticated() && (
-        userExists() && (getUserData().role == 'livreur' || getUserData().role == 'restaurateur' || getUserData().get('roleSysteme', 'User') == 'SuperAdmin')
-      ) || (isUserAuthenticated() && request.query.limit <= 100);
+      allow list: if isUserAuthenticated();
     }
   }
 }
