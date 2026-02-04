@@ -1,4 +1,3 @@
-
 'use server';
 
 import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
@@ -7,20 +6,15 @@ import { db, storage } from '@/firebase/client';
 import type { MenuItem } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { generateImage } from '@/ai/flows/generate-image-flow';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 
-// Helper function for uploading images
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
     const storageRef = ref(storage, path);
     let downloadURL: string;
 
     if (typeof fileOrDataUrl === 'string') {
-        // It's a data URL from AI generation
         const snapshot = await uploadString(storageRef, fileOrDataUrl, 'data_url');
         downloadURL = await getDownloadURL(snapshot.ref);
     } else {
-        // It's a File object from user upload
         const snapshot = await uploadBytes(storageRef, fileOrDataUrl);
         downloadURL = await getDownloadURL(snapshot.ref);
     }
@@ -37,12 +31,10 @@ export async function addMenuItemAction(formData: FormData) {
     let finalImageUrl: string | undefined = undefined;
 
     try {
-        // 1. Add document without image URL to get an ID
-        const newMenuItemData = { ...item, image: '' }; // Start with an empty image URL
+        const newMenuItemData = { ...item, image: '' };
         const docRef = await addDoc(collectionRef, newMenuItemData);
         docRefId = docRef.id;
 
-        // 2. Determine the image URL
         if (imageFile) {
              finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
         } 
@@ -57,7 +49,6 @@ export async function addMenuItemAction(formData: FormData) {
             }
         }
         
-        // 3. Update the document with the final image URL if it exists
         if (finalImageUrl) {
             await updateDoc(doc(db, "plats", docRefId), { image: finalImageUrl });
         }
@@ -66,15 +57,8 @@ export async function addMenuItemAction(formData: FormData) {
         revalidatePath(`/restaurants/${item.restaurantId}`);
 
     } catch (e: any) {
-        const path = docRefId ? `plats/${docRefId}` : 'plats';
-        const permissionError = new FirestorePermissionError({
-            path,
-            operation: 'create',
-            requestResourceData: item,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error adding menu item: ", e);
-        throw e; // Re-throw the original error to be caught by client
+        console.error("Error adding menu item: ", e);
+        throw e;
     }
 }
 
@@ -101,14 +85,8 @@ export async function updateMenuItemAction(formData: FormData) {
           revalidatePath(`/restaurants/${data.restaurantId}`);
         }
     } catch (e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: itemDocRef.path,
-            operation: 'update',
-            requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error updating menu item: ", e);
-        throw e; // Re-throw the original error to be caught by client
+        console.error("Error updating menu item: ", e);
+        throw e;
     }
 }
 
@@ -129,12 +107,7 @@ export async function deleteMenuItemAction(itemId: string) {
       await deleteDoc(itemDocRef);
       revalidatePath('/dashboard/menu');
     } catch (e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: itemDocRef.path,
-            operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error deleting menu item: ", e);
-        throw e; // Re-throw the original error to be caught by client
+        console.error("Error deleting menu item: ", e);
+        throw e;
     }
 }

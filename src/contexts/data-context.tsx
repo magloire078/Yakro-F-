@@ -1,10 +1,9 @@
-
 'use client';
 
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, getDocs, Query, or } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -57,12 +56,12 @@ function setupSubscription<T extends DocumentData>(
       callback(list);
     },
     (serverError) => {
+        // Émission d'une erreur contextuelle pour le débogage centralisé
         const permissionError = new FirestorePermissionError({
             path: collectionPath,
             operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
-        console.error(`Error subscribing to ${collectionPath}:`, serverError);
     }
   );
 }
@@ -73,7 +72,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
 
-    // Step 1: Subscribe to public data that everyone can see.
     React.useEffect(() => {
         if (!db) return;
         
@@ -83,8 +81,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
         
-        // We set a timer to ensure loading state isn't stuck if orders never load
-        const timer = setTimeout(() => setIsLoading(false), 2000);
+        const timer = setTimeout(() => setIsLoading(false), 3000);
 
         return () => {
             unsubRestaurants();
@@ -94,8 +91,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [db, setRestaurants, setMenuItems, setIsLoading]);
 
 
-    // Step 2: Subscribe to user-specific/role-specific data (like orders)
-    // This useEffect depends on the user, their role, and the already loaded restaurants
     React.useEffect(() => {
         if (authLoading || !db) {
             return;
@@ -115,23 +110,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         ordersQuery = query(collectionRef('commandes'), where('userId', '==', user.uid));
                         break;
                     case 'restaurateur':
-                        // Only run this if restaurants are loaded
                         if (restaurants.length > 0) {
                             const myRestaurantIds = restaurants
                                 .filter(r => r.proprietaireId === user.uid)
                                 .map(r => r.id);
 
                             if (myRestaurantIds.length > 0) {
-                                // Firestore 'in' queries are limited to 30 elements. If a user has more, this would need pagination.
                                 ordersQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
                             } else {
-                                // No restaurants owned by this user, so no orders to fetch.
                                 setOrders([]);
                             }
                         }
-                        // If restaurants are not loaded yet, this effect will re-run when they are.
                         break;
                     case 'livreur':
+                         // Correction de la requête livreur : il doit voir les commandes prêtes OU celles qu'il livre
                          ordersQuery = query(collectionRef('commandes'), or(
                             where('statut', '==', 'En Préparation'),
                             where('livreurId', '==', user.uid)
@@ -143,15 +135,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (ordersQuery) {
                 unsubOrders = setupSubscription<Order>(ordersQuery, (fetchedOrders) => {
                     setOrders(fetchedOrders);
-                    setIsLoading(false); // Stop loading once orders are fetched/updated
+                    setIsLoading(false);
                 }, 'commandes');
-            } else if (activeRole !== 'restaurateur') { // for restaurateur, query might be pending restaurant load
+            } else if (activeRole !== 'restaurateur') {
                 setOrders([]);
                 setIsLoading(false);
             }
 
         } else {
-            // No user, clear orders and stop loading.
             setOrders([]);
             setIsLoading(false);
         }

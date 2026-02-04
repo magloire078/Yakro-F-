@@ -1,4 +1,3 @@
-
 'use server';
 
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
@@ -6,8 +5,6 @@ import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage
 import { db, storage } from '@/firebase/client';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { generateImage } from '@/ai/flows/generate-image-flow';
 
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
@@ -74,13 +71,7 @@ export async function addRestaurantAction(formData: FormData) {
         revalidatePath('/', 'layout');
 
     } catch (e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: 'restaurants',
-            operation: 'create',
-            requestResourceData: restaurantPayload,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error adding restaurant: ", e);
+        console.error("Error adding restaurant: ", e);
         throw e;
     }
 }
@@ -110,13 +101,7 @@ export async function updateRestaurantAction(formData: FormData) {
         revalidatePath(`/restaurants/${restaurantId}`);
         revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
     } catch (e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: restaurantDocRef.path,
-            operation: 'update',
-            requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error updating restaurant: ", e);
+        console.error("Error updating restaurant: ", e);
         throw e;
     }
 }

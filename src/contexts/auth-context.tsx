@@ -1,15 +1,16 @@
-
 'use client';
 
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
+import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserProfileAction } from '@/app/actions/user-actions';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface AuthContextType {
   user: User | null;
@@ -42,7 +43,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (!firebaseUser) {
-          // If user logs out, we can clear the profile and set loading to false.
           setUserProfile(null);
           setLoading(false);
       }
@@ -55,26 +55,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) {
       setLoading(true);
       const userDocRef = doc(db, 'utilisateurs', user.uid);
-      unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
-          setUserProfile(profile);
-          
-          const storedRole = localStorage.getItem('activeRole') as AppRole | null;
-          // Always sync active role with the profile's role, as it's the source of truth.
-          if (storedRole !== profile.role) {
-             setActiveRoleState(profile.role);
-             localStorage.setItem('activeRole', profile.role);
+      
+      // Ajout du gestionnaire d'erreur pour onSnapshot
+      unsubscribeProfile = onSnapshot(userDocRef, 
+        (docSnap) => {
+          if (docSnap.exists()) {
+            const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
+            setUserProfile(profile);
+            
+            const storedRole = localStorage.getItem('activeRole') as AppRole | null;
+            if (storedRole !== profile.role) {
+               setActiveRoleState(profile.role);
+               localStorage.setItem('activeRole', profile.role);
+            }
+          } else {
+            setUserProfile(null);
           }
-        } else {
-          // This can happen briefly during signup before the profile is created.
-          setUserProfile(null);
+          setLoading(false);
+        },
+        async (serverError) => {
+          // Émission d'une erreur contextuelle pour le débogage des règles de sécurité
+          const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'get',
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          setLoading(false);
         }
-        setLoading(false);
-      });
+      );
     } else {
       setUserProfile(null);
-      setLoading(false); // No user, so not loading.
+      setLoading(false);
     }
     return () => {
       if (unsubscribeProfile) {

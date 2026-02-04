@@ -1,30 +1,21 @@
-
 'use server';
 
-import { collection, addDoc, updateDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import type { Order } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 
 export async function addOrderAction(order: Omit<Order, 'id'>) {
     const docRef = doc(collection(db, "commandes"));
     
     try {
         await setDoc(docRef, order);
-        revalidatePath('/'); // For customer home page status
-        revalidatePath('/orders'); // For customer order history
-        revalidatePath('/dashboard/orders'); // For restaurateur
+        revalidatePath('/');
+        revalidatePath('/orders');
+        revalidatePath('/dashboard/orders');
     } catch (e: any) {
-        const permissionError = new FirestorePermissionError({
-            path: 'commandes',
-            operation: 'create',
-            requestResourceData: order,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error adding order: ", e);
-        throw e; // Re-throw the original error
+        console.error("Error adding order: ", e);
+        throw e;
     }
 }
 
@@ -42,13 +33,7 @@ export async function updateOrderStatusAction({ orderId, status, delivererId }: 
         revalidatePath('/auth/livreur');
         revalidatePath('/dashboard/earnings');
     } catch (e: any) {
-        const permissionError = new FirestorePermissionError({
-              path: orderDocRef.path,
-              operation: 'update',
-              requestResourceData: updateData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        console.error("Original error updating order status: ", e);
-        throw e; // Re-throw the original error
+        console.error("Error updating order status: ", e);
+        throw e;
     }
 }
