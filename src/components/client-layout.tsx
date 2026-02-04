@@ -9,7 +9,7 @@ import { MobileHeader } from '@/components/mobile-header';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const pathname = usePathname();
   
   const isAuthPage = pathname === '/login' || pathname === '/profile-selection';

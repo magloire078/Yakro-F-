@@ -203,7 +203,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const orderDocRef = doc(collection(db, "commandes"));
     
-    // Mutation non bloquante avec gestion d'erreur contextuelle
     setDoc(orderDocRef, newOrder)
       .then(() => {
         clearCart();

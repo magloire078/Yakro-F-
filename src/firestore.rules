@@ -64,7 +64,7 @@ service cloud.firestore {
         (resource.data.livreurId != null && isUser(resource.data.livreurId)) || 
         isRestaurantOwner(resource.data.restaurantId) || 
         isSuperAdmin() ||
-        (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation')
+        (userExists() && (getUserData().role == 'livreur' || getUserData().role == 'restaurateur'))
       );
 
       allow create: if isUserAuthenticated() && isUser(request.resource.data.userId);
@@ -80,6 +80,10 @@ service cloud.firestore {
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           
           isSuperAdmin()
+      );
+      
+      allow list: if isUserAuthenticated() && (
+        userExists() && (getUserData().role == 'livreur' || getUserData().role == 'restaurateur' || getUserData().get('roleSysteme', 'User') == 'SuperAdmin')
       );
     }
   }
