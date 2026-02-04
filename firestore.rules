@@ -64,7 +64,7 @@ service cloud.firestore {
         (resource.data.livreurId != null && isUser(resource.data.livreurId)) || 
         isRestaurantOwner(resource.data.restaurantId) || 
         isSuperAdmin() ||
-        (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation')
+        (userExists() && (getUserData().role == 'livreur' || getUserData().role == 'restaurateur'))
       );
 
       allow create: if isUserAuthenticated() && isUser(request.resource.data.userId);
@@ -74,12 +74,16 @@ service cloud.firestore {
           (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
           
           // Le livreur prend en charge (En Préparation -> En Route)
-          (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
+          (userExists() && getUserData().role == 'livreur' && (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée') && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           
           // Le livreur termine (En Route -> Livrée)
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           
           isSuperAdmin()
+      );
+      
+      allow list: if isUserAuthenticated() && (
+        userExists() && (getUserData().role == 'livreur' || getUserData().role == 'restaurateur' || getUserData().get('roleSysteme', 'User') == 'SuperAdmin')
       );
     }
   }
