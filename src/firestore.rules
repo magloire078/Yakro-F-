@@ -3,6 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
+    // Fonctions utilitaires sécurisées
     function isUserAuthenticated() {
       return request.auth != null;
     }
@@ -16,33 +17,28 @@ service cloud.firestore {
     }
 
     function isRestaurantOwner(restaurantId) {
-       // On vérifie si l'utilisateur authentifié est le propriétaire du restaurant référencé
+       // Vérifie si l'utilisateur est le propriétaire du restaurant
        return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
     }
     
     function isSuperAdmin() {
-      // Vérification sécurisée du rôle système SuperAdmin
+      // Vérification robuste du rôle système
       return isUserAuthenticated() && 
              exists(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)) && 
-             getUserData().roleSysteme == 'SuperAdmin';
+             getUserData().get('roleSysteme', 'User') == 'SuperAdmin';
     }
 
     match /restaurants {
-      // Tout le monde peut voir la liste des restaurants
       allow list: if true;
     }
 
     match /restaurants/{restaurantId} {
-      // Tout le monde peut lire les détails d'un restaurant
       allow read: if true;
-      // Création réservée aux restaurateurs authentifiés
       allow create: if isUser(request.resource.data.proprietaireId) && getUserData().role == 'restaurateur';
-      // Modification/Suppression réservée au propriétaire ou admin
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
     
     match /plats {
-       // Tout le monde peut voir la liste des plats (recherche)
       allow list: if true;
     }
 
@@ -54,26 +50,24 @@ service cloud.firestore {
 
     match /commandes/{orderId} {
       // Un utilisateur peut lire une commande si :
-      // 1. Il est le client, le livreur assigné ou le propriétaire du restaurant
-      // 2. Il est un livreur et la commande est "En Préparation" (pour la liste des courses dispos)
-      // 3. Il est SuperAdmin
+      // 1. Il est l'auteur, le livreur assigné ou le propriétaire du restaurant
+      // 2. Il est livreur et la commande est prête à être prise (En Préparation)
       allow read: if isUser(resource.data.userId) || 
                      (resource.data.livreurId != null && isUser(resource.data.livreurId)) || 
                      isRestaurantOwner(resource.data.restaurantId) || 
                      isSuperAdmin() ||
-                     (resource.data.statut == 'En Préparation' && getUserData().role == 'livreur');
+                     (isUserAuthenticated() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation');
 
-      // Un utilisateur ne peut créer une commande que pour lui-même
       allow create: if isUser(request.resource.data.userId);
 
       allow update: if 
-          // Le restaurateur accepte la commande
+          // Acceptation par le restaurateur
           (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
           
-          // Un livreur prend la commande
+          // Prise en charge par un livreur
           (isUserAuthenticated() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           
-          // Le livreur valide la livraison
+          // Validation de livraison
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           
           isSuperAdmin();

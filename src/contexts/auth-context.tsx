@@ -8,7 +8,6 @@ import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { updateUserProfileAction } from '@/app/actions/user-actions';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -29,14 +28,12 @@ const getInitialActiveRole = (): AppRole => {
   return (localStorage.getItem('activeRole') as AppRole) || 'client';
 };
 
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { auth, db } = useFirebase();
   const [user, setUser] = React.useState<User | null>(null);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [activeRole, setActiveRoleState] = React.useState<AppRole>(getInitialActiveRole);
-  const router = useRouter();
   const { toast } = useToast();
 
    React.useEffect(() => {
@@ -56,7 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       const userDocRef = doc(db, 'utilisateurs', user.uid);
       
-      // Ajout du gestionnaire d'erreur pour onSnapshot
       unsubscribeProfile = onSnapshot(userDocRef, 
         (docSnap) => {
           if (docSnap.exists()) {
@@ -74,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(false);
         },
         async (serverError) => {
-          // Émission d'une erreur contextuelle pour le débogage des règles de sécurité
           const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'get',
@@ -100,10 +95,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
+      // Dans un prototype, on utilise l'action serveur mais on prépare le terrain pour le client-side si besoin
+      const { updateUserProfileAction } = await import('@/app/actions/user-actions');
       await updateUserProfileAction(uid, data);
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
+    const { updateUserProfileAction } = await import('@/app/actions/user-actions');
     await updateUserProfileAction(uid, data);
   };
 

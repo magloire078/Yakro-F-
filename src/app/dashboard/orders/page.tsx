@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -12,12 +11,15 @@ import { useData } from '@/contexts/data-context';
 import { type Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { updateOrderStatusAction } from '@/app/actions/order-actions';
 import { QrCodeDialog } from '@/components/qr-code-dialog';
-
+import { doc, updateDoc } from 'firebase/firestore';
+import { useFirebase } from '@/contexts/firebase-provider';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function DashboardOrdersPage() {
     const { user, activeRole } = useAuth();
+    const { db } = useFirebase();
     const router = useRouter();
     const { orders, restaurants } = useData();
     const { toast } = useToast();
@@ -45,24 +47,29 @@ export default function DashboardOrdersPage() {
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [myOrders]);
 
-
     const handleAcceptOrder = async (orderId: string) => {
         setIsUpdating(orderId);
-        try {
-            await updateOrderStatusAction({ orderId, status: 'En Préparation' });
-            toast({
-                title: "Commande acceptée !",
-                description: "La commande est maintenant marquée comme étant en préparation.",
+        const orderRef = doc(db, 'commandes', orderId);
+        const updateData = { statut: 'En Préparation' };
+
+        updateDoc(orderRef, updateData)
+            .then(() => {
+                toast({
+                    title: "Commande acceptée !",
+                    description: "La commande est maintenant en préparation.",
+                });
+            })
+            .catch(async (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: orderRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsUpdating(null);
             });
-        } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: "Erreur",
-                description: "Impossible de mettre à jour le statut.",
-            });
-        } finally {
-            setIsUpdating(null);
-        }
     };
     
     const OrderCard = ({ order }: { order: Order }) => (

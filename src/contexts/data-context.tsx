@@ -1,14 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import type { Restaurant, MenuItem, Order, UserProfile } from '@/lib/types';
+import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { create } from 'zustand';
 import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-
 
 interface DataState {
   restaurants: Restaurant[];
@@ -55,8 +54,7 @@ function setupSubscription<T extends DocumentData>(
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as T[];
       callback(list);
     },
-    (serverError) => {
-        // Émission d'une erreur contextuelle pour le débogage centralisé
+    async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: collectionPath,
             operation: 'list',
@@ -65,7 +63,6 @@ function setupSubscription<T extends DocumentData>(
     }
   );
 }
-
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
@@ -90,7 +87,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
     }, [db, setRestaurants, setMenuItems, setIsLoading]);
 
-
     React.useEffect(() => {
         if (authLoading || !db) {
             return;
@@ -110,20 +106,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         ordersQuery = query(collectionRef('commandes'), where('userId', '==', user.uid));
                         break;
                     case 'restaurateur':
-                        if (restaurants.length > 0) {
-                            const myRestaurantIds = restaurants
-                                .filter(r => r.proprietaireId === user.uid)
-                                .map(r => r.id);
+                        const myRestaurantIds = restaurants
+                            .filter(r => r.proprietaireId === user.uid)
+                            .map(r => r.id);
 
-                            if (myRestaurantIds.length > 0) {
-                                ordersQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
-                            } else {
-                                setOrders([]);
-                            }
+                        if (myRestaurantIds.length > 0) {
+                            ordersQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
+                        } else {
+                            setOrders([]);
                         }
                         break;
                     case 'livreur':
-                         // Correction de la requête livreur : il doit voir les commandes prêtes OU celles qu'il livre
                          ordersQuery = query(collectionRef('commandes'), or(
                             where('statut', '==', 'En Préparation'),
                             where('livreurId', '==', user.uid)
@@ -137,7 +130,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setOrders(fetchedOrders);
                     setIsLoading(false);
                 }, 'commandes');
-            } else if (activeRole !== 'restaurateur') {
+            } else {
                 setOrders([]);
                 setIsLoading(false);
             }
@@ -153,7 +146,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         };
     }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setIsLoading]);
-
 
     return <>{children}</>;
 };
