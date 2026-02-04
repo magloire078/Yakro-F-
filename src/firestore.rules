@@ -76,7 +76,7 @@ service cloud.firestore {
           // Le livreur prend en charge
           (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           
-          // Le livreur ou restaurateur termine (validation par livreur ou super admin)
+          // Le livreur termine
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           
           isSuperAdmin()
