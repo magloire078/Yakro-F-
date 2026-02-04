@@ -3,7 +3,7 @@ import withPWAInit from '@ducanh2912/next-pwa';
 
 const withPWA = withPWAInit({
   dest: 'public',
-  disable: true, // Toujours désactivé en dev pour éviter les conflits Turbopack
+  disable: true, // Désactivé pour éviter les conflits avec Turbopack en développement
 });
 
 const nextConfig: NextConfig = {

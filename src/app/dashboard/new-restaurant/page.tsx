@@ -5,16 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { ChefHat } from 'lucide-react';
+import { ChefHat, Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { RestaurantForm, type RestaurantFormValues } from '@/components/restaurant-form';
 import type { Restaurant } from '@/lib/types';
-import { addRestaurantAction } from '@/app/actions/restaurant-actions';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function NewRestaurantPage() {
     const { toast } = useToast();
@@ -36,7 +35,7 @@ export default function NewRestaurantPage() {
         const restaurantData: Omit<Restaurant, 'id'> = {
             ...data,
             proprietaireId: user.uid,
-            note: 0,
+            note: 4.0, // Note par défaut
             enVedette: false,
             image: '',
             indiceImage: data.indiceImage || `${data.cuisine} restaurant`,
@@ -45,13 +44,13 @@ export default function NewRestaurantPage() {
         };
 
         try {
-            // Write to Firestore on client
+            // Write directly to Firestore via client SDK
             await setDoc(restaurantRef, restaurantData).catch(e => {
                 const permissionError = new FirestorePermissionError({
                     path: restaurantRef.path,
                     operation: 'create',
                     requestResourceData: restaurantData,
-                });
+                } satisfies SecurityRuleContext);
                 errorEmitter.emit('permission-error', permissionError);
                 throw e;
             });
@@ -65,7 +64,7 @@ export default function NewRestaurantPage() {
 
             toast({
                 title: 'Restaurant créé avec succès !',
-                description: `${data.nom} a été ajouté à notre plateforme.`,
+                description: `${data.nom} a été ajouté à Yakro Fê.`,
             });
             router.push('/dashboard/my-restaurants');
         } catch (error) {
@@ -73,7 +72,7 @@ export default function NewRestaurantPage() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: 'Impossible de créer le restaurant pour le moment.'
+                description: 'Impossible de créer le restaurant. Vérifiez vos permissions.'
             });
         } finally {
             setIsLoading(false);
@@ -89,7 +88,7 @@ export default function NewRestaurantPage() {
                         <ChefHat className="h-8 w-8 text-primary"/>
                         <div>
                             <CardTitle className="text-2xl">Enregistrer votre restaurant</CardTitle>
-                            <CardDescription>Remplissez les informations ci-dessous pour ajouter votre établissement à Yakro Fê.</CardDescription>
+                            <CardDescription>Ajoutez votre établissement pour commencer à recevoir des commandes.</CardDescription>
                         </div>
                     </div>
                 </CardHeader>

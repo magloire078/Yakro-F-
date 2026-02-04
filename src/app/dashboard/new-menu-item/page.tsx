@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -18,19 +17,22 @@ import { generateMenuItem, type GenerateMenuItemOutput } from '@/ai/flows/genera
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { MenuItemForm, menuItemFormSchema, type MenuItemFormValues } from '@/components/menu-item-form';
-import { addMenuItemAction } from '@/app/actions/menu-item-actions';
+import { useFirebase } from '@/contexts/firebase-provider';
+import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function NewMenuItemPage() {
     const { restaurants } = useData();
+    const { db, storage } = useFirebase();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
     const { toast } = useToast();
     const { user } = useAuth();
     const router = useRouter();
 
-    // Form state for AI generation
     const [description, setDescription] = React.useState('');
     const [name, setName] = React.useState('');
     const [price, setPrice] = React.useState('');
@@ -72,22 +74,12 @@ export default function NewMenuItemPage() {
         }
     };
 
-
     const handleGenerateItem = async () => {
         if (!selectedRestaurant || !description) {
-            toast({
-                variant: 'destructive',
-                title: 'Informations manquantes',
-                description: 'Veuillez sélectionner un restaurant et entrer au minimum une description.',
-            });
+            toast({ variant: 'destructive', title: 'Informations manquantes' });
             return;
         }
         setLoading(true);
-        toast({
-            title: 'Génération de plat en cours...',
-            description: 'L\'IA concocte quelque chose de délicieux pour vous. Cela peut prendre un moment.',
-        });
-
         try {
             const itemDetails: GenerateMenuItemOutput = await generateMenuItem({
                 restaurantName: selectedRestaurant.nom,
@@ -105,64 +97,53 @@ export default function NewMenuItemPage() {
                 accompagnementsDisponibles: [],
                 boissonsDisponibles: [],
             });
-
-            toast({
-                title: 'Plat généré avec succès !',
-                description: 'Voici une proposition. Vous pouvez la modifier et l\'ajouter à votre menu.',
-            });
         } catch (error) {
-            console.error('Failed to generate menu item:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Erreur de génération',
-                description: 'Impossible de générer le plat pour le moment. Le quota de l\'IA est peut-être atteint.',
-            });
+            toast({ variant: 'destructive', title: 'Erreur de génération' });
         } finally {
             setLoading(false);
         }
     };
 
-    const handleAddItemToMenu = async (data: MenuItemFormValues, imageFile: File | null) => {
-        if (!selectedRestaurant) return;
+    const handleAddItemToMenu = async (data: MenuItemFormValues, file: File | null) => {
+        if (!selectedRestaurant || !user) return;
 
         setLoading(true);
+        const itemRef = doc(collection(db, "plats"));
+        const itemId = itemRef.id;
+
+        const itemData: Omit<MenuItem, 'id'> = {
+            nom: data.nom,
+            description: data.description,
+            prix: data.prix,
+            indiceImage: data.indiceImage || `${data.nom} ${selectedRestaurant.cuisine}`,
+            restaurantId: selectedRestaurant.id,
+            accompagnementsDisponibles: data.accompagnementsDisponibles,
+            boissonsDisponibles: data.boissonsDisponibles,
+            image: ''
+        };
+
         try {
-            const finalItemData: Omit<MenuItem, 'id'> = {
-                nom: data.nom,
-                description: data.description,
-                prix: data.prix,
-                indiceImage: data.indiceImage || `${data.nom} ${selectedRestaurant.cuisine}`,
-                restaurantId: selectedRestaurant.id,
-                accompagnementsDisponibles: data.accompagnementsDisponibles,
-                boissonsDisponibles: data.boissonsDisponibles,
-            };
+            await setDoc(itemRef, itemData).catch(e => {
+                const permissionError = new FirestorePermissionError({
+                    path: itemRef.path,
+                    operation: 'create',
+                    requestResourceData: itemData,
+                } satisfies SecurityRuleContext);
+                errorEmitter.emit('permission-error', permissionError);
+                throw e;
+            });
 
-            const formData = new FormData();
-            formData.append('item', JSON.stringify(finalItemData));
-            if (imageFile) {
-                formData.append('image', imageFile);
+            if (file) {
+                const storageRef = ref(storage, `plats/${itemId}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                await updateDoc(itemRef, { image: downloadURL });
             }
-            await addMenuItemAction(formData);
-            
-            // Reset state
-            setDescription('');
-            setName('');
-            setPrice('');
-            setImageFile(null);
-            setImagePreview(null);
-            form.reset();
 
-            toast({
-                title: 'Plat ajouté !',
-                description: `${data.nom} est maintenant disponible dans votre menu.`,
-            });
-             router.push('/dashboard/menu');
+            toast({ title: 'Plat ajouté !' });
+            router.push('/dashboard/menu');
         } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: 'Erreur',
-                description: "Impossible d'ajouter le plat à la base de données.",
-            });
+            toast({ variant: 'destructive', title: 'Erreur lors de l\'ajout' });
         } finally {
             setLoading(false);
         }
@@ -174,14 +155,12 @@ export default function NewMenuItemPage() {
                 <Card className="max-w-lg text-center p-8">
                     <CardHeader>
                         <ChefHat className="h-16 w-16 mx-auto text-primary" />
-                        <CardTitle className="text-2xl mt-4">Commencez par créer un restaurant</CardTitle>
+                        <CardTitle className="text-2xl mt-4">Aucun restaurant trouvé</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <CardDescription className="text-base">
-                           Pour ajouter des plats, vous devez d'abord enregistrer un établissement.
-                        </CardDescription>
+                        <CardDescription>Vous devez enregistrer un restaurant avant d'ajouter des plats.</CardDescription>
                          <Button className="mt-6" asChild>
-                           <Link href="/dashboard/new-restaurant">Créer mon premier restaurant</Link>
+                           <Link href="/dashboard/new-restaurant">Créer mon restaurant</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -197,8 +176,8 @@ export default function NewMenuItemPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <Card>
                     <CardHeader>
-                        <CardTitle>1. Fournir les informations</CardTitle>
-                        <CardDescription>Décrivez un plat et laissez l'IA créer les détails. Fournissez un nom ou un prix pour guider l'IA, ou laissez-la faire tout le travail !</CardDescription>
+                        <CardTitle>1. Décrivez votre plat</CardTitle>
+                        <CardDescription>L'IA s'occupe de créer un nom alléchant et un prix juste.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -208,7 +187,7 @@ export default function NewMenuItemPage() {
                                 value={selectedRestaurant?.id || ''}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Choisissez votre restaurant" />
+                                    <SelectValue placeholder="Choisir un établissement" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {myRestaurants.map(r => (
@@ -218,70 +197,51 @@ export default function NewMenuItemPage() {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description simple du plat (obligatoire pour l'IA)</Label>
+                            <Label htmlFor="description">Description simple</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Ex: Un plat de riz traditionnel avec du poulet mariné..."
+                                placeholder="Ex: Poulet fumé avec sauce tomate et bananes frites..."
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
                                 rows={3}
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Nom du plat (optionnel)</Label>
-                                <Input id="name" placeholder="Ex: Poulet Yassa" value={name} onChange={e => setName(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="price">Prix (optionnel)</Label>
-                                <Input id="price" type="number" placeholder="Ex: 3500" value={price} onChange={e => setPrice(e.target.value)} />
-                            </div>
-                        </div>
-
                         <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
                             <Wand2 className="mr-2" />
-                            Générer avec l'IA
+                            {loading ? 'Cuisine en cours...' : 'Générer avec l\'IA'}
                         </Button>
                     </CardContent>
                 </Card>
 
-                <div>
-                     <Card className="sticky top-8">
-                        <CardHeader>
-                            <CardTitle>2. Valider et ajouter au menu</CardTitle>
-                            <CardDescription>Le plat généré par l'IA apparaîtra ici. Vous pourrez le modifier avant de l'ajouter.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4 border-2 border-dashed rounded-lg min-h-[400px] flex items-center justify-center bg-card">
-                            {loading && !isGenerated ? (
-                                <div className="text-center text-muted-foreground animate-pulse">
-                                    <Wand2 className="h-12 w-12 mx-auto mb-4 text-primary" />
-                                    <p>L'IA est en cuisine...</p>
+                <Card className="sticky top-8">
+                    <CardHeader>
+                        <CardTitle>2. Aperçu et Validation</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 border-2 border-dashed rounded-lg min-h-[400px] flex items-center justify-center bg-card">
+                        {isGenerated ? (
+                            <MenuItemForm
+                                form={form}
+                                onSubmit={handleAddItemToMenu}
+                                isLoading={loading}
+                                imageFile={imageFile}
+                                onImageChange={handleImageChange}
+                            >
+                                <div className="mt-4 flex justify-end gap-2">
+                                    <Button variant="outline" type="button" onClick={() => form.reset()}>Effacer</Button>
+                                    <Button type="submit" disabled={loading}>
+                                        {loading ? <Loader className="animate-spin mr-2" /> : null}
+                                        Ajouter au menu
+                                    </Button>
                                 </div>
-                            ) : isGenerated ? (
-                                <MenuItemForm
-                                    form={form}
-                                    onSubmit={handleAddItemToMenu}
-                                    isLoading={loading}
-                                    imageFile={imageFile}
-                                    onImageChange={handleImageChange}
-                                >
-                                    <div className="mt-4 flex justify-end gap-2">
-                                        <Button variant="outline" type="button" onClick={() => form.reset()}>Rejeter</Button>
-                                        <Button type="submit" disabled={loading}>
-                                            {loading ? <Loader className="animate-spin mr-2" /> : null}
-                                            Ajouter au menu
-                                        </Button>
-                                    </div>
-                                </MenuItemForm>
-                            ) : (
-                                <div className="text-center text-muted-foreground">
-                                    <ImageIcon className="h-12 w-12 mx-auto mb-4" />
-                                    <p>Le plat généré par l'IA apparaîtra ici.</p>
-                                </div>
-                            )}
-                        </CardContent>
-                     </Card>
-                </div>
+                            </MenuItemForm>
+                        ) : (
+                            <div className="text-center text-muted-foreground">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-4" />
+                                <p>Le plat apparaîtra ici après génération.</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

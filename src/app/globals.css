@@ -98,13 +98,13 @@
     --ring: 170 80% 40%;
   }
 
-  /* Améliorations ergonomie mobile */
+  /* Correction ergonomie mobile : empêche le zoom auto sur focus */
   input, textarea, select {
-    font-size: 16px !important; /* Empêche le zoom automatique sur iOS */
+    font-size: 16px !important;
   }
 
   .btn-mobile {
-    @apply min-h-[48px] px-6 text-base; /* Cible tactile plus large */
+    @apply min-h-[48px] px-6 text-base;
   }
 }
 
