@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -77,7 +76,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (item: Omit<CartItem, 'image'>) => {
     if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
-        setCartItems([{ ...item, quantite: 1 }]);
+        if(confirm("Votre panier contient déjà des plats d'un autre restaurant. Voulez-vous le vider pour commander ici ?")) {
+            setCartItems([{ ...item, quantite: 1 }]);
+        }
         return;
     }
 
@@ -161,13 +162,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const location = await getUserLocation();
-    if (!location) {
-        const confirmNoLocation = window.confirm("Impossible de récupérer votre position GPS. Voulez-vous continuer sans localisation ? Cela pourrait compliquer la livraison.");
-        if (!confirmNoLocation) {
-            throw new Error("Commande annulée. La localisation GPS est recommandée.");
-        }
-    }
-
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
     
@@ -208,6 +202,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const orderDocRef = doc(collection(db, "commandes"));
+    
+    // Mutation non bloquante avec gestion d'erreur contextuelle
     setDoc(orderDocRef, newOrder)
       .then(() => {
         clearCart();

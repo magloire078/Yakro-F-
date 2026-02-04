@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -58,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUserProfile(profile);
             
             const storedRole = localStorage.getItem('activeRole') as AppRole | null;
-            if (storedRole !== profile.role) {
+            if (!storedRole) {
                setActiveRoleState(profile.role);
                localStorage.setItem('activeRole', profile.role);
             }

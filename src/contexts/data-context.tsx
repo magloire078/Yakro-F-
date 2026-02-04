@@ -78,7 +78,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
         
-        const timer = setTimeout(() => setIsLoading(false), 3000);
+        // Timer de sécurité pour l'état de chargement
+        const timer = setTimeout(() => setIsLoading(false), 2000);
 
         return () => {
             unsubRestaurants();
