@@ -93,7 +93,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
-      // On utilise le SDK client sans await pour profiter de la mise à jour optimiste
       updateDoc(userDocRef, data)
         .catch(async (serverError) => {
           const permissionError = new FirestorePermissionError({
