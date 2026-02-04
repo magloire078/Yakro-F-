@@ -2,11 +2,10 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, Unsubscribe } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -95,14 +94,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-      // Dans un prototype, on utilise l'action serveur mais on prépare le terrain pour le client-side si besoin
-      const { updateUserProfileAction } = await import('@/app/actions/user-actions');
-      await updateUserProfileAction(uid, data);
+      const userDocRef = doc(db, 'utilisateurs', uid);
+      updateDoc(userDocRef, data)
+        .catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
   };
   
   const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-    const { updateUserProfileAction } = await import('@/app/actions/user-actions');
-    await updateUserProfileAction(uid, data);
+    const userDocRef = doc(db, 'utilisateurs', uid);
+    updateDoc(userDocRef, data)
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'update',
+          requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile };

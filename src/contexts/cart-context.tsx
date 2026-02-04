@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import * as React from 'react';
@@ -8,8 +6,10 @@ import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
-import { addOrderAction } from '@/app/actions/order-actions';
-
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { useFirebase } from './firebase-provider';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -61,12 +61,11 @@ const getUserLocation = (): Promise<{ latitude: number; longitude: number } | nu
   });
 };
 
-
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
   const { getRestaurant } = useData();
   const { user, userProfile } = useAuth();
-
+  const { db } = useFirebase();
 
   React.useEffect(() => {
     try {
@@ -76,16 +75,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cartItems]);
 
-
   const addToCart = (item: Omit<CartItem, 'image'>) => {
-    // If cart is not empty and new item is from a different restaurant, clear the cart.
     if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
         setCartItems([{ ...item, quantite: 1 }]);
         return;
     }
 
     setCartItems(prevItems => {
-      // Create a unique key for an item based on its ID and selected options
       const uniqueItemKey = `${item.id}-${item.accompagnementSelectionne?.nom || 'none'}-${item.boissonSelectionnee?.nom || 'none'}`;
       
       const existingItem = prevItems.find(i => 
@@ -175,7 +171,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
     
-    // Commission is calculated on the subtotal (food items only), not on the delivery fee.
     const commissionAmount = cartSubtotal * COMMISSION_RATE;
     const netRevenue = cartSubtotal - commissionAmount;
     
@@ -184,7 +179,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const image = (item.image && !item.image.includes('picsum.photos')) ? item.image : placeholder.url;
         return {
             ...item,
-            image, // Ensure the final URL is in the order data
+            image,
         }
     });
 
@@ -212,9 +207,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...(restaurant?.longitude && { longitudeRestaurant: restaurant.longitude }),
     };
 
-    await addOrderAction(newOrder);
-    clearCart();
-    window.dispatchEvent(new CustomEvent('place-order'));
+    const orderDocRef = doc(collection(db, "commandes"));
+    setDoc(orderDocRef, newOrder)
+      .then(() => {
+        clearCart();
+        window.dispatchEvent(new CustomEvent('place-order'));
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: orderDocRef.path,
+          operation: 'create',
+          requestResourceData: newOrder,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   return (
