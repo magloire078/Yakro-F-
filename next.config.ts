@@ -19,7 +19,8 @@ const nextConfig: NextConfig = {
   experimental: {
     allowedDevOrigins: [
         '6000-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
-        '9002-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev'
+        '9002-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
+        'localhost:9002'
     ],
     serverActions: {
       bodySizeLimit: '10mb',

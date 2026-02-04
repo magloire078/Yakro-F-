@@ -74,7 +74,7 @@ service cloud.firestore {
           (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
           
           // Le livreur prend en charge (En Préparation -> En Route)
-          (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
+          (userExists() && getUserData().role == 'livreur' && (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée') && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           
           // Le livreur termine (En Route -> Livrée)
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
