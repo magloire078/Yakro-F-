@@ -15,7 +15,7 @@ import { QrCodeDialog } from '@/components/qr-code-dialog';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function DashboardOrdersPage() {
     const { user, activeRole } = useAuth();
@@ -64,7 +64,7 @@ export default function DashboardOrdersPage() {
                     path: orderRef.path,
                     operation: 'update',
                     requestResourceData: updateData,
-                });
+                } satisfies SecurityRuleContext);
                 errorEmitter.emit('permission-error', permissionError);
             })
             .finally(() => {

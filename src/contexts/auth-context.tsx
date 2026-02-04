@@ -7,7 +7,7 @@ import { useFirebase } from './firebase-provider';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface AuthContextType {
   user: User | null;
@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'get',
-          });
+          } satisfies SecurityRuleContext);
           errorEmitter.emit('permission-error', permissionError);
           setLoading(false);
         }
@@ -93,13 +93,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
       const userDocRef = doc(db, 'utilisateurs', uid);
+      // On utilise le SDK client sans await pour profiter de la mise à jour optimiste
       updateDoc(userDocRef, data)
         .catch(async (serverError) => {
           const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',
             requestResourceData: data,
-          });
+          } satisfies SecurityRuleContext);
           errorEmitter.emit('permission-error', permissionError);
         });
   };
@@ -112,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           path: userDocRef.path,
           operation: 'update',
           requestResourceData: data,
-        });
+        } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
   };

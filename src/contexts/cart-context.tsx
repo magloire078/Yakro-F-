@@ -8,7 +8,7 @@ import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -203,6 +203,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const orderDocRef = doc(collection(db, "commandes"));
     
+    // On utilise le SDK client pour que Firestore voit le jeton d'authentification
     setDoc(orderDocRef, newOrder)
       .then(() => {
         clearCart();
@@ -213,7 +214,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           path: orderDocRef.path,
           operation: 'create',
           requestResourceData: newOrder,
-        });
+        } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
   };

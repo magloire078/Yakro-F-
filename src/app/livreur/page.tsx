@@ -10,7 +10,7 @@ import { AvailableDeliveries } from '@/components/available-deliveries';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function LivreurHomePage() {
     const { user, userProfile, updateUserProfile } = useAuth();
@@ -43,7 +43,7 @@ export default function LivreurHomePage() {
                     path: orderRef.path,
                     operation: 'update',
                     requestResourceData: updateData,
-                });
+                } satisfies SecurityRuleContext);
                 errorEmitter.emit('permission-error', permissionError);
             });
     };
@@ -65,7 +65,7 @@ export default function LivreurHomePage() {
                     path: orderRef.path,
                     operation: 'update',
                     requestResourceData: updateData,
-                });
+                } satisfies SecurityRuleContext);
                 errorEmitter.emit('permission-error', permissionError);
             });
     }
