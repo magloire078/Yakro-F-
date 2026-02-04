@@ -4,7 +4,6 @@ import * as React from 'react';
 import type { CartItem, MenuItem, Order, MenuOption } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
-import { useToast } from '@/hooks/use-toast';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';

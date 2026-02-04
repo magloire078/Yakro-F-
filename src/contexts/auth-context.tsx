@@ -6,7 +6,6 @@ import { doc, onSnapshot, updateDoc, Unsubscribe } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -33,7 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [activeRole, setActiveRoleState] = React.useState<AppRole>(getInitialActiveRole);
-  const { toast } = useToast();
 
    React.useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {

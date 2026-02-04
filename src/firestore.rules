@@ -29,8 +29,13 @@ service cloud.firestore {
              getUserData().get('roleSysteme', 'User') == 'SuperAdmin';
     }
 
-    match /restaurants {
-      allow list: if true;
+    match /utilisateurs/{userId} {
+      allow read, update: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
+      allow create: if isUserAuthenticated() && isUser(userId);
+    }
+    
+    match /utilisateurs {
+      allow list: if isSuperAdmin();
     }
 
     match /restaurants/{restaurantId} {
@@ -39,14 +44,18 @@ service cloud.firestore {
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
     
-    match /plats {
+    match /restaurants {
       allow list: if true;
     }
-
+    
     match /plats/{platId} {
         allow read: if true;
         allow create: if isUserAuthenticated() && isRestaurantOwner(request.resource.data.restaurantId);
         allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
+    }
+    
+    match /plats {
+      allow list: if true;
     }
 
     match /commandes/{orderId} {
@@ -55,33 +64,23 @@ service cloud.firestore {
         (resource.data.livreurId != null && isUser(resource.data.livreurId)) || 
         isRestaurantOwner(resource.data.restaurantId) || 
         isSuperAdmin() ||
-        (getUserData().role == 'livreur' && resource.data.statut == 'En Préparation')
+        (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation')
       );
 
       allow create: if isUserAuthenticated() && isUser(request.resource.data.userId);
 
       allow update: if isUserAuthenticated() && (
-          // Le restaurateur accepte (Placée -> En Préparation)
+          // Le restaurateur accepte
           (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
           
-          // Le livreur prend en charge (En Préparation -> En Route)
-          (getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
+          // Le livreur prend en charge
+          (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
           
-          // Le livreur termine (En Route -> Livrée)
+          // Le livreur termine
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
           
           isSuperAdmin()
       );
-    }
-
-    match /utilisateurs/{userId} {
-      allow read: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
-      allow update: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
-      allow create: if isUserAuthenticated() && isUser(userId);
-    }
-    
-     match /utilisateurs {
-        allow list: if isSuperAdmin();
     }
   }
 }

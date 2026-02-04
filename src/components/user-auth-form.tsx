@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -17,9 +16,11 @@ import { Loader } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { setupInitialUserAction } from '@/app/actions/user-actions';
 import type { AppRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
@@ -39,7 +40,7 @@ export function UserAuthForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const [isLoginView, setIsLoginView] = React.useState(true);
-  const { auth } = useFirebase();
+  const { auth, db } = useFirebase();
   const { toast } = useToast();
   
   const form = useForm({
@@ -68,12 +69,27 @@ export function UserAuthForm() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      await setupInitialUserAction({
+      const userDocRef = doc(db, 'utilisateurs', result.user.uid);
+      
+      const profileData = {
           uid: result.user.uid,
           email: result.user.email!,
-          nom: result.user.displayName,
-          role: 'client', // Google sign-in defaults to client
-      });
+          nom: result.user.displayName || result.user.email?.split('@')[0],
+          dateCreation: serverTimestamp(),
+          role: 'client',
+          roleSysteme: 'User',
+      };
+
+      setDoc(userDocRef, profileData, { merge: true })
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'write',
+                requestResourceData: profileData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
+
       toast({
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté via Google.',
@@ -97,19 +113,33 @@ export function UserAuthForm() {
         toast({ title: 'Connexion réussie' });
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-        await setupInitialUserAction({
+        const userDocRef = doc(db, 'utilisateurs', userCredential.user.uid);
+        
+        const profileData = {
             uid: userCredential.user.uid,
             email: userCredential.user.email!,
             nom: data.nom,
-            telephone: data.telephone,
+            telephone: data.telephone || '',
+            dateCreation: serverTimestamp(),
             role: data.role,
-        });
+            roleSysteme: 'User',
+        };
+
+        setDoc(userDocRef, profileData)
+            .catch(async (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'create',
+                    requestResourceData: profileData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+
         toast({
             title: 'Compte créé avec succès!',
             description: `Bienvenue sur Yakro Fê. Votre profil ${data.role} a été créé.`,
         });
       }
-      // Redirection will be handled by the login page
     } catch (error: any) {
       let description = "Une erreur inattendue s'est produite.";
       if (error.code) {
@@ -228,7 +258,6 @@ export function UserAuthForm() {
         {isGoogleLoading ? (
           <Loader className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          // Using a generic logo icon as a placeholder
           <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 110.3 512 0 401.7 0 265.4 0 129.1 110.3 18.8 244 18.8c71.2 0 132.8 29 178.7 75.4l-75.4 64.5c-23.5-21.7-56.9-35.9-96.2-35.9-74.1 0-134.4 60.3-134.4 134.4s60.3 134.4 134.4 134.4c87.3 0 112.5-65.7 116.8-99.2H244v-87.1h244c2.5 13.1 3.9 26.6 3.9 40.8z"></path></svg>
         )}
         Google
