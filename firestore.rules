@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -12,83 +11,76 @@ service cloud.firestore {
       return isUserAuthenticated() && request.auth.uid == uid;
     }
     
+    function getUserData() {
+      return get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data;
+    }
+    
+    function userExists() {
+      return exists(/databases/$(database)/documents/utilisateurs/$(request.auth.uid));
+    }
+
     function isRestaurantOwner(restaurantId) {
-       // Check if the user is the owner of the restaurant document.
-       // It's safer to read the restaurant document directly.
-       return isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
+       return isUserAuthenticated() && exists(/databases/$(database)/documents/restaurants/$(restaurantId)) && isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
     }
     
     function isSuperAdmin() {
-      // Ensure the user is authenticated and their user profile has the SuperAdmin role.
-      return isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.roleSysteme == 'SuperAdmin';
-    }
-
-    match /restaurants {
-      // Anyone can see the list of restaurants
-      allow list: if true;
-    }
-
-    match /restaurants/{restaurantId} {
-      // Anyone can read a single restaurant's details
-      allow read: if true;
-      // Only an authenticated user with 'restaurateur' role can create a restaurant,
-      // and they must be the owner specified in the new document.
-      allow create: if isUser(request.resource.data.proprietaireId) && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.role == 'restaurateur';
-      // Only the restaurant owner or a SuperAdmin can update or delete it.
-      allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
-    }
-    
-    match /plats {
-       // Anyone can see the list of all menu items (for search, etc.)
-      allow list: if true;
-    }
-
-    match /plats/{platId} {
-        // Anyone can read a single menu item
-        allow read: if true;
-        // The user creating the item must be the owner of the restaurant it's being added to.
-        allow create: if isRestaurantOwner(request.resource.data.restaurantId);
-        // The user updating/deleting the item must be the owner of the restaurant it belongs to.
-        // We check `resource.data` because the restaurantId won't change.
-        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
-    }
-
-    match /commandes/{orderId} {
-      // Allow read if the user is the customer, the assigned deliverer, the restaurant owner, or a SuperAdmin.
-      allow read: if isUser(resource.data.userId) || (resource.data.livreurId != null && isUser(resource.data.livreurId)) || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
-
-      // A user can only create an order for themselves.
-      allow create: if isUser(request.resource.data.userId);
-
-      allow update: if 
-          // The restaurant owner can accept an order (Placed -> In Preparation)
-          (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
-          
-          // A deliverer can take an order (In Preparation -> En Route)
-          (isUserAuthenticated() && get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data.role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
-          
-          // The deliverer can mark an order as delivered (En Route -> Delivered)
-          (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          
-          // A SuperAdmin can do anything
-          isSuperAdmin();
+      return isUserAuthenticated() && 
+             userExists() && 
+             getUserData().get('roleSysteme', 'User') == 'SuperAdmin';
     }
 
     match /utilisateurs/{userId} {
-      // A user can read their own profile. A SuperAdmin can read any profile.
-      allow read: if isUser(userId) || isSuperAdmin();
-      
-      // A user can update their own profile. A SuperAdmin can update any profile.
-      allow update: if isUser(userId) || isSuperAdmin();
-
-      // Anyone can create their own user document upon sign-up.
-      allow create: if isUser(userId);
+      allow read, update: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
+      allow create: if isUserAuthenticated() && isUser(userId);
     }
     
-     match /utilisateurs {
-        // Only SuperAdmins can list all users.
-        allow list: if isSuperAdmin();
+    match /utilisateurs {
+      allow list: if isSuperAdmin();
+    }
+
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow create: if isUserAuthenticated() && isUser(request.resource.data.proprietaireId) && userExists() && getUserData().role == 'restaurateur';
+      allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
+    }
+    
+    match /restaurants {
+      allow list: if true;
+    }
+    
+    match /plats/{platId} {
+        allow read: if true;
+        allow create: if isUserAuthenticated() && isRestaurantOwner(request.resource.data.restaurantId);
+        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
+    }
+    
+    match /plats {
+      allow list: if true;
+    }
+
+    match /commandes/{orderId} {
+      allow read: if isUserAuthenticated() && (
+        isUser(resource.data.userId) || 
+        (resource.data.livreurId != null && isUser(resource.data.livreurId)) || 
+        isRestaurantOwner(resource.data.restaurantId) || 
+        isSuperAdmin() ||
+        (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation')
+      );
+
+      allow create: if isUserAuthenticated() && isUser(request.resource.data.userId);
+
+      allow update: if isUserAuthenticated() && (
+          // Le restaurateur accepte (Placée -> En Préparation)
+          (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
+          
+          // Le livreur prend en charge (En Préparation -> En Route)
+          (userExists() && getUserData().role == 'livreur' && resource.data.statut == 'En Préparation' && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
+          
+          // Le livreur termine (En Route -> Livrée)
+          (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
+          
+          isSuperAdmin()
+      );
     }
   }
 }
-    
