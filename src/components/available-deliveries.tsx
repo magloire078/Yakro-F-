@@ -159,7 +159,7 @@ export function AvailableDeliveries({
                 )}
                 
                 {isEnService && !isLoading && availableDeliveries.length > 0 && availableDeliveries.map(delivery => (
-                    <Card key={delivery.id} className="overflow-hidden hover:shadow-md transition-soft">
+                    <Card key={delivery.id} className="overflow-hidden rounded-xl hover:shadow-md transition-soft">
                         <CardContent className="p-4 space-y-4">
                            <div className="flex justify-between items-start">
                                 <div className="space-y-1">
