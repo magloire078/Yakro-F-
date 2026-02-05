@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
 import { useCart } from '@/contexts/cart-context';
-import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, DollarSign, ShieldCheck, UtensilsCrossed } from 'lucide-react';
+import { Home, History, Megaphone, ChefHat, Bike, LogOut, ShoppingCart, Sparkles, ClipboardList, User, Settings, BookOpenCheck, BarChart, Rocket, ShieldCheck, UtensilsCrossed } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -76,7 +76,7 @@ export function Sidebar() {
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
        <div className="flex justify-between items-center mb-8">
             <Link href={homeLink} className="flex items-center space-x-2">
-                <Icons.logo className="h-10 w-10 text-[#4F46E5]" />
+                <Icons.palm className="h-10 w-10 text-[#4F46E5]" />
                 <div className="flex flex-col">
                     <span className="font-headline text-2xl font-bold text-[#4F46E5] leading-none">Yakro</span>
                     <span className="font-headline text-2xl font-bold text-[#4F46E5] leading-none ml-2">Fê</span>
