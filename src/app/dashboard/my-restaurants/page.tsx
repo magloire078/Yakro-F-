@@ -52,7 +52,7 @@ export default function MyRestaurantsPage() {
                     {myRestaurants.map(restaurant => {
                         const placeholder = getPlaceholderImage(restaurant.indiceImage);
                         // Correction : On vérifie que restaurant.image existe et n'est pas vide avant de l'utiliser
-                        const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
+                        const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
                             ? restaurant.image
                             : placeholder.url;
                         return (

@@ -187,7 +187,7 @@ export default function NewMenuItemPage() {
                             <Label htmlFor="description" className="text-sm font-medium">Description simple:</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Poulet braisé"
+                                placeholder="Poulet braisé avec Attiéké"
                                 className="min-h-[100px] bg-background border-border resize-none rounded-xl"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
