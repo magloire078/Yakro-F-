@@ -1,3 +1,4 @@
+
 'use server';
 
 import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
@@ -5,7 +6,6 @@ import { ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "fi
 import { db, storage } from '@/firebase/client';
 import type { MenuItem } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { generateImage } from '@/ai/flows/generate-image-flow';
 
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
     const storageRef = ref(storage, path);
@@ -38,16 +38,6 @@ export async function addMenuItemAction(formData: FormData) {
         if (imageFile) {
              finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
         } 
-        else if (item.indiceImage) {
-            try {
-                const generatedImage = await generateImage({ prompt: item.indiceImage });
-                if (generatedImage.imageDataUri) {
-                    finalImageUrl = await uploadImage(generatedImage.imageDataUri, `plats/${docRefId}`);
-                }
-            } catch (aiError) {
-                console.error("AI image generation failed:", aiError);
-            }
-        }
         
         if (finalImageUrl) {
             await updateDoc(doc(db, "plats", docRefId), { image: finalImageUrl });

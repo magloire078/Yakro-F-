@@ -1,3 +1,4 @@
+
 'use server';
 
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
@@ -5,7 +6,6 @@ import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage
 import { db, storage } from '@/firebase/client';
 import type { Restaurant } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { generateImage } from '@/ai/flows/generate-image-flow';
 
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
     const storageRef = ref(storage, path);
@@ -52,17 +52,6 @@ export async function addRestaurantAction(formData: FormData) {
         if (imageFile) {
              finalImageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
         } 
-        else if (restaurantPayload.indiceImage) {
-            try {
-                const imagePrompt = `professional food photography of a ${restaurantPayload.indiceImage}`;
-                const generatedImage = await generateImage({ prompt: imagePrompt });
-                if (generatedImage.imageDataUri) {
-                    finalImageUrl = await uploadImage(generatedImage.imageDataUri, `restaurants/${restaurantId}`);
-                }
-            } catch (aiError) {
-                console.error("AI image generation for restaurant failed:", aiError);
-            }
-        }
         
         if (finalImageUrl) {
             await updateDoc(docRef, { image: finalImageUrl });
