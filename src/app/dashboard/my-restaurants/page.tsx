@@ -52,9 +52,10 @@ export default function MyRestaurantsPage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {myRestaurants.map(restaurant => {
                         const placeholder = getPlaceholderImage(restaurant.indiceImage);
-                        const imageSrc = restaurant.image.includes('picsum.photos')
-                            ? placeholder.url
-                            : restaurant.image;
+                        // Correction : On vérifie que restaurant.image existe et n'est pas vide avant de l'utiliser
+                        const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
+                            ? restaurant.image
+                            : placeholder.url;
                         return (
                             <Card key={restaurant.id} className="flex flex-col">
                                 <CardHeader className="p-0">
