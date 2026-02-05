@@ -204,7 +204,7 @@ export default function NewMenuItemPage() {
                             ) : (
                                 <Wand2 className="mr-2 h-5 w-5" />
                             )}
-                            {loading ? 'Génération en cours...' : "Générer avec l'IA"}
+                            {loading ? 'Génération en cours...' : 'Générer avec l\'IA'}
                         </Button>
                     </CardContent>
                 </Card>
