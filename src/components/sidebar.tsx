@@ -8,10 +8,8 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-import type { AppRole } from '@/lib/types';
 import { ThemeToggle } from './theme-toggle';
 import { useFirebase } from '@/contexts/firebase-provider';
-import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
