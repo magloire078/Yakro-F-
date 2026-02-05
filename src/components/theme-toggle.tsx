@@ -20,7 +20,7 @@ export function ThemeToggle() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="h-8 w-8 bg-slate-100 border-none rounded-lg hover:bg-slate-200">
           <Settings className="h-4 w-4 text-slate-400" />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">Paramètres de thème</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

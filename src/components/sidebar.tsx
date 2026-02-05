@@ -3,9 +3,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Icons } from './icons';
-import { CartSheet } from './cart-sheet';
-import { useCart } from '@/contexts/cart-context';
-import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, Settings, ChefHat } from 'lucide-react';
+import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, Settings, ChefHat, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -14,11 +12,11 @@ import type { AppRole } from '@/lib/types';
 import { ThemeToggle } from './theme-toggle';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export function Sidebar() {
-  const { cartCount } = useCart();
   const { auth } = useFirebase();
-  const { user, loading, activeRole, setActiveRole, userProfile, updateUserProfile } = useAuth();
+  const { user, loading, activeRole, userProfile, updateUserProfile } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
@@ -44,31 +42,6 @@ export function Sidebar() {
     if (activeRole === 'livreur') return '/livreur';
     return '/';
   }
-  
-  const handleRoleChange = async (newRole: AppRole) => {
-    if (!userProfile) return;
-    try {
-      await updateUserProfile(userProfile.uid, { role: newRole });
-      setActiveRole(newRole); 
-      toast({
-        title: 'Rôle mis à jour',
-        description: `Vous êtes maintenant en mode ${newRole}.`,
-      });
-      if (newRole === 'restaurateur') {
-        router.push('/restaurateur');
-      } else if (newRole === 'livreur') {
-        router.push('/livreur');
-      } else {
-        router.push('/');
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: 'Impossible de changer de rôle pour le moment.',
-      });
-    }
-  };
 
   const homeLink = getHomeLink();
 
@@ -90,7 +63,7 @@ export function Sidebar() {
         </div>
         
        <nav className="flex flex-col gap-1">
-           <Button variant={pathname === homeLink || pathname === '/' ? 'secondary' : 'ghost'} className="justify-start text-sm font-medium h-11 px-3" asChild>
+           <Button variant={pathname === homeLink || pathname === '/' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", (pathname === homeLink || pathname === '/') && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href={homeLink}>
                   <Home className="mr-3 h-4 w-4" />
                   Accueil
@@ -99,37 +72,37 @@ export function Sidebar() {
 
           {activeRole === 'restaurateur' && (
             <>
-              <Button variant={pathname === '/dashboard/my-restaurants' ? 'secondary' : 'ghost'} className="justify-start text-sm font-medium h-11 px-3" asChild>
+              <Button variant={pathname === '/dashboard/my-restaurants' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/my-restaurants' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/my-restaurants">
                   <ChefHat className="mr-3 h-4 w-4" />
                   Mes Restaurants
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/menu' ? 'secondary' : 'ghost'} className="justify-start text-sm font-medium h-11 px-3" asChild>
+              <Button variant={pathname === '/dashboard/menu' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/menu' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/menu">
                   <BookOpen className="mr-3 h-4 w-4" />
                   Mes Menus
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/orders' ? 'secondary' : 'ghost'} className="justify-start text-sm font-medium h-11 px-3" asChild>
+              <Button variant={pathname === '/dashboard/orders' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/orders' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/orders">
                   <ClipboardList className="mr-3 h-4 w-4" />
                   Gérer les commandes
                 </Link>
               </Button>
-               <Button variant={pathname === '/dashboard/analytics' ? 'secondary' : 'ghost'} className="justify-start text-sm font-medium h-11 px-3" asChild>
+               <Button variant={pathname === '/dashboard/analytics' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/analytics' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/analytics">
                   <BarChart className="mr-3 h-4 w-4" />
                   Statistiques
                 </Link>
               </Button>
-               <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className="justify-start text-sm font-medium h-11 px-3" asChild>
+               <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/marketing' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/marketing">
                   <Megaphone className="mr-3 h-4 w-4" />
                   Marketing IA
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/boost' ? 'secondary' : 'ghost'} className="justify-start text-sm font-medium h-11 px-3" asChild>
+              <Button variant={pathname === '/dashboard/boost' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/boost' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/boost">
                   <Rocket className="mr-3 h-4 w-4" />
                   Booster la visibilité
@@ -138,10 +111,6 @@ export function Sidebar() {
             </>
           )}
         </nav>
-
-        <div className="mt-20 mb-auto flex justify-center">
-            <div className="h-10 w-10 rounded-full bg-neutral-800 text-white flex items-center justify-center font-bold">N</div>
-        </div>
 
         <div className="mt-auto">
            {!loading && user && (
@@ -168,7 +137,7 @@ export function Sidebar() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
-                        <Settings className="mr-2 h-4 w-4"/>
+                        <LogOut className="mr-2 h-4 w-4"/>
                         Déconnexion
                     </DropdownMenuItem>
                 </DropdownMenuContent>

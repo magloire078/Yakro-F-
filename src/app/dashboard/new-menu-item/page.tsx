@@ -28,7 +28,7 @@ export default function NewMenuItemPage() {
     const { db, storage } = useFirebase();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
-    const [generationError, setGenerationError] = React.useState(true); // Forced to true for visual matching of the image
+    const [generationError, setGenerationError] = React.useState(false);
     const { toast } = useToast();
     const { user } = useAuth();
     const router = useRouter();
@@ -187,7 +187,7 @@ export default function NewMenuItemPage() {
                             <Label htmlFor="description" className="text-sm font-medium">Description simple:</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Poulet Braisé"
+                                placeholder="Poulet braisé"
                                 className="min-h-[100px] bg-background border-border resize-none"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
@@ -239,7 +239,7 @@ export default function NewMenuItemPage() {
                                             form.reset();
                                             setGenerationError(false);
                                         }}>Effacer</Button>
-                                        <Button type="submit" disabled={loading} className="px-10 py-6 rounded-xl">
+                                        <Button type="submit" disabled={loading} className="px-10 py-6 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5]">
                                             {loading ? <Loader className="animate-spin mr-2" /> : null}
                                             Ajouter au menu
                                         </Button>
