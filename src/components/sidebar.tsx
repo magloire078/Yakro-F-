@@ -16,10 +16,9 @@ import { cn } from '@/lib/utils';
 
 export function Sidebar() {
   const { auth } = useFirebase();
-  const { user, loading, activeRole, userProfile, updateUserProfile } = useAuth();
+  const { user, loading, activeRole, userProfile } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const { toast } = useToast();
   
   const handleSignOut = async () => {
     await auth.signOut();
@@ -63,7 +62,7 @@ export function Sidebar() {
         </div>
         
        <nav className="flex flex-col gap-1">
-           <Button variant={pathname === homeLink || pathname === '/' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", (pathname === homeLink || pathname === '/') && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+           <Button variant={pathname === homeLink || pathname === '/' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", (pathname === homeLink || pathname === '/') && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href={homeLink}>
                   <Home className="mr-3 h-4 w-4" />
                   Accueil
@@ -72,37 +71,37 @@ export function Sidebar() {
 
           {activeRole === 'restaurateur' && (
             <>
-              <Button variant={pathname === '/dashboard/my-restaurants' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/my-restaurants' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+              <Button variant={pathname === '/dashboard/my-restaurants' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/dashboard/my-restaurants' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/my-restaurants">
                   <ChefHat className="mr-3 h-4 w-4" />
                   Mes Restaurants
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/menu' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/menu' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+              <Button variant={pathname === '/dashboard/menu' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/dashboard/menu' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/menu">
                   <BookOpen className="mr-3 h-4 w-4" />
                   Mes Menus
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/orders' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/orders' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+              <Button variant={pathname === '/dashboard/orders' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/dashboard/orders' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/orders">
                   <ClipboardList className="mr-3 h-4 w-4" />
                   Gérer les commandes
                 </Link>
               </Button>
-               <Button variant={pathname === '/dashboard/analytics' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/analytics' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+               <Button variant={pathname === '/dashboard/analytics' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/dashboard/analytics' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/analytics">
                   <BarChart className="mr-3 h-4 w-4" />
                   Statistiques
                 </Link>
               </Button>
-               <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/marketing' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+               <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/marketing' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/marketing">
                   <Megaphone className="mr-3 h-4 w-4" />
                   Marketing IA
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/boost' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3", pathname === '/dashboard/boost' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+              <Button variant={pathname === '/dashboard/boost' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/dashboard/boost' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
                 <Link href="/dashboard/boost">
                   <Rocket className="mr-3 h-4 w-4" />
                   Booster la visibilité

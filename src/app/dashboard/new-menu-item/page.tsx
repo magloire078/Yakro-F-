@@ -172,7 +172,7 @@ export default function NewMenuItemPage() {
                                 onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
                                 value={selectedRestaurant?.id || ''}
                             >
-                                <SelectTrigger className="w-full bg-background border-border">
+                                <SelectTrigger className="w-full bg-background border-border rounded-xl">
                                     <SelectValue placeholder="Choisir un établissement" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -188,7 +188,7 @@ export default function NewMenuItemPage() {
                             <Textarea
                                 id="description"
                                 placeholder="Poulet braisé"
-                                className="min-h-[100px] bg-background border-border resize-none"
+                                className="min-h-[100px] bg-background border-border resize-none rounded-xl"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
                             />
@@ -210,7 +210,7 @@ export default function NewMenuItemPage() {
                 </Card>
 
                 {/* Step 2: Preview */}
-                <Card className="relative border-2 border-dashed border-border shadow-none bg-transparent">
+                <Card className="relative border-2 border-dashed border-border shadow-none bg-transparent rounded-2xl">
                     {generationError && (
                         <div className="absolute top-4 right-4 bg-[#EF4444] text-white px-6 py-3 rounded-xl shadow-2xl z-20 font-bold text-center animate-in zoom-in-95 duration-200">
                             Erreur de<br />génération

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -89,29 +88,34 @@ export function MenuItemForm({
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
-        <div>
-          <Label htmlFor="image-upload-form" className="cursor-pointer">
-            <div className="relative w-full h-40 rounded-md border border-dashed flex items-center justify-center text-muted-foreground hover:bg-muted/50">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto p-1 pr-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Image du plat</Label>
+          <Label htmlFor="image-upload-form" className="cursor-pointer block">
+            <div className="relative w-full h-48 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 transition-colors overflow-hidden">
               {imageToDisplay ? (
-                <Image src={imageToDisplay} alt="Aperçu" fill className="object-cover rounded-md" />
+                <Image src={imageToDisplay} alt="Aperçu" fill className="object-cover" />
               ) : (
-                <div className="text-center">
-                  <Upload />
-                  <p>Choisir une image</p>
+                <div className="text-center space-y-2">
+                  <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto">
+                    <Upload className="h-6 w-6 text-primary" />
+                  </div>
+                  <p className="text-sm font-medium">Insérer une photo</p>
+                  <p className="text-xs opacity-60">PNG, JPG jusqu'à 5MB</p>
                 </div>
               )}
             </div>
           </Label>
           <Input id="image-upload-form" type="file" accept="image/*" className="hidden" onChange={currentImageChangeHandler} />
         </div>
+
         <FormField
           control={form.control}
           name="nom"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nom du plat</FormLabel>
-              <FormControl><Input {...field} /></FormControl>
+              <FormControl><Input {...field} className="rounded-xl" /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -122,7 +126,7 @@ export function MenuItemForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>
-              <FormControl><Textarea {...field} rows={3} /></FormControl>
+              <FormControl><Textarea {...field} rows={3} className="rounded-xl" /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -133,34 +137,38 @@ export function MenuItemForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Prix (FCFA)</FormLabel>
-              <FormControl><Input type="number" {...field} /></FormControl>
+              <FormControl><Input type="number" {...field} className="rounded-xl" /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label>Accompagnements</Label>
-          {sideFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2">
-              <Input {...form.register(`accompagnementsDisponibles.${index}.nom`)} placeholder="Nom" />
-              <Input {...form.register(`accompagnementsDisponibles.${index}.prix`)} type="number" placeholder="Prix" className="w-32" />
-              <Button type="button" variant="outline" size="icon" onClick={() => removeSide(index)}><Trash /></Button>
-            </div>
-          ))}
-          <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ nom: '', prix: 0 })}><Plus /> Ajouter un accompagnement</Button>
+          <div className="space-y-2">
+            {sideFields.map((field, index) => (
+              <div key={field.id} className="flex items-center gap-2">
+                <Input {...form.register(`accompagnementsDisponibles.${index}.nom`)} placeholder="Nom" className="rounded-xl" />
+                <Input {...form.register(`accompagnementsDisponibles.${index}.prix`)} type="number" placeholder="Prix" className="w-32 rounded-xl" />
+                <Button type="button" variant="outline" size="icon" onClick={() => removeSide(index)} className="rounded-xl"><Trash className="h-4 w-4" /></Button>
+              </div>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ nom: '', prix: 0 })} className="rounded-xl"><Plus className="h-4 w-4 mr-2" /> Ajouter un accompagnement</Button>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label>Boissons</Label>
-          {drinkFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2">
-              <Input {...form.register(`boissonsDisponibles.${index}.nom`)} placeholder="Nom" />
-              <Input {...form.register(`boissonsDisponibles.${index}.prix`)} type="number" placeholder="Prix" className="w-32" />
-              <Button type="button" variant="outline" size="icon" onClick={() => removeDrink(index)}><Trash /></Button>
-            </div>
-          ))}
-          <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ nom: '', prix: 0 })}><Plus /> Ajouter une boisson</Button>
+          <div className="space-y-2">
+            {drinkFields.map((field, index) => (
+              <div key={field.id} className="flex items-center gap-2">
+                <Input {...form.register(`boissonsDisponibles.${index}.nom`)} placeholder="Nom" className="rounded-xl" />
+                <Input {...form.register(`boissonsDisponibles.${index}.prix`)} type="number" placeholder="Prix" className="w-32 rounded-xl" />
+                <Button type="button" variant="outline" size="icon" onClick={() => removeDrink(index)} className="rounded-xl"><Trash className="h-4 w-4" /></Button>
+              </div>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ nom: '', prix: 0 })} className="rounded-xl"><Plus className="h-4 w-4 mr-2" /> Ajouter une boisson</Button>
         </div>
         
         {children}
