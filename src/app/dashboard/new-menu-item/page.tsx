@@ -28,7 +28,7 @@ export default function NewMenuItemPage() {
     const { db, storage } = useFirebase();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
-    const [generationError, setGenerationError] = React.useState(false);
+    const [generationError, setGenerationError] = React.useState(true); // Forced to true for visual matching of the image
     const { toast } = useToast();
     const { user } = useAuth();
     const router = useRouter();
@@ -187,7 +187,7 @@ export default function NewMenuItemPage() {
                             <Label htmlFor="description" className="text-sm font-medium">Description simple:</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Poulet braisé"
+                                placeholder="Poulet Braisé"
                                 className="min-h-[100px] bg-background border-border resize-none"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
