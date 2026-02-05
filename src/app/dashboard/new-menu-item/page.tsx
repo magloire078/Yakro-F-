@@ -167,7 +167,7 @@ export default function NewMenuItemPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium">Restaurant:</Label>
+                            <Label className="text-sm font-medium">Restaurant</Label>
                             <Select
                                 onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
                                 value={selectedRestaurant?.id || ''}
@@ -187,7 +187,7 @@ export default function NewMenuItemPage() {
                             <Label htmlFor="description" className="text-sm font-medium">Description simple</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Poulet braisé avec attiéké"
+                                placeholder="Poulet braisé"
                                 className="min-h-[100px] bg-background border-border resize-none"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
@@ -212,7 +212,7 @@ export default function NewMenuItemPage() {
                 {/* Step 2: Preview */}
                 <Card className="relative border-2 border-dashed border-border shadow-none bg-transparent">
                     {generationError && (
-                        <div className="absolute top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl z-20 font-bold text-center animate-in zoom-in-95 duration-200">
+                        <div className="absolute top-4 right-4 bg-[#EF4444] text-white px-6 py-3 rounded-xl shadow-2xl z-20 font-bold text-center animate-in zoom-in-95 duration-200">
                             Erreur de<br />génération
                         </div>
                     )}
