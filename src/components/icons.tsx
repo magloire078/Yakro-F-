@@ -12,29 +12,10 @@ export const Icons = {
       {...props}
     >
       <circle cx="12" cy="12" r="10" />
-      <path d="M12 18V6" />
-      <path d="M12 10c3 0 5-2 5-4" />
-      <path d="M12 10c-3 0-5-2-5-4" />
-      <path d="M12 14c3 0 5 2 5 4" />
-      <path d="M12 14c-3 0-5 2-5 4" />
-    </svg>
-  ),
-  palm: (props: SVGProps<SVGSVGElement>) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 17v-4" />
-      <path d="M12 13c-1.5-2-4-2-5.5-0.5" />
-      <path d="M12 13c1.5-2 4-2 5.5-0.5" />
-      <path d="M12 13c-2-1.5-2-4-0.5-5.5" />
-      <path d="M12 13c2-1.5 2-4 0.5-5.5" />
+      <path d="M8 12h8" />
+      <path d="M12 8v8" />
+      <path d="M9 9l6 6" />
+      <path d="M15 9l-6 6" />
     </svg>
   ),
   cart: (props: SVGProps<SVGSVGElement>) => (

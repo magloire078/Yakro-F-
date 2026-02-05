@@ -3,102 +3,51 @@
 @tailwind utilities;
 
 @layer base {
-  :root, [data-theme="client"] {
-    --background: 45 50% 98%;
-    --foreground: 45 15% 8%;
-    --card: 45 50% 100%;
-    --card-foreground: 45 15% 8%;
-    --popover: 45 50% 100%;
-    --popover-foreground: 45 15% 8%;
-    --primary: 38 92% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 45 15% 94%;
-    --secondary-foreground: 45 15% 8%;
-    --muted: 45 15% 94%;
-    --muted-foreground: 45 15% 45%;
-    --accent: 42 88% 60%;
-    --accent-foreground: 45 15% 8%;
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 45 15% 88%;
-    --input: 45 15% 88%;
-    --ring: 38 92% 55%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 243 75% 59%;
     --radius: 0.75rem;
-
-    --chart-1: 38 92% 55%;
-    --chart-2: 160 80% 45%;
-    --chart-3: 30 90% 60%;
-    --chart-4: 280 80% 55%;
-    --chart-5: 220 85% 65%;
   }
 
-  [data-theme="dark"], .dark {
-    --background: 45 10% 8%;
-    --foreground: 45 15% 98%;
-    --card: 45 10% 12%;
-    --card-foreground: 45 15% 98%;
-    --popover: 45 10% 12%;
-    --popover-foreground: 45 15% 98%;
-    --primary: 38 92% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 45 10% 20%;
-    --secondary-foreground: 45 15% 98%;
-    --muted: 45 10% 20%;
-    --muted-foreground: 45 15% 70%;
-    --accent: 42 88% 60%;
-    --accent-foreground: 45 15% 8%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 45 10% 25%;
-    --input: 45 10% 25%;
-    --ring: 38 92% 55%;
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 243 75% 59%;
   }
 
-  [data-theme="restaurateur"] {
-    --background: 220 40% 98%;
-    --foreground: 220 25% 10%;
-    --card: 220 40% 100%;
-    --card-foreground: 220 25% 10%;
-    --popover: 220 40% 100%;
-    --popover-foreground: 220 25% 10%;
-    --primary: 240 60% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 25% 94%;
-    --secondary-foreground: 220 25% 10%;
-    --muted: 220 25% 94%;
-    --muted-foreground: 220 25% 45%;
-    --accent: 250 60% 60%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 25% 88%;
-    --input: 220 25% 88%;
-    --ring: 240 60% 50%;
-  }
-  
-  [data-theme="livreur"] {
-    --background: 160 30% 98%;
-    --foreground: 160 20% 10%;
-    --card: 160 30% 100%;
-    --card-foreground: 160 20% 10%;
-    --popover: 160 30% 100%;
-    --popover-foreground: 160 20% 10%;
-    --primary: 170 80% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 160 20% 94%;
-    --secondary-foreground: 160 20% 10%;
-    --muted: 160 20% 94%;
-    --muted-foreground: 160 20% 45%;
-    --accent: 180 80% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 160 20% 88%;
-    --input: 160 20% 88%;
-    --ring: 170 80% 40%;
-  }
-
-  /* Correction ergonomie mobile : empêche le zoom auto sur focus */
   input, textarea, select {
     font-size: 16px !important;
   }
