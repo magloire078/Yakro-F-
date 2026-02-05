@@ -29,6 +29,7 @@ export default function NewMenuItemPage() {
     const { db, storage } = useFirebase();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
+    const [generationError, setGenerationError] = React.useState(false);
     const { toast } = useToast();
     const { user } = useAuth();
     const router = useRouter();
@@ -80,6 +81,7 @@ export default function NewMenuItemPage() {
             return;
         }
         setLoading(true);
+        setGenerationError(false);
         try {
             const itemDetails: GenerateMenuItemOutput = await generateMenuItem({
                 restaurantName: selectedRestaurant.nom,
@@ -98,6 +100,7 @@ export default function NewMenuItemPage() {
                 boissonsDisponibles: [],
             });
         } catch (error) {
+            setGenerationError(true);
             toast({ variant: 'destructive', title: 'Erreur de génération' });
         } finally {
             setLoading(false);
@@ -171,22 +174,24 @@ export default function NewMenuItemPage() {
     const isGenerated = !!form.getValues('nom');
 
     return (
-        <div className="container mx-auto">
+        <div className="container mx-auto max-w-2xl px-4 py-8">
             <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Créateur de Plats IA</h1>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <Card>
+            
+            <div className="flex flex-col gap-10">
+                {/* Step 1: Input */}
+                <Card className="border-none shadow-sm bg-card/50">
                     <CardHeader>
-                        <CardTitle>1. Décrivez votre plat</CardTitle>
-                        <CardDescription>L'IA s'occupe de créer un nom alléchant et un prix juste.</CardDescription>
+                        <CardTitle className="text-xl font-bold">1. Décrivez votre plat</CardTitle>
+                        <CardDescription className="text-sm">L'IA s'occupe de créer un nom alléchant et un prix juste.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <Label>Restaurant</Label>
+                            <Label className="text-sm font-medium">Restaurant:</Label>
                             <Select
                                 onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
                                 value={selectedRestaurant?.id || ''}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full bg-background border-border">
                                     <SelectValue placeholder="Choisir un établissement" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -196,48 +201,75 @@ export default function NewMenuItemPage() {
                                 </SelectContent>
                             </Select>
                         </div>
+                        
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description simple</Label>
+                            <Label htmlFor="description" className="text-sm font-medium">Description simple</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Ex: Poulet fumé avec sauce tomate et bananes frites..."
+                                placeholder="Poulet braisé avec Attiéké"
+                                className="min-h-[100px] bg-background border-border resize-none"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
-                                rows={3}
                             />
                         </div>
-                        <Button onClick={handleGenerateItem} disabled={loading || !description} size="lg" className="w-full">
-                            <Wand2 className="mr-2" />
-                            {loading ? 'Cuisine en cours...' : 'Générer avec l\'IA'}
+                        
+                        <Button 
+                            onClick={handleGenerateItem} 
+                            disabled={loading || !description} 
+                            className="w-full py-6 text-lg font-semibold bg-primary/80 hover:bg-primary transition-colors shadow-md rounded-xl"
+                        >
+                            {loading ? (
+                                <Loader className="animate-spin mr-2 h-5 w-5" />
+                            ) : (
+                                <Wand2 className="mr-2 h-5 w-5" />
+                            )}
+                            {loading ? 'Génération en cours...' : "Générer avec l'IA"}
                         </Button>
                     </CardContent>
                 </Card>
 
-                <Card className="sticky top-8">
+                {/* Step 2: Preview */}
+                <Card className="relative border-2 border-dashed border-border shadow-none bg-transparent">
+                    {generationError && (
+                        <div className="absolute top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl z-20 font-bold text-center animate-in zoom-in-95 duration-200">
+                            Erreur de<br />génération
+                        </div>
+                    )}
+                    
                     <CardHeader>
-                        <CardTitle>2. Aperçu et Validation</CardTitle>
+                        <CardTitle className="text-xl font-bold">2. Aperçu et Validation</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 border-2 border-dashed rounded-lg min-h-[400px] flex items-center justify-center bg-card">
+                    
+                    <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px]">
                         {isGenerated ? (
-                            <MenuItemForm
-                                form={form}
-                                onSubmit={handleAddItemToMenu}
-                                isLoading={loading}
-                                imageFile={imageFile}
-                                onImageChange={handleImageChange}
-                            >
-                                <div className="mt-4 flex justify-end gap-2">
-                                    <Button variant="outline" type="button" onClick={() => form.reset()}>Effacer</Button>
-                                    <Button type="submit" disabled={loading}>
-                                        {loading ? <Loader className="animate-spin mr-2" /> : null}
-                                        Ajouter au menu
-                                    </Button>
-                                </div>
-                            </MenuItemForm>
+                            <div className="w-full">
+                                <MenuItemForm
+                                    form={form}
+                                    onSubmit={handleAddItemToMenu}
+                                    isLoading={loading}
+                                    imageFile={imageFile}
+                                    onImageChange={handleImageChange}
+                                >
+                                    <div className="mt-8 flex justify-end gap-3 w-full">
+                                        <Button variant="ghost" type="button" onClick={() => {
+                                            form.reset();
+                                            setGenerationError(false);
+                                        }}>Effacer</Button>
+                                        <Button type="submit" disabled={loading} className="px-10 py-6 rounded-xl">
+                                            {loading ? <Loader className="animate-spin mr-2" /> : null}
+                                            Ajouter au menu
+                                        </Button>
+                                    </div>
+                                </MenuItemForm>
+                            </div>
                         ) : (
-                            <div className="text-center text-muted-foreground">
-                                <ImageIcon className="h-12 w-12 mx-auto mb-4" />
-                                <p>Le plat apparaîtra ici après génération.</p>
+                            <div className="text-center text-muted-foreground space-y-6">
+                                <div className="p-6 bg-muted/20 rounded-2xl w-fit mx-auto">
+                                    <ImageIcon className="h-16 w-16 opacity-30" />
+                                </div>
+                                <p className="text-base font-medium max-w-[200px] mx-auto opacity-60">
+                                    Le plat apparaîtra ici après génération.
+                                </p>
                             </div>
                         )}
                     </CardContent>
