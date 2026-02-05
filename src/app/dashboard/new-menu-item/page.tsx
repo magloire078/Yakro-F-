@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,10 +34,7 @@ export default function NewMenuItemPage() {
     const router = useRouter();
 
     const [description, setDescription] = React.useState('');
-    const [name, setName] = React.useState('');
-    const [price, setPrice] = React.useState('');
     const [imageFile, setImageFile] = React.useState<File | null>(null);
-    const [imagePreview, setImagePreview] = React.useState<string | null>(null);
 
     const form = useForm<MenuItemFormValues>({
         resolver: zodResolver(menuItemFormSchema),
@@ -62,19 +58,6 @@ export default function NewMenuItemPage() {
         }
     }, [myRestaurants, selectedRestaurant]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-                form.setValue('image', reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const handleGenerateItem = async () => {
         if (!selectedRestaurant || !description) {
             toast({ variant: 'destructive', title: 'Informations manquantes' });
@@ -87,8 +70,6 @@ export default function NewMenuItemPage() {
                 restaurantName: selectedRestaurant.nom,
                 cuisine: selectedRestaurant.cuisine,
                 description: description,
-                ...(name && { nom: name }),
-                ...(price && { prix: Number(price) }),
             });
 
             form.reset({
@@ -175,7 +156,7 @@ export default function NewMenuItemPage() {
 
     return (
         <div className="container mx-auto max-w-2xl px-4 py-8">
-            <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Créateur de Plats IA</h1>
+            <h1 className="text-2xl md:text-3xl font-headline text-[#4F46E5] mb-8">Créateur de Plats IA</h1>
             
             <div className="flex flex-col gap-10">
                 {/* Step 1: Input */}
@@ -206,7 +187,7 @@ export default function NewMenuItemPage() {
                             <Label htmlFor="description" className="text-sm font-medium">Description simple</Label>
                             <Textarea
                                 id="description"
-                                placeholder="Poulet braisé avec Attiéké"
+                                placeholder="Poulet braisé avec attiéké"
                                 className="min-h-[100px] bg-background border-border resize-none"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
@@ -216,7 +197,7 @@ export default function NewMenuItemPage() {
                         <Button 
                             onClick={handleGenerateItem} 
                             disabled={loading || !description} 
-                            className="w-full py-6 text-lg font-semibold bg-primary/80 hover:bg-primary transition-colors shadow-md rounded-xl"
+                            className="w-full py-6 text-lg font-semibold bg-[#6366F1] hover:bg-[#4F46E5] transition-colors shadow-md rounded-xl"
                         >
                             {loading ? (
                                 <Loader className="animate-spin mr-2 h-5 w-5" />
@@ -248,7 +229,10 @@ export default function NewMenuItemPage() {
                                     onSubmit={handleAddItemToMenu}
                                     isLoading={loading}
                                     imageFile={imageFile}
-                                    onImageChange={handleImageChange}
+                                    onImageChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) setImageFile(file);
+                                    }}
                                 >
                                     <div className="mt-8 flex justify-end gap-3 w-full">
                                         <Button variant="ghost" type="button" onClick={() => {

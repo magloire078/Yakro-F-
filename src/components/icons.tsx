@@ -1,4 +1,3 @@
-
 import type { SVGProps } from "react";
 
 export const Icons = {
@@ -15,11 +14,12 @@ export const Icons = {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="M12 15a6 6 0 0 0-6-6h12a6 6 0 0 0-6 6Z" />
-      <path d="M12 15v5" />
-      <path d="m8 15 2.5-2.5" />
-      <path d="m16 15-2.5-2.5" />
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 18V6" />
+      <path d="M12 10c3 0 5-2 5-4" />
+      <path d="M12 10c-3 0-5-2-5-4" />
+      <path d="M12 14c3 0 5 2 5 4" />
+      <path d="M12 14c-3 0-5 2-5 4" />
     </svg>
   ),
   cart: (props: SVGProps<SVGSVGElement>) => (

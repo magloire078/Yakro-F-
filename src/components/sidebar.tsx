@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -50,12 +49,11 @@ export function Sidebar() {
     if (!userProfile) return;
     try {
       await updateUserProfile(userProfile.uid, { role: newRole });
-      setActiveRole(newRole); // This will also update localStorage
+      setActiveRole(newRole); 
       toast({
         title: 'Rôle mis à jour',
         description: `Vous êtes maintenant en mode ${newRole}.`,
       });
-      // Redirect to the appropriate homepage for the new role
       if (newRole === 'restaurateur') {
         router.push('/restaurateur');
       } else if (newRole === 'livreur') {
@@ -78,100 +76,98 @@ export function Sidebar() {
     <aside className="w-full h-full flex flex-col p-6 bg-card border-r md:w-64">
        <div className="flex justify-between items-center mb-8">
             <Link href={homeLink} className="flex items-center space-x-2">
-                <Icons.logo className="h-10 w-10 text-primary" />
-                <span className="font-headline text-3xl font-bold text-primary">Yakro Fê</span>
+                <Icons.logo className="h-10 w-10 text-[#4F46E5]" />
+                <div className="flex flex-col">
+                    <span className="font-headline text-2xl font-bold text-[#4F46E5] leading-none">Yakro</span>
+                    <span className="font-headline text-2xl font-bold text-[#4F46E5] leading-none ml-2">Fê</span>
+                </div>
             </Link>
             <div className="hidden md:block">
                 <ThemeToggle />
             </div>
         </div>
         
-       <nav className="flex flex-col gap-4">
-           {/* Common Link */}
-           <Button variant={pathname === homeLink ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+       <nav className="flex flex-col gap-2">
+           <Button variant={pathname === homeLink || pathname === '/' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href={homeLink}>
-                  <Home className="mr-2 h-5 w-5" />
+                  <Home className="mr-3 h-5 w-5" />
                   Accueil
                 </Link>
            </Button>
 
-          {/* Client Links */}
           {activeRole === 'client' && (
             <>
-               <Button variant={pathname === '/recommendations' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+               <Button variant={pathname === '/recommendations' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                  <Link href="/recommendations">
-                  <Sparkles className="mr-2 h-5 w-5" />
+                  <Sparkles className="mr-3 h-5 w-5" />
                   Pour Vous
                 </Link>
               </Button>
-              <Button variant={pathname === '/orders' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/orders' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                  <Link href="/orders">
-                  <History className="mr-2 h-5 w-5" />
+                  <History className="mr-3 h-5 w-5" />
                   Historique
                 </Link>
               </Button>
             </>
           )}
           
-          {/* Restaurateur Links */}
           {activeRole === 'restaurateur' && (
             <>
-              <Button variant={pathname === '/dashboard/my-restaurants' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/my-restaurants' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href="/dashboard/my-restaurants">
-                  <UtensilsCrossed className="mr-2 h-5 w-5" />
+                  <UtensilsCrossed className="mr-3 h-5 w-5" />
                   Mes Restaurants
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/menu' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/menu' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href="/dashboard/menu">
-                  <BookOpenCheck className="mr-2 h-5 w-5" />
+                  <BookOpenCheck className="mr-3 h-5 w-5" />
                   Mes Menus
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/orders' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/orders' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href="/dashboard/orders">
-                  <ClipboardList className="mr-2 h-5 w-5" />
+                  <ClipboardList className="mr-3 h-5 w-5" />
                   Gérer les commandes
                 </Link>
               </Button>
-               <Button variant={pathname === '/dashboard/analytics' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+               <Button variant={pathname === '/dashboard/analytics' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href="/dashboard/analytics">
-                  <BarChart className="mr-2 h-5 w-5" />
+                  <BarChart className="mr-3 h-5 w-5" />
                   Statistiques
                 </Link>
               </Button>
-               <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+               <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href="/marketing">
-                  <Megaphone className="mr-2 h-5 w-5" />
+                  <Megaphone className="mr-3 h-5 w-5" />
                   Marketing IA
                 </Link>
               </Button>
-              <Button variant={pathname === '/dashboard/boost' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/boost' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href="/dashboard/boost">
-                  <Rocket className="mr-2 h-5 w-5" />
+                  <Rocket className="mr-3 h-5 w-5" />
                   Booster la visibilité
                 </Link>
               </Button>
             </>
           )}
 
-          {/* Livreur Links */}
           {activeRole === 'livreur' && (
             <>
-              <Button variant={pathname === '/dashboard/earnings' ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+              <Button variant={pathname === '/dashboard/earnings' ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
                 <Link href="/dashboard/earnings">
-                  <DollarSign className="mr-2 h-5 w-5" />
+                  <DollarSign className="mr-3 h-5 w-5" />
                   Mes Gains
                 </Link>
               </Button>
             </>
           )}
 
-          {/* Super Admin Link */}
           {userProfile?.roleSysteme === 'SuperAdmin' && (
-            <Button variant={pathname.startsWith('/dashboard/admin') ? 'secondary' : 'ghost'} className="justify-start text-lg" asChild>
+            <Button variant={pathname.startsWith('/dashboard/admin') ? 'secondary' : 'ghost'} className="justify-start text-base font-medium h-12" asChild>
               <Link href="/dashboard/admin">
-                <ShieldCheck className="mr-2 h-5 w-5" />
+                <ShieldCheck className="mr-3 h-5 w-5" />
                 Administration
               </Link>
             </Button>
@@ -189,13 +185,13 @@ export function Sidebar() {
            {!loading && user && (
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-3 p-2 rounded-lg border cursor-pointer hover:bg-muted">
-                        <Avatar>
-                            <AvatarFallback>{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
+                    <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-primary/5 cursor-pointer hover:bg-muted transition-colors bg-muted/20">
+                        <Avatar className="h-10 w-10">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-semibold truncate">{userProfile?.nom || user.email}</p>
-                            <p className="text-xs text-muted-foreground capitalize">{userProfile?.roleSysteme === 'SuperAdmin' ? 'Super Admin' : activeRole}</p>
+                            <p className="text-sm font-bold truncate leading-tight">{userProfile?.nom || user.email}</p>
+                            <p className="text-[10px] text-muted-foreground capitalize font-bold opacity-70 tracking-wide">{userProfile?.roleSysteme === 'SuperAdmin' ? 'Super Admin' : activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>
@@ -233,11 +229,11 @@ export function Sidebar() {
             {activeRole === 'client' && (
                <div className="hidden md:block">
                 <CartSheet>
-                  <Button variant="default" className="w-full text-lg py-6">
+                  <Button variant="default" className="w-full text-lg py-6 shadow-lg bg-[#6366F1] hover:bg-[#4F46E5]">
                     <ShoppingCart className="mr-2 h-5 w-5" />
                     Panier
                     {cartCount > 0 && (
-                      <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">{cartCount}</span>
+                      <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#6366F1] text-xs font-bold">{cartCount}</span>
                     )}
                   </Button>
                 </CartSheet>
