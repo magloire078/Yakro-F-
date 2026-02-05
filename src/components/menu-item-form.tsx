@@ -40,7 +40,7 @@ interface MenuItemFormProps {
   form: UseFormReturn<MenuItemFormValues>;
   onSubmit: (data: MenuItemFormValues, imageFile: File | null) => Promise<void>;
   isLoading: boolean;
-  children: React.ReactNode; // For submit/cancel buttons
+  children: React.ReactNode;
   imageFile?: File | null;
   onImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }

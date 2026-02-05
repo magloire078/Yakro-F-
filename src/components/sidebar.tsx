@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Icons } from './icons';
-import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, Settings, ChefHat, LogOut } from 'lucide-react';
+import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, ChefHat, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
