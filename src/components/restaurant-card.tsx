@@ -1,4 +1,3 @@
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from './ui/card';
@@ -17,14 +16,14 @@ interface RestaurantCardProps {
 
 export function RestaurantCard({ restaurant, featured = false, matchReason, distance }: RestaurantCardProps) {
   const placeholder = getPlaceholderImage(restaurant.indiceImage);
-  const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
+  const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
     ? restaurant.image 
     : placeholder.url;
 
   return (
     <Link href={`/restaurants/${restaurant.id}`}>
       <Card className={cn(
-        "overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer group h-full flex flex-col",
+        "overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer group h-full flex flex-col rounded-2xl",
         featured && "border-2 border-primary/50 bg-primary/5"
       )}>
         <CardHeader className="p-0 relative h-40">
