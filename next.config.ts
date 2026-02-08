@@ -1,10 +1,4 @@
 import type {NextConfig} from 'next';
-import withPWAInit from '@ducanh2912/next-pwa';
-
-const withPWA = withPWAInit({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-});
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -20,7 +14,8 @@ const nextConfig: NextConfig = {
     allowedDevOrigins: [
         '6000-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
         '9002-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
-        'localhost:9002'
+        'localhost:9002',
+        '0.0.0.0:9002'
     ],
     serverActions: {
       bodySizeLimit: '10mb',
@@ -44,4 +39,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;
