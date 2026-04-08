@@ -1,10 +1,9 @@
-'use server';
+// Refactored for static export
 
 import { collection, getDocs, writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import type { Restaurant } from '@/lib/types';
-import { revalidatePath } from 'next/cache';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export async function seedDatabaseAction(userId: string) {
@@ -13,7 +12,7 @@ export async function seedDatabaseAction(userId: string) {
     }
 
     const restaurantsRef = collection(db, 'restaurants');
-    
+
     try {
         const restaurantsSnap = await getDocs(restaurantsRef);
 
@@ -21,13 +20,13 @@ export async function seedDatabaseAction(userId: string) {
             const batch = writeBatch(db);
 
             const restaurantDocs = initialRestaurants.map((resto) => {
-                 const docRef = doc(collection(db, 'restaurants'));
-                 const newResto: Omit<Restaurant, 'id'> = {
+                const docRef = doc(collection(db, 'restaurants'));
+                const newResto: Omit<Restaurant, 'id'> = {
                     ...resto,
                     proprietaireId: userId,
-                 };
-                 batch.set(docRef, newResto);
-                 return { id: docRef.id, ...newResto };
+                };
+                batch.set(docRef, newResto);
+                return { id: docRef.id, ...newResto };
             });
 
             const itemsPerRestaurant = Math.ceil(initialMenuItems.length / restaurantDocs.length);
@@ -48,11 +47,11 @@ export async function seedDatabaseAction(userId: string) {
             });
 
             await batch.commit();
-            revalidatePath('/', 'layout');
+            // revalidatePath removed for static export
             return { success: true, message: 'Database seeded successfully.' };
 
         } else {
-             return { success: false, message: 'Database is not empty, seeding skipped.'};
+            return { success: false, message: 'Database is not empty, seeding skipped.' };
         }
     } catch (e: any) {
         console.error("Error seeding database: ", e);

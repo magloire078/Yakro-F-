@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Loader, UtensilsCrossed, Edit, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
+import { CldImage } from 'next-cloudinary';
 import type { Restaurant } from '@/lib/types';
 import Link from 'next/link';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
@@ -31,7 +32,7 @@ export default function MyRestaurantsPage() {
 
     return (
         <div className="container mx-auto">
-             <div className="flex items-center justify-between gap-4 mb-8">
+            <div className="flex items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
                     <UtensilsCrossed className="h-10 w-10 text-primary" />
                     <div>
@@ -48,7 +49,7 @@ export default function MyRestaurantsPage() {
             </div>
 
             {myRestaurants.length > 0 ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {myRestaurants.map(restaurant => {
                         const placeholder = getPlaceholderImage(restaurant.indiceImage);
                         const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
@@ -58,14 +59,25 @@ export default function MyRestaurantsPage() {
                             <Card key={restaurant.id} className="flex flex-col">
                                 <CardHeader className="p-0">
                                     <div className="relative h-40 w-full rounded-t-lg overflow-hidden bg-muted">
-                                        <Image
-                                            src={imageSrc}
-                                            alt={restaurant.nom}
-                                            width={placeholder.width}
-                                            height={placeholder.height}
-                                            className="object-cover w-full h-full"
-                                            data-ai-hint={restaurant.indiceImage}
-                                        />
+                                        {imageSrc.includes('res.cloudinary.com') ? (
+                                            <CldImage
+                                                src={imageSrc}
+                                                alt={restaurant.nom}
+                                                fill
+                                                crop="fill"
+                                                gravity="auto"
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={imageSrc}
+                                                alt={restaurant.nom}
+                                                width={placeholder.width}
+                                                height={placeholder.height}
+                                                className="object-cover w-full h-full"
+                                                data-ai-hint={restaurant.indiceImage}
+                                            />
+                                        )}
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-4 flex-grow flex flex-col">
@@ -74,7 +86,7 @@ export default function MyRestaurantsPage() {
                                     <div className="flex-grow" />
                                     <div className="mt-4 flex justify-end">
                                         <Button variant="default" asChild>
-                                            <Link href={`/dashboard/my-restaurants/${restaurant.id}/edit`}>
+                                            <Link href={`/dashboard/my-restaurants/edit?id=${restaurant.id}`}>
                                                 <Edit />
                                                 Modifier
                                             </Link>
@@ -84,7 +96,7 @@ export default function MyRestaurantsPage() {
                             </Card>
                         )
                     })}
-                 </div>
+                </div>
             ) : (
                 <Card className="max-w-lg mx-auto text-center p-8 mt-16">
                     <CardHeader>
@@ -92,10 +104,10 @@ export default function MyRestaurantsPage() {
                     </CardHeader>
                     <CardContent>
                         <CardDescription className="text-base">
-                           Commencez par ajouter votre premier établissement pour le voir apparaître ici.
+                            Commencez par ajouter votre premier établissement pour le voir apparaître ici.
                         </CardDescription>
-                         <Button className="mt-6" asChild>
-                           <Link href="/dashboard/new-restaurant">Créer un restaurant</Link>
+                        <Button className="mt-6" asChild>
+                            <Link href="/dashboard/new-restaurant">Créer un restaurant</Link>
                         </Button>
                     </CardContent>
                 </Card>

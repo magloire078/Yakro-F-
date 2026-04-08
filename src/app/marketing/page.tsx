@@ -6,7 +6,7 @@ import { useData } from '@/contexts/data-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { generateVideo } from '@/ai/flows/generate-video-flow';
+import { generateVideoAction } from '@/app/actions/ai-actions';
 import { type Restaurant } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader, Video } from 'lucide-react';
@@ -58,12 +58,17 @@ export default function MarketingPage() {
     });
 
     try {
-      const result = await generateVideo({
+      const result = await generateVideoAction({
         restaurantName: selectedRestaurant.nom,
         cuisine: selectedRestaurant.cuisine,
         imageUrl: restaurantImage,
       });
-      setVideoUrl(result.videoUrl);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      setVideoUrl(result.data.videoUrl);
       toast({
         title: 'Vidéo générée avec succès !',
         description: `Votre spot publicitaire pour ${selectedRestaurant.nom} est prêt.`,

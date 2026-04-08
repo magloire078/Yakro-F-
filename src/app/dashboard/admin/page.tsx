@@ -116,8 +116,8 @@ export default function AdminPage() {
         if (!allUsers) return [];
         return [...allUsers]
             .sort((a, b) => {
-                const dateA = a.dateCreation?.toDate ? a.dateCreation.toDate() : new Date(0);
-                const dateB = b.dateCreation?.toDate ? b.dateCreation.toDate() : new Date(0);
+                const dateA = (a.dateCreation && 'toDate' in a.dateCreation) ? a.dateCreation.toDate() : new Date(0);
+                const dateB = (b.dateCreation && 'toDate' in b.dateCreation) ? b.dateCreation.toDate() : new Date(0);
                 return dateB.getTime() - dateA.getTime();
             })
             .slice(0, 5);
@@ -286,7 +286,7 @@ export default function AdminPage() {
                                                         </Select>
                                                     </TableCell>
                                                      <TableCell>
-                                                        {u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : 'Date inconnue'}
+                                                        {(u.dateCreation && 'toDate' in u.dateCreation) ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : 'Date inconnue'}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Button variant="outline" size="icon" onClick={() => setEditingUser(u)} disabled={updatingUserId === u.uid}>
@@ -316,7 +316,7 @@ export default function AdminPage() {
                                             <p className="font-semibold truncate">{u.nom || 'Non défini'}</p>
                                             <p className="text-sm text-muted-foreground truncate">{u.email}</p>
                                         </div>
-                                        <Badge variant="outline">{u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : ''}</Badge>
+                                        <Badge variant="outline">{(u.dateCreation && 'toDate' in u.dateCreation) ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : ''}</Badge>
                                     </div>
                                 ))}
                             </CardContent>

@@ -1,39 +1,49 @@
 
-'use server';
+// Refactored for static export
 
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage';
-import { db, storage } from '@/firebase/client';
+import { db } from '@/firebase/client';
 import type { Restaurant } from '@/lib/types';
-import { revalidatePath } from 'next/cache';
 
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
-    const storageRef = ref(storage, path);
-    let downloadURL: string;
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-    if (typeof fileOrDataUrl === 'string') {
-        const snapshot = await uploadString(storageRef, fileOrDataUrl, 'data_url');
-        downloadURL = await getDownloadURL(snapshot.ref);
-    } else {
-        const snapshot = await uploadBytes(storageRef, fileOrDataUrl);
-        downloadURL = await getDownloadURL(snapshot.ref);
+    if (!cloudName || !uploadPreset) {
+        throw new Error("Cloudinary configuration missing in environment variables (.env.local)");
     }
-    
-    return downloadURL;
+
+    const formData = new FormData();
+    formData.append('file', fileOrDataUrl);
+    formData.append('upload_preset', uploadPreset);
+    // On utilise le chemin fourni (ex: restaurants/123) comme public_id
+    formData.append('public_id', path);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
 };
 
 export async function addRestaurantAction(formData: FormData) {
     const dataJSON = formData.get('data') as string;
     const imageFile = formData.get('image') as File | null;
     const data = JSON.parse(dataJSON) as Omit<Restaurant, 'id' | 'image' | 'note' | 'enVedette'> & { proprietaireId: string };
-    
+
     const docRef = doc(collection(db, "restaurants"));
     const restaurantId = docRef.id;
 
     if (!data.proprietaireId) {
         throw new Error("Owner ID is missing.");
     }
-    
+
     const restaurantPayload: Omit<Restaurant, 'id'> = {
         ...data,
         note: 0,
@@ -41,23 +51,23 @@ export async function addRestaurantAction(formData: FormData) {
         indiceImage: data.indiceImage || (data.cuisine ? `${data.cuisine} restaurant` : 'restaurant food'),
         latitude: data.latitude || 6.82,
         longitude: data.longitude || -5.28,
-        image: "" 
+        image: ""
     };
-    
+
     try {
         await setDoc(docRef, restaurantPayload);
-        
+
         let finalImageUrl: string | undefined = undefined;
 
         if (imageFile) {
-             finalImageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
-        } 
-        
+            finalImageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+        }
+
         if (finalImageUrl) {
             await updateDoc(docRef, { image: finalImageUrl });
         }
-        
-        revalidatePath('/', 'layout');
+
+        // revalidatePath removed for static export
 
     } catch (e: any) {
         console.error("Error adding restaurant: ", e);
@@ -74,9 +84,9 @@ export async function updateRestaurantAction(formData: FormData) {
     if (!restaurantId) {
         throw new Error("Restaurant ID is required.");
     }
-    
+
     const restaurantDocRef = doc(db, 'restaurants', restaurantId);
-    
+
     try {
         const updateData: Partial<Restaurant> = { ...data };
         if (imageFile) {
@@ -85,10 +95,8 @@ export async function updateRestaurantAction(formData: FormData) {
         }
 
         await updateDoc(restaurantDocRef, updateData);
-        
-        revalidatePath('/', 'layout');
-        revalidatePath(`/restaurants/${restaurantId}`);
-        revalidatePath(`/dashboard/my-restaurants/${restaurantId}/edit`);
+
+        // revalidatePath removed for static export
     } catch (e: any) {
         console.error("Error updating restaurant: ", e);
         throw e;

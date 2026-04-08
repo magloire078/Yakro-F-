@@ -7,28 +7,53 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { ChefHat, Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { RestaurantForm, type RestaurantFormValues } from '@/components/restaurant-form';
 import type { Restaurant } from '@/lib/types';
-import { useFirebase } from '@/contexts/firebase-provider';
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+
+const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+        throw new Error("Cloudinary configuration missing.");
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileOrDataUrl);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('public_id', path);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+};
 
 export default function NewRestaurantPage() {
     const { toast } = useToast();
     const router = useRouter();
     const { user } = useAuth();
-    const { db, storage } = useFirebase();
+    const { db } = useFirebase();
     const [isLoading, setIsLoading] = React.useState(false);
 
     const onSubmit = async (data: RestaurantFormValues, imageFile: File | null) => {
-        if(!user) {
+        if (!user) {
             toast({ variant: 'destructive', title: 'Erreur', description: 'Vous devez être connecté pour créer un restaurant.' });
             return;
         }
         setIsLoading(true);
-        
+
         const restaurantRef = doc(collection(db, "restaurants"));
         const restaurantId = restaurantRef.id;
 
@@ -56,10 +81,8 @@ export default function NewRestaurantPage() {
             });
 
             if (imageFile) {
-                const storageRef = ref(storage, `restaurants/${restaurantId}`);
-                const snapshot = await uploadBytes(storageRef, imageFile);
-                const downloadURL = await getDownloadURL(snapshot.ref);
-                await updateDoc(restaurantRef, { image: downloadURL });
+                const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+                await updateDoc(restaurantRef, { image: imageUrl });
             }
 
             toast({
@@ -79,28 +102,28 @@ export default function NewRestaurantPage() {
         }
     }
 
-  return (
-    <div className="container mx-auto">
-        <div className="max-w-2xl mx-auto">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-4">
-                        <ChefHat className="h-8 w-8 text-primary"/>
-                        <div>
-                            <CardTitle className="text-2xl">Enregistrer votre restaurant</CardTitle>
-                            <CardDescription>Ajoutez votre établissement pour commencer à recevoir des commandes.</CardDescription>
+    return (
+        <div className="container mx-auto">
+            <div className="max-w-2xl mx-auto">
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-4">
+                            <ChefHat className="h-8 w-8 text-primary" />
+                            <div>
+                                <CardTitle className="text-2xl">Enregistrer votre restaurant</CardTitle>
+                                <CardDescription>Ajoutez votre établissement pour commencer à recevoir des commandes.</CardDescription>
+                            </div>
                         </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <RestaurantForm 
-                        onSubmit={onSubmit}
-                        isLoading={isLoading}
-                        submitButtonText="Enregistrer mon restaurant"
-                    />
-                </CardContent>
-            </Card>
+                    </CardHeader>
+                    <CardContent>
+                        <RestaurantForm
+                            onSubmit={onSubmit}
+                            isLoading={isLoading}
+                            submitButtonText="Enregistrer mon restaurant"
+                        />
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-    </div>
-  );
+    );
 }

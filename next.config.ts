@@ -4,17 +4,30 @@ import withPWAInit from '@ducanh2912/next-pwa';
 const withPWA = withPWAInit({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
+  register: true,
+  workboxOptions: {
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'cloudinary-images',
+          expiration: {
+            maxEntries: 64,
+            maxAgeSeconds: 30 * 24 * 60 * 60, // 30 jours
+          },
+        },
+      },
+    ],
+  },
 });
 
 const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  devIndicators: {
-    appIsrStatus: false,
   },
   experimental: {
     allowedDevOrigins: [
@@ -45,6 +58,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'maps.googleapis.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      }
     ],
   },
 };

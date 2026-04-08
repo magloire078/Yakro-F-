@@ -3,82 +3,81 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc } from 'firebase/firestore';
-import { deleteObject, ref } from 'firebase/storage';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
 interface DataState {
-  restaurants: Restaurant[];
-  menuItems: MenuItem[];
-  orders: Order[];
-  isLoading: boolean;
-  setRestaurants: (restaurants: Restaurant[]) => void;
-  setMenuItems: (menuItems: MenuItem[]) => void;
-  setOrders: (orders: Order[]) => void;
-  setIsLoading: (isLoading: boolean) => void;
-  getMenuItem: (id: string) => MenuItem | undefined;
-  getRestaurant: (id: string) => Restaurant | undefined;
-  getOrder: (id: string) => Order | undefined;
+    restaurants: Restaurant[];
+    menuItems: MenuItem[];
+    orders: Order[];
+    isLoading: boolean;
+    setRestaurants: (restaurants: Restaurant[]) => void;
+    setMenuItems: (menuItems: MenuItem[]) => void;
+    setOrders: (orders: Order[]) => void;
+    setIsLoading: (isLoading: boolean) => void;
+    getMenuItem: (id: string) => MenuItem | undefined;
+    getRestaurant: (id: string) => Restaurant | undefined;
+    getOrder: (id: string) => Order | undefined;
 }
 
 export const useData = create<DataState>((set, get) => ({
-  restaurants: [],
-  menuItems: [],
-  orders: [],
-  isLoading: true,
-  setRestaurants: (restaurants) => set({ restaurants }),
-  setMenuItems: (menuItems) => set({ menuItems }),
-  setOrders: (orders) => set({ orders }),
-  setIsLoading: (isLoading) => set({ isLoading }),
-  getMenuItem: (id: string) => {
-    return get().menuItems.find(i => i.id === id);
-  },
-  getRestaurant: (id: string) => {
-    return get().restaurants.find(r => r.id === id);
-  },
-  getOrder: (id: string) => {
-    return get().orders.find(o => o.id === id);
-  }
+    restaurants: [],
+    menuItems: [],
+    orders: [],
+    isLoading: true,
+    setRestaurants: (restaurants) => set({ restaurants }),
+    setMenuItems: (menuItems) => set({ menuItems }),
+    setOrders: (orders) => set({ orders }),
+    setIsLoading: (isLoading) => set({ isLoading }),
+    getMenuItem: (id: string) => {
+        return get().menuItems.find(i => i.id === id);
+    },
+    getRestaurant: (id: string) => {
+        return get().restaurants.find(r => r.id === id);
+    },
+    getOrder: (id: string) => {
+        return get().orders.find(o => o.id === id);
+    }
 }));
 
 function setupSubscription<T extends DocumentData>(
-  q: Query<DocumentData, DocumentData>,
-  callback: (data: T[]) => void,
-  collectionPath: string
+    q: Query<DocumentData, DocumentData>,
+    callback: (data: T[]) => void,
+    collectionPath: string
 ): Unsubscribe {
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as T[];
-      callback(list);
-    },
-    async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: collectionPath,
-            operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    }
-  );
+    return onSnapshot(
+        q,
+        (snapshot) => {
+            const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as unknown as T[];
+            callback(list);
+        },
+        async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: collectionPath,
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
+    );
 }
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { db, storage } = useFirebase();
+    const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
     const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
 
     React.useEffect(() => {
         if (!db) return;
-        
+
         setIsLoading(true);
         const collectionRef = (path: string) => collection(db, path);
-        
+
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
-        
+
         const timer = setTimeout(() => setIsLoading(false), 2000);
 
         return () => {
@@ -98,7 +97,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
-            
+
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 ordersQuery = query(collectionRef('commandes'));
             } else {
@@ -118,7 +117,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         }
                         break;
                     case 'livreur':
-                         ordersQuery = query(collectionRef('commandes'), or(
+                        ordersQuery = query(collectionRef('commandes'), or(
                             where('statut', '==', 'En Préparation'),
                             where('livreurId', '==', user.uid)
                         ));
@@ -151,19 +150,56 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return <>{children}</>;
 };
 
-export const deleteMenuItem = async (db: any, storage: any, itemId: string) => {
+export const deleteMenuItem = async (db: any, itemId: string) => {
     const itemDocRef = doc(db, 'plats', itemId);
-    const imageRef = ref(storage, `plats/${itemId}`);
-    
+
     try {
-        await deleteObject(imageRef).catch(e => {
-            if (e.code !== 'storage/object-not-found') console.warn("Image delete failed:", e);
-        });
+        // TODO: Implement Cloudinary image deletion via server-side action
+        // Cloudinary client-side deletion requires API secret and is not recommended here.
         await deleteDoc(itemDocRef);
     } catch (e: any) {
         const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,
             operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
+};
+
+export const updateRestaurant = async (db: any, restaurantId: string, data: Partial<Restaurant>, imageFile: File | null = null) => {
+    const restaurantDocRef = doc(db, 'restaurants', restaurantId);
+    const updateData: Partial<Restaurant> = { ...data };
+
+    try {
+        if (imageFile) {
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+            const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+            
+            if (!cloudName || !uploadPreset) throw new Error("Cloudinary config missing");
+
+            const formData = new FormData();
+            formData.append('file', imageFile);
+            formData.append('upload_preset', uploadPreset);
+            formData.append('public_id', `restaurants/${restaurantId}`);
+
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const uploadResult = await response.json();
+                updateData.image = uploadResult.secure_url;
+            }
+        }
+
+        await updateDoc(restaurantDocRef, updateData);
+    } catch (e: any) {
+        const permissionError = new FirestorePermissionError({
+            path: restaurantDocRef.path,
+            operation: 'update',
+            requestResourceData: updateData,
         });
         errorEmitter.emit('permission-error', permissionError);
         throw e;

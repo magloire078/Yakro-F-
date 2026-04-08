@@ -15,7 +15,7 @@ const ThemeRoleProvider = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   
   React.useEffect(() => {
-    let theme = activeRole || 'client';
+    let theme: string = activeRole || 'client';
 
     if (userProfile?.roleSysteme === 'SuperAdmin' || pathname.startsWith('/dashboard/admin')) {
       theme = 'admin';

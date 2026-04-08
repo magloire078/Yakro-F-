@@ -36,6 +36,8 @@ const signupSchema = z.object({
 });
 
 
+type AuthFormValues = z.infer<typeof signupSchema> & z.infer<typeof loginSchema>;
+
 export function UserAuthForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
@@ -43,15 +45,15 @@ export function UserAuthForm() {
   const { auth, db } = useFirebase();
   const { toast } = useToast();
   
-  const form = useForm({
-    resolver: zodResolver(isLoginView ? loginSchema : signupSchema),
+  const form = useForm<AuthFormValues>({
+    resolver: zodResolver(isLoginView ? loginSchema : signupSchema) as any,
     defaultValues: {
         nom: '',
         email: '',
         password: '',
         telephone: '',
         role: 'client' as AppRole,
-    }
+    } as any
   });
   
   React.useEffect(() => {

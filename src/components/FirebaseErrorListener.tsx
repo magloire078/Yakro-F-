@@ -25,12 +25,7 @@ export function FirebaseErrorListener() {
       toast({
         variant: 'destructive',
         duration: 10000,
-        title: (
-            <div className="flex items-center gap-2">
-                <AlertCircle />
-                <span>Permission Firestore Refusée</span>
-            </div>
-        ),
+        title: "Permission Firestore Refusée",
         description: (
           <div className="mt-2 w-full">
             <p>L'opération de <strong>{readableOperation}</strong> sur le chemin <strong>{error.context.path}</strong> a été bloquée par les règles de sécurité.</p>

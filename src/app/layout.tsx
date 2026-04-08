@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
+export const dynamic = 'force-dynamic';
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,

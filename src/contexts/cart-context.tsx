@@ -16,26 +16,26 @@ interface CartContextType {
   removeFromCart: (itemId: string, side?: string, drink?: string) => void;
   updateQuantity: (itemId: string, quantity: number, side?: string, drink?: string) => void;
   clearCart: () => void;
-  placeOrder: () => Promise<void>;
+  cartTotal: number;
   cartSubtotal: number;
   cartDeliveryFee: number;
-  cartTotal: number;
   cartCount: number;
+  placeOrder: () => Promise<{ success: boolean; error?: any }>;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
 
 const getInitialCart = (): CartItem[] => {
-    if (typeof window === 'undefined') {
-        return [];
-    }
-    try {
-        const item = window.localStorage.getItem('yakro-fe-cart');
-        return item ? JSON.parse(item) : [];
-    } catch (error) {
-        console.warn('Error reading localStorage cart', error);
-        return [];
-    }
+  if (typeof window === 'undefined') {
+    return [];
+  }
+  try {
+    const item = window.localStorage.getItem('yakro-fe-cart');
+    return item ? JSON.parse(item) : [];
+  } catch (error) {
+    console.warn('Error reading localStorage cart', error);
+    return [];
+  }
 };
 
 const COMMISSION_RATE = 0.15; // 15% commission
@@ -68,50 +68,50 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   React.useEffect(() => {
     try {
-        window.localStorage.setItem('yakro-fe-cart', JSON.stringify(cartItems));
+      window.localStorage.setItem('yakro-fe-cart', JSON.stringify(cartItems));
     } catch (error) {
-        console.warn('Error writing to localStorage cart', error);
+      console.warn('Error writing to localStorage cart', error);
     }
   }, [cartItems]);
 
-  const addToCart = (item: Omit<CartItem, 'image'>) => {
+  const addToCart = React.useCallback((item: Omit<CartItem, 'image'>) => {
     if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
-        if(confirm("Votre panier contient déjà des plats d'un autre restaurant. Voulez-vous le vider pour commander ici ?")) {
-            setCartItems([{ ...item, quantite: 1 }]);
-        }
-        return;
+      if (confirm("Votre panier contient déjà des plats d'un autre restaurant. Voulez-vous le vider pour commander ici ?")) {
+        setCartItems([{ ...item, quantite: 1 }]);
+      }
+      return;
     }
 
     setCartItems(prevItems => {
       const uniqueItemKey = `${item.id}-${item.accompagnementSelectionne?.nom || 'none'}-${item.boissonSelectionnee?.nom || 'none'}`;
-      
-      const existingItem = prevItems.find(i => 
+
+      const existingItem = prevItems.find(i =>
         `${i.id}-${i.accompagnementSelectionne?.nom || 'none'}-${i.boissonSelectionnee?.nom || 'none'}` === uniqueItemKey
       );
 
       if (existingItem) {
         return prevItems.map(i =>
-          `${i.id}-${i.accompagnementSelectionne?.nom || 'none'}-${i.boissonSelectionnee?.nom || 'none'}` === uniqueItemKey 
-          ? { ...i, quantite: i.quantite + item.quantite } 
-          : i
+          `${i.id}-${i.accompagnementSelectionne?.nom || 'none'}-${i.boissonSelectionnee?.nom || 'none'}` === uniqueItemKey
+            ? { ...i, quantite: i.quantite + item.quantite }
+            : i
         );
       }
       return [...prevItems, item];
     });
-  };
+  }, [cartItems]);
 
-  const getUniqueKey = (itemId: string, side?: string, drink?: string) => {
+  const getUniqueKey = React.useCallback((itemId: string, side?: string, drink?: string) => {
     return `${itemId}-${side || 'none'}-${drink || 'none'}`;
-  }
+  }, []);
 
-  const removeFromCart = (itemId: string, side?: string, drink?: string) => {
+  const removeFromCart = React.useCallback((itemId: string, side?: string, drink?: string) => {
     const keyToRemove = getUniqueKey(itemId, side, drink);
-    setCartItems(prevItems => prevItems.filter(i => 
-        getUniqueKey(i.id, i.accompagnementSelectionne?.nom, i.boissonSelectionnee?.nom) !== keyToRemove
+    setCartItems(prevItems => prevItems.filter(i =>
+      getUniqueKey(i.id, i.accompagnementSelectionne?.nom, i.boissonSelectionnee?.nom) !== keyToRemove
     ));
-  };
+  }, [getUniqueKey]);
 
-  const updateQuantity = (itemId: string, quantity: number, side?: string, drink?: string) => {
+  const updateQuantity = React.useCallback((itemId: string, quantity: number, side?: string, drink?: string) => {
     const keyToUpdate = getUniqueKey(itemId, side, drink);
     if (quantity <= 0) {
       removeFromCart(itemId, side, drink);
@@ -120,11 +120,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         prevItems.map(i => (getUniqueKey(i.id, i.accompagnementSelectionne?.nom, i.boissonSelectionnee?.nom) === keyToUpdate ? { ...i, quantite: quantity } : i))
       );
     }
-  };
+  }, [getUniqueKey, removeFromCart]);
 
-  const clearCart = () => {
+  const clearCart = React.useCallback(() => {
     setCartItems([]);
-  };
+  }, []);
 
   const cartSubtotal = React.useMemo(() => {
     return cartItems.reduce((total, item) => {
@@ -136,90 +136,104 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cartItems]);
 
   const cartDeliveryFee = React.useMemo(() => {
-      if (cartItems.length === 0) return 0;
-      const restaurantId = cartItems[0].restaurantId;
-      const restaurant = getRestaurant(restaurantId);
-      return restaurant?.fraisDeLivraison || 0;
+    if (cartItems.length === 0) return 0;
+    const restaurantId = cartItems[0].restaurantId;
+    const restaurant = getRestaurant(restaurantId);
+    return restaurant?.fraisDeLivraison || 0;
   }, [cartItems, getRestaurant]);
 
   const cartTotal = React.useMemo(() => {
     return cartSubtotal + cartDeliveryFee;
   }, [cartSubtotal, cartDeliveryFee]);
-  
+
   const cartCount = React.useMemo(() => {
     return cartItems.reduce((count, item) => count + item.quantite, 0);
   }, [cartItems]);
 
-  const placeOrder = async () => {
+  const placeOrder = React.useCallback(async () => {
     if (!user || !userProfile) {
-        throw new Error("Vous devez être connecté pour passer une commande.");
+      throw new Error("Vous devez être connecté pour passer une commande.");
     }
-     if (cartItems.length === 0) {
-        throw new Error("Votre panier est vide.");
+    if (cartItems.length === 0) {
+      throw new Error("Votre panier est vide.");
     }
-     if (!userProfile.adresseParDefaut) {
-        throw new Error("Veuillez définir une adresse de livraison par défaut dans votre profil.");
+    if (!userProfile.adresseParDefaut) {
+      throw new Error("Veuillez définir une adresse de livraison par défaut dans votre profil.");
     }
 
     const location = await getUserLocation();
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
-    
+
     const commissionAmount = cartSubtotal * COMMISSION_RATE;
     const netRevenue = cartSubtotal - commissionAmount;
-    
+
     const itemsForOrder = cartItems.map(item => {
-        const placeholder = getPlaceholderImage(item.indiceImage);
-        const image = (item.image && !item.image.includes('picsum.photos')) ? item.image : placeholder.url;
-        return {
-            ...item,
-            image,
-        }
+      const placeholder = getPlaceholderImage(item.indiceImage);
+      const image = (item.image && !item.image.includes('picsum.photos')) ? item.image : placeholder.url;
+      return {
+        ...item,
+        image,
+      }
     });
 
     const newOrder: Omit<Order, 'id'> = {
-        userId: user.uid,
-        plats: itemsForOrder,
-        sousTotal: cartSubtotal,
-        fraisDeLivraison: cartDeliveryFee,
-        total: cartTotal,
-        tauxCommission: COMMISSION_RATE,
-        montantCommission: commissionAmount,
-        revenuNet: netRevenue,
-        date: new Date().toISOString(),
-        nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
-        restaurantId: restaurantId,
-        statut: 'Placée',
-        adresseClient: userProfile.adresseParDefaut,
-        adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
-        telephoneClient: userProfile.telephone || 'Numéro non spécifié',
-        ...(location && {
-            latitudeClient: location.latitude,
-            longitudeClient: location.longitude,
-        }),
-        ...(restaurant?.latitude && { latitudeRestaurant: restaurant.latitude }),
-        ...(restaurant?.longitude && { longitudeRestaurant: restaurant.longitude }),
+      userId: user.uid,
+      plats: itemsForOrder,
+      sousTotal: cartSubtotal,
+      fraisDeLivraison: cartDeliveryFee,
+      total: cartTotal,
+      tauxCommission: COMMISSION_RATE,
+      montantCommission: commissionAmount,
+      revenuNet: netRevenue,
+      date: new Date().toISOString(),
+      nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
+      restaurantId: restaurantId,
+      statut: 'Placée',
+      adresseClient: userProfile.adresseParDefaut,
+      adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
+      telephoneClient: userProfile.telephone || 'Numéro non spécifié',
+      ...(location && {
+        latitudeClient: location.latitude,
+        longitudeClient: location.longitude,
+      }),
+      ...(restaurant?.latitude && { latitudeRestaurant: restaurant.latitude }),
+      ...(restaurant?.longitude && { longitudeRestaurant: restaurant.longitude }),
     };
 
     const orderDocRef = doc(collection(db, "commandes"));
-    
-    setDoc(orderDocRef, newOrder)
-      .then(() => {
-        clearCart();
-        window.dispatchEvent(new CustomEvent('place-order'));
-      })
-      .catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-          path: orderDocRef.path,
-          operation: 'create',
-          requestResourceData: newOrder,
-        } satisfies SecurityRuleContext);
-        errorEmitter.emit('permission-error', permissionError);
-      });
-  };
+
+    try {
+      await setDoc(orderDocRef, newOrder);
+      clearCart();
+      window.dispatchEvent(new CustomEvent('place-order'));
+      return { success: true };
+    } catch (serverError) {
+      const permissionError = new FirestorePermissionError({
+        path: orderDocRef.path,
+        operation: 'create',
+        requestResourceData: newOrder,
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+      return { success: false, error: permissionError };
+    }
+  }, [user, userProfile, cartItems, cartSubtotal, cartDeliveryFee, cartTotal, getRestaurant, clearCart, db]);
+
+  const value = React.useMemo(() => ({
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    cartSubtotal,
+    cartDeliveryFee,
+    cartTotal,
+    cartCount,
+    placeOrder
+  }), [cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder]);
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

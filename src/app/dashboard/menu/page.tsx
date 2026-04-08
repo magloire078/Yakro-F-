@@ -9,20 +9,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Loader, BookOpenCheck, Edit, Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import { CldImage } from 'next-cloudinary';
 import type { Restaurant, MenuItem } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { EditMenuItemDialog } from '@/components/edit-menu-item-dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { useFirebase } from '@/contexts/firebase-provider';
@@ -66,7 +67,7 @@ export default function DashboardMenuPage() {
     const handleDeleteItem = async (itemId: string) => {
         setIsDeleting(itemId);
         try {
-            await deleteItemFn(db, storage, itemId);
+            await deleteItemFn(db, itemId);
             toast({
                 title: 'Plat supprimé',
                 description: 'Le plat a été retiré de votre menu.',
@@ -93,16 +94,16 @@ export default function DashboardMenuPage() {
             </div>
 
             {restaurants.length === 0 ? (
-                 <Card className="max-w-lg mx-auto text-center p-8">
+                <Card className="max-w-lg mx-auto text-center p-8">
                     <CardHeader>
                         <CardTitle className="text-2xl">Commencez par créer un restaurant</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <CardDescription className="text-base">
-                           Pour ajouter des plats, vous devez d'abord enregistrer un établissement.
+                            Pour ajouter des plats, vous devez d'abord enregistrer un établissement.
                         </CardDescription>
-                         <Button className="mt-6" asChild>
-                           <Link href="/dashboard/new-restaurant">Créer un restaurant</Link>
+                        <Button className="mt-6" asChild>
+                            <Link href="/dashboard/new-restaurant">Créer un restaurant</Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -117,14 +118,25 @@ export default function DashboardMenuPage() {
                             <Card key={item.id} className="flex flex-col">
                                 <CardHeader>
                                     <div className="relative h-40 w-full rounded-lg overflow-hidden bg-muted">
-                                        <Image
-                                            src={imageSrc}
-                                            alt={item.nom}
-                                            width={placeholder.width}
-                                            height={placeholder.height}
-                                            className="object-cover w-full h-full"
-                                            data-ai-hint={item.indiceImage}
-                                        />
+                                        {imageSrc.includes('res.cloudinary.com') ? (
+                                            <CldImage
+                                                src={imageSrc}
+                                                alt={item.nom}
+                                                fill
+                                                crop="fill"
+                                                gravity="auto"
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={imageSrc}
+                                                alt={item.nom}
+                                                width={placeholder.width}
+                                                height={placeholder.height}
+                                                className="object-cover w-full h-full"
+                                                data-ai-hint={item.indiceImage}
+                                            />
+                                        )}
                                     </div>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
@@ -141,23 +153,23 @@ export default function DashboardMenuPage() {
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="destructive" className="w-full" disabled={isDeleting === item.id}>
-                                                {isDeleting === item.id ? <Loader className="animate-spin"/> : <Trash2 />}
+                                                {isDeleting === item.id ? <Loader className="animate-spin" /> : <Trash2 />}
                                                 Supprimer
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
-                                            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Cette action est irréversible. Le plat "{item.nom}" sera définitivement supprimé.
-                                            </AlertDialogDescription>
+                                                <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Cette action est irréversible. Le plat "{item.nom}" sera définitivement supprimé.
+                                                </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
-                                            <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDeleteItem(item.id)} disabled={!!isDeleting}>
-                                                {isDeleting === item.id && <Loader className="animate-spin" />}
-                                                Confirmer
-                                            </AlertDialogAction>
+                                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDeleteItem(item.id)} disabled={!!isDeleting}>
+                                                    {isDeleting === item.id && <Loader className="animate-spin" />}
+                                                    Confirmer
+                                                </AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
@@ -168,13 +180,13 @@ export default function DashboardMenuPage() {
                 </div>
             ) : (
                 <Card className="text-center p-12">
-                     <CardTitle className="text-2xl">Votre menu est vide</CardTitle>
-                     <CardDescription className="mt-2 text-base">
+                    <CardTitle className="text-2xl">Votre menu est vide</CardTitle>
+                    <CardDescription className="mt-2 text-base">
                         Utilisez le créateur de plats par IA sur la page d'accueil de votre tableau de bord pour commencer à ajouter des plats.
-                     </CardDescription>
-                     <Button className="mt-6" asChild>
+                    </CardDescription>
+                    <Button className="mt-6" asChild>
                         <Link href="/dashboard/new-menu-item">Ajouter un plat</Link>
-                     </Button>
+                    </Button>
                 </Card>
             )}
 

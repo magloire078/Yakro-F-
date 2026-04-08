@@ -14,7 +14,8 @@ import Link from 'next/link';
 import { OrderStatus } from '@/components/order-status';
 import type { Order, Restaurant, MenuItem } from '@/lib/types';
 import { Recommendations, RecommendationsSkeleton } from '@/components/recommendations';
-import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
+import { getPersonalizedRecommendationsAction } from '@/app/actions/ai-actions';
+import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -127,13 +128,18 @@ export default function CustomerHomePage() {
       });
       
       try {
-        const data = await getPersonalizedRecommendations({
+        const result = await getPersonalizedRecommendationsAction({
           userHistory: userHistorySummary,
           availableMenuItems: availableMenuItems,
           currentLocation: 'Abidjan, Côte d\'Ivoire',
           timeOfDay: new Date().getHours() < 12 ? 'Matin' : (new Date().getHours() < 18 ? 'Après-midi' : 'Soir'),
         });
-        setRecommendations(data);
+
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+
+        setRecommendations(result.data);
       } catch (e) {
         console.error("Error fetching recommendations:", e);
         setRecommendationError(true);

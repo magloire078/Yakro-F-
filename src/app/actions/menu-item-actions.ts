@@ -1,25 +1,34 @@
 
-'use server';
+// Refactored for static export
 
 import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage";
-import { db, storage } from '@/firebase/client';
+import { db } from '@/firebase/client';
 import type { MenuItem } from '@/lib/types';
-import { revalidatePath } from 'next/cache';
 
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
-    const storageRef = ref(storage, path);
-    let downloadURL: string;
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-    if (typeof fileOrDataUrl === 'string') {
-        const snapshot = await uploadString(storageRef, fileOrDataUrl, 'data_url');
-        downloadURL = await getDownloadURL(snapshot.ref);
-    } else {
-        const snapshot = await uploadBytes(storageRef, fileOrDataUrl);
-        downloadURL = await getDownloadURL(snapshot.ref);
+    if (!cloudName || !uploadPreset) {
+        throw new Error("Cloudinary configuration missing.");
     }
-    
-    return downloadURL;
+
+    const formData = new FormData();
+    formData.append('file', fileOrDataUrl);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('public_id', path);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
 };
 
 export async function addMenuItemAction(formData: FormData) {
@@ -36,15 +45,14 @@ export async function addMenuItemAction(formData: FormData) {
         docRefId = docRef.id;
 
         if (imageFile) {
-             finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
-        } 
-        
+            finalImageUrl = await uploadImage(imageFile, `plats/${docRefId}`);
+        }
+
         if (finalImageUrl) {
             await updateDoc(doc(db, "plats", docRefId), { image: finalImageUrl });
         }
-        
-        revalidatePath('/dashboard/menu');
-        revalidatePath(`/restaurants/${item.restaurantId}`);
+
+        // revalidatePath removed for static export
 
     } catch (e: any) {
         console.error("Error adding menu item: ", e);
@@ -61,7 +69,7 @@ export async function updateMenuItemAction(formData: FormData) {
     if (!itemId) {
         throw new Error("Item ID is required.");
     }
-    
+
     const itemDocRef = doc(db, 'plats', itemId);
     try {
         const updateData: Partial<MenuItem> = { ...data };
@@ -70,10 +78,7 @@ export async function updateMenuItemAction(formData: FormData) {
             updateData.image = imageUrl;
         }
         await updateDoc(itemDocRef, updateData);
-        revalidatePath('/dashboard/menu');
-        if (data.restaurantId) {
-          revalidatePath(`/restaurants/${data.restaurantId}`);
-        }
+        // revalidatePath removed for static export
     } catch (e: any) {
         console.error("Error updating menu item: ", e);
         throw e;
@@ -81,21 +86,16 @@ export async function updateMenuItemAction(formData: FormData) {
 }
 
 export async function deleteMenuItemAction(itemId: string) {
-     if (!itemId) {
+    if (!itemId) {
         throw new Error("Item ID is required.");
     }
     const itemDocRef = doc(db, 'plats', itemId);
     try {
-      const imageRef = ref(storage, `plats/${itemId}`);
-      try {
-        await deleteObject(imageRef);
-      } catch (error: any) {
-         if (error.code !== 'storage/object-not-found') {
-            console.warn("Could not delete image from storage:", error);
-         }
-      }
-      await deleteDoc(itemDocRef);
-      revalidatePath('/dashboard/menu');
+        // Pour supprimer l'image sur Cloudinary via l'API client de façon sécurisée,
+        // il faudrait passer par une fonction serveur. Deleting est commenté pour l'instant.
+        // TODO: Implémenter la suppression d'image Cloudinary (require API Secret)
+        await deleteDoc(itemDocRef);
+        // revalidatePath removed for static export
     } catch (e: any) {
         console.error("Error deleting menu item: ", e);
         throw e;

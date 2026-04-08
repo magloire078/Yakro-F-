@@ -12,20 +12,46 @@ import { useData } from '@/contexts/data-context';
 import { Loader, Wand2, Image as ImageIcon, ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type MenuItem, type Restaurant } from '@/lib/types';
-import { generateMenuItem, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
+import { generateMenuItemAction } from '@/app/actions/ai-actions';
+import type { GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
 import { useAuth } from '@/contexts/auth-context';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MenuItemForm, menuItemFormSchema, type MenuItemFormValues } from '@/components/menu-item-form';
-import { useFirebase } from '@/contexts/firebase-provider';
 import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
+const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+        throw new Error("Cloudinary configuration missing.");
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileOrDataUrl);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('public_id', path);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+};
+
 export default function NewMenuItemPage() {
     const { restaurants } = useData();
-    const { db, storage } = useFirebase();
+    const { db } = useFirebase();
     const [selectedRestaurant, setSelectedRestaurant] = React.useState<Restaurant | null>(null);
     const [loading, setLoading] = React.useState(false);
     const [generationError, setGenerationError] = React.useState(false);
@@ -46,12 +72,12 @@ export default function NewMenuItemPage() {
             boissonsDisponibles: [],
         },
     });
-    
+
     const myRestaurants = React.useMemo(() => {
         if (!user) return [];
         return restaurants.filter(r => r.proprietaireId === user.uid);
     }, [restaurants, user]);
-    
+
     React.useEffect(() => {
         if (myRestaurants.length > 0 && !selectedRestaurant) {
             setSelectedRestaurant(myRestaurants[0]);
@@ -66,11 +92,17 @@ export default function NewMenuItemPage() {
         setLoading(true);
         setGenerationError(false);
         try {
-            const itemDetails: GenerateMenuItemOutput = await generateMenuItem({
+            const result = await generateMenuItemAction({
                 restaurantName: selectedRestaurant.nom,
                 cuisine: selectedRestaurant.cuisine,
                 description: description,
             });
+
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+
+            const itemDetails = result.data;
 
             form.reset({
                 nom: itemDetails.nom,
@@ -118,10 +150,8 @@ export default function NewMenuItemPage() {
             });
 
             if (file) {
-                const storageRef = ref(storage, `plats/${itemId}`);
-                const snapshot = await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(snapshot.ref);
-                await updateDoc(itemRef, { image: downloadURL });
+                const imageUrl = await uploadImage(file, `plats/${itemId}`);
+                await updateDoc(itemRef, { image: imageUrl });
             }
 
             toast({ title: 'Plat ajouté !' });
@@ -135,7 +165,7 @@ export default function NewMenuItemPage() {
 
     if (myRestaurants.length === 0) {
         return (
-             <div className="flex h-full w-full items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center">
                 <Card className="max-w-lg text-center p-8">
                     <CardHeader>
                         <ChefHat className="h-16 w-16 mx-auto text-primary" />
@@ -143,21 +173,21 @@ export default function NewMenuItemPage() {
                     </CardHeader>
                     <CardContent>
                         <CardDescription>Vous devez enregistrer un restaurant avant d'ajouter des plats.</CardDescription>
-                         <Button className="mt-6" asChild>
-                           <Link href="/dashboard/new-restaurant">Créer mon restaurant</Link>
+                        <Button className="mt-6" asChild>
+                            <Link href="/dashboard/new-restaurant">Créer mon restaurant</Link>
                         </Button>
                     </CardContent>
                 </Card>
             </div>
         )
     }
-    
+
     const isGenerated = !!form.getValues('nom');
 
     return (
         <div className="container mx-auto max-w-2xl px-4 py-8">
             <h1 className="text-2xl md:text-3xl font-headline text-[#4F46E5] mb-8">Créateur de Plats IA</h1>
-            
+
             <div className="flex flex-col gap-10">
                 {/* Step 1: Input */}
                 <Card className="border-none shadow-sm bg-card/50">
@@ -182,7 +212,7 @@ export default function NewMenuItemPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label htmlFor="description" className="text-sm font-medium">Description simple:</Label>
                             <Textarea
@@ -193,10 +223,10 @@ export default function NewMenuItemPage() {
                                 onChange={e => setDescription(e.target.value)}
                             />
                         </div>
-                        
-                        <Button 
-                            onClick={handleGenerateItem} 
-                            disabled={loading || !description} 
+
+                        <Button
+                            onClick={handleGenerateItem}
+                            disabled={loading || !description}
                             className="w-full py-6 text-lg font-semibold bg-[#6366F1] hover:bg-[#4F46E5] transition-colors shadow-md rounded-xl"
                         >
                             {loading ? (
@@ -216,11 +246,11 @@ export default function NewMenuItemPage() {
                             Erreur de<br />génération
                         </div>
                     )}
-                    
+
                     <CardHeader>
                         <CardTitle className="text-xl font-bold">2. Aperçu et Validation</CardTitle>
                     </CardHeader>
-                    
+
                     <CardContent className="p-8 flex flex-col items-center justify-center min-h-[300px]">
                         {isGenerated ? (
                             <div className="w-full">

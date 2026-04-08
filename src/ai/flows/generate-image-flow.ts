@@ -1,5 +1,5 @@
 
-'use server';
+// Refactored for static export
 /**
  * @fileOverview A flow for generating an image from a text prompt.
  *
@@ -41,7 +41,7 @@ const generateImageFlow = ai.defineFlow(
       model: googleAI.model('imagen-4.0-fast-generate-001'),
       prompt: prompt,
     });
-    
+
     const imageUrl = media?.url;
 
     if (!imageUrl) {

@@ -3,7 +3,8 @@
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useData } from '@/contexts/data-context';
+import { useData, updateRestaurant } from '@/contexts/data-context';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -16,7 +17,8 @@ import Link from 'next/link';
 
 export default function BoostPage() {
     const { user, activeRole } = useAuth();
-    const { restaurants, updateRestaurant } = useData();
+    const { restaurants } = useData();
+    const { db } = useFirebase();
     const { toast } = useToast();
     const [updatingId, setUpdatingId] = React.useState<string | null>(null);
     const router = useRouter();
@@ -36,7 +38,7 @@ export default function BoostPage() {
         setUpdatingId(restaurant.id);
         const newStatus = !restaurant.enVedette;
         try {
-            await updateRestaurant(restaurant.id, { enVedette: newStatus }, null);
+            await updateRestaurant(db, restaurant.id, { enVedette: newStatus }, null);
 
             toast({
                 title: 'Mise à jour réussie !',

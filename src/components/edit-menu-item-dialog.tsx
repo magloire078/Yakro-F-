@@ -18,9 +18,34 @@ import { Loader } from 'lucide-react';
 import { MenuItemForm, type MenuItemFormValues, menuItemFormSchema } from './menu-item-form';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+
+const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Cloudinary configuration missing.");
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileOrDataUrl);
+  formData.append('upload_preset', uploadPreset);
+  formData.append('public_id', path);
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to upload image to Cloudinary');
+  }
+
+  const data = await response.json();
+  return data.secure_url;
+};
 
 
 interface EditMenuItemDialogProps {
@@ -30,7 +55,7 @@ interface EditMenuItemDialogProps {
 }
 
 export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDialogProps) {
-  const { db, storage } = useFirebase();
+  const { db } = useFirebase();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -65,21 +90,20 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
     const updateData: Partial<MenuItem> = { ...data };
 
     try {
-        if (imageFile) {
-            const storageRef = ref(storage, `plats/${menuItem.id}`);
-            const snapshot = await uploadBytes(storageRef, imageFile);
-            updateData.image = await getDownloadURL(snapshot.ref);
-        }
+      if (imageFile) {
+        const imageUrl = await uploadImage(imageFile, `plats/${menuItem.id}`);
+        updateData.image = imageUrl;
+      }
 
-        await updateDoc(itemDocRef, updateData).catch(e => {
-            const permissionError = new FirestorePermissionError({
-                path: itemDocRef.path,
-                operation: 'update',
-                requestResourceData: updateData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw e;
+      await updateDoc(itemDocRef, updateData).catch(e => {
+        const permissionError = new FirestorePermissionError({
+          path: itemDocRef.path,
+          operation: 'update',
+          requestResourceData: updateData,
         });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+      });
 
       toast({
         title: 'Plat mis à jour',
@@ -106,19 +130,19 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
             Apportez des modifications à "{menuItem.nom}". Cliquez sur enregistrer lorsque vous avez terminé.
           </DialogDescription>
         </DialogHeader>
-        
+
         <MenuItemForm
           form={form}
           onSubmit={onSubmit}
           isLoading={isSubmitting}
         >
-            <DialogFooter className="sticky bottom-0 bg-background pt-4 -mx-1 -mb-1 px-1 pb-1">
-                <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader className="animate-spin" />}
-                    Enregistrer les modifications
-                </Button>
-            </DialogFooter>
+          <DialogFooter className="sticky bottom-0 bg-background pt-4 -mx-1 -mb-1 px-1 pb-1">
+            <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader className="animate-spin" />}
+              Enregistrer les modifications
+            </Button>
+          </DialogFooter>
         </MenuItemForm>
 
       </DialogContent>

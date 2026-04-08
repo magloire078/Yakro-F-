@@ -29,8 +29,6 @@ export function QrCodeDialog({ orderId, children }: QrCodeDialogProps) {
     try {
       const url = await QRCode.toDataURL(orderId, {
         errorCorrectionLevel: 'H',
-        type: 'image/png',
-        quality: 0.9,
         margin: 1,
         width: 256,
       });

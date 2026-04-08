@@ -5,7 +5,8 @@
 import * as React from 'react';
 import { Search, Sparkles, Loader, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { intelligentSearch, IntelligentSearchOutput } from '@/ai/flows/search-flow';
+import { intelligentSearchAction } from '@/app/actions/ai-actions';
+import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { Badge } from './ui/badge';
 import { useDebounce } from '@/hooks/use-debounce';
 
@@ -37,10 +38,12 @@ export function SearchBar({ onSearchChange, onInterpretedSearchChange }: SearchB
   React.useEffect(() => {
     if (debouncedSearchTerm.length > 3) {
       setIsAiLoading(true);
-      intelligentSearch({ query: debouncedSearchTerm })
+      intelligentSearchAction({ query: debouncedSearchTerm })
         .then(result => {
-            setInterpretedResult(result);
-            onInterpretedSearchChange(result);
+            if (result.success) {
+                setInterpretedResult(result.data);
+                onInterpretedSearchChange(result.data);
+            }
         })
         .catch(console.error)
         .finally(() => setIsAiLoading(false));

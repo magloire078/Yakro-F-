@@ -84,7 +84,7 @@ export default function LivreurHomePage() {
             orders={orders}
             isLoading={isLoading}
             userProfile={userProfile}
-            onUpdateUserProfile={updateUserProfile}
+            onUpdateUserProfile={async (uid, data) => { await updateUserProfile(uid, data); }}
             onAcceptDelivery={handleAcceptDelivery}
             userId={user?.uid}
         />

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader, Trash, Plus, Upload } from 'lucide-react';
 import Image from 'next/image';
+import { CldImage } from 'next-cloudinary';
 
 const optionSchema = z.object({
   nom: z.string().min(1, "Le nom ne peut être vide."),
@@ -53,30 +54,30 @@ export function MenuItemForm({
   imageFile,
   onImageChange
 }: MenuItemFormProps) {
-  
+
   const [localImagePreview, setLocalImagePreview] = React.useState<string | null>(null);
   const [localImageFile, setLocalImageFile] = React.useState<File | null>(null);
-  
+
   const currentImageFile = imageFile !== undefined ? imageFile : localImageFile;
   const currentImageChangeHandler = onImageChange || ((e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-          setLocalImageFile(file);
-          const reader = new FileReader();
-          reader.onloadend = () => {
-              setLocalImagePreview(reader.result as string);
-          };
-          reader.readAsDataURL(file);
-      }
+    const file = e.target.files?.[0];
+    if (file) {
+      setLocalImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLocalImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   });
-  
+
   const imageToDisplay = localImagePreview || form.getValues('image');
 
   const { fields: sideFields, append: appendSide, remove: removeSide } = useFieldArray({
     control: form.control,
     name: "accompagnementsDisponibles"
   });
-  
+
   const { fields: drinkFields, append: appendDrink, remove: removeDrink } = useFieldArray({
     control: form.control,
     name: "boissonsDisponibles"
@@ -85,7 +86,7 @@ export function MenuItemForm({
   const handleFormSubmit = (data: MenuItemFormValues) => {
     onSubmit(data, currentImageFile);
   };
-  
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto p-1 pr-4">
@@ -94,7 +95,18 @@ export function MenuItemForm({
           <Label htmlFor="image-upload-form" className="cursor-pointer block">
             <div className="relative w-full h-48 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/50 transition-colors overflow-hidden">
               {imageToDisplay ? (
-                <Image src={imageToDisplay} alt="Aperçu" fill className="object-cover" />
+                imageToDisplay.includes('res.cloudinary.com') ? (
+                  <CldImage
+                    src={imageToDisplay}
+                    alt="Aperçu"
+                    fill
+                    crop="fill"
+                    gravity="auto"
+                    className="object-cover"
+                  />
+                ) : (
+                  <Image src={imageToDisplay} alt="Aperçu" fill className="object-cover" />
+                )
               ) : (
                 <div className="text-center space-y-2">
                   <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto">
@@ -142,7 +154,7 @@ export function MenuItemForm({
             </FormItem>
           )}
         />
-        
+
         <div className="space-y-3">
           <Label>Accompagnements</Label>
           <div className="space-y-2">
@@ -156,7 +168,7 @@ export function MenuItemForm({
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => appendSide({ nom: '', prix: 0 })} className="rounded-xl"><Plus className="h-4 w-4 mr-2" /> Ajouter un accompagnement</Button>
         </div>
-        
+
         <div className="space-y-3">
           <Label>Boissons</Label>
           <div className="space-y-2">
@@ -170,7 +182,7 @@ export function MenuItemForm({
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ nom: '', prix: 0 })} className="rounded-xl"><Plus className="h-4 w-4 mr-2" /> Ajouter une boisson</Button>
         </div>
-        
+
         {children}
       </form>
     </Form>

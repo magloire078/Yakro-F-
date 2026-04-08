@@ -66,7 +66,7 @@ export interface Order {
 export interface Review {
   id: string;
   restaurantId: string;
-  nomUtilisateur:string;
+  nomUtilisateur: string;
   note: number;
   commentaire: string;
 }
@@ -88,23 +88,25 @@ export type AppRole = 'client' | 'restaurateur' | 'livreur';
  */
 export type SystemRole = 'SuperAdmin' | 'Admin' | 'User';
 
+import { Timestamp, FieldValue } from 'firebase/firestore';
+
 export interface UserProfile {
-    uid: string;
-    email: string;
-    dateCreation: any; // Firestore Timestamp
-    nom?: string;
-    telephone?: string;
-    adresseParDefaut?: string;
-    
-    // Le rôle fonctionnel unique de l'utilisateur.
-    role: AppRole;
-    
-    // Le niveau de permissions de l'utilisateur dans le système.
-    roleSysteme?: SystemRole;
-    
-    statutService?: 'En service' | 'Hors service';
-    
-    // Position actuelle du livreur
-    latitude?: number;
-    longitude?: number;
+  uid: string;
+  email: string;
+  dateCreation: Timestamp | FieldValue; // Firestore Timestamp or serverTimestamp()
+  nom?: string;
+  telephone?: string;
+  adresseParDefaut?: string;
+
+  // Le rôle fonctionnel unique de l'utilisateur.
+  role: AppRole;
+
+  // Le niveau de permissions de l'utilisateur dans le système.
+  roleSysteme?: SystemRole;
+
+  statutService?: 'En service' | 'Hors service';
+
+  // Position actuelle du livreur
+  latitude?: number;
+  longitude?: number;
 }

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Auth } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
+import { FirebaseStorage } from 'firebase/storage';
 import { getFirebaseClient } from '@/firebase/client';
 import { Loader } from 'lucide-react';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
@@ -12,6 +13,7 @@ interface FirebaseContextType {
     app: FirebaseApp;
     auth: Auth;
     db: Firestore;
+    storage: FirebaseStorage;
 }
 
 const FirebaseContext = React.createContext<FirebaseContextType | undefined>(undefined);
@@ -20,8 +22,8 @@ export const FirebaseProvider: React.FC<{children: React.ReactNode}> = ({ childr
     const [firebase, setFirebase] = React.useState<FirebaseContextType | null>(null);
 
     React.useEffect(() => {
-        const { app, auth, db } = getFirebaseClient();
-        setFirebase({ app, auth, db });
+        const { app, auth, db, storage } = getFirebaseClient();
+        setFirebase({ app, auth, db, storage });
     }, []);
 
     if (!firebase) {

@@ -2,6 +2,7 @@
 'use client';
 
 import Image from 'next/image';
+import { CldImage } from 'next-cloudinary';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -28,18 +29,18 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
 
   const handlePlaceOrder = async () => {
     try {
-        await placeOrder();
-        toast({
-            title: 'Commande passée !',
-            description: 'Votre commande a été envoyée au restaurant.',
-        });
-        // Sheet will be closed by the SheetClose component
-    } catch(e: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Erreur',
-            description: e.message || 'Impossible de passer la commande pour le moment.',
-        });
+      await placeOrder();
+      toast({
+        title: 'Commande passée !',
+        description: 'Votre commande a été envoyée au restaurant.',
+      });
+      // Sheet will be closed by the SheetClose component
+    } catch (e: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: e.message || 'Impossible de passer la commande pour le moment.',
+      });
     }
   };
 
@@ -48,10 +49,10 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
   const restaurantName = firstRestaurantId ? useData().getRestaurant(firstRestaurantId)?.nom : '';
 
   const getCartItemPrice = (item: CartItem) => {
-      const itemPrice = item.prix;
-      const sidePrice = item.accompagnementSelectionne?.prix || 0;
-      const drinkPrice = item.boissonSelectionnee?.prix || 0;
-      return (itemPrice + sidePrice + drinkPrice) * item.quantite;
+    const itemPrice = item.prix;
+    const sidePrice = item.accompagnementSelectionne?.prix || 0;
+    const drinkPrice = item.boissonSelectionnee?.prix || 0;
+    return (itemPrice + sidePrice + drinkPrice) * item.quantite;
   }
 
   return (
@@ -68,80 +69,93 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <ScrollArea className="flex-1 pr-4">
               <div className="flex flex-col gap-4 py-4">
                 {cartItems.map((item, index) => {
-                    const placeholder = getPlaceholderImage(item.indiceImage);
-                    const imageSrc = (item.image && !item.image.includes('picsum.photos'))
-                        ? item.image
-                        : placeholder.url;
-                    return (
-                        <div key={`${item.id}-${item.accompagnementSelectionne?.nom}-${item.boissonSelectionnee?.nom}-${index}`} className="flex items-start gap-4">
-                            <Image
-                            src={imageSrc}
-                            alt={item.nom}
-                            width={placeholder.width}
-                            height={placeholder.height}
-                            className="rounded-md object-cover w-16 h-16"
-                            data-ai-hint={item.indiceImage}
-                            />
-                            <div className="flex-1">
-                                <p className="font-semibold">{item.nom}</p>
-                                <div className="text-xs text-muted-foreground">
-                                    {item.accompagnementSelectionne && <p>+ {item.accompagnementSelectionne.nom} ({item.accompagnementSelectionne.prix} F)</p>}
-                                    {item.boissonSelectionnee && <p>+ {item.boissonSelectionnee.nom} ({item.boissonSelectionnee.prix} F)</p>}
-                                </div>
-                                <p className="text-sm font-semibold text-primary mt-1">
-                                    {getCartItemPrice(item).toLocaleString('fr-FR')} FCFA
-                                </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-6 w-6"
-                                    onClick={() => updateQuantity(item.id, item.quantite - 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
-                                    >
-                                    <Minus className="h-3 w-3" />
-                                    </Button>
-                                    <span className="w-6 text-center">{item.quantite}</span>
-                                    <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-6 w-6"
-                                    onClick={() => updateQuantity(item.id, item.quantite + 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
-                                    >
-                                    <Plus className="h-3 w-3" />
-                                    </Button>
-                                </div>
-                            </div>
-                            <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive"
-                            onClick={() => removeFromCart(item.id, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
-                            >
-                            <Trash2 className="h-4 w-4" />
-                            </Button>
+                  const placeholder = getPlaceholderImage(item.indiceImage);
+                  const imageSrc = (item.image && !item.image.includes('picsum.photos'))
+                    ? item.image
+                    : placeholder.url;
+                  const isCloudinary = imageSrc.includes('res.cloudinary.com');
+                  return (
+                    <div key={`${item.id}-${item.accompagnementSelectionne?.nom}-${item.boissonSelectionnee?.nom}-${index}`} className="flex items-start gap-4">
+                      {isCloudinary ? (
+                        <CldImage
+                          src={imageSrc}
+                          alt={item.nom}
+                          width={64}
+                          height={64}
+                          crop="fill"
+                          gravity="auto"
+                          className="rounded-md object-cover w-16 h-16"
+                        />
+                      ) : (
+                        <Image
+                          src={imageSrc}
+                          alt={item.nom}
+                          width={placeholder.width}
+                          height={placeholder.height}
+                          className="rounded-md object-cover w-16 h-16"
+                          data-ai-hint={item.indiceImage}
+                        />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-semibold">{item.nom}</p>
+                        <div className="text-xs text-muted-foreground">
+                          {item.accompagnementSelectionne && <p>+ {item.accompagnementSelectionne.nom} ({item.accompagnementSelectionne.prix} F)</p>}
+                          {item.boissonSelectionnee && <p>+ {item.boissonSelectionnee.nom} ({item.boissonSelectionnee.prix} F)</p>}
                         </div>
-                    )
+                        <p className="text-sm font-semibold text-primary mt-1">
+                          {getCartItemPrice(item).toLocaleString('fr-FR')} FCFA
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => updateQuantity(item.id, item.quantite - 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-6 text-center">{item.quantite}</span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => updateQuantity(item.id, item.quantite + 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => removeFromCart(item.id, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
                 })}
               </div>
             </ScrollArea>
             <Separator />
             <SheetFooter className="mt-4">
               <div className="flex flex-col w-full gap-4">
-                 <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                        <span>Sous-total</span>
-                        <span>{cartSubtotal.toLocaleString('fr-FR')} FCFA</span>
-                    </div>
-                     <div className="flex justify-between">
-                        <span>Frais de livraison</span>
-                        <span>{cartDeliveryFee.toLocaleString('fr-FR')} FCFA</span>
-                    </div>
-                 </div>
-                 <Separator />
-                 <div className="flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span>{cartTotal.toLocaleString('fr-FR')} FCFA</span>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Sous-total</span>
+                    <span>{cartSubtotal.toLocaleString('fr-FR')} FCFA</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span>Frais de livraison</span>
+                    <span>{cartDeliveryFee.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span>{cartTotal.toLocaleString('fr-FR')} FCFA</span>
+                </div>
                 <SheetClose asChild>
                   <Button size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handlePlaceOrder}>
                     Passer la commande

@@ -1,5 +1,5 @@
 
-'use server';
+// Refactored for static export
 /**
  * @fileOverview A flow for generating a promotional video for a restaurant.
  *
@@ -35,15 +35,15 @@ export type GenerateVideoOperation = z.infer<
 >;
 
 async function imageUrlToDataUri(url: string): Promise<string> {
-    const fetch = (await import('node-fetch')).default;
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Failed to fetch image from ${url}: ${response.statusText}`);
-    }
-    const contentType = response.headers.get('content-type') || 'image/jpeg';
-    const buffer = await response.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString('base64');
-    return `data:${contentType};base64,${base64}`;
+  const fetch = (await import('node-fetch')).default;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image from ${url}: ${response.statusText}`);
+  }
+  const contentType = response.headers.get('content-type') || 'image/jpeg';
+  const buffer = await response.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString('base64');
+  return `data:${contentType};base64,${base64}`;
 }
 
 
@@ -69,7 +69,7 @@ export async function generateVideo(
   }
 
   const videoPart = completedOperation.output?.message?.content.find(
-    p => !!p.media
+    (p: any) => !!p.media
   );
   if (!videoPart || !videoPart.media) {
     throw new Error('Failed to find the generated video in the operation result');
@@ -102,31 +102,31 @@ const generateVideoFlow = ai.defineFlow(
     inputSchema: GenerateVideoInputSchema,
   },
   async ({ restaurantName, cuisine, imageUrl }) => {
-    
+
     const textPrompt = `A cinematic, professional 5-second video advertisement for a restaurant named "${restaurantName}". The restaurant specializes in ${cuisine} cuisine. Show delicious, steaming food, a glimpse of a warm and inviting atmosphere. Food photography style.`;
-    
-    let prompt: (string | MediaPart)[] | string;
-    
+
+    let prompt: any;
+
     let imageDataUri: string | null = null;
     if (imageUrl) {
-        try {
-            imageDataUri = await imageUrlToDataUri(imageUrl);
-        } catch (error) {
-            console.error("Failed to convert image URL to data URI:", error);
-            // If conversion fails, we'll proceed with text-only prompt
-        }
+      try {
+        imageDataUri = await imageUrlToDataUri(imageUrl);
+      } catch (error) {
+        console.error("Failed to convert image URL to data URI:", error);
+        // If conversion fails, we'll proceed with text-only prompt
+      }
     }
 
-    if(imageDataUri) {
-        prompt = [
-            { text: `Animate this image in a subtle, elegant way. Make the food steam, add a gentle zoom or pan effect. The final video should feel like a premium food commercial for "${restaurantName}".` },
-            { media: { url: imageDataUri } }
-        ]
+    if (imageDataUri) {
+      prompt = [
+        { text: `Animate this image in a subtle, elegant way. Make the food steam, add a gentle zoom or pan effect. The final video should feel like a premium food commercial for "${restaurantName}".` } as any,
+        { media: { url: imageDataUri } } as any
+      ]
     } else {
-        prompt = textPrompt;
+      prompt = textPrompt;
     }
 
-    const { operation } = await ai.generate({
+    const { operation } = await (ai.generate as any)({
       model: googleAI.model('veo-2.0-generate-001'),
       prompt,
       config: {

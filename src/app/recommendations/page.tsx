@@ -4,7 +4,8 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
+import { getPersonalizedRecommendationsAction } from '@/app/actions/ai-actions';
+import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Recommendations as RecommendationsComponent, RecommendationsSkeleton } from '@/components/recommendations';
 import { Loader, UserX } from 'lucide-react';
 import type { Order, Restaurant, MenuItem } from '@/lib/types';
@@ -80,13 +81,18 @@ export default function RecommendationsPage() {
             });
 
             try {
-                const data = await getPersonalizedRecommendations({
+                const result = await getPersonalizedRecommendationsAction({
                     userHistory: userHistorySummary,
                     availableMenuItems: availableMenuItems,
                     currentLocation: 'Abidjan, Côte d\'Ivoire',
                     timeOfDay: new Date().getHours() < 12 ? 'Matin' : (new Date().getHours() < 18 ? 'Après-midi' : 'Soir'),
                 });
-                setRecommendations(data);
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                setRecommendations(result.data);
             } catch (e) {
                 console.error("Error fetching recommendations:", e);
                 setHasError(true);

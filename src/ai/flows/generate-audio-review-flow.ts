@@ -1,5 +1,5 @@
 
-'use server';
+// Refactored for static export
 /**
  * @fileOverview A flow to generate audio narration from restaurant reviews.
  *
@@ -36,30 +36,30 @@ export async function generateAudioReview(input: GenerateAudioReviewInput): Prom
 
 
 async function toWav(
-  pcmData: Buffer,
-  channels = 1,
-  rate = 24000,
-  sampleWidth = 2
+    pcmData: Buffer,
+    channels = 1,
+    rate = 24000,
+    sampleWidth = 2
 ): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const writer = new wav.Writer({
-      channels,
-      sampleRate: rate,
-      bitDepth: sampleWidth * 8,
-    });
+    return new Promise((resolve, reject) => {
+        const writer = new wav.Writer({
+            channels,
+            sampleRate: rate,
+            bitDepth: sampleWidth * 8,
+        });
 
-    let bufs: any[] = [];
-    writer.on('error', reject);
-    writer.on('data', function (d) {
-      bufs.push(d);
-    });
-    writer.on('end', function () {
-      resolve(Buffer.concat(bufs).toString('base64'));
-    });
+        let bufs: any[] = [];
+        writer.on('error', reject);
+        writer.on('data', function (d) {
+            bufs.push(d);
+        });
+        writer.on('end', function () {
+            resolve(Buffer.concat(bufs).toString('base64'));
+        });
 
-    writer.write(pcmData);
-    writer.end();
-  });
+        writer.write(pcmData);
+        writer.end();
+    });
 }
 
 const generateAudioReviewFlow = ai.defineFlow(
@@ -74,7 +74,7 @@ const generateAudioReviewFlow = ai.defineFlow(
             const speaker = `Speaker${(index % 2) + 1}`; // Alternate between Speaker1 and Speaker2
             return `${speaker}: "${review.commentaire}"`;
         }).join('\n');
-        
+
         const { media } = await ai.generate({
             model: googleAI.model('gemini-2.5-flash-preview-tts'),
             config: {

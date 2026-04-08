@@ -2,6 +2,7 @@
 'use client';
 
 import Image from 'next/image';
+import { CldImage } from 'next-cloudinary';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { PlusCircle } from 'lucide-react';
@@ -18,20 +19,34 @@ interface MenuItemCardProps {
 export function MenuItemCard({ item }: MenuItemCardProps) {
   const placeholder = getPlaceholderImage(item.indiceImage);
   const imageSrc = (item.image && !item.image.includes('picsum.photos'))
-    ? item.image 
+    ? item.image
     : placeholder.url;
+
+  const isCloudinary = imageSrc.includes('res.cloudinary.com');
 
   return (
     <Card className="flex items-center p-4 gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 group">
       <div className="relative w-24 h-24 shrink-0">
-        <Image
-          src={imageSrc}
-          alt={item.nom}
-          width={placeholder.width}
-          height={placeholder.height}
-          className="rounded-lg object-cover w-full h-full"
-          data-ai-hint={item.indiceImage}
-        />
+        {isCloudinary ? (
+          <CldImage
+            src={imageSrc}
+            alt={item.nom}
+            width={placeholder.width}
+            height={placeholder.height}
+            crop="fill"
+            gravity="auto"
+            className="rounded-lg object-cover w-full h-full"
+          />
+        ) : (
+          <Image
+            src={imageSrc}
+            alt={item.nom}
+            width={placeholder.width}
+            height={placeholder.height}
+            className="rounded-lg object-cover w-full h-full"
+            data-ai-hint={item.indiceImage}
+          />
+        )}
       </div>
       <div className="flex-1">
         <h4 className="font-bold font-headline">{item.nom}</h4>

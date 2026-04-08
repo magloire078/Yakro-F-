@@ -4,6 +4,7 @@
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import Image from 'next/image';
+import { CldImage } from 'next-cloudinary';
 import { Button } from './ui/button';
 import { Star, AlertTriangle } from 'lucide-react';
 import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
@@ -28,7 +29,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   if (hasError) {
     return (
       <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg">
-        <AlertTriangle className="w-16 h-16"/>
+        <AlertTriangle className="w-16 h-16" />
         <p className="text-lg font-medium">Erreur de l'IA</p>
         <p>Le service de recommandations est surchargé. Veuillez réessayer plus tard.</p>
       </div>
@@ -38,7 +39,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   if (!recommendationsData || recommendationsData.recommendations.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4 bg-card rounded-lg">
-        <Star className="w-16 h-16"/>
+        <Star className="w-16 h-16" />
         <p className="text-lg font-medium">Pas de recommandations pour le moment</p>
         <p>Commandez quelques plats pour que notre IA apprenne à vous connaître !</p>
       </div>
@@ -65,72 +66,86 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
       });
     }
   };
-  
-  const RecommendationCard = ({ rec }: { rec: any}) => {
+
+  const RecommendationCard = ({ rec }: { rec: any }) => {
     const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === rec.item.toLowerCase());
     const placeholder = getPlaceholderImage(menuItem?.indiceImage || rec.cuisine);
     const imageSrc = menuItem?.image && !menuItem.image.includes('picsum.photos') ? menuItem.image : placeholder.url;
-    
+
+    const isCloudinary = imageSrc.includes('res.cloudinary.com');
+
     return (
-        <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
-            <CardHeader className="p-0">
-              <Image
-                  src={imageSrc}
-                  alt={rec.item || 'plat recommandé'}
-                  width={placeholder.width}
-                  height={placeholder.height}
-                  className="w-full h-48 object-cover"
-                  data-ai-hint={`${rec.cuisine} food`}
-                />
-            </CardHeader>
-            <CardContent className="p-4 flex flex-col flex-grow">
-              <h3 className="font-bold text-lg font-headline">{rec.item}</h3>
-              <p className="text-sm text-muted-foreground">{rec.restaurant} - {rec.cuisine}</p>
-              <p className="text-sm my-2 h-10 flex-grow">{rec.description}</p>
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
-                    <span className="text-sm font-bold">{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') + ' FCFA' : 'N/A'}</span>
-                </div>
-                <Button size="sm" variant="outline" className="text-primary border-primary" onClick={() => handleAddToCart(rec.item)}>Ajouter</Button>
-              </div>
-            </CardContent>
-          </Card>
+      <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+        <CardHeader className="p-0">
+          {isCloudinary ? (
+            <CldImage
+              src={imageSrc}
+              alt={rec.item || 'plat recommandé'}
+              width={placeholder.width}
+              height={placeholder.height}
+              crop="fill"
+              gravity="auto"
+              className="w-full h-48 object-cover"
+            />
+          ) : (
+            <Image
+              src={imageSrc}
+              alt={rec.item || 'plat recommandé'}
+              width={placeholder.width}
+              height={placeholder.height}
+              className="w-full h-48 object-cover"
+              data-ai-hint={`${rec.cuisine} food`}
+            />
+          )}
+        </CardHeader>
+        <CardContent className="p-4 flex flex-col flex-grow">
+          <h3 className="font-bold text-lg font-headline">{rec.item}</h3>
+          <p className="text-sm text-muted-foreground">{rec.restaurant} - {rec.cuisine}</p>
+          <p className="text-sm my-2 h-10 flex-grow">{rec.description}</p>
+          <div className="flex justify-between items-center mt-4">
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+              <span className="text-sm font-bold">{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') + ' FCFA' : 'N/A'}</span>
+            </div>
+            <Button size="sm" variant="outline" className="text-primary border-primary" onClick={() => handleAddToCart(rec.item)}>Ajouter</Button>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
   if (isCarousel) {
-      return (
-        <section className="w-full">
-          <h2 className="text-3xl font-headline text-foreground mb-6">Pour Vous</h2>
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent>
-              {recommendationsData.recommendations.map((rec, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1 h-full">
-                       <RecommendationCard rec={rec} />
-                    </div>
-                  </CarouselItem>
-                ))}
-            </CarouselContent>
-            <CarouselPrevious className="text-primary" />
-            <CarouselNext className="text-primary" />
-          </Carousel>
-        </section>
-      );
+    return (
+      <section className="w-full">
+        <h2 className="text-3xl font-headline text-foreground mb-6">Pour Vous</h2>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
+            {recommendationsData.recommendations.map((rec, index) => (
+              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-1 h-full">
+                  <RecommendationCard rec={rec} />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="text-primary" />
+          <CarouselNext className="text-primary" />
+        </Carousel>
+      </section>
+    );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {recommendationsData.recommendations.map((rec, index) => (
-            <RecommendationCard key={index} rec={rec} />
-        ))}
+      {recommendationsData.recommendations.map((rec, index) => (
+        <RecommendationCard key={index} rec={rec} />
+      ))}
     </div>
   )
 }
@@ -138,25 +153,25 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
 export function RecommendationsSkeleton() {
   const SkeletonCard = () => (
     <div className="p-1">
-       <Card className="h-full">
-            <CardHeader className="p-0">
-                <Skeleton className="h-48 w-full" />
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-10 w-full" />
-                 <div className="flex justify-between items-center mt-4">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-8 w-1/3" />
-                </div>
-            </CardContent>
-        </Card>
+      <Card className="h-full">
+        <CardHeader className="p-0">
+          <Skeleton className="h-48 w-full" />
+        </CardHeader>
+        <CardContent className="p-4 space-y-3">
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-10 w-full" />
+          <div className="flex justify-between items-center mt-4">
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-8 w-1/3" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 
   return (
-     <section className="w-full">
+    <section className="w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         <SkeletonCard />
         <SkeletonCard />

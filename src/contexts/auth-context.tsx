@@ -15,8 +15,8 @@ interface AuthContextType {
   loading: boolean;
   activeRole: AppRole;
   setActiveRole: (role: AppRole) => void;
-  updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
-  updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<void>;
+  updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: any }>;
+  updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: any }>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
@@ -33,12 +33,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = React.useState(true);
   const [activeRole, setActiveRoleState] = React.useState<AppRole>(getInitialActiveRole);
 
-   React.useEffect(() => {
+  React.useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (!firebaseUser) {
-          setUserProfile(null);
-          setLoading(false);
+        setUserProfile(null);
+        setLoading(false);
       }
     });
     return () => unsubscribeAuth();
@@ -49,17 +49,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) {
       setLoading(true);
       const userDocRef = doc(db, 'utilisateurs', user.uid);
-      
-      unsubscribeProfile = onSnapshot(userDocRef, 
+
+      unsubscribeProfile = onSnapshot(userDocRef,
         (docSnap) => {
           if (docSnap.exists()) {
             const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
             setUserProfile(profile);
-            
+
             const storedRole = localStorage.getItem('activeRole') as AppRole | null;
             if (!storedRole) {
-               setActiveRoleState(profile.role);
-               localStorage.setItem('activeRole', profile.role);
+              setActiveRoleState(profile.role);
+              localStorage.setItem('activeRole', profile.role);
             }
           } else {
             setUserProfile(null);
@@ -87,43 +87,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user, db]);
 
   const setActiveRole = (role: AppRole) => {
-      setActiveRoleState(role);
-      localStorage.setItem('activeRole', role);
+    setActiveRoleState(role);
+    localStorage.setItem('activeRole', role);
   }
-  
-  const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-      const userDocRef = doc(db, 'utilisateurs', uid);
-      updateDoc(userDocRef, data)
-        .catch(async (serverError) => {
-          const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'update',
-            requestResourceData: data,
-          } satisfies SecurityRuleContext);
-          errorEmitter.emit('permission-error', permissionError);
-        });
-  };
-  
-  const updateOtherUserProfile = async (uid: string, data: Partial<UserProfile>) => {
+
+  const updateUserProfile = React.useCallback(async (uid: string, data: Partial<UserProfile>) => {
     const userDocRef = doc(db, 'utilisateurs', uid);
-    updateDoc(userDocRef, data)
-      .catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-          path: userDocRef.path,
-          operation: 'update',
-          requestResourceData: data,
-        } satisfies SecurityRuleContext);
-        errorEmitter.emit('permission-error', permissionError);
-      });
-  };
+    try {
+      await updateDoc(userDocRef, data);
+      return { success: true };
+    } catch (serverError) {
+      const permissionError = new FirestorePermissionError({
+        path: userDocRef.path,
+        operation: 'update',
+        requestResourceData: data,
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+      return { success: false, error: permissionError };
+    }
+  }, [db]);
 
-  const value = { user, userProfile, loading, activeRole, setActiveRole, updateUserProfile, updateOtherUserProfile };
+  const updateOtherUserProfile = React.useCallback(async (uid: string, data: Partial<UserProfile>) => {
+    const userDocRef = doc(db, 'utilisateurs', uid);
+    try {
+      await updateDoc(userDocRef, data);
+      return { success: true };
+    } catch (serverError) {
+      const permissionError = new FirestorePermissionError({
+        path: userDocRef.path,
+        operation: 'update',
+        requestResourceData: data,
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+      return { success: false, error: permissionError };
+    }
+  }, [db]);
 
-  if (loading) { 
+  const value = React.useMemo(() => ({
+    user,
+    userProfile,
+    loading,
+    activeRole,
+    setActiveRole,
+    updateUserProfile,
+    updateOtherUserProfile
+  }), [user, userProfile, loading, activeRole, updateUserProfile, updateOtherUserProfile]);
+
+  if (loading) {
     return (
-        <div className="flex h-screen w-full items-center justify-center">
-           <Loader className="h-16 w-16 animate-spin text-primary" />
-        </div>
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader className="h-16 w-16 animate-spin text-primary" />
+      </div>
     )
   }
 

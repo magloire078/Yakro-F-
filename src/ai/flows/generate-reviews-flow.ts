@@ -1,5 +1,5 @@
 
-'use server';
+// Refactored for static export
 /**
  * @fileOverview A flow for generating restaurant reviews.
  *
