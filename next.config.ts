@@ -1,4 +1,10 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
+import withPWAInit from '@ducanh2912/next-pwa';
+
+const withPWA = withPWAInit({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+});
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -12,14 +18,14 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     allowedDevOrigins: [
-        '6000-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
-        '9002-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
-        'localhost:9002',
-        '0.0.0.0:9002'
+      '6000-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
+      '9002-firebase-studio-1753373548918.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
+      'localhost:9002',
+      '0.0.0.0:9002',
     ],
     serverActions: {
       bodySizeLimit: '10mb',
-    }
+    },
   },
   images: {
     remotePatterns: [
@@ -34,9 +40,13 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+      },
     ],
   },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);
