@@ -5,11 +5,12 @@ import { useAuth } from '@/contexts/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign } from 'lucide-react';
+import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign, Heart } from 'lucide-react';
 import * as React from 'react';
 
 const clientLinks = [
     { href: '/', label: 'Accueil', icon: Home },
+    { href: '/favorites', label: 'Favoris', icon: Heart },
     { href: '/recommendations', label: 'Pour Vous', icon: Sparkles },
     { href: '/orders', label: 'Historique', icon: History },
 ];
@@ -47,7 +48,7 @@ export function BottomNavBar() {
         case 'client':
         default:
             links = clientLinks;
-            gridColsClass = 'grid-cols-4';
+            gridColsClass = 'grid-cols-5';
     }
     
     if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;

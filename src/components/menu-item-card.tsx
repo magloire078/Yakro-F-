@@ -2,23 +2,22 @@
 'use client';
 
 import Image from 'next/image';
-import { Card, CardContent } from './ui/card';
+import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Lock } from 'lucide-react';
 import type { MenuItem } from '@/lib/types';
-import { useCart } from '@/contexts/cart-context';
 import { AddToCartDialog } from './add-to-cart-dialog';
-import * as React from 'react';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 interface MenuItemCardProps {
   item: MenuItem;
+  disabled?: boolean;
 }
 
-export function MenuItemCard({ item }: MenuItemCardProps) {
+export function MenuItemCard({ item, disabled = false }: MenuItemCardProps) {
   const placeholder = getPlaceholderImage(item.indiceImage);
   const imageSrc = (item.image && !item.image.includes('picsum.photos'))
-    ? item.image 
+    ? item.image
     : placeholder.url;
 
   return (
@@ -38,11 +37,17 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
         <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
         <div className="flex justify-between items-center mt-2">
           <p className="text-lg font-semibold text-primary">{item.prix.toLocaleString('fr-FR')} FCFA</p>
-          <AddToCartDialog item={item}>
-            <Button variant="ghost" size="icon" className="text-primary hover:text-primary">
-              <PlusCircle className="w-6 h-6" />
+          {disabled ? (
+            <Button variant="ghost" size="icon" className="text-muted-foreground" disabled aria-label="Restaurant fermé">
+              <Lock className="w-5 h-5" />
             </Button>
-          </AddToCartDialog>
+          ) : (
+            <AddToCartDialog item={item}>
+              <Button variant="ghost" size="icon" className="text-primary hover:text-primary">
+                <PlusCircle className="w-6 h-6" />
+              </Button>
+            </AddToCartDialog>
+          )}
         </div>
       </div>
     </Card>

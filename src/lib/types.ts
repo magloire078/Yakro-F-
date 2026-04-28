@@ -16,6 +16,16 @@ export interface MenuItem {
   boissonsDisponibles?: MenuOption[];
 }
 
+export type DayOfWeek = 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vendredi' | 'samedi' | 'dimanche';
+
+export interface DailyHours {
+  ferme: boolean;
+  ouverture: string; // "HH:mm"
+  fermeture: string; // "HH:mm"
+}
+
+export type WeeklyHours = Record<DayOfWeek, DailyHours>;
+
 export interface Restaurant {
   id: string;
   proprietaireId: string;
@@ -30,6 +40,8 @@ export interface Restaurant {
   enVedette?: boolean;
   latitude?: number;
   longitude?: number;
+  horaires?: WeeklyHours;
+  fermetureTemporaire?: boolean;
 }
 
 export interface CartItem extends Omit<MenuItem, 'image'> {
@@ -37,6 +49,14 @@ export interface CartItem extends Omit<MenuItem, 'image'> {
   image?: string;
   accompagnementSelectionne?: MenuOption;
   boissonSelectionnee?: MenuOption;
+}
+
+export interface PromoCode {
+  code: string;
+  type: 'percentage' | 'fixed' | 'freeDelivery';
+  valeur: number; // pourcentage (ex: 10 pour 10%) ou montant en FCFA
+  minimumCommande?: number;
+  description: string;
 }
 
 export interface Order {
@@ -49,6 +69,8 @@ export interface Order {
   tauxCommission: number;
   montantCommission: number;
   revenuNet: number;
+  codePromo?: string;
+  reductionPromo?: number;
   date: string;
   nomRestaurant: string;
   restaurantId: string;
@@ -103,8 +125,11 @@ export interface UserProfile {
     roleSysteme?: SystemRole;
     
     statutService?: 'En service' | 'Hors service';
-    
+
     // Position actuelle du livreur
     latitude?: number;
     longitude?: number;
+
+    // Restaurants favoris (IDs)
+    favorisRestaurants?: string[];
 }

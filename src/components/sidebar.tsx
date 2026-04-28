@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Icons } from './icons';
-import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, ChefHat, LogOut } from 'lucide-react';
+import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, ChefHat, LogOut, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -132,6 +132,14 @@ export function Sidebar() {
                           Mon Profil
                         </Link>
                     </DropdownMenuItem>
+                    {activeRole === 'client' && (
+                      <DropdownMenuItem asChild>
+                          <Link href="/favorites">
+                            <Heart className="mr-2 h-4 w-4"/>
+                            Mes Favoris
+                          </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                         <LogOut className="mr-2 h-4 w-4"/>

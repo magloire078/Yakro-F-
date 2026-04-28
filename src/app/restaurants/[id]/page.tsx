@@ -5,7 +5,7 @@ import * as React from 'react';
 import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/data-context";
-import { Clock, Star, Loader, Ear, Bike, Wand2, Users } from "lucide-react";
+import { Clock, Star, Loader, Ear, Bike, Wand2, Users, Heart, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,11 +19,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { useFavorites } from '@/hooks/use-favorites';
+import { isRestaurantOpen, getNextOpeningLabel, DAY_LABELS, ORDERED_DAYS } from '@/lib/restaurant-hours';
+import { cn } from '@/lib/utils';
 
 export default function RestaurantPage() {
     const params = useParams();
     const { getRestaurant, menuItems, isLoading } = useData();
     const restaurant = getRestaurant(params.id as string);
+    const { isFavorite, toggleFavorite, isAuthenticated } = useFavorites();
 
     const [userReviews, setUserReviews] = React.useState<Review[]>([]);
     const [aiReviews, setAiReviews] = React.useState<Review[]>([]);
@@ -152,6 +156,17 @@ export default function RestaurantPage() {
     const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
         ? restaurant.image
         : placeholder.url;
+    const open = isRestaurantOpen(restaurant);
+    const nextOpening = getNextOpeningLabel(restaurant);
+    const fav = isFavorite(restaurant.id);
+
+    const handleToggleFavorite = () => {
+        if (!isAuthenticated) {
+            toast({ variant: 'destructive', title: 'Connexion requise', description: 'Connectez-vous pour ajouter aux favoris.' });
+            return;
+        }
+        toggleFavorite(restaurant.id);
+    };
 
     return (
         <div>
@@ -168,12 +183,33 @@ export default function RestaurantPage() {
                     priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4 md:p-8 md:rounded-xl">
-                    <div className="text-white">
+                    <div className="text-white flex-1">
                         <h1 className="text-2xl md:text-4xl font-headline">{restaurant.nom}</h1>
                         <p className="text-md md:text-lg">{restaurant.cuisine}</p>
                     </div>
+                    <Button
+                        type="button"
+                        size="icon"
+                        variant="secondary"
+                        aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                        aria-pressed={fav}
+                        onClick={handleToggleFavorite}
+                        className="rounded-full h-11 w-11 self-end shadow-lg"
+                    >
+                        <Heart className={cn('h-5 w-5', fav ? 'fill-red-500 text-red-500' : '')} />
+                    </Button>
                 </div>
             </div>
+
+            {!open && (
+                <div className="mt-6 flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+                    <AlertCircle className="h-5 w-5 shrink-0" />
+                    <div>
+                        <p className="font-semibold">Restaurant fermé</p>
+                        {nextOpening && <p className="text-sm">{nextOpening}</p>}
+                    </div>
+                </div>
+            )}
 
             <div className="py-8">
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8">
@@ -195,11 +231,31 @@ export default function RestaurantPage() {
                 <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Menu</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-16">
                     {restaurantMenu.length > 0 ? restaurantMenu.map(item => (
-                        <MenuItemCard key={item.id} item={item} />
+                        <MenuItemCard key={item.id} item={item} disabled={!open} />
                     )) : (
                         <p className="text-muted-foreground md:col-span-2">Aucun plat disponible pour ce restaurant pour le moment.</p>
                     )}
                 </div>
+
+                {/* Hours Section */}
+                {restaurant.horaires && (
+                    <div className="mb-16">
+                        <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Horaires d'ouverture</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md">
+                            {ORDERED_DAYS.map(day => {
+                                const h = restaurant.horaires![day];
+                                return (
+                                    <div key={day} className="flex justify-between border-b py-2 text-sm">
+                                        <span className="font-medium">{DAY_LABELS[day]}</span>
+                                        <span className={cn('text-muted-foreground', h.ferme && 'text-destructive')}>
+                                            {h.ferme ? 'Fermé' : `${h.ouverture} – ${h.fermeture}`}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* Reviews Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

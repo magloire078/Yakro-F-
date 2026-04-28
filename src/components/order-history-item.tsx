@@ -2,6 +2,8 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { RotateCcw } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -12,28 +14,52 @@ import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
 import { Separator } from './ui/separator';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { isRestaurantOpen } from '@/lib/restaurant-hours';
 
 interface OrderHistoryItemProps {
   order: Order;
 }
 
 export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
-  const { addToCart } = useCart();
+  const { reorderItems } = useCart();
   const { toast } = useToast();
-  const { getMenuItem } = useData();
+  const { getMenuItem, getRestaurant } = useData();
+  const router = useRouter();
 
   const handleReorder = () => {
-    order.plats.forEach(item => {
-        const menuItem = getMenuItem(item.id);
-        if (menuItem) {
-            addToCart({...item });
-        }
-    });
+    const restaurant = getRestaurant(order.restaurantId);
+    if (restaurant && !isRestaurantOpen(restaurant)) {
+      toast({
+        variant: 'destructive',
+        title: 'Restaurant fermé',
+        description: `${order.nomRestaurant} n'accepte pas de commande pour le moment.`,
+      });
+      return;
+    }
+
+    const availableItems = order.plats
+      .filter(item => getMenuItem(item.id))
+      .map(item => ({ ...item }));
+
+    if (availableItems.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Plats indisponibles',
+        description: 'Aucun des plats de cette commande n\'est plus disponible.',
+      });
+      return;
+    }
+
+    const skipped = order.plats.length - availableItems.length;
+    reorderItems(availableItems);
     toast({
-        title: "Commande ajoutée au panier",
-        description: `Les articles de votre commande chez ${order.nomRestaurant} ont été ajoutés.`,
+      title: 'Panier prêt à être validé',
+      description: skipped > 0
+        ? `${availableItems.length} plat(s) ajouté(s). ${skipped} indisponible(s) ignoré(s).`
+        : `${availableItems.length} plat(s) ajouté(s) depuis ${order.nomRestaurant}.`,
     });
-  }
+    router.push(`/restaurants/${order.restaurantId}`);
+  };
   
   const getItemPrice = (item: typeof order.plats[0]) => {
       const itemPrice = item.prix;
@@ -96,6 +122,12 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                     <span>Frais de livraison</span>
                     <span>{order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</span>
                 </div>
+                {order.codePromo && (order.reductionPromo ?? 0) > 0 && (
+                    <div className="flex justify-between text-green-700 dark:text-green-400">
+                        <span>Code {order.codePromo}</span>
+                        <span>−{(order.reductionPromo ?? 0).toLocaleString('fr-FR')} FCFA</span>
+                    </div>
+                )}
                 <div className="flex justify-between font-semibold text-base">
                     <span>Total</span>
                     <span>{order.total.toLocaleString('fr-FR')} FCFA</span>
@@ -103,7 +135,10 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
             </div>
              {order.statut === 'Livrée' && (
               <div className="mt-6 flex justify-end">
-                  <Button onClick={handleReorder}>Recommander</Button>
+                  <Button onClick={handleReorder}>
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Recommander
+                  </Button>
               </div>
             )}
           </AccordionContent>

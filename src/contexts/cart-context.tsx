@@ -9,18 +9,24 @@ import { collection, doc, setDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { applyPromoCode, type PromoApplication } from '@/lib/promo-codes';
 
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: Omit<CartItem, 'image'>) => void;
+  reorderItems: (items: Omit<CartItem, 'image'>[]) => void;
   removeFromCart: (itemId: string, side?: string, drink?: string) => void;
   updateQuantity: (itemId: string, quantity: number, side?: string, drink?: string) => void;
   clearCart: () => void;
   placeOrder: () => Promise<void>;
   cartSubtotal: number;
   cartDeliveryFee: number;
+  cartDiscount: number;
   cartTotal: number;
   cartCount: number;
+  promoCode: PromoApplication | null;
+  applyPromo: (code: string) => { ok: true } | { ok: false; error: string };
+  removePromo: () => void;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
@@ -62,6 +68,7 @@ const getUserLocation = (): Promise<{ latitude: number; longitude: number } | nu
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
+  const [promoCode, setPromoCode] = React.useState<PromoApplication | null>(null);
   const { getRestaurant } = useData();
   const { user, userProfile } = useAuth();
   const { db } = useFirebase();
@@ -124,6 +131,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = () => {
     setCartItems([]);
+    setPromoCode(null);
+  };
+
+  const reorderItems = (items: Omit<CartItem, 'image'>[]) => {
+    if (items.length === 0) return;
+    const merged: CartItem[] = [];
+    const keyOf = (i: Omit<CartItem, 'image'>) =>
+      `${i.id}-${i.accompagnementSelectionne?.nom || 'none'}-${i.boissonSelectionnee?.nom || 'none'}`;
+    for (const item of items) {
+      const key = keyOf(item);
+      const existing = merged.find(m => keyOf(m) === key);
+      if (existing) {
+        existing.quantite += item.quantite;
+      } else {
+        merged.push({ ...item });
+      }
+    }
+    setCartItems(merged);
   };
 
   const cartSubtotal = React.useMemo(() => {
@@ -142,13 +167,38 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return restaurant?.fraisDeLivraison || 0;
   }, [cartItems, getRestaurant]);
 
+  // Recalcule le promo si sous-total/livraison changent (peut invalider le minimum)
+  React.useEffect(() => {
+    if (!promoCode) return;
+    const result = applyPromoCode(promoCode.code.code, cartSubtotal, cartDeliveryFee);
+    if (!result.ok) {
+      setPromoCode(null);
+    } else {
+      setPromoCode(result.application);
+    }
+  }, [cartSubtotal, cartDeliveryFee]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const cartDiscount = React.useMemo(() => {
+    if (!promoCode) return 0;
+    return promoCode.reduction + (promoCode.fraisLivraisonOffert ? cartDeliveryFee : 0);
+  }, [promoCode, cartDeliveryFee]);
+
   const cartTotal = React.useMemo(() => {
-    return cartSubtotal + cartDeliveryFee;
-  }, [cartSubtotal, cartDeliveryFee]);
-  
+    return Math.max(0, cartSubtotal + cartDeliveryFee - cartDiscount);
+  }, [cartSubtotal, cartDeliveryFee, cartDiscount]);
+
   const cartCount = React.useMemo(() => {
     return cartItems.reduce((count, item) => count + item.quantite, 0);
   }, [cartItems]);
+
+  const applyPromo = (code: string) => {
+    const result = applyPromoCode(code, cartSubtotal, cartDeliveryFee);
+    if (!result.ok) return { ok: false as const, error: result.error };
+    setPromoCode(result.application);
+    return { ok: true as const };
+  };
+
+  const removePromo = () => setPromoCode(null);
 
   const placeOrder = async () => {
     if (!user || !userProfile) {
@@ -167,6 +217,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const commissionAmount = cartSubtotal * COMMISSION_RATE;
     const netRevenue = cartSubtotal - commissionAmount;
+    const discount = cartDiscount;
     
     const itemsForOrder = cartItems.map(item => {
         const placeholder = getPlaceholderImage(item.indiceImage);
@@ -181,11 +232,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userId: user.uid,
         plats: itemsForOrder,
         sousTotal: cartSubtotal,
-        fraisDeLivraison: cartDeliveryFee,
+        fraisDeLivraison: promoCode?.fraisLivraisonOffert ? 0 : cartDeliveryFee,
         total: cartTotal,
         tauxCommission: COMMISSION_RATE,
         montantCommission: commissionAmount,
         revenuNet: netRevenue,
+        ...(promoCode && {
+            codePromo: promoCode.code.code,
+            reductionPromo: discount,
+        }),
         date: new Date().toISOString(),
         nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
         restaurantId: restaurantId,
@@ -219,7 +274,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder }}>
+    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo }}>
       {children}
     </CartContext.Provider>
   );

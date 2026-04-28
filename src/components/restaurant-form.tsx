@@ -19,8 +19,28 @@ import { Input } from '@/components/ui/input';
 import { Loader, Upload, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { WeeklyHoursInput } from '@/components/weekly-hours-input';
+import { DEFAULT_WEEKLY_HOURS, ORDERED_DAYS } from '@/lib/restaurant-hours';
+import type { WeeklyHours, DayOfWeek } from '@/lib/types';
+
+const dailyHoursSchema = z.object({
+  ferme: z.boolean(),
+  ouverture: z.string().regex(/^\d{2}:\d{2}$/, "Format HH:mm requis"),
+  fermeture: z.string().regex(/^\d{2}:\d{2}$/, "Format HH:mm requis"),
+});
+
+const weeklyHoursSchema = z.object({
+  lundi: dailyHoursSchema,
+  mardi: dailyHoursSchema,
+  mercredi: dailyHoursSchema,
+  jeudi: dailyHoursSchema,
+  vendredi: dailyHoursSchema,
+  samedi: dailyHoursSchema,
+  dimanche: dailyHoursSchema,
+});
 
 const restaurantFormSchema = z.object({
   nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
@@ -32,6 +52,8 @@ const restaurantFormSchema = z.object({
   longitude: z.coerce.number().optional(),
   image: z.string().optional(),
   indiceImage: z.string().optional(),
+  horaires: weeklyHoursSchema.optional(),
+  fermetureTemporaire: z.boolean().optional(),
 });
 
 export type RestaurantFormValues = z.infer<typeof restaurantFormSchema>;
@@ -58,6 +80,8 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
             tempsDeLivraison: 30,
             fraisDeLivraison: 1000,
             indiceImage: '',
+            horaires: DEFAULT_WEEKLY_HOURS,
+            fermetureTemporaire: false,
         },
     });
 
@@ -265,6 +289,44 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                         )}
                     />
                 </div>
+            </div>
+            <div className="space-y-4 rounded-lg border p-4">
+                <div>
+                    <h4 className="font-medium">Horaires d'ouverture</h4>
+                    <p className="text-sm text-muted-foreground">Définissez les jours et heures où votre restaurant accepte des commandes.</p>
+                </div>
+                <FormField
+                    control={form.control}
+                    name="horaires"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormControl>
+                                <WeeklyHoursInput
+                                    value={field.value as any}
+                                    onChange={(v) => field.onChange(v)}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="fermetureTemporaire"
+                    render={({ field }) => (
+                        <FormItem className="flex items-center justify-between rounded-md border p-3">
+                            <div>
+                                <FormLabel className="font-medium">Fermeture temporaire</FormLabel>
+                                <FormDescription>
+                                    Activez pour suspendre les commandes (rupture, jour férié, etc.).
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
             </div>
             <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}

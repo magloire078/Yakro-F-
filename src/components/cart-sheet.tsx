@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,18 +14,30 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
-import { Minus, Plus, Trash2 } from 'lucide-react';
+import { Minus, Plus, Trash2, Tag, X } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { type CartItem } from '@/lib/types';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
-  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder, clearCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo } = useCart();
   const { getMenuItem } = useData();
   const { toast } = useToast();
+  const [promoInput, setPromoInput] = React.useState('');
+
+  const handleApplyPromo = () => {
+    const result = applyPromo(promoInput);
+    if (result.ok) {
+      toast({ title: 'Code promo appliqué', description: 'La réduction a été ajoutée.' });
+      setPromoInput('');
+    } else {
+      toast({ variant: 'destructive', title: 'Code invalide', description: result.error });
+    }
+  };
 
   const handlePlaceOrder = async () => {
     try {
@@ -127,6 +140,36 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <Separator />
             <SheetFooter className="mt-4">
               <div className="flex flex-col w-full gap-4">
+                {promoCode ? (
+                  <div className="flex items-center justify-between rounded-md bg-green-50 dark:bg-green-950 p-2 text-sm">
+                    <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                      <Tag className="h-4 w-4" />
+                      <span className="font-semibold">{promoCode.code.code}</span>
+                      <span className="text-xs text-muted-foreground">{promoCode.code.description}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={removePromo} aria-label="Retirer le code promo">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Code promo"
+                      value={promoInput}
+                      onChange={e => setPromoInput(e.target.value)}
+                      className="flex-1"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleApplyPromo();
+                        }
+                      }}
+                    />
+                    <Button type="button" variant="outline" onClick={handleApplyPromo} disabled={!promoInput.trim()}>
+                      Appliquer
+                    </Button>
+                  </div>
+                )}
                  <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                         <span>Sous-total</span>
@@ -134,8 +177,16 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                     </div>
                      <div className="flex justify-between">
                         <span>Frais de livraison</span>
-                        <span>{cartDeliveryFee.toLocaleString('fr-FR')} FCFA</span>
+                        <span className={promoCode?.fraisLivraisonOffert ? 'line-through text-muted-foreground' : ''}>
+                          {cartDeliveryFee.toLocaleString('fr-FR')} FCFA
+                        </span>
                     </div>
+                    {cartDiscount > 0 && (
+                      <div className="flex justify-between text-green-700 dark:text-green-400">
+                          <span>Réduction</span>
+                          <span>−{cartDiscount.toLocaleString('fr-FR')} FCFA</span>
+                      </div>
+                    )}
                  </div>
                  <Separator />
                  <div className="flex justify-between font-bold text-lg">
