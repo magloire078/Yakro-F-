@@ -27,6 +27,8 @@ interface CartContextType {
   promoCode: PromoApplication | null;
   applyPromo: (code: string) => { ok: true } | { ok: false; error: string };
   removePromo: () => void;
+  scheduledFor: string | null;
+  setScheduledFor: (iso: string | null) => void;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
@@ -69,6 +71,7 @@ const getUserLocation = (): Promise<{ latitude: number; longitude: number } | nu
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
   const [promoCode, setPromoCode] = React.useState<PromoApplication | null>(null);
+  const [scheduledFor, setScheduledFor] = React.useState<string | null>(null);
   const { getRestaurant } = useData();
   const { user, userProfile } = useAuth();
   const { db } = useFirebase();
@@ -132,6 +135,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => {
     setCartItems([]);
     setPromoCode(null);
+    setScheduledFor(null);
   };
 
   const reorderItems = (items: Omit<CartItem, 'image'>[]) => {
@@ -241,6 +245,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             codePromo: promoCode.code.code,
             reductionPromo: discount,
         }),
+        ...(scheduledFor && { programmePour: scheduledFor }),
         date: new Date().toISOString(),
         nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
         restaurantId: restaurantId,
@@ -274,7 +279,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo }}>
+    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor }}>
       {children}
     </CartContext.Provider>
   );

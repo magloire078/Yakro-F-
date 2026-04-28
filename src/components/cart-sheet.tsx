@@ -17,17 +17,50 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
-import { Minus, Plus, Trash2, Tag, X } from 'lucide-react';
+import { Minus, Plus, Trash2, Tag, X, Clock } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { type CartItem } from '@/lib/types';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import {
+  formatScheduledDate,
+  maxScheduledDate,
+  minScheduledDate,
+  toLocalInputValue,
+  validateScheduledDate,
+} from '@/lib/scheduled-orders';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
-  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor } = useCart();
   const { getMenuItem } = useData();
   const { toast } = useToast();
   const [promoInput, setPromoInput] = React.useState('');
+  const [scheduleMode, setScheduleMode] = React.useState<'now' | 'later'>(scheduledFor ? 'later' : 'now');
+  const [scheduleInput, setScheduleInput] = React.useState<string>(() =>
+    scheduledFor ? toLocalInputValue(new Date(scheduledFor)) : toLocalInputValue(minScheduledDate())
+  );
+
+  React.useEffect(() => {
+    if (scheduleMode === 'now') {
+      setScheduledFor(null);
+      return;
+    }
+    if (!scheduleInput) return;
+    const iso = new Date(scheduleInput).toISOString();
+    const result = validateScheduledDate(iso);
+    if (result.ok) {
+      setScheduledFor(iso);
+    } else {
+      setScheduledFor(null);
+    }
+  }, [scheduleMode, scheduleInput, setScheduledFor]);
+
+  const scheduleError = React.useMemo(() => {
+    if (scheduleMode !== 'later' || !scheduleInput) return null;
+    const iso = new Date(scheduleInput).toISOString();
+    const result = validateScheduledDate(iso);
+    return result.ok ? null : result.error;
+  }, [scheduleMode, scheduleInput]);
 
   const handleApplyPromo = () => {
     const result = applyPromo(promoInput);
@@ -40,13 +73,18 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
   };
 
   const handlePlaceOrder = async () => {
+    if (scheduleMode === 'later' && scheduleError) {
+        toast({ variant: 'destructive', title: 'Date invalide', description: scheduleError });
+        return;
+    }
     try {
         await placeOrder();
         toast({
             title: 'Commande passée !',
-            description: 'Votre commande a été envoyée au restaurant.',
+            description: scheduledFor
+              ? `Programmée pour ${formatScheduledDate(scheduledFor)}.`
+              : 'Votre commande a été envoyée au restaurant.',
         });
-        // Sheet will be closed by the SheetClose component
     } catch(e: any) {
         toast({
             variant: 'destructive',
@@ -140,6 +178,48 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <Separator />
             <SheetFooter className="mt-4">
               <div className="flex flex-col w-full gap-4">
+                <div className="rounded-md border p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Clock className="h-4 w-4" />
+                    Quand voulez-vous être livré ?
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={scheduleMode === 'now' ? 'default' : 'outline'}
+                      onClick={() => setScheduleMode('now')}
+                      className="flex-1"
+                    >
+                      Maintenant
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={scheduleMode === 'later' ? 'default' : 'outline'}
+                      onClick={() => setScheduleMode('later')}
+                      className="flex-1"
+                    >
+                      Programmer
+                    </Button>
+                  </div>
+                  {scheduleMode === 'later' && (
+                    <div className="space-y-1">
+                      <Input
+                        type="datetime-local"
+                        value={scheduleInput}
+                        min={toLocalInputValue(minScheduledDate())}
+                        max={toLocalInputValue(maxScheduledDate())}
+                        onChange={e => setScheduleInput(e.target.value)}
+                      />
+                      {scheduleError ? (
+                        <p className="text-xs text-destructive">{scheduleError}</p>
+                      ) : scheduledFor ? (
+                        <p className="text-xs text-muted-foreground">Livraison prévue : {formatScheduledDate(scheduledFor)}</p>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
                 {promoCode ? (
                   <div className="flex items-center justify-between rounded-md bg-green-50 dark:bg-green-950 p-2 text-sm">
                     <div className="flex items-center gap-2 text-green-700 dark:text-green-300">

@@ -9,11 +9,13 @@ import { useAuth } from '@/contexts/auth-context';
 import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { Order, UserProfile, Restaurant } from '@/lib/types';
-import { Loader, MapPin, Bike, Home } from 'lucide-react';
+import { Loader, MapPin, Bike, Home, CalendarClock } from 'lucide-react';
+import { formatScheduledDate } from '@/lib/scheduled-orders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { DeliveryMap } from '@/components/delivery-map-loader';
 
 export default function TrackOrderPage() {
     const params = useParams();
@@ -72,27 +74,18 @@ export default function TrackOrderPage() {
         );
     }
     
-    // Interactive map URL
-    const getMapUrl = () => {
-        if (!restaurant?.latitude || !restaurant?.longitude || !liveOrder.latitudeClient || !liveOrder.longitudeClient) {
-            // Can't show directions without both points, maybe show restaurant location?
-            if (restaurant?.latitude && restaurant?.longitude) {
-                 return `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${restaurant.latitude},${restaurant.longitude}`;
-            }
-            return null; // No map if no coords
-        }
-        
-        let url = `https://www.google.com/maps/embed/v1/directions?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&origin=${restaurant.latitude},${restaurant.longitude}&destination=${liveOrder.latitudeClient},${liveOrder.longitudeClient}`;
-
-        // Add livreur as a waypoint if available
-        if (livreur?.latitude && livreur?.longitude) {
-            url += `&waypoints=${livreur.latitude},${livreur.longitude}`;
-        }
-        
-        return url;
-    }
-    
-    const mapUrl = getMapUrl();
+    const mapPoints = {
+        restaurant: restaurant?.latitude && restaurant?.longitude
+            ? { latitude: restaurant.latitude, longitude: restaurant.longitude, name: restaurant.nom }
+            : undefined,
+        client: liveOrder.latitudeClient && liveOrder.longitudeClient
+            ? { latitude: liveOrder.latitudeClient, longitude: liveOrder.longitudeClient, name: 'Votre adresse' }
+            : undefined,
+        livreur: livreur?.latitude && livreur?.longitude
+            ? { latitude: livreur.latitude, longitude: livreur.longitude, name: livreur.nom || 'Livreur' }
+            : undefined,
+    };
+    const hasAnyPoint = mapPoints.restaurant || mapPoints.client || mapPoints.livreur;
 
     return (
         <div className="container mx-auto">
@@ -104,18 +97,22 @@ export default function TrackOrderPage() {
              <Card>
                 <CardHeader>
                     <CardTitle>Suivi de votre commande n°{liveOrder.id.slice(0, 6)}...</CardTitle>
+                    {liveOrder.programmePour && (
+                        <div className="mt-2 flex items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950 p-2 text-sm text-blue-700 dark:text-blue-300">
+                            <CalendarClock className="h-4 w-4" />
+                            <span>Programmée pour <strong>{formatScheduledDate(liveOrder.programmePour)}</strong></span>
+                        </div>
+                    )}
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-2 relative h-96 md:h-full min-h-[400px] rounded-lg overflow-hidden bg-muted">
-                        {mapUrl ? (
-                           <iframe
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0 }}
-                                loading="lazy"
-                                allowFullScreen
-                                src={mapUrl}>
-                            </iframe>
+                        {hasAnyPoint ? (
+                            <DeliveryMap
+                                restaurant={mapPoints.restaurant}
+                                client={mapPoints.client}
+                                livreur={mapPoints.livreur}
+                                className="h-full w-full"
+                            />
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground">
                                 <p>La carte de suivi est indisponible.</p>

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Order, UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader, Bike, ScanLine } from 'lucide-react';
+import { Loader, Bike, ScanLine, CalendarClock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { QrScannerDialog } from '@/components/qr-scanner-dialog';
 import { cn } from '@/lib/utils';
+import { isScheduledDue, formatScheduledDate } from '@/lib/scheduled-orders';
 
 interface AvailableDeliveriesProps {
     orders: Order[];
@@ -39,8 +40,12 @@ export function AvailableDeliveries({
     
     const availableDeliveries = React.useMemo(() => {
         if (!isEnService) return [];
-        return orders.filter(o => o.statut === 'En Préparation');
+        return orders.filter(o => o.statut === 'En Préparation' && isScheduledDue(o.programmePour));
     }, [orders, isEnService]);
+
+    const upcomingScheduled = React.useMemo(() => {
+        return orders.filter(o => o.statut === 'Placée' && o.programmePour && !isScheduledDue(o.programmePour));
+    }, [orders]);
 
     const handleAccept = async (delivery: Order) => {
         setIsAccepting(delivery.id);
@@ -158,6 +163,24 @@ export function AvailableDeliveries({
                     <div className="flex justify-center p-12"><Loader className="animate-spin h-10 w-10 text-primary" /></div>
                 )}
                 
+                {isEnService && !isLoading && upcomingScheduled.length > 0 && (
+                    <Card className="rounded-xl border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
+                        <CardContent className="p-4 flex items-start gap-3 text-sm">
+                            <CalendarClock className="h-5 w-5 text-blue-700 dark:text-blue-300 shrink-0 mt-0.5" />
+                            <div className="space-y-1 text-blue-800 dark:text-blue-200">
+                                <p className="font-semibold">{upcomingScheduled.length} commande(s) programmée(s)</p>
+                                <ul className="text-xs space-y-0.5">
+                                    {upcomingScheduled.slice(0, 3).map(o => (
+                                        <li key={o.id}>
+                                            {o.nomRestaurant} — {formatScheduledDate(o.programmePour!)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {isEnService && !isLoading && availableDeliveries.length > 0 && availableDeliveries.map(delivery => (
                     <Card key={delivery.id} className="overflow-hidden rounded-xl hover:shadow-md transition-soft">
                         <CardContent className="p-4 space-y-4">

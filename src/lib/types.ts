@@ -71,6 +71,8 @@ export interface Order {
   revenuNet: number;
   codePromo?: string;
   reductionPromo?: number;
+  /** ISO datetime; absent = livraison immédiate */
+  programmePour?: string;
   date: string;
   nomRestaurant: string;
   restaurantId: string;

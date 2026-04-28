@@ -15,6 +15,8 @@ import { useData } from '@/contexts/data-context';
 import { Separator } from './ui/separator';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { isRestaurantOpen } from '@/lib/restaurant-hours';
+import { formatScheduledDate } from '@/lib/scheduled-orders';
+import { CalendarClock } from 'lucide-react';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -87,6 +89,12 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
             </div>
           </AccordionTrigger>
           <AccordionContent className="p-6 pt-0">
+            {order.programmePour && (
+              <div className="mb-4 flex items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950 p-3 text-sm text-blue-700 dark:text-blue-300">
+                <CalendarClock className="h-4 w-4" />
+                <span>Commande programmée pour <strong>{formatScheduledDate(order.programmePour)}</strong></span>
+              </div>
+            )}
             <div className="space-y-4">
                 {order.plats.map((item, index) => {
                     const menuItem = getMenuItem(item.id);

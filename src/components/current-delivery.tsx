@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChefHat, Home, Map, Phone, Loader } from 'lucide-react';
 import Link from 'next/link';
+import { DeliveryMap } from '@/components/delivery-map-loader';
+import { useAuth } from '@/contexts/auth-context';
+import { useLivreurPosition } from '@/hooks/use-livreur-position';
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -14,7 +17,10 @@ interface CurrentDeliveryProps {
 }
 
 export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryProps) {
+    const { user, userProfile } = useAuth();
     const [isCompleting, setIsCompleting] = React.useState(false);
+
+    useLivreurPosition({ enabled: order.statut === 'En Route', uid: user?.uid });
 
     const getGoogleMapsLink = (order: Order) => {
         if (!order.latitudeRestaurant || !order.longitudeRestaurant || !order.latitudeClient || !order.longitudeClient) {
@@ -31,6 +37,19 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
 
     const mapsLink = getGoogleMapsLink(order);
 
+    const mapPoints = {
+        restaurant: order.latitudeRestaurant && order.longitudeRestaurant
+            ? { latitude: order.latitudeRestaurant, longitude: order.longitudeRestaurant, name: order.nomRestaurant }
+            : undefined,
+        client: order.latitudeClient && order.longitudeClient
+            ? { latitude: order.latitudeClient, longitude: order.longitudeClient, name: 'Adresse client' }
+            : undefined,
+        livreur: userProfile?.latitude && userProfile?.longitude
+            ? { latitude: userProfile.latitude, longitude: userProfile.longitude, name: 'Vous' }
+            : undefined,
+    };
+    const hasMap = mapPoints.restaurant || mapPoints.client || mapPoints.livreur;
+
     return (
         <div className="container mx-auto">
             <h1 className="text-3xl md:text-4xl font-headline text-primary mb-8">Livraison en cours</h1>
@@ -43,6 +62,16 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                     <CardDescription>Récupérez et livrez la commande suivante.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                    {hasMap && (
+                        <div className="h-72 rounded-lg overflow-hidden border">
+                            <DeliveryMap
+                                restaurant={mapPoints.restaurant}
+                                client={mapPoints.client}
+                                livreur={mapPoints.livreur}
+                                className="h-full w-full"
+                            />
+                        </div>
+                    )}
                     <div className="space-y-4 border-b pb-4">
                         <div className="flex items-start gap-4">
                             <ChefHat className="text-primary mt-1"/>
