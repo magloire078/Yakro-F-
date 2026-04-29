@@ -56,6 +56,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
     cartDeliveryFee,
     cartDiscount,
     cartLoyaltyDiscount,
+    cartReferralDiscount,
     cartTotal,
     cartCount,
     placeOrder,
@@ -422,6 +423,12 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                       <div className="flex justify-between text-green-700 dark:text-green-400">
                           <span>Réduction</span>
                           <span>−{cartDiscount.toLocaleString('fr-FR')} FCFA</span>
+                      </div>
+                    )}
+                    {cartReferralDiscount > 0 && (
+                      <div className="flex justify-between text-pink-700 dark:text-pink-400">
+                          <span>Bonus parrainage</span>
+                          <span>−{cartReferralDiscount.toLocaleString('fr-FR')} FCFA</span>
                       </div>
                     )}
                  </div>

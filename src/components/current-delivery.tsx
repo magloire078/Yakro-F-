@@ -5,11 +5,13 @@ import type { Order } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Home, Map, Phone, Loader, MessageSquare } from 'lucide-react';
+import { ChefHat, Home, Map, Phone, Loader, MessageSquare, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { DeliveryMap } from '@/components/delivery-map-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { useLivreurPosition } from '@/hooks/use-livreur-position';
+import { ReportIncidentDialog } from '@/components/report-incident-dialog';
+import { IncidentList } from '@/components/incident-list';
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -114,12 +116,20 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                             <p>Client : {order.telephoneClient}</p>
                         </div>
                     </div>
+                    {order.incidents && order.incidents.length > 0 && (
+                        <IncidentList incidents={order.incidents} />
+                    )}
                     <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
                         <Button className="w-full" size="lg" onClick={handleComplete} disabled={isCompleting}>
                             {isCompleting && <Loader className="animate-spin mr-2" />}
                             Marquer comme livré
                         </Button>
-                        <Button variant="outline" className="w-full" size="lg">Signaler un problème</Button>
+                        <ReportIncidentDialog orderId={order.id} reporter="livreur">
+                            <Button variant="outline" className="w-full" size="lg">
+                                <AlertTriangle className="h-4 w-4" />
+                                Signaler un problème
+                            </Button>
+                        </ReportIncidentDialog>
                     </div>
                 </CardContent>
             </Card>

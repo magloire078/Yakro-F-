@@ -9,10 +9,13 @@ import { useAuth } from '@/contexts/auth-context';
 import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { Order, UserProfile, Restaurant } from '@/lib/types';
-import { Loader, MapPin, Bike, Home, CalendarClock, CreditCard } from 'lucide-react';
+import { Loader, MapPin, Bike, Home, CalendarClock, CreditCard, AlertTriangle, XCircle } from 'lucide-react';
 import { formatScheduledDate } from '@/lib/scheduled-orders';
 import { getPaymentMethod } from '@/lib/payment';
 import { Badge } from '@/components/ui/badge';
+import { ReportIncidentDialog } from '@/components/report-incident-dialog';
+import { IncidentList } from '@/components/incident-list';
+import { CancelOrderDialog } from '@/components/cancel-order-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -170,6 +173,37 @@ export default function TrackOrderPage() {
                                 <p className="font-bold">Votre Adresse</p>
                                 <p className="text-muted-foreground">{liveOrder.adresseClient}</p>
                             </div>
+                        </div>
+
+                        {liveOrder.incidents && liveOrder.incidents.length > 0 && (
+                            <IncidentList incidents={liveOrder.incidents} />
+                        )}
+
+                        <div className="space-y-2 pt-2 border-t">
+                            {liveOrder.statut === 'Placée' && (
+                                <CancelOrderDialog orderId={liveOrder.id} canCancel>
+                                    <Button variant="destructive" className="w-full">
+                                        <XCircle className="h-4 w-4" />
+                                        Annuler la commande
+                                    </Button>
+                                </CancelOrderDialog>
+                            )}
+                            {liveOrder.statut !== 'Annulée' && liveOrder.statut !== 'Livrée' && (
+                                <ReportIncidentDialog orderId={liveOrder.id} reporter="client">
+                                    <Button variant="outline" className="w-full">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        Signaler un problème
+                                    </Button>
+                                </ReportIncidentDialog>
+                            )}
+                            {liveOrder.statut === 'Annulée' && (
+                                <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                                    <p className="font-semibold">Commande annulée</p>
+                                    {liveOrder.motifAnnulation && (
+                                        <p className="text-xs mt-1">{liveOrder.motifAnnulation}</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </CardContent>

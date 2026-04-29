@@ -16,8 +16,9 @@ import { Separator } from './ui/separator';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { isRestaurantOpen } from '@/lib/restaurant-hours';
 import { formatScheduledDate } from '@/lib/scheduled-orders';
-import { CalendarClock, CreditCard, Sparkles, MessageSquare } from 'lucide-react';
+import { CalendarClock, CreditCard, Sparkles, MessageSquare, XCircle } from 'lucide-react';
 import { getPaymentMethod } from '@/lib/payment';
+import { IncidentList } from '@/components/incident-list';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -94,6 +95,20 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
               <div className="mb-4 flex items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950 p-3 text-sm text-blue-700 dark:text-blue-300">
                 <CalendarClock className="h-4 w-4" />
                 <span>Commande programmée pour <strong>{formatScheduledDate(order.programmePour)}</strong></span>
+              </div>
+            )}
+            {order.statut === 'Annulée' && order.motifAnnulation && (
+              <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm flex items-start gap-2 text-destructive">
+                <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold">Commande annulée</p>
+                  <p className="text-xs">{order.motifAnnulation}</p>
+                </div>
+              </div>
+            )}
+            {order.incidents && order.incidents.length > 0 && (
+              <div className="mb-4">
+                <IncidentList incidents={order.incidents} />
               </div>
             )}
             {(order.libelleAdresse || order.instructionsLivraison) && (

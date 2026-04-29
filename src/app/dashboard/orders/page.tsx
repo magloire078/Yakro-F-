@@ -3,7 +3,10 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, CheckCircle, QrCode, MessageSquare } from 'lucide-react';
+import { Loader, CheckCircle, QrCode, MessageSquare, AlertTriangle, XCircle } from 'lucide-react';
+import { ReportIncidentDialog } from '@/components/report-incident-dialog';
+import { IncidentList } from '@/components/incident-list';
+import { CancelOrderDialog } from '@/components/cancel-order-dialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,6 +97,11 @@ export default function DashboardOrdersPage() {
                         </div>
                     </div>
                 )}
+                {order.incidents && order.incidents.length > 0 && (
+                    <div className="mb-3">
+                        <IncidentList incidents={order.incidents} />
+                    </div>
+                )}
                 <Accordion type="single" collapsible>
                     <AccordionItem value="details" className="border-b-0">
                         <AccordionTrigger className="py-2 text-sm">Voir les détails</AccordionTrigger>
@@ -118,11 +126,11 @@ export default function DashboardOrdersPage() {
                     </AccordionItem>
                 </Accordion>
                 
-                <div className="mt-4">
+                <div className="mt-4 space-y-2">
                     {order.statut === 'Placée' && (
-                        <Button 
-                            onClick={() => handleAcceptOrder(order.id)} 
-                            disabled={isUpdating === order.id} 
+                        <Button
+                            onClick={() => handleAcceptOrder(order.id)}
+                            disabled={isUpdating === order.id}
                             className="w-full btn-mobile"
                         >
                             {isUpdating === order.id ? <Loader className="animate-spin" /> : <CheckCircle className="mr-2" />}
@@ -137,6 +145,24 @@ export default function DashboardOrdersPage() {
                             </Button>
                         </QrCodeDialog>
                     )}
+                    <div className="flex gap-2">
+                        {(order.statut === 'Placée' || order.statut === 'En Préparation') && (
+                            <CancelOrderDialog orderId={order.id} canCancel>
+                                <Button variant="ghost" size="sm" className="flex-1 text-destructive">
+                                    <XCircle className="h-4 w-4" />
+                                    Annuler
+                                </Button>
+                            </CancelOrderDialog>
+                        )}
+                        {order.statut !== 'Annulée' && order.statut !== 'Livrée' && (
+                            <ReportIncidentDialog orderId={order.id} reporter="restaurateur">
+                                <Button variant="ghost" size="sm" className="flex-1">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    Signaler
+                                </Button>
+                            </ReportIncidentDialog>
+                        )}
+                    </div>
                 </div>
             </CardContent>
         </Card>

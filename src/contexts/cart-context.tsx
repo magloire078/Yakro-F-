@@ -5,7 +5,7 @@ import type { CartItem, MenuItem, Order, MenuOption, PaymentMethod } from '@/lib
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
-import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -25,6 +25,12 @@ import {
 import { getDefaultAddress, getUserAddresses } from '@/lib/addresses';
 import type { SavedAddress, HappyHour } from '@/lib/types';
 import { getActiveHappyHour, applyHappyHourDiscount } from '@/lib/promotions';
+import {
+  canUseFilleulDiscount,
+  FILLEUL_DISCOUNT_FCFA,
+  FILLEUL_MIN_SUBTOTAL,
+  PARRAIN_BONUS_POINTS,
+} from '@/lib/referrals';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -38,6 +44,7 @@ interface CartContextType {
   cartDeliveryFee: number;
   cartDiscount: number;
   cartLoyaltyDiscount: number;
+  cartReferralDiscount: number;
   cartTotal: number;
   cartCount: number;
   promoCode: PromoApplication | null;
@@ -256,9 +263,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return promoCode.reduction + (promoCode.fraisLivraisonOffert ? cartDeliveryFee : 0);
   }, [promoCode, cartDeliveryFee]);
 
+  const userHasDeliveredOrders = React.useMemo(() => {
+    if (!user) return true;
+    return orders.some(o => o.userId === user.uid && o.statut === 'Livrée');
+  }, [orders, user]);
+
+  const cartReferralDiscount = React.useMemo(() => {
+    if (cartSubtotal < FILLEUL_MIN_SUBTOTAL) return 0;
+    if (!canUseFilleulDiscount(userProfile, userHasDeliveredOrders)) return 0;
+    return FILLEUL_DISCOUNT_FCFA;
+  }, [cartSubtotal, userProfile, userHasDeliveredOrders]);
+
   const cartTotal = React.useMemo(() => {
-    return Math.max(0, cartSubtotal + cartDeliveryFee - cartDiscount);
-  }, [cartSubtotal, cartDeliveryFee, cartDiscount]);
+    return Math.max(0, cartSubtotal + cartDeliveryFee - cartDiscount - cartReferralDiscount);
+  }, [cartSubtotal, cartDeliveryFee, cartDiscount, cartReferralDiscount]);
 
   const cartCount = React.useMemo(() => {
     return cartItems.reduce((count, item) => count + item.quantite, 0);
@@ -346,6 +364,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             codePromo: promoCode.code.code,
             reductionPromo: discount,
         }),
+        ...(cartReferralDiscount > 0 && { reductionParrainage: cartReferralDiscount }),
         ...(scheduledFor && { programmePour: scheduledFor }),
         ...(deliveryInstructions.trim() && { instructionsLivraison: deliveryInstructions.trim() }),
         libelleAdresse: chosenAddress.libelle,
@@ -378,6 +397,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw serverError;
     }
 
+    // Persiste le bonus parrainage : marque le filleul + écrit dans le ledger
+    // /parrainages que le parrain interrogera depuis son code public.
+    if (cartReferralDiscount > 0 && userProfile.parraineParCode) {
+        const code = userProfile.parraineParCode;
+        // Empêche l'auto-parrainage (filet de sécurité côté client).
+        if (code !== userProfile.codeParrainage) {
+            updateDoc(doc(db, 'utilisateurs', user.uid), { bonusParrainageUtilise: true })
+                .catch(() => { /* silencieux : recalcul à la prochaine commande */ });
+
+            addDoc(collection(db, 'parrainages'), {
+                parrainCode: code,
+                filleulUid: user.uid,
+                pointsBonus: PARRAIN_BONUS_POINTS,
+                date: new Date().toISOString(),
+            }).catch(() => { /* silencieux : non bloquant pour la commande */ });
+        }
+    }
+
     clearCart();
     window.dispatchEvent(new CustomEvent('place-order'));
 
@@ -395,7 +432,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartLoyaltyDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor, paymentMethod, setPaymentMethod, paymentReference, setPaymentReference, selectedAddressId, setSelectedAddressId, savedAddresses, deliveryInstructions, setDeliveryInstructions }}>
+    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartLoyaltyDiscount, cartReferralDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor, paymentMethod, setPaymentMethod, paymentReference, setPaymentReference, selectedAddressId, setSelectedAddressId, savedAddresses, deliveryInstructions, setDeliveryInstructions }}>
       {children}
     </CartContext.Provider>
   );

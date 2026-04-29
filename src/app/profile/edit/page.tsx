@@ -18,7 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { Loader, User, ArrowLeft, MapPin, Plus, Star, Trash2 } from 'lucide-react';
+import { Loader, User, ArrowLeft, MapPin, Plus, Star, Trash2, Gift } from 'lucide-react';
 import Link from 'next/link';
 import type { SavedAddress } from '@/lib/types';
 import {
@@ -27,6 +27,7 @@ import {
   normalizeAddresses,
 } from '@/lib/addresses';
 import { Badge } from '@/components/ui/badge';
+import { isValidReferralCodeFormat, normalizeReferralCode, FILLEUL_DISCOUNT_FCFA } from '@/lib/referrals';
 
 const profileFormSchema = z.object({
   nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
@@ -148,6 +149,32 @@ export default function EditProfilePage() {
         toast({ title: 'Adresse supprimée' });
     };
 
+    const [referralInput, setReferralInput] = React.useState('');
+    const [savingReferral, setSavingReferral] = React.useState(false);
+
+    const handleSaveReferral = async () => {
+        if (!user || !userProfile) return;
+        const normalized = normalizeReferralCode(referralInput);
+        if (!isValidReferralCodeFormat(normalized)) {
+            toast({ variant: 'destructive', title: 'Code invalide', description: 'Format attendu : YAK-XXXX-XXXX.' });
+            return;
+        }
+        if (userProfile.codeParrainage && normalized === userProfile.codeParrainage) {
+            toast({ variant: 'destructive', title: 'Code refusé', description: 'Vous ne pouvez pas utiliser votre propre code.' });
+            return;
+        }
+        setSavingReferral(true);
+        try {
+            await updateUserProfile(user.uid, { parraineParCode: normalized });
+            toast({ title: 'Code accepté !', description: `${FILLEUL_DISCOUNT_FCFA.toLocaleString('fr-FR')} FCFA seront appliqués à votre prochaine commande.` });
+            setReferralInput('');
+        } catch {
+            toast({ variant: 'destructive', title: 'Erreur', description: "Impossible d'enregistrer le code." });
+        } finally {
+            setSavingReferral(false);
+        }
+    };
+
     if (!userProfile) return null;
 
     return (
@@ -204,6 +231,49 @@ export default function EditProfilePage() {
                                 </Button>
                             </form>
                         </Form>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-4">
+                            <Gift className="h-8 w-8 text-pink-500" />
+                            <div>
+                                <CardTitle className="text-2xl">Code de parrainage</CardTitle>
+                                <CardDescription>Saisissez le code d'un ami pour bénéficier de {FILLEUL_DISCOUNT_FCFA.toLocaleString('fr-FR')} FCFA sur votre première commande.</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {userProfile.parraineParCode ? (
+                            <div className="rounded-md border-2 border-dashed border-green-300 bg-green-50 dark:bg-green-950 dark:border-green-800 p-3 text-sm text-green-800 dark:text-green-200 space-y-1">
+                                <p className="font-medium">Code déjà enregistré</p>
+                                <p className="text-xs">
+                                    Code utilisé : <strong>{userProfile.parraineParCode}</strong>.{' '}
+                                    {userProfile.bonusParrainageUtilise
+                                        ? 'Bonus déjà appliqué.'
+                                        : 'Bonus en attente de votre prochaine commande.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Ex: YAK-AICH-2K9X"
+                                    value={referralInput}
+                                    onChange={e => setReferralInput(e.target.value.toUpperCase())}
+                                    className="uppercase font-mono tracking-wider"
+                                />
+                                <Button onClick={handleSaveReferral} disabled={savingReferral || !referralInput}>
+                                    {savingReferral && <Loader className="h-4 w-4 animate-spin" />}
+                                    Enregistrer
+                                </Button>
+                            </div>
+                        )}
+                        {userProfile.codeParrainage && (
+                            <p className="text-xs text-muted-foreground">
+                                Votre propre code (à partager) : <code className="font-mono">{userProfile.codeParrainage}</code>
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
 

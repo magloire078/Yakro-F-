@@ -72,19 +72,61 @@ service cloud.firestore {
       allow update: if isUserAuthenticated() && (
           // Le restaurateur accepte (Placée -> En Préparation)
           (isRestaurantOwner(resource.data.restaurantId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
-          
+
           // Le livreur prend en charge (En Préparation -> En Route)
           (userExists() && getUserData().role == 'livreur' && (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée') && request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
-          
+
           // Le livreur termine (En Route -> Livrée)
           (isUser(resource.data.livreurId) && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          
+
+          // Le client annule sa commande tant qu'elle n'a pas été acceptée par le restaurateur.
+          (isUser(resource.data.userId) && resource.data.statut == 'Placée' && request.resource.data.statut == 'Annulée') ||
+
+          // Le restaurateur peut annuler une commande qui le concerne tant qu'elle n'est pas en route.
+          (isRestaurantOwner(resource.data.restaurantId) && (resource.data.statut == 'Placée' || resource.data.statut == 'En Préparation') && request.resource.data.statut == 'Annulée') ||
+
+          // Toute partie prenante peut ajouter un incident sans changer le statut.
+          (
+            (isUser(resource.data.userId) || isUser(resource.data.livreurId) || isRestaurantOwner(resource.data.restaurantId))
+            && request.resource.data.statut == resource.data.statut
+          ) ||
+
+          // Mise à jour de la position du livreur ou du paiement (statut inchangé).
+          (
+            isUser(resource.data.userId)
+            && request.resource.data.statut == resource.data.statut
+          ) ||
+
           isSuperAdmin()
       );
       
       allow list: if isUserAuthenticated() && (
         userExists() && (getUserData().role == 'livreur' || getUserData().role == 'restaurateur' || getUserData().get('roleSysteme', 'User') == 'SuperAdmin')
       );
+    }
+
+    // Parrainages : ledger de bonus crédités au parrain par les filleuls.
+    // Chaque doc est créé par le filleul à sa première commande utilisant un code.
+    // Le parrain interroge ensuite ce ledger en filtrant sur son propre code
+    // (donné en clair sur son profil) pour additionner ses points bonus.
+    match /parrainages/{parrainageId} {
+      allow create: if isUserAuthenticated()
+        && isUser(request.resource.data.filleulUid)
+        && request.resource.data.parrainCode is string
+        && request.resource.data.parrainCode.size() > 0
+        && request.resource.data.pointsBonus is number
+        && request.resource.data.pointsBonus > 0
+        && request.resource.data.pointsBonus <= 1000;
+
+      // Lecture publique authentifiée : la donnée n'est pas sensible
+      // (code + uid filleul + points), et le parrain doit pouvoir requêter.
+      allow read: if isUserAuthenticated();
+
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /parrainages {
+      allow list: if isUserAuthenticated();
     }
   }
 }

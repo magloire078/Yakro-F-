@@ -78,6 +78,24 @@ export type PaymentMethod = 'especes' | 'wave' | 'orange-money' | 'mtn-momo' | '
 
 export type PaymentStatus = 'A la livraison' | 'En attente' | 'Confirmé' | 'Échoué';
 
+export type IncidentType =
+  | 'adresse-introuvable'
+  | 'client-absent'
+  | 'plat-manquant'
+  | 'commande-incomplete'
+  | 'plat-froid'
+  | 'autre';
+
+export type IncidentReporter = 'client' | 'livreur' | 'restaurateur';
+
+export interface OrderIncident {
+  id: string;
+  type: IncidentType;
+  message?: string;
+  signalePar: IncidentReporter;
+  date: string; // ISO
+}
+
 export interface PromoCode {
   code: string;
   type: 'percentage' | 'fixed' | 'freeDelivery';
@@ -113,6 +131,12 @@ export interface Order {
   instructionsLivraison?: string;
   /** Libellé de l'adresse choisie au moment de la commande (Maison, Travail, etc.). */
   libelleAdresse?: string;
+  /** Incidents signalés sur la commande (adresse introuvable, plat manquant…). */
+  incidents?: OrderIncident[];
+  /** Motif libre saisi à l'annulation. */
+  motifAnnulation?: string;
+  /** Réduction parrainage appliquée au filleul sur cette commande. */
+  reductionParrainage?: number;
   date: string;
   nomRestaurant: string;
   restaurantId: string;
@@ -161,6 +185,17 @@ export interface SavedAddress {
   parDefaut?: boolean;
 }
 
+export interface Parrainage {
+  id: string;
+  /** Code snapshot du parrain ; le parrain l'utilise pour requêter ses bonus. */
+  parrainCode: string;
+  /** Filleul qui a déclenché le bonus (et créé le doc). */
+  filleulUid: string;
+  /** Points de fidélité crédités au parrain. */
+  pointsBonus: number;
+  date: string; // ISO
+}
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -171,6 +206,13 @@ export interface UserProfile {
 
     /** Adresses enregistrées de l'utilisateur (Maison, Travail, etc.). */
     adresses?: SavedAddress[];
+
+    /** Code de parrainage unique de l'utilisateur (à partager avec ses amis). */
+    codeParrainage?: string;
+    /** Code saisi par le filleul à l'inscription (immutable une fois posé). */
+    parraineParCode?: string;
+    /** True une fois que la réduction de parrainage a été utilisée. */
+    bonusParrainageUtilise?: boolean;
 
     // Le rôle fonctionnel unique de l'utilisateur.
     role: AppRole;

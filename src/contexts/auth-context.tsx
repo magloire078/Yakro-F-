@@ -8,6 +8,7 @@ import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { generateReferralCode } from '@/lib/referrals';
 
 interface AuthContextType {
   user: User | null;
@@ -50,16 +51,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       const userDocRef = doc(db, 'utilisateurs', user.uid);
       
-      unsubscribeProfile = onSnapshot(userDocRef, 
+      unsubscribeProfile = onSnapshot(userDocRef,
         (docSnap) => {
           if (docSnap.exists()) {
             const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
             setUserProfile(profile);
-            
+
             const storedRole = localStorage.getItem('activeRole') as AppRole | null;
             if (!storedRole) {
                setActiveRoleState(profile.role);
                localStorage.setItem('activeRole', profile.role);
+            }
+
+            // Auto-génère un code de parrainage si manquant.
+            if (!profile.codeParrainage) {
+              const code = generateReferralCode(profile.uid, profile.nom);
+              updateDoc(userDocRef, { codeParrainage: code }).catch(() => {
+                // silencieux : prochaine connexion réessaiera
+              });
             }
           } else {
             setUserProfile(null);

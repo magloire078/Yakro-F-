@@ -4,9 +4,11 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, ShieldAlert, Sparkles, Trophy } from 'lucide-react';
+import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, ShieldAlert, Sparkles, Trophy, Gift, Copy, Check, Share2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useLoyalty } from '@/hooks/use-loyalty';
+import { Badge } from '@/components/ui/badge';
+import { buildShareMessage, FILLEUL_DISCOUNT_FCFA, PARRAIN_BONUS_POINTS } from '@/lib/referrals';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -23,7 +25,38 @@ export default function ProfilePage() {
   const { auth } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
-  const { points, tier, tierInfo, progress, pointsToNext } = useLoyalty();
+  const { points, tier, tierInfo, progress, pointsToNext, parrainBonusPoints, filleulCount } = useLoyalty();
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopyCode = async () => {
+    if (!userProfile?.codeParrainage) return;
+    try {
+      await navigator.clipboard.writeText(userProfile.codeParrainage);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ variant: 'destructive', title: 'Copie impossible', description: 'Sélectionnez et copiez manuellement.' });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!userProfile?.codeParrainage) return;
+    const message = buildShareMessage(userProfile.codeParrainage);
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: 'Yakro Fê', text: message });
+        return;
+      } catch {
+        /* ignore : fallback sur le presse-papiers */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(message);
+      toast({ title: 'Message copié', description: 'Collez-le dans WhatsApp ou un SMS pour inviter un ami.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Partage impossible' });
+    }
+  };
   
   const handleSignOut = async () => {
     await auth.signOut();
@@ -127,6 +160,64 @@ export default function ProfilePage() {
         {/* Right Column: Stats (only for clients) */}
         {activeRole === 'client' && (
             <div className="lg:col-span-1 space-y-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Gift className="h-5 w-5 text-pink-500" />
+                            Parrainez vos amis
+                        </CardTitle>
+                        <CardDescription>
+                            Vos amis reçoivent {FILLEUL_DISCOUNT_FCFA.toLocaleString('fr-FR')} FCFA, vous gagnez {PARRAIN_BONUS_POINTS} points par filleul actif.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {userProfile.codeParrainage ? (
+                            <>
+                                <div className="rounded-md border bg-muted/50 p-3 flex items-center justify-between gap-2">
+                                    <code className="font-mono font-bold tracking-wider">{userProfile.codeParrainage}</code>
+                                    <Button variant="outline" size="sm" onClick={handleCopyCode}>
+                                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                        {copied ? 'Copié' : 'Copier'}
+                                    </Button>
+                                </div>
+                                <Button onClick={handleShare} variant="default" className="w-full">
+                                    <Share2 className="h-4 w-4" />
+                                    Partager mon code
+                                </Button>
+                                {filleulCount > 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                        {filleulCount} filleul{filleulCount > 1 ? 's' : ''} actif{filleulCount > 1 ? 's' : ''} • +{parrainBonusPoints} pts cumulés.
+                                    </p>
+                                )}
+                            </>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Votre code sera généré automatiquement à votre prochaine connexion.</p>
+                        )}
+                        {userProfile.parraineParCode ? (
+                            <div className="rounded-md border-2 border-dashed border-green-300 bg-green-50 dark:bg-green-950 dark:border-green-800 p-3 text-sm text-green-800 dark:text-green-200 space-y-1">
+                                <p className="font-medium flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4" />
+                                    Vous avez été parrainé
+                                </p>
+                                <p className="text-xs">
+                                    Code utilisé : <strong>{userProfile.parraineParCode}</strong>.{' '}
+                                    {userProfile.bonusParrainageUtilise
+                                        ? 'Bonus déjà appliqué.'
+                                        : `${FILLEUL_DISCOUNT_FCFA.toLocaleString('fr-FR')} FCFA seront déduits sur votre prochaine commande.`}
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                Vous avez été parrainé par un ami ?{' '}
+                                <Link href="/profile/edit" className="text-primary underline">
+                                    Saisissez son code
+                                </Link>{' '}
+                                avant votre première commande.
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+
                 <Card style={{ borderColor: tierInfo.color }} className="border-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
