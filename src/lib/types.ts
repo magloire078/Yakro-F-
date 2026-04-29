@@ -51,6 +51,10 @@ export interface CartItem extends Omit<MenuItem, 'image'> {
   boissonSelectionnee?: MenuOption;
 }
 
+export type PaymentMethod = 'especes' | 'wave' | 'orange-money' | 'mtn-momo' | 'carte';
+
+export type PaymentStatus = 'A la livraison' | 'En attente' | 'Confirmé' | 'Échoué';
+
 export interface PromoCode {
   code: string;
   type: 'percentage' | 'fixed' | 'freeDelivery';
@@ -73,6 +77,15 @@ export interface Order {
   reductionPromo?: number;
   /** ISO datetime; absent = livraison immédiate */
   programmePour?: string;
+
+  /** Mode de paiement choisi par le client. */
+  methodePaiement?: PaymentMethod;
+  /** Statut du paiement. "A la livraison" = paiement en espèces au livreur. */
+  statutPaiement?: PaymentStatus;
+  /** Numéro de téléphone Mobile Money (sans indicatif) ou 4 derniers chiffres carte. */
+  referencePaiement?: string;
+  /** Points de fidélité gagnés sur cette commande (calculés à la création). */
+  pointsGagnes?: number;
   date: string;
   nomRestaurant: string;
   restaurantId: string;

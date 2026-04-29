@@ -1,15 +1,27 @@
 'use client';
 
 import * as React from 'react';
-import type { CartItem, MenuItem, Order, MenuOption } from '@/lib/types';
+import type { CartItem, MenuItem, Order, MenuOption, PaymentMethod } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { applyPromoCode, type PromoApplication } from '@/lib/promo-codes';
+import {
+  PAYMENT_METHODS,
+  getPaymentMethod,
+  simulatePrepaidPayment,
+  validatePaymentReference,
+} from '@/lib/payment';
+import {
+  computeOrderPoints,
+  computePointsFromOrders,
+  getTierForPoints,
+  computeLoyaltyDeliveryDiscount,
+} from '@/lib/loyalty';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -22,6 +34,7 @@ interface CartContextType {
   cartSubtotal: number;
   cartDeliveryFee: number;
   cartDiscount: number;
+  cartLoyaltyDiscount: number;
   cartTotal: number;
   cartCount: number;
   promoCode: PromoApplication | null;
@@ -29,6 +42,10 @@ interface CartContextType {
   removePromo: () => void;
   scheduledFor: string | null;
   setScheduledFor: (iso: string | null) => void;
+  paymentMethod: PaymentMethod;
+  setPaymentMethod: (method: PaymentMethod) => void;
+  paymentReference: string;
+  setPaymentReference: (ref: string) => void;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
@@ -72,9 +89,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
   const [promoCode, setPromoCode] = React.useState<PromoApplication | null>(null);
   const [scheduledFor, setScheduledFor] = React.useState<string | null>(null);
-  const { getRestaurant } = useData();
+  const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>('especes');
+  const [paymentReference, setPaymentReference] = React.useState<string>('');
+  const { getRestaurant, orders } = useData();
   const { user, userProfile } = useAuth();
   const { db } = useFirebase();
+
+  // Pré-remplit le téléphone Mobile Money depuis le profil utilisateur si disponible.
+  React.useEffect(() => {
+    if (!paymentReference && userProfile?.telephone) {
+      setPaymentReference(userProfile.telephone);
+    }
+  }, [userProfile?.telephone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
     try {
@@ -164,12 +190,29 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 0);
   }, [cartItems]);
 
-  const cartDeliveryFee = React.useMemo(() => {
+  const cartBaseDeliveryFee = React.useMemo(() => {
       if (cartItems.length === 0) return 0;
       const restaurantId = cartItems[0].restaurantId;
       const restaurant = getRestaurant(restaurantId);
       return restaurant?.fraisDeLivraison || 0;
   }, [cartItems, getRestaurant]);
+
+  const userLoyaltyTier = React.useMemo(() => {
+    if (!user) return getTierForPoints(0).tier;
+    const points = computePointsFromOrders(orders, user.uid);
+    return getTierForPoints(points).tier;
+  }, [orders, user]);
+
+  const cartLoyaltyDiscount = React.useMemo(
+    () => computeLoyaltyDeliveryDiscount(userLoyaltyTier, cartBaseDeliveryFee),
+    [userLoyaltyTier, cartBaseDeliveryFee]
+  );
+
+  // Frais affichés au client (avant code promo de livraison gratuite).
+  const cartDeliveryFee = React.useMemo(
+    () => Math.max(0, cartBaseDeliveryFee - cartLoyaltyDiscount),
+    [cartBaseDeliveryFee, cartLoyaltyDiscount]
+  );
 
   // Recalcule le promo si sous-total/livraison changent (peut invalider le minimum)
   React.useEffect(() => {
@@ -215,14 +258,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error("Veuillez définir une adresse de livraison par défaut dans votre profil.");
     }
 
+    const paymentInfo = getPaymentMethod(paymentMethod);
+    if (paymentInfo.needsPhone || paymentInfo.needsCard) {
+        const ref = paymentReference.replace(/\s+/g, '');
+        const validation = validatePaymentReference(paymentMethod, ref);
+        if (!validation.ok) throw new Error(validation.error);
+    }
+
     const location = await getUserLocation();
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
-    
+
     const commissionAmount = cartSubtotal * COMMISSION_RATE;
     const netRevenue = cartSubtotal - commissionAmount;
     const discount = cartDiscount;
-    
+    const pointsGagnes = computeOrderPoints(cartSubtotal);
+
     const itemsForOrder = cartItems.map(item => {
         const placeholder = getPlaceholderImage(item.indiceImage);
         const image = (item.image && !item.image.includes('picsum.photos')) ? item.image : placeholder.url;
@@ -241,6 +292,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         tauxCommission: COMMISSION_RATE,
         montantCommission: commissionAmount,
         revenuNet: netRevenue,
+        pointsGagnes,
+        methodePaiement: paymentMethod,
+        statutPaiement: paymentInfo.initialStatus,
+        ...(paymentInfo.needsPhone || paymentInfo.needsCard
+          ? { referencePaiement: paymentReference.replace(/\s+/g, '') }
+          : {}),
         ...(promoCode && {
             codePromo: promoCode.code.code,
             reductionPromo: discount,
@@ -262,24 +319,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const orderDocRef = doc(collection(db, "commandes"));
-    
-    setDoc(orderDocRef, newOrder)
-      .then(() => {
-        clearCart();
-        window.dispatchEvent(new CustomEvent('place-order'));
-      })
-      .catch(async (serverError) => {
+
+    try {
+        await setDoc(orderDocRef, newOrder);
+    } catch (serverError) {
         const permissionError = new FirestorePermissionError({
-          path: orderDocRef.path,
-          operation: 'create',
-          requestResourceData: newOrder,
+            path: orderDocRef.path,
+            operation: 'create',
+            requestResourceData: newOrder,
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
-      });
+        throw serverError;
+    }
+
+    clearCart();
+    window.dispatchEvent(new CustomEvent('place-order'));
+
+    // Paiement prépayé : on simule la confirmation en arrière-plan.
+    // À remplacer par une intégration PSP réelle (webhook serveur).
+    if (paymentInfo.prepayé) {
+        simulatePrepaidPayment().then(({ success }) => {
+            updateDoc(orderDocRef, {
+                statutPaiement: success ? 'Confirmé' : 'Échoué',
+            }).catch(() => {
+                // Silencieux : l'utilisateur peut réessayer depuis le suivi.
+            });
+        });
+    }
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor }}>
+    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartLoyaltyDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor, paymentMethod, setPaymentMethod, paymentReference, setPaymentReference }}>
       {children}
     </CartContext.Provider>
   );

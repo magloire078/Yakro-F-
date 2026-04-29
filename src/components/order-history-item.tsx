@@ -16,7 +16,8 @@ import { Separator } from './ui/separator';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { isRestaurantOpen } from '@/lib/restaurant-hours';
 import { formatScheduledDate } from '@/lib/scheduled-orders';
-import { CalendarClock } from 'lucide-react';
+import { CalendarClock, CreditCard, Sparkles } from 'lucide-react';
+import { getPaymentMethod } from '@/lib/payment';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -141,6 +142,34 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                     <span>{order.total.toLocaleString('fr-FR')} FCFA</span>
                 </div>
             </div>
+            {order.methodePaiement && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                    <Badge variant="outline" className="flex items-center gap-1">
+                        <CreditCard className="h-3 w-3" />
+                        {getPaymentMethod(order.methodePaiement).shortLabel}
+                    </Badge>
+                    {order.statutPaiement && (
+                        <Badge
+                            variant={
+                                order.statutPaiement === 'Confirmé'
+                                    ? 'default'
+                                    : order.statutPaiement === 'Échoué'
+                                    ? 'destructive'
+                                    : 'secondary'
+                            }
+                            className={order.statutPaiement === 'Confirmé' ? 'bg-green-600' : ''}
+                        >
+                            Paiement : {order.statutPaiement}
+                        </Badge>
+                    )}
+                    {order.statut === 'Livrée' && (order.pointsGagnes ?? 0) > 0 && (
+                        <Badge variant="outline" className="flex items-center gap-1 border-yellow-400 text-yellow-700 dark:text-yellow-300">
+                            <Sparkles className="h-3 w-3" />
+                            +{order.pointsGagnes} pts
+                        </Badge>
+                    )}
+                </div>
+            )}
              {order.statut === 'Livrée' && (
               <div className="mt-6 flex justify-end">
                   <Button onClick={handleReorder}>

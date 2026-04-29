@@ -17,10 +17,10 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
-import { Minus, Plus, Trash2, Tag, X, Clock } from 'lucide-react';
+import { Minus, Plus, Trash2, Tag, X, Clock, CreditCard, Wallet, Smartphone, Sparkles } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
-import { type CartItem } from '@/lib/types';
+import { type CartItem, type PaymentMethod } from '@/lib/types';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import {
   formatScheduledDate,
@@ -29,9 +29,45 @@ import {
   toLocalInputValue,
   validateScheduledDate,
 } from '@/lib/scheduled-orders';
+import { PAYMENT_METHODS, getPaymentMethod } from '@/lib/payment';
+import { cn } from '@/lib/utils';
+import { useLoyalty } from '@/hooks/use-loyalty';
+import { TIERS } from '@/lib/loyalty';
+
+const paymentIconFor = (id: PaymentMethod) => {
+  switch (id) {
+    case 'especes':
+      return Wallet;
+    case 'carte':
+      return CreditCard;
+    default:
+      return Smartphone;
+  }
+};
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
-  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor } = useCart();
+  const {
+    cartItems,
+    removeFromCart,
+    updateQuantity,
+    cartSubtotal,
+    cartDeliveryFee,
+    cartDiscount,
+    cartLoyaltyDiscount,
+    cartTotal,
+    cartCount,
+    placeOrder,
+    promoCode,
+    applyPromo,
+    removePromo,
+    scheduledFor,
+    setScheduledFor,
+    paymentMethod,
+    setPaymentMethod,
+    paymentReference,
+    setPaymentReference,
+  } = useCart();
+  const { tier } = useLoyalty();
   const { getMenuItem } = useData();
   const { toast } = useToast();
   const [promoInput, setPromoInput] = React.useState('');
@@ -220,6 +256,60 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                     </div>
                   )}
                 </div>
+
+                <div className="rounded-md border p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <CreditCard className="h-4 w-4" />
+                    Mode de paiement
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PAYMENT_METHODS.map(m => {
+                      const Icon = paymentIconFor(m.id);
+                      const selected = paymentMethod === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setPaymentMethod(m.id)}
+                          className={cn(
+                            'flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors',
+                            selected
+                              ? 'border-primary bg-primary/10 text-primary font-semibold'
+                              : 'hover:bg-muted'
+                          )}
+                          aria-pressed={selected}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{m.shortLabel}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{getPaymentMethod(paymentMethod).description}</p>
+                  {(getPaymentMethod(paymentMethod).needsPhone || getPaymentMethod(paymentMethod).needsCard) && (
+                    <Input
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder={
+                        getPaymentMethod(paymentMethod).needsPhone
+                          ? 'Numéro Mobile Money (ex: 07 12 34 56 78)'
+                          : '4 derniers chiffres de la carte'
+                      }
+                      value={paymentReference}
+                      onChange={e => setPaymentReference(e.target.value)}
+                    />
+                  )}
+                </div>
+
+                {tier !== 'Bronze' && cartLoyaltyDiscount > 0 && (
+                  <div className="flex items-center gap-2 rounded-md border border-yellow-300 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800 p-2 text-xs text-yellow-800 dark:text-yellow-200">
+                    <Sparkles className="h-4 w-4" />
+                    <span>
+                      Avantage {tier} : {tier === 'Or' ? 'livraison offerte' : `−${cartLoyaltyDiscount.toLocaleString('fr-FR')} FCFA sur la livraison`}.
+                    </span>
+                  </div>
+                )}
+
                 {promoCode ? (
                   <div className="flex items-center justify-between rounded-md bg-green-50 dark:bg-green-950 p-2 text-sm">
                     <div className="flex items-center gap-2 text-green-700 dark:text-green-300">

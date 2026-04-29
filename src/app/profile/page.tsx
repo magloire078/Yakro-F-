@@ -4,7 +4,9 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, ShieldAlert } from 'lucide-react';
+import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, ShieldAlert, Sparkles, Trophy } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { useLoyalty } from '@/hooks/use-loyalty';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -21,6 +23,7 @@ export default function ProfilePage() {
   const { auth } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
+  const { points, tier, tierInfo, progress, pointsToNext } = useLoyalty();
   
   const handleSignOut = async () => {
     await auth.signOut();
@@ -123,7 +126,39 @@ export default function ProfilePage() {
 
         {/* Right Column: Stats (only for clients) */}
         {activeRole === 'client' && (
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-8">
+                <Card style={{ borderColor: tierInfo.color }} className="border-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Trophy className="h-5 w-5" style={{ color: tierInfo.color }} />
+                            Fidélité — niveau {tier}
+                        </CardTitle>
+                        <CardDescription>{points} points cumulés</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {tierInfo.nextThreshold ? (
+                            <div className="space-y-1">
+                                <Progress value={progress * 100} />
+                                <p className="text-xs text-muted-foreground">
+                                    Encore {pointsToNext} points pour passer {tierInfo.nextTier}
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">Vous êtes au plus haut niveau. Bravo !</p>
+                        )}
+                        <ul className="space-y-1 text-sm">
+                            {tierInfo.perks.map(perk => (
+                                <li key={perk} className="flex items-center gap-2">
+                                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                    {perk}
+                                </li>
+                            ))}
+                        </ul>
+                        <p className="text-xs text-muted-foreground">
+                            Vous gagnez 1 point pour chaque tranche de 100 FCFA dépensée (commande livrée).
+                        </p>
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Statistiques Client</CardTitle>

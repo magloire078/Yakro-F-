@@ -9,8 +9,10 @@ import { useAuth } from '@/contexts/auth-context';
 import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { Order, UserProfile, Restaurant } from '@/lib/types';
-import { Loader, MapPin, Bike, Home, CalendarClock } from 'lucide-react';
+import { Loader, MapPin, Bike, Home, CalendarClock, CreditCard } from 'lucide-react';
 import { formatScheduledDate } from '@/lib/scheduled-orders';
+import { getPaymentMethod } from '@/lib/payment';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -101,6 +103,28 @@ export default function TrackOrderPage() {
                         <div className="mt-2 flex items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950 p-2 text-sm text-blue-700 dark:text-blue-300">
                             <CalendarClock className="h-4 w-4" />
                             <span>Programmée pour <strong>{formatScheduledDate(liveOrder.programmePour)}</strong></span>
+                        </div>
+                    )}
+                    {liveOrder.methodePaiement && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                            <Badge variant="outline" className="flex items-center gap-1">
+                                <CreditCard className="h-3 w-3" />
+                                {getPaymentMethod(liveOrder.methodePaiement).shortLabel}
+                            </Badge>
+                            {liveOrder.statutPaiement && (
+                                <Badge
+                                    variant={
+                                        liveOrder.statutPaiement === 'Confirmé'
+                                            ? 'default'
+                                            : liveOrder.statutPaiement === 'Échoué'
+                                            ? 'destructive'
+                                            : 'secondary'
+                                    }
+                                    className={liveOrder.statutPaiement === 'Confirmé' ? 'bg-green-600' : ''}
+                                >
+                                    {liveOrder.statutPaiement}
+                                </Badge>
+                            )}
                         </div>
                     )}
                 </CardHeader>
