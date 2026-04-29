@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Restaurant, MenuItem, Order } from '@/lib/types';
+import type { Restaurant, MenuItem, Order, Review } from '@/lib/types';
 import { create } from 'zustand';
 import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
@@ -14,10 +14,12 @@ interface DataState {
   restaurants: Restaurant[];
   menuItems: MenuItem[];
   orders: Order[];
+  reviews: Review[];
   isLoading: boolean;
   setRestaurants: (restaurants: Restaurant[]) => void;
   setMenuItems: (menuItems: MenuItem[]) => void;
   setOrders: (orders: Order[]) => void;
+  setReviews: (reviews: Review[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   getMenuItem: (id: string) => MenuItem | undefined;
   getRestaurant: (id: string) => Restaurant | undefined;
@@ -28,10 +30,12 @@ export const useData = create<DataState>((set, get) => ({
   restaurants: [],
   menuItems: [],
   orders: [],
+  reviews: [],
   isLoading: true,
   setRestaurants: (restaurants) => set({ restaurants }),
   setMenuItems: (menuItems) => set({ menuItems }),
   setOrders: (orders) => set({ orders }),
+  setReviews: (reviews) => set({ reviews }),
   setIsLoading: (isLoading) => set({ isLoading }),
   getMenuItem: (id: string) => {
     return get().menuItems.find(i => i.id === id);
@@ -68,25 +72,27 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db, storage } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
+    const { setRestaurants, setMenuItems, setOrders, setReviews, setIsLoading, restaurants } = useData();
 
     React.useEffect(() => {
         if (!db) return;
-        
+
         setIsLoading(true);
         const collectionRef = (path: string) => collection(db, path);
-        
+
         const unsubRestaurants = setupSubscription<Restaurant>(query(collectionRef('restaurants')), setRestaurants, 'restaurants');
         const unsubMenuItems = setupSubscription<MenuItem>(query(collectionRef('plats')), setMenuItems, 'plats');
-        
+        const unsubReviews = setupSubscription<Review>(query(collectionRef('avis')), setReviews, 'avis');
+
         const timer = setTimeout(() => setIsLoading(false), 2000);
 
         return () => {
             unsubRestaurants();
             unsubMenuItems();
+            unsubReviews();
             clearTimeout(timer);
         };
-    }, [db, setRestaurants, setMenuItems, setIsLoading]);
+    }, [db, setRestaurants, setMenuItems, setReviews, setIsLoading]);
 
     React.useEffect(() => {
         if (authLoading || !db) {

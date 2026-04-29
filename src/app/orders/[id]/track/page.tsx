@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { ReportIncidentDialog } from '@/components/report-incident-dialog';
 import { IncidentList } from '@/components/incident-list';
 import { CancelOrderDialog } from '@/components/cancel-order-dialog';
+import { OrderChat } from '@/components/order-chat';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -177,6 +178,14 @@ export default function TrackOrderPage() {
 
                         {liveOrder.incidents && liveOrder.incidents.length > 0 && (
                             <IncidentList incidents={liveOrder.incidents} />
+                        )}
+
+                        {liveOrder.livreurId && liveOrder.statut !== 'Annulée' && (
+                            <OrderChat
+                                orderId={liveOrder.id}
+                                myRole="client"
+                                active={liveOrder.statut !== 'Livrée'}
+                            />
                         )}
 
                         <div className="space-y-2 pt-2 border-t">

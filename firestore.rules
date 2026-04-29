@@ -105,6 +105,44 @@ service cloud.firestore {
       );
     }
 
+    // Chat intra-commande : seuls le client et le livreur de la commande
+    // peuvent lire et écrire les messages.
+    match /commandes/{orderId}/messages/{messageId} {
+      function isOrderClient() {
+        return isUserAuthenticated()
+          && isUser(get(/databases/$(database)/documents/commandes/$(orderId)).data.userId);
+      }
+      function isOrderLivreur() {
+        return isUserAuthenticated()
+          && isUser(get(/databases/$(database)/documents/commandes/$(orderId)).data.livreurId);
+      }
+      allow read, list: if isOrderClient() || isOrderLivreur() || isSuperAdmin();
+      allow create: if isUserAuthenticated()
+        && isUser(request.resource.data.fromUid)
+        && (isOrderClient() || isOrderLivreur())
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 500;
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Avis clients persistés. Lecture publique (pour afficher sur les
+    // pages restaurant), écriture authentifiée par l'auteur lui-même.
+    match /avis/{avisId} {
+      allow read, list: if true;
+      allow create: if isUserAuthenticated()
+        && isUser(request.resource.data.userId)
+        && request.resource.data.note is number
+        && request.resource.data.note >= 1
+        && request.resource.data.note <= 5
+        && request.resource.data.commentaire is string
+        && request.resource.data.commentaire.size() >= 5
+        && request.resource.data.commentaire.size() <= 1000
+        && request.resource.data.restaurantId is string;
+      allow update, delete: if isUserAuthenticated()
+        && (isUser(resource.data.userId) || isSuperAdmin());
+    }
+
     // Parrainages : ledger de bonus crédités au parrain par les filleuls.
     // Chaque doc est créé par le filleul à sa première commande utilisant un code.
     // Le parrain interroge ensuite ce ledger en filtrant sur son propre code

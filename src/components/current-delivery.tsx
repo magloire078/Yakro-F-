@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useLivreurPosition } from '@/hooks/use-livreur-position';
 import { ReportIncidentDialog } from '@/components/report-incident-dialog';
 import { IncidentList } from '@/components/incident-list';
+import { OrderChat } from '@/components/order-chat';
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -119,6 +120,7 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                     {order.incidents && order.incidents.length > 0 && (
                         <IncidentList incidents={order.incidents} />
                     )}
+                    <OrderChat orderId={order.id} myRole="livreur" />
                     <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
                         <Button className="w-full" size="lg" onClick={handleComplete} disabled={isCompleting}>
                             {isCompleting && <Loader className="animate-spin mr-2" />}

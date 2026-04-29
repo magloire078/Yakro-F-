@@ -7,11 +7,16 @@ import { useAuth } from '@/contexts/auth-context';
 import { Sidebar } from '@/components/sidebar';
 import { MobileHeader } from '@/components/mobile-header';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
+import { NotificationPermissionPrompt } from '@/components/notification-permission-prompt';
+import { useOrderNotifications } from '@/hooks/use-order-notifications';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const { loading: authLoading } = useAuth();
   const pathname = usePathname();
-  
+
+  // Notifications toast + Browser API sur les changements de statut.
+  useOrderNotifications();
+
   const isAuthPage = pathname === '/login' || pathname === '/profile-selection';
 
   if (authLoading) {
@@ -37,6 +42,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <BottomNavBar />
+        <NotificationPermissionPrompt />
       </div>
     </div>
   );

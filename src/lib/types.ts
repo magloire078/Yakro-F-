@@ -154,9 +154,25 @@ export interface Order {
 export interface Review {
   id: string;
   restaurantId: string;
+  /** UID de l'auteur (absent pour les avis générés par IA). */
+  userId?: string;
   nomUtilisateur:string;
   note: number;
   commentaire: string;
+  /** ISO datetime de création. */
+  date?: string;
+  /** URL d'une photo jointe (Firebase Storage). */
+  imageUrl?: string;
+}
+
+export type ChatRole = 'client' | 'livreur';
+
+export interface ChatMessage {
+  id: string;
+  fromUid: string;
+  fromRole: ChatRole;
+  text: string;
+  date: string; // ISO
 }
 
 /**

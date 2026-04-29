@@ -10,7 +10,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
 import { ReviewCard } from '@/components/review-card';
-import { ReviewForm } from '@/components/review-form';
+import { ReviewForm, type ReviewFormValues } from '@/components/review-form';
 import { RatingsChart } from '@/components/ratings-chart';
 import type { Review } from '@/lib/types';
 import { generateReviews } from '@/ai/flows/generate-reviews-flow';
@@ -23,20 +23,34 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { isRestaurantOpen, getNextOpeningLabel, DAY_LABELS, ORDERED_DAYS } from '@/lib/restaurant-hours';
 import { cn } from '@/lib/utils';
 import { getActiveHappyHour, formatHappyHourLabel } from '@/lib/promotions';
+import { useAuth } from '@/contexts/auth-context';
+import { useFirebase } from '@/contexts/firebase-provider';
+import { addDoc, collection } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function RestaurantPage() {
     const params = useParams();
-    const { getRestaurant, menuItems, isLoading } = useData();
+    const { getRestaurant, menuItems, reviews, isLoading } = useData();
     const restaurant = getRestaurant(params.id as string);
     const { isFavorite, toggleFavorite, isAuthenticated } = useFavorites();
+    const { user, userProfile } = useAuth();
+    const { db, storage } = useFirebase();
 
-    const [userReviews, setUserReviews] = React.useState<Review[]>([]);
     const [aiReviews, setAiReviews] = React.useState<Review[]>([]);
     const [loadingAiReviews, setLoadingAiReviews] = React.useState(false);
     const [audioUrl, setAudioUrl] = React.useState<string | null>(null);
     const [isGeneratingAudio, setIsGeneratingAudio] = React.useState(false);
+    const [submittingReview, setSubmittingReview] = React.useState(false);
     const { toast } = useToast();
-    
+
+    const userReviews = React.useMemo(
+        () =>
+            reviews
+                .filter(r => r.restaurantId === (params.id as string))
+                .sort((a, b) => (new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime())),
+        [reviews, params.id]
+    );
+
     const allReviews = React.useMemo(() => [...userReviews, ...aiReviews], [userReviews, aiReviews]);
 
     const handleGenerateReviews = React.useCallback(async () => {
@@ -98,18 +112,43 @@ export default function RestaurantPage() {
         }
     }, [aiReviews, toast]);
 
-    const handleAddReview = (newReview: Omit<Review, 'id' | 'restaurantId'>) => {
+    const handleAddReview = async (data: ReviewFormValues, photo: File | null) => {
         if (!restaurant) return;
-        const fullReview: Review = {
-          ...newReview,
-          id: `user-review-${Date.now()}`,
-          restaurantId: restaurant.id,
-        };
-        setUserReviews(prev => [fullReview, ...prev]);
-         toast({
-          title: 'Avis ajouté !',
-          description: 'Merci pour votre contribution.',
-        });
+        if (!user) {
+            toast({
+                variant: 'destructive',
+                title: 'Connexion requise',
+                description: 'Connectez-vous pour publier un avis.',
+            });
+            return;
+        }
+        setSubmittingReview(true);
+        try {
+            let imageUrl: string | undefined;
+            if (photo) {
+                const path = `avis/${restaurant.id}/${user.uid}-${Date.now()}-${photo.name}`;
+                const snapshot = await uploadBytes(ref(storage, path), photo);
+                imageUrl = await getDownloadURL(snapshot.ref);
+            }
+            await addDoc(collection(db, 'avis'), {
+                restaurantId: restaurant.id,
+                userId: user.uid,
+                nomUtilisateur: data.nomUtilisateur || userProfile?.nom || 'Anonyme',
+                note: data.note,
+                commentaire: data.commentaire,
+                date: new Date().toISOString(),
+                ...(imageUrl && { imageUrl }),
+            });
+            toast({ title: 'Avis publié !', description: 'Merci pour votre contribution.' });
+        } catch (e: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Erreur',
+                description: e?.message || "Impossible d'enregistrer l'avis.",
+            });
+        } finally {
+            setSubmittingReview(false);
+        }
     };
 
     const { averageRating, ratingsDistribution } = React.useMemo(() => {
@@ -338,7 +377,7 @@ export default function RestaurantPage() {
                   <div className="lg:col-span-1 space-y-8">
                      <div>
                         <h2 className="text-2xl font-headline text-foreground mb-4">Laissez votre avis</h2>
-                        <ReviewForm onSubmit={handleAddReview} />
+                        <ReviewForm onSubmit={handleAddReview} isSubmitting={submittingReview} />
                      </div>
                      {allReviews.length > 0 && (
                         <div>
