@@ -5,7 +5,7 @@ import type { Order } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Home, Map, Phone, Loader } from 'lucide-react';
+import { ChefHat, Home, Map, Phone, Loader, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { DeliveryMap } from '@/components/delivery-map-loader';
 import { useAuth } from '@/contexts/auth-context';
@@ -83,11 +83,20 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                          <div className="flex items-start gap-4">
                             <Home className="text-green-500 mt-1"/>
                             <div>
-                                <p className="font-semibold text-lg">2. Livrer à</p>
+                                <p className="font-semibold text-lg">2. Livrer à {order.libelleAdresse ? `(${order.libelleAdresse})` : ''}</p>
                                 <p className="text-muted-foreground">{order.adresseClient}</p>
                             </div>
                         </div>
                     </div>
+                    {order.instructionsLivraison && (
+                        <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 p-4 flex items-start gap-3">
+                            <MessageSquare className="h-5 w-5 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="font-semibold text-amber-800 dark:text-amber-200">Instructions du client</p>
+                                <p className="text-sm text-amber-900 dark:text-amber-100 whitespace-pre-line">{order.instructionsLivraison}</p>
+                            </div>
+                        </div>
+                    )}
                     <div className="space-y-3">
                         {mapsLink && (
                             <Button asChild variant="outline" className="w-full">

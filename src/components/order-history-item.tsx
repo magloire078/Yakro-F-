@@ -16,7 +16,7 @@ import { Separator } from './ui/separator';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { isRestaurantOpen } from '@/lib/restaurant-hours';
 import { formatScheduledDate } from '@/lib/scheduled-orders';
-import { CalendarClock, CreditCard, Sparkles } from 'lucide-react';
+import { CalendarClock, CreditCard, Sparkles, MessageSquare } from 'lucide-react';
 import { getPaymentMethod } from '@/lib/payment';
 
 interface OrderHistoryItemProps {
@@ -94,6 +94,21 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
               <div className="mb-4 flex items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950 p-3 text-sm text-blue-700 dark:text-blue-300">
                 <CalendarClock className="h-4 w-4" />
                 <span>Commande programmée pour <strong>{formatScheduledDate(order.programmePour)}</strong></span>
+              </div>
+            )}
+            {(order.libelleAdresse || order.instructionsLivraison) && (
+              <div className="mb-4 rounded-md border p-3 text-sm space-y-1">
+                {order.libelleAdresse && (
+                  <p className="text-xs text-muted-foreground">
+                    Livré à : <span className="font-medium text-foreground">{order.libelleAdresse}</span>
+                  </p>
+                )}
+                {order.instructionsLivraison && (
+                  <div className="flex items-start gap-2 pt-1">
+                    <MessageSquare className="h-3.5 w-3.5 mt-0.5 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground italic whitespace-pre-line">«&nbsp;{order.instructionsLivraison}&nbsp;»</p>
+                  </div>
+                )}
               </div>
             )}
             <div className="space-y-4">

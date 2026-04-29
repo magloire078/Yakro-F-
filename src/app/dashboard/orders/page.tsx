@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, CheckCircle, QrCode } from 'lucide-react';
+import { Loader, CheckCircle, QrCode, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -85,6 +85,15 @@ export default function DashboardOrdersPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-0">
+                {order.instructionsLivraison && (
+                    <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 p-3 flex items-start gap-2 text-sm">
+                        <MessageSquare className="h-4 w-4 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5" />
+                        <div>
+                            <p className="font-semibold text-amber-800 dark:text-amber-200 text-xs">Instructions du client</p>
+                            <p className="text-amber-900 dark:text-amber-100 whitespace-pre-line">{order.instructionsLivraison}</p>
+                        </div>
+                    </div>
+                )}
                 <Accordion type="single" collapsible>
                     <AccordionItem value="details" className="border-b-0">
                         <AccordionTrigger className="py-2 text-sm">Voir les détails</AccordionTrigger>

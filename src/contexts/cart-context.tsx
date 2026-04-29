@@ -22,6 +22,8 @@ import {
   getTierForPoints,
   computeLoyaltyDeliveryDiscount,
 } from '@/lib/loyalty';
+import { getDefaultAddress, getUserAddresses } from '@/lib/addresses';
+import type { SavedAddress } from '@/lib/types';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -46,6 +48,11 @@ interface CartContextType {
   setPaymentMethod: (method: PaymentMethod) => void;
   paymentReference: string;
   setPaymentReference: (ref: string) => void;
+  selectedAddressId: string | null;
+  setSelectedAddressId: (id: string | null) => void;
+  savedAddresses: SavedAddress[];
+  deliveryInstructions: string;
+  setDeliveryInstructions: (notes: string) => void;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
@@ -91,6 +98,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [scheduledFor, setScheduledFor] = React.useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>('especes');
   const [paymentReference, setPaymentReference] = React.useState<string>('');
+  const [selectedAddressId, setSelectedAddressId] = React.useState<string | null>(null);
+  const [deliveryInstructions, setDeliveryInstructions] = React.useState<string>('');
   const { getRestaurant, orders } = useData();
   const { user, userProfile } = useAuth();
   const { db } = useFirebase();
@@ -101,6 +110,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPaymentReference(userProfile.telephone);
     }
   }, [userProfile?.telephone]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const savedAddresses = React.useMemo(() => getUserAddresses(userProfile), [userProfile]);
+
+  // Sélectionne automatiquement l'adresse par défaut si aucune n'est encore choisie.
+  React.useEffect(() => {
+    if (selectedAddressId) return;
+    const def = getDefaultAddress(userProfile);
+    if (def) setSelectedAddressId(def.id);
+  }, [userProfile, selectedAddressId]);
 
   React.useEffect(() => {
     try {
@@ -162,6 +180,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems([]);
     setPromoCode(null);
     setScheduledFor(null);
+    setDeliveryInstructions('');
   };
 
   const reorderItems = (items: Omit<CartItem, 'image'>[]) => {
@@ -254,8 +273,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
      if (cartItems.length === 0) {
         throw new Error("Votre panier est vide.");
     }
-     if (!userProfile.adresseParDefaut) {
-        throw new Error("Veuillez définir une adresse de livraison par défaut dans votre profil.");
+
+    const chosenAddress =
+      savedAddresses.find(a => a.id === selectedAddressId) ||
+      getDefaultAddress(userProfile);
+    if (!chosenAddress) {
+        throw new Error("Veuillez ajouter une adresse de livraison dans votre profil.");
     }
 
     const paymentInfo = getPaymentMethod(paymentMethod);
@@ -265,7 +288,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!validation.ok) throw new Error(validation.error);
     }
 
-    const location = await getUserLocation();
+    // Si l'adresse a des coordonnées, on les utilise; sinon on tente la géoloc.
+    const addressCoords = chosenAddress.latitude && chosenAddress.longitude
+      ? { latitude: chosenAddress.latitude, longitude: chosenAddress.longitude }
+      : null;
+    const location = addressCoords ?? (await getUserLocation());
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
 
@@ -303,11 +330,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             reductionPromo: discount,
         }),
         ...(scheduledFor && { programmePour: scheduledFor }),
+        ...(deliveryInstructions.trim() && { instructionsLivraison: deliveryInstructions.trim() }),
+        libelleAdresse: chosenAddress.libelle,
         date: new Date().toISOString(),
         nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
         restaurantId: restaurantId,
         statut: 'Placée',
-        adresseClient: userProfile.adresseParDefaut,
+        adresseClient: chosenAddress.adresse,
         adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
         telephoneClient: userProfile.telephone || 'Numéro non spécifié',
         ...(location && {
@@ -349,7 +378,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartLoyaltyDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor, paymentMethod, setPaymentMethod, paymentReference, setPaymentReference }}>
+    <CartContext.Provider value={{ cartItems, addToCart, reorderItems, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartDiscount, cartLoyaltyDiscount, cartTotal, cartCount, placeOrder, promoCode, applyPromo, removePromo, scheduledFor, setScheduledFor, paymentMethod, setPaymentMethod, paymentReference, setPaymentReference, selectedAddressId, setSelectedAddressId, savedAddresses, deliveryInstructions, setDeliveryInstructions }}>
       {children}
     </CartContext.Provider>
   );

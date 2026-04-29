@@ -4,6 +4,8 @@ export interface MenuOption {
   prix: number;
 }
 
+export type DietaryTag = 'halal' | 'vegetarien' | 'vegan' | 'sans-gluten' | 'sans-porc' | 'epice';
+
 export interface MenuItem {
   id: string;
   nom: string;
@@ -14,6 +16,8 @@ export interface MenuItem {
   restaurantId: string;
   accompagnementsDisponibles?: MenuOption[];
   boissonsDisponibles?: MenuOption[];
+  /** Tags diététiques. Permet aux clients de filtrer par préférence/restriction. */
+  tagsDiet?: DietaryTag[];
 }
 
 export type DayOfWeek = 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vendredi' | 'samedi' | 'dimanche';
@@ -86,6 +90,10 @@ export interface Order {
   referencePaiement?: string;
   /** Points de fidélité gagnés sur cette commande (calculés à la création). */
   pointsGagnes?: number;
+  /** Notes / instructions de livraison saisies par le client (allergies, étage, code, etc.). */
+  instructionsLivraison?: string;
+  /** Libellé de l'adresse choisie au moment de la commande (Maison, Travail, etc.). */
+  libelleAdresse?: string;
   date: string;
   nomRestaurant: string;
   restaurantId: string;
@@ -125,6 +133,15 @@ export type AppRole = 'client' | 'restaurateur' | 'livreur';
  */
 export type SystemRole = 'SuperAdmin' | 'Admin' | 'User';
 
+export interface SavedAddress {
+  id: string;
+  libelle: string; // "Maison", "Travail", "Chez Maman", etc.
+  adresse: string;
+  latitude?: number;
+  longitude?: number;
+  parDefaut?: boolean;
+}
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -132,13 +149,16 @@ export interface UserProfile {
     nom?: string;
     telephone?: string;
     adresseParDefaut?: string;
-    
+
+    /** Adresses enregistrées de l'utilisateur (Maison, Travail, etc.). */
+    adresses?: SavedAddress[];
+
     // Le rôle fonctionnel unique de l'utilisateur.
     role: AppRole;
-    
+
     // Le niveau de permissions de l'utilisateur dans le système.
     roleSysteme?: SystemRole;
-    
+
     statutService?: 'En service' | 'Hors service';
 
     // Position actuelle du livreur

@@ -8,6 +8,7 @@ import { PlusCircle, Lock } from 'lucide-react';
 import type { MenuItem } from '@/lib/types';
 import { AddToCartDialog } from './add-to-cart-dialog';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { getDietaryTag } from '@/lib/dietary';
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -35,6 +36,23 @@ export function MenuItemCard({ item, disabled = false }: MenuItemCardProps) {
       <div className="flex-1">
         <h4 className="font-bold font-headline">{item.nom}</h4>
         <p className="text-sm text-muted-foreground h-10 overflow-hidden">{item.description}</p>
+        {item.tagsDiet && item.tagsDiet.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {item.tagsDiet.map(t => {
+              const info = getDietaryTag(t);
+              return (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  title={info.description}
+                >
+                  <span>{info.emoji}</span>
+                  {info.shortLabel}
+                </span>
+              );
+            })}
+          </div>
+        )}
         <div className="flex justify-between items-center mt-2">
           <p className="text-lg font-semibold text-primary">{item.prix.toLocaleString('fr-FR')} FCFA</p>
           {disabled ? (

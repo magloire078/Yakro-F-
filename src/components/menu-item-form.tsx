@@ -18,6 +18,9 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader, Trash, Plus, Upload } from 'lucide-react';
 import Image from 'next/image';
+import { DIETARY_TAGS } from '@/lib/dietary';
+import type { DietaryTag } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 const optionSchema = z.object({
   nom: z.string().min(1, "Le nom ne peut être vide."),
@@ -32,6 +35,9 @@ export const menuItemFormSchema = z.object({
   indiceImage: z.string().optional(),
   accompagnementsDisponibles: z.array(optionSchema).optional(),
   boissonsDisponibles: z.array(optionSchema).optional(),
+  tagsDiet: z
+    .array(z.enum(['halal', 'vegetarien', 'vegan', 'sans-gluten', 'sans-porc', 'epice']))
+    .optional(),
 });
 
 export type MenuItemFormValues = z.infer<typeof menuItemFormSchema>;
@@ -170,7 +176,48 @@ export function MenuItemForm({
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => appendDrink({ nom: '', prix: 0 })} className="rounded-xl"><Plus className="h-4 w-4 mr-2" /> Ajouter une boisson</Button>
         </div>
-        
+
+        <div className="space-y-2">
+          <Label>Tags diététiques</Label>
+          <p className="text-xs text-muted-foreground">Aide les clients à filtrer selon leurs préférences ou restrictions.</p>
+          <FormField
+            control={form.control}
+            name="tagsDiet"
+            render={({ field }) => {
+              const value: DietaryTag[] = (field.value as DietaryTag[]) ?? [];
+              const toggle = (tag: DietaryTag) => {
+                const next = value.includes(tag) ? value.filter(t => t !== tag) : [...value, tag];
+                field.onChange(next);
+              };
+              return (
+                <FormItem>
+                  <div className="flex flex-wrap gap-2">
+                    {DIETARY_TAGS.map(t => {
+                      const selected = value.includes(t.id);
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => toggle(t.id)}
+                          className={cn(
+                            'rounded-full border px-3 py-1 text-sm transition-colors',
+                            selected ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'
+                          )}
+                          aria-pressed={selected}
+                        >
+                          <span className="mr-1">{t.emoji}</span>
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        </div>
+
         {children}
       </form>
     </Form>

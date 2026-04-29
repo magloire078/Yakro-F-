@@ -18,6 +18,8 @@ import { getPersonalizedRecommendations, PersonalizedRecommendationsOutput } fro
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { DIETARY_TAGS } from '@/lib/dietary';
+import type { DietaryTag } from '@/lib/types';
 
 interface Category {
     name: string;
@@ -97,6 +99,23 @@ export default function CustomerHomePage() {
   const [activeFilter, setActiveFilter] = React.useState<SortFilter>(null);
   const [userLocation, setUserLocation] = React.useState<Coordinates | null>(null);
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
+  const [dietaryFilters, setDietaryFilters] = React.useState<DietaryTag[]>([]);
+
+  const toggleDietaryFilter = (tag: DietaryTag) => {
+    setDietaryFilters(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const restaurantsMatchingDiet = React.useMemo<Set<string> | null>(() => {
+    if (dietaryFilters.length === 0) return null;
+    const set = new Set<string>();
+    for (const item of menuItems) {
+      if (!item) continue;
+      const tags = item.tagsDiet ?? [];
+      const hasAll = dietaryFilters.every(f => tags.includes(f));
+      if (hasAll) set.add(item.restaurantId);
+    }
+    return set;
+  }, [menuItems, dietaryFilters]);
 
 
   const userDeliveredOrders = React.useMemo(() => {
@@ -180,7 +199,7 @@ export default function CustomerHomePage() {
 
 
     if (!isLoading && validRestaurants && validRestaurants.length > 0) {
-      if (!searchQuery && !interpretedSearch && !selectedCategory) {
+      if (!searchQuery && !interpretedSearch && !selectedCategory && dietaryFilters.length === 0) {
         filteredRestaurants = validRestaurants;
       } else {
         const searchTerms = [
@@ -199,7 +218,12 @@ export default function CustomerHomePage() {
         filteredRestaurants = validRestaurants
           .filter(r => {
             if (!r || !r.nom || !r.cuisine) return false;
-            
+
+            // Dietary filter (le resto doit proposer au moins un plat correspondant)
+            if (restaurantsMatchingDiet && !restaurantsMatchingDiet.has(r.id)) {
+                return false;
+            }
+
             // Category filter
             if (selectedCategory && r.cuisine.toLowerCase() !== selectedCategory.toLowerCase()) {
                 return false;
@@ -287,7 +311,7 @@ export default function CustomerHomePage() {
         categories: dynamicCategories,
     }
 
-  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation, selectedCategory]);
+  }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation, selectedCategory, restaurantsMatchingDiet, dietaryFilters]);
 
   const handleLocationFilter = () => {
     if (activeFilter === 'distance') {
@@ -369,6 +393,22 @@ export default function CustomerHomePage() {
                 <Button size="sm" variant={activeFilter === 'distance' ? 'default' : 'outline'} onClick={handleLocationFilter}>
                     <MapPin /> À proximité
                 </Button>
+            </div>
+            <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
+                {DIETARY_TAGS.map(t => {
+                    const active = dietaryFilters.includes(t.id);
+                    return (
+                        <Button
+                            key={t.id}
+                            size="sm"
+                            variant={active ? 'default' : 'outline'}
+                            onClick={() => toggleDietaryFilter(t.id)}
+                        >
+                            <span className="mr-1">{t.emoji}</span>
+                            {t.shortLabel}
+                        </Button>
+                    );
+                })}
             </div>
           </div>
         </section>

@@ -15,9 +15,11 @@ import {
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
-import { Minus, Plus, Trash2, Tag, X, Clock, CreditCard, Wallet, Smartphone, Sparkles } from 'lucide-react';
+import { Minus, Plus, Trash2, Tag, X, Clock, CreditCard, Wallet, Smartphone, Sparkles, MapPin, MessageSquare, Star } from 'lucide-react';
+import Link from 'next/link';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { type CartItem, type PaymentMethod } from '@/lib/types';
@@ -66,6 +68,11 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
     setPaymentMethod,
     paymentReference,
     setPaymentReference,
+    selectedAddressId,
+    setSelectedAddressId,
+    savedAddresses,
+    deliveryInstructions,
+    setDeliveryInstructions,
   } = useCart();
   const { tier } = useLoyalty();
   const { getMenuItem } = useData();
@@ -214,6 +221,66 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <Separator />
             <SheetFooter className="mt-4">
               <div className="flex flex-col w-full gap-4">
+                <div className="rounded-md border p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <MapPin className="h-4 w-4" />
+                    Adresse de livraison
+                  </div>
+                  {savedAddresses.length === 0 ? (
+                    <div className="text-xs text-muted-foreground">
+                      Aucune adresse enregistrée.{' '}
+                      <SheetClose asChild>
+                        <Link href="/profile/edit" className="text-primary underline">
+                          Ajouter une adresse
+                        </Link>
+                      </SheetClose>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {savedAddresses.map(a => {
+                        const selected = (selectedAddressId ?? savedAddresses.find(x => x.parDefaut)?.id) === a.id;
+                        return (
+                          <button
+                            key={a.id}
+                            type="button"
+                            onClick={() => setSelectedAddressId(a.id)}
+                            className={cn(
+                              'w-full text-left rounded-md border px-3 py-2 transition-colors',
+                              selected ? 'border-primary bg-primary/10' : 'hover:bg-muted'
+                            )}
+                            aria-pressed={selected}
+                          >
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                              {a.libelle}
+                              {a.parDefaut && <Star className="h-3 w-3 fill-current text-primary" />}
+                            </div>
+                            <div className="text-xs text-muted-foreground line-clamp-1">{a.adresse}</div>
+                          </button>
+                        );
+                      })}
+                      <SheetClose asChild>
+                        <Link href="/profile/edit" className="block text-xs text-primary underline pt-1">
+                          Gérer mes adresses
+                        </Link>
+                      </SheetClose>
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-md border p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <MessageSquare className="h-4 w-4" />
+                    Instructions de livraison <span className="text-xs font-normal text-muted-foreground">(facultatif)</span>
+                  </div>
+                  <Textarea
+                    placeholder="Ex: Pas d'oignon. Étage 2, code 1234. Sonner au gardien."
+                    value={deliveryInstructions}
+                    onChange={e => setDeliveryInstructions(e.target.value.slice(0, 280))}
+                    rows={2}
+                  />
+                  <p className="text-xs text-muted-foreground text-right">{deliveryInstructions.length}/280</p>
+                </div>
+
                 <div className="rounded-md border p-3 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <Clock className="h-4 w-4" />
