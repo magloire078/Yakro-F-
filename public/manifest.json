@@ -1,17 +1,29 @@
 {
-  "theme_color": "#ff8c00",
-  "background_color": "#faebd7",
-  "display": "standalone",
+  "name": "Yakro Fê — Livraison à Yamoussoukro",
+  "short_name": "Yakro Fê",
+  "description": "Les meilleurs restaurants de Yamoussoukro livrés chez vous. Paiement Mobile Money, fidélité et suivi en direct.",
+  "lang": "fr",
+  "dir": "ltr",
   "scope": "/",
   "start_url": "/",
-  "name": "Yakro Go",
-  "short_name": "Yakro Go",
-  "description": "Votre ville, livr\u00e9e.",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#FF8C00",
+  "background_color": "#FAEBD7",
+  "categories": ["food", "shopping", "lifestyle"],
+  "id": "/",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-256x256.png",
@@ -26,7 +38,37 @@
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mes commandes",
+      "short_name": "Commandes",
+      "description": "Voir l'historique de mes commandes",
+      "url": "/orders",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mes favoris",
+      "short_name": "Favoris",
+      "description": "Mes restaurants favoris",
+      "url": "/favorites",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mon profil",
+      "short_name": "Profil",
+      "description": "Profil et paramètres",
+      "url": "/profile",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

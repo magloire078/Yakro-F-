@@ -166,5 +166,18 @@ service cloud.firestore {
     match /parrainages {
       allow list: if isUserAuthenticated();
     }
+
+    // Feedback global : tout utilisateur authentifié peut envoyer un retour.
+    // Seul un SuperAdmin peut lire les retours pour modération.
+    match /feedback/{feedbackId} {
+      allow create: if isUserAuthenticated()
+        && isUser(request.resource.data.userId)
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 10
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.category in ['bug', 'suggestion', 'compliment', 'autre'];
+      allow read, list: if isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
+    }
   }
 }

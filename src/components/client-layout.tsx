@@ -8,6 +8,9 @@ import { Sidebar } from '@/components/sidebar';
 import { MobileHeader } from '@/components/mobile-header';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
 import { NotificationPermissionPrompt } from '@/components/notification-permission-prompt';
+import { OnboardingTour } from '@/components/onboarding-tour';
+import { FeedbackButton } from '@/components/feedback-button';
+import { InstallPrompt } from '@/components/install-prompt';
 import { useOrderNotifications } from '@/hooks/use-order-notifications';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -42,7 +45,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <BottomNavBar />
+        <OnboardingTour />
         <NotificationPermissionPrompt />
+        <InstallPrompt />
+        <FeedbackButton />
       </div>
     </div>
   );

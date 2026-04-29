@@ -6,9 +6,33 @@ import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Yakro Fê',
-  description: 'Votre ville, livrée intelligemment.',
+  title: {
+    default: 'Yakro Fê — Livraison de repas à Yamoussoukro',
+    template: '%s · Yakro Fê',
+  },
+  description: 'Les meilleurs restaurants de Yamoussoukro livrés chez vous. Paiement Mobile Money, suivi en direct, fidélité et parrainage.',
+  applicationName: 'Yakro Fê',
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: 'Yakro Fê',
+    statusBarStyle: 'default',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_CI',
+    title: 'Yakro Fê — Livraison de repas à Yamoussoukro',
+    description: 'Commandez les meilleurs plats de Yamoussoukro, payez en Mobile Money, suivez votre livreur en direct.',
+    siteName: 'Yakro Fê',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Yakro Fê',
+    description: 'Livraison de repas à Yamoussoukro.',
+  },
 };
 
 export const viewport: Viewport = {
