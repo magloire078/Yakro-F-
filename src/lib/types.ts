@@ -18,6 +18,8 @@ export interface MenuItem {
   boissonsDisponibles?: MenuOption[];
   /** Tags diététiques. Permet aux clients de filtrer par préférence/restriction. */
   tagsDiet?: DietaryTag[];
+  /** Si true, le plat est en rupture / temporairement indisponible. Masqué côté client. */
+  indisponible?: boolean;
 }
 
 export type DayOfWeek = 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vendredi' | 'samedi' | 'dimanche';
@@ -29,6 +31,19 @@ export interface DailyHours {
 }
 
 export type WeeklyHours = Record<DayOfWeek, DailyHours>;
+
+export interface HappyHour {
+  /** Pourcentage de réduction sur tous les plats (1-50). */
+  pourcentage: number;
+  /** Heure de début "HH:mm". */
+  debut: string;
+  /** Heure de fin "HH:mm". Si fin < debut, période enjambe minuit. */
+  fin: string;
+  /** Si défini, restreint aux jours indiqués. Sinon, tous les jours. */
+  jours?: DayOfWeek[];
+  /** Activation / désactivation rapide sans tout effacer. */
+  actif: boolean;
+}
 
 export interface Restaurant {
   id: string;
@@ -46,6 +61,10 @@ export interface Restaurant {
   longitude?: number;
   horaires?: WeeklyHours;
   fermetureTemporaire?: boolean;
+  /** Promotion happy hour active sur ce restaurant. */
+  happyHour?: HappyHour;
+  /** ID du plat mis en avant comme "Plat du jour". */
+  platDuJourId?: string;
 }
 
 export interface CartItem extends Omit<MenuItem, 'image'> {

@@ -23,7 +23,8 @@ import {
   computeLoyaltyDeliveryDiscount,
 } from '@/lib/loyalty';
 import { getDefaultAddress, getUserAddresses } from '@/lib/addresses';
-import type { SavedAddress } from '@/lib/types';
+import type { SavedAddress, HappyHour } from '@/lib/types';
+import { getActiveHappyHour, applyHappyHourDiscount } from '@/lib/promotions';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -200,14 +201,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems(merged);
   };
 
+  const cartHappyHour = React.useMemo<HappyHour | null>(() => {
+    if (cartItems.length === 0) return null;
+    const restaurant = getRestaurant(cartItems[0].restaurantId);
+    return getActiveHappyHour(restaurant);
+  }, [cartItems, getRestaurant]);
+
   const cartSubtotal = React.useMemo(() => {
     return cartItems.reduce((total, item) => {
-      const itemPrice = item.prix;
+      const itemPrice = applyHappyHourDiscount(item.prix, cartHappyHour);
       const sidePrice = item.accompagnementSelectionne?.prix || 0;
       const drinkPrice = item.boissonSelectionnee?.prix || 0;
       return total + (itemPrice + sidePrice + drinkPrice) * item.quantite;
     }, 0);
-  }, [cartItems]);
+  }, [cartItems, cartHappyHour]);
 
   const cartBaseDeliveryFee = React.useMemo(() => {
       if (cartItems.length === 0) return 0;
@@ -286,6 +293,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const ref = paymentReference.replace(/\s+/g, '');
         const validation = validatePaymentReference(paymentMethod, ref);
         if (!validation.ok) throw new Error(validation.error);
+    }
+
+    // Vérifie qu'aucun plat du panier n'a été marqué indisponible entre temps.
+    const { menuItems: allMenuItems } = useData.getState();
+    const unavailable = cartItems.find(ci => {
+        const m = allMenuItems.find(mi => mi.id === ci.id);
+        return m?.indisponible;
+    });
+    if (unavailable) {
+        throw new Error(`« ${unavailable.nom} » est désormais indisponible. Retirez-le pour valider.`);
     }
 
     // Si l'adresse a des coordonnées, on les utilise; sinon on tente la géoloc.

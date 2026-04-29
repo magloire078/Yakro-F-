@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Icons } from './icons';
-import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, ChefHat, LogOut, Heart } from 'lucide-react';
+import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, ChefHat, LogOut, Heart, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -91,6 +91,12 @@ export function Sidebar() {
                 <Link href="/dashboard/analytics">
                   <BarChart className="mr-3 h-4 w-4" />
                   Statistiques
+                </Link>
+              </Button>
+              <Button variant={pathname === '/dashboard/promotions' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/dashboard/promotions' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+                <Link href="/dashboard/promotions">
+                  <Sparkles className="mr-3 h-4 w-4" />
+                  Promotions
                 </Link>
               </Button>
                <Button variant={pathname === '/marketing' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/marketing' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>

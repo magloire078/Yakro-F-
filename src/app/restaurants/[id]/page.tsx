@@ -5,7 +5,7 @@ import * as React from 'react';
 import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/data-context";
-import { Clock, Star, Loader, Ear, Bike, Wand2, Users, Heart, AlertCircle } from "lucide-react";
+import { Clock, Star, Loader, Ear, Bike, Wand2, Users, Heart, AlertCircle, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,6 +22,7 @@ import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { useFavorites } from '@/hooks/use-favorites';
 import { isRestaurantOpen, getNextOpeningLabel, DAY_LABELS, ORDERED_DAYS } from '@/lib/restaurant-hours';
 import { cn } from '@/lib/utils';
+import { getActiveHappyHour, formatHappyHourLabel } from '@/lib/promotions';
 
 export default function RestaurantPage() {
     const params = useParams();
@@ -159,6 +160,7 @@ export default function RestaurantPage() {
     const open = isRestaurantOpen(restaurant);
     const nextOpening = getNextOpeningLabel(restaurant);
     const fav = isFavorite(restaurant.id);
+    const happyHour = getActiveHappyHour(restaurant);
 
     const handleToggleFavorite = () => {
         if (!isAuthenticated) {
@@ -227,11 +229,27 @@ export default function RestaurantPage() {
                     </div>
                 </div>
 
+                {happyHour && (
+                    <div className="mb-6 flex items-center gap-3 rounded-lg border-2 border-pink-300 bg-gradient-to-r from-pink-50 to-yellow-50 dark:from-pink-950 dark:to-yellow-950 dark:border-pink-800 p-4">
+                        <Sparkles className="h-6 w-6 text-pink-500 shrink-0" />
+                        <div>
+                            <p className="font-semibold text-pink-700 dark:text-pink-200">Happy Hour en cours !</p>
+                            <p className="text-sm text-pink-800 dark:text-pink-100">{formatHappyHourLabel(happyHour)} — appliqué automatiquement à toute la carte.</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Menu Section */}
                 <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Menu</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-16">
                     {restaurantMenu.length > 0 ? restaurantMenu.map(item => (
-                        <MenuItemCard key={item.id} item={item} disabled={!open} />
+                        <MenuItemCard
+                            key={item.id}
+                            item={item}
+                            disabled={!open}
+                            happyHour={happyHour}
+                            isPlatDuJour={restaurant.platDuJourId === item.id}
+                        />
                     )) : (
                         <p className="text-muted-foreground md:col-span-2">Aucun plat disponible pour ce restaurant pour le moment.</p>
                     )}

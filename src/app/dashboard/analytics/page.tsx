@@ -4,12 +4,13 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { BarChart as BarChartIcon, DollarSign, ShoppingCart, Loader, TrendingUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart as BarChartIcon, DollarSign, ShoppingCart, Loader, TrendingUp, CreditCard, Users, Clock, CalendarDays } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import type { Order } from '@/lib/types';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Pie, PieChart, Cell, Legend } from 'recharts';
+import type { Order, PaymentMethod } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { getPaymentMethod } from '@/lib/payment';
 
 export default function AnalyticsPage() {
     const { user, activeRole } = useAuth();
@@ -75,6 +76,60 @@ export default function AnalyticsPage() {
         return Object.values(itemMap)
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);
+    }, [myOrders]);
+
+    const PAYMENT_COLORS: Record<PaymentMethod, string> = {
+        'especes': '#16a34a',
+        'wave': '#06b6d4',
+        'orange-money': '#f97316',
+        'mtn-momo': '#eab308',
+        'carte': '#6366f1',
+    };
+
+    const revenueByPayment = React.useMemo(() => {
+        const map: { [key: string]: { name: string; revenue: number; method: PaymentMethod } } = {};
+        myOrders.forEach(order => {
+            const method = order.methodePaiement ?? 'especes';
+            if (!map[method]) {
+                map[method] = { name: getPaymentMethod(method).shortLabel, revenue: 0, method };
+            }
+            map[method].revenue += order.total;
+        });
+        return Object.values(map);
+    }, [myOrders]);
+
+    const topClients = React.useMemo(() => {
+        const map: { [userId: string]: { count: number; total: number } } = {};
+        myOrders.forEach(order => {
+            if (!map[order.userId]) map[order.userId] = { count: 0, total: 0 };
+            map[order.userId].count += 1;
+            map[order.userId].total += order.total;
+        });
+        return Object.entries(map)
+            .map(([userId, stats]) => ({ userId, ...stats }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
+    }, [myOrders]);
+
+    const ordersByHour = React.useMemo(() => {
+        const buckets = Array.from({ length: 24 }, (_, hour) => ({ hour: `${hour}h`, count: 0 }));
+        myOrders.forEach(order => {
+            const h = new Date(order.date).getHours();
+            buckets[h].count += 1;
+        });
+        return buckets;
+    }, [myOrders]);
+
+    const ordersByWeekday = React.useMemo(() => {
+        const labels = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
+        const buckets = labels.map(label => ({ label, count: 0, revenue: 0 }));
+        myOrders.forEach(order => {
+            const d = new Date(order.date).getDay();
+            buckets[d].count += 1;
+            buckets[d].revenue += order.revenuNet;
+        });
+        // Réordonne lundi → dimanche pour correspondre à la convention FR
+        return [...buckets.slice(1), buckets[0]];
     }, [myOrders]);
     
     return (
@@ -189,6 +244,118 @@ export default function AnalyticsPage() {
                             </Table>
                         ) : (
                             <p className="text-center text-muted-foreground pt-12">Aucun plat vendu pour le moment.</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5" /> Revenus par mode de paiement</CardTitle>
+                        <CardDescription>Répartition du chiffre d'affaires brut.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {revenueByPayment.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={revenueByPayment}
+                                        dataKey="revenue"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={100}
+                                        label={({ name, value }) => `${name} ${(value as number).toLocaleString('fr-FR')}`}
+                                    >
+                                        {revenueByPayment.map(entry => (
+                                            <Cell key={entry.method} fill={PAYMENT_COLORS[entry.method]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip formatter={(value: number) => `${value.toLocaleString('fr-FR')} FCFA`} />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-center text-muted-foreground pt-12">Pas encore de paiements enregistrés.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Top 5 clients fidèles</CardTitle>
+                        <CardDescription>Clients ayant le plus dépensé chez vous.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {topClients.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Client</TableHead>
+                                        <TableHead className="text-center">Commandes</TableHead>
+                                        <TableHead className="text-right">Total dépensé</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {topClients.map((c, idx) => (
+                                        <TableRow key={c.userId}>
+                                            <TableCell className="font-medium">#{idx + 1} <span className="text-xs text-muted-foreground">({c.userId.slice(0, 6)}…)</span></TableCell>
+                                            <TableCell className="text-center">{c.count}</TableCell>
+                                            <TableCell className="text-right">{c.total.toLocaleString('fr-FR')} FCFA</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <p className="text-center text-muted-foreground pt-12">Aucun client fidèle pour le moment.</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Heures de pointe</CardTitle>
+                        <CardDescription>Distribution des commandes par heure de la journée.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {myOrders.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={ordersByHour} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <XAxis dataKey="hour" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} interval={1} />
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                                    <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
+                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-center text-muted-foreground pt-12">Pas encore assez de données.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><CalendarDays className="h-5 w-5" /> Revenu net par jour</CardTitle>
+                        <CardDescription>Total cumulé sur l'historique.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {myOrders.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={ordersByWeekday} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${(value as number) / 1000}k`} />
+                                    <Tooltip
+                                        cursor={{ fill: 'hsl(var(--muted))' }}
+                                        formatter={(value: number) => `${value.toLocaleString('fr-FR')} FCFA`}
+                                    />
+                                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-center text-muted-foreground pt-12">Pas encore assez de données.</p>
                         )}
                     </CardContent>
                 </Card>

@@ -4,13 +4,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
-import { Star, Clock, Bike, MapPin, Heart } from 'lucide-react';
+import { Star, Clock, Bike, MapPin, Heart, Sparkles } from 'lucide-react';
 import type { Restaurant } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { useFavorites } from '@/hooks/use-favorites';
 import { isRestaurantOpen } from '@/lib/restaurant-hours';
 import { useToast } from '@/hooks/use-toast';
+import { getActiveHappyHour } from '@/lib/promotions';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -29,6 +30,7 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
   const { toast } = useToast();
   const fav = isFavorite(restaurant.id);
   const open = isRestaurantOpen(restaurant);
+  const happyHour = getActiveHappyHour(restaurant);
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -62,6 +64,12 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
           />
           {featured && <Badge className="absolute top-2 right-12" variant="default">En vedette</Badge>}
           {!open && <Badge className="absolute top-2 left-2" variant="destructive">Fermé</Badge>}
+          {open && happyHour && (
+            <Badge className="absolute bottom-2 left-2 bg-pink-500 hover:bg-pink-500">
+              <Sparkles className="h-3 w-3 mr-1" />
+              -{happyHour.pourcentage}% Happy Hour
+            </Badge>
+          )}
           <button
             type="button"
             onClick={handleFavorite}

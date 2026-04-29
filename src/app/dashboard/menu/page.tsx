@@ -7,12 +7,15 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader, BookOpenCheck, Edit, Trash2 } from 'lucide-react';
+import { Loader, BookOpenCheck, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import type { Restaurant, MenuItem } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { EditMenuItemDialog } from '@/components/edit-menu-item-dialog';
+import { Switch } from '@/components/ui/switch';
+import { doc, updateDoc } from 'firebase/firestore';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,6 +85,20 @@ export default function DashboardMenuPage() {
         }
     }
 
+    const handleToggleAvailability = async (item: MenuItem) => {
+        try {
+            await updateDoc(doc(db, 'plats', item.id), { indisponible: !item.indisponible });
+            toast({
+                title: item.indisponible ? 'Plat à nouveau disponible' : 'Plat marqué indisponible',
+                description: item.indisponible
+                    ? `« ${item.nom} » est désormais visible et commandable.`
+                    : `« ${item.nom} » sera masqué côté client jusqu'à réactivation.`,
+            });
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Erreur', description: "Impossible de mettre à jour la disponibilité." });
+        }
+    };
+
     return (
         <div className="container mx-auto">
             <div className="flex items-center gap-4 mb-8">
@@ -114,7 +131,7 @@ export default function DashboardMenuPage() {
                             ? item.image
                             : placeholder.url;
                         return (
-                            <Card key={item.id} className="flex flex-col">
+                            <Card key={item.id} className={cn("flex flex-col", item.indisponible && "opacity-70")}>
                                 <CardHeader>
                                     <div className="relative h-40 w-full rounded-lg overflow-hidden bg-muted">
                                         <Image
@@ -122,9 +139,12 @@ export default function DashboardMenuPage() {
                                             alt={item.nom}
                                             width={placeholder.width}
                                             height={placeholder.height}
-                                            className="object-cover w-full h-full"
+                                            className={cn("object-cover w-full h-full", item.indisponible && "grayscale")}
                                             data-ai-hint={item.indiceImage}
                                         />
+                                        {item.indisponible && (
+                                            <Badge variant="destructive" className="absolute top-2 left-2">Indisponible</Badge>
+                                        )}
                                     </div>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
@@ -132,6 +152,17 @@ export default function DashboardMenuPage() {
                                     <CardTitle className="font-headline text-xl">{item.nom}</CardTitle>
                                     <CardDescription className="mt-1 h-12 overflow-hidden">{item.description}</CardDescription>
                                     <p className="text-lg font-bold text-primary mt-3">{item.prix.toLocaleString('fr-FR')} FCFA</p>
+                                    <div className="mt-3 flex items-center justify-between rounded-md border p-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            {item.indisponible ? <EyeOff className="h-4 w-4 text-destructive" /> : <Eye className="h-4 w-4 text-green-600" />}
+                                            <span className="text-muted-foreground">{item.indisponible ? 'Masqué' : 'Visible'}</span>
+                                        </div>
+                                        <Switch
+                                            checked={!item.indisponible}
+                                            onCheckedChange={() => handleToggleAvailability(item)}
+                                            aria-label={item.indisponible ? 'Rendre disponible' : 'Marquer indisponible'}
+                                        />
+                                    </div>
                                 </CardContent>
                                 <CardFooter className="flex gap-2">
                                     <Button variant="outline" className="w-full" onClick={() => setEditingItem(item)}>

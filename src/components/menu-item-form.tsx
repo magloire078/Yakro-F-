@@ -38,6 +38,7 @@ export const menuItemFormSchema = z.object({
   tagsDiet: z
     .array(z.enum(['halal', 'vegetarien', 'vegan', 'sans-gluten', 'sans-porc', 'epice']))
     .optional(),
+  indisponible: z.boolean().optional(),
 });
 
 export type MenuItemFormValues = z.infer<typeof menuItemFormSchema>;
