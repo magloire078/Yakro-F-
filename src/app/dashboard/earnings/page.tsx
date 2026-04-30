@@ -82,28 +82,51 @@ export default function EarningsPage() {
                 </CardHeader>
                 <CardContent>
                     {myCompletedDeliveries.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Restaurant</TableHead>
-                                    <TableHead>Statut</TableHead>
-                                    <TableHead className="text-right">Vos Gains</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                        <>
+                            {/* Desktop / tablet table */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Restaurant</TableHead>
+                                            <TableHead>Statut</TableHead>
+                                            <TableHead className="text-right">Vos Gains</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {myCompletedDeliveries.map(order => (
+                                            <TableRow key={order.id}>
+                                                <TableCell className="font-medium">{new Date(order.date).toLocaleDateString('fr-FR')}</TableCell>
+                                                <TableCell>{order.nomRestaurant}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="default" className="bg-green-600">{order.statut}</Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right font-semibold text-primary">{order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            {/* Mobile card list */}
+                            <div className="md:hidden space-y-3">
                                 {myCompletedDeliveries.map(order => (
-                                    <TableRow key={order.id}>
-                                        <TableCell className="font-medium">{new Date(order.date).toLocaleDateString('fr-FR')}</TableCell>
-                                        <TableCell>{order.nomRestaurant}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="default" className="bg-green-600">{order.statut}</Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right font-semibold text-primary">{order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</TableCell>
-                                    </TableRow>
+                                    <div key={order.id} className="rounded-lg border p-4 space-y-2">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="min-w-0">
+                                                <p className="font-semibold truncate">{order.nomRestaurant}</p>
+                                                <p className="text-xs text-muted-foreground">{new Date(order.date).toLocaleDateString('fr-FR')}</p>
+                                            </div>
+                                            <Badge variant="default" className="bg-green-600 shrink-0">{order.statut}</Badge>
+                                        </div>
+                                        <div className="text-right font-semibold text-primary">
+                                            {order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA
+                                        </div>
+                                    </div>
                                 ))}
-                            </TableBody>
-                        </Table>
+                            </div>
+                        </>
                     ) : (
                         <p className="text-center text-muted-foreground pt-12">Aucune course terminée pour le moment. Acceptez votre première course pour commencer !</p>
                     )}

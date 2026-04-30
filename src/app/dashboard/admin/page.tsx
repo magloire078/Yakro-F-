@@ -139,22 +139,22 @@ export default function AdminPage() {
     return (
         <>
             <div className="container mx-auto space-y-8">
-                 <div className="flex items-center justify-between gap-4 mb-8">
-                    <div className="flex items-center gap-4">
-                        <ShieldCheck className="h-10 w-10 text-primary" />
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-headline text-primary">Tableau de Bord Admin</h1>
-                            <p className="text-muted-foreground">Gérez les utilisateurs et supervisez l'activité de la plateforme.</p>
+                 <div className="flex flex-col gap-4 mb-8 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-primary shrink-0" />
+                        <div className="min-w-0">
+                            <h1 className="text-xl md:text-3xl font-headline text-primary">Tableau de Bord Admin</h1>
+                            <p className="text-sm md:text-base text-muted-foreground">Gérez les utilisateurs et supervisez l'activité de la plateforme.</p>
                         </div>
                     </div>
-                     <div className="flex gap-2">
-                        <Button asChild variant="outline">
+                     <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                        <Button asChild variant="outline" className="w-full sm:w-auto">
                             <Link href="/">
                                 <Home className="mr-2" />
                                 Accueil Client
                             </Link>
                         </Button>
-                        <Button onClick={() => setIsAddUserDialogOpen(true)}>
+                        <Button onClick={() => setIsAddUserDialogOpen(true)} className="w-full sm:w-auto">
                             <UserPlus className="mr-2" />
                             Ajouter un utilisateur
                         </Button>
@@ -235,7 +235,8 @@ export default function AdminPage() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="overflow-x-auto">
+                                {/* Desktop / tablet table */}
+                                <div className="hidden md:block overflow-x-auto">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
@@ -297,6 +298,65 @@ export default function AdminPage() {
                                             ))}
                                         </TableBody>
                                     </Table>
+                                </div>
+
+                                {/* Mobile card list */}
+                                <div className="md:hidden space-y-4">
+                                    {allUsers.map((u) => (
+                                        <div
+                                            key={u.uid}
+                                            className={`rounded-lg border p-4 space-y-3 ${updatingUserId === u.uid ? 'opacity-50' : ''}`}
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="font-medium truncate">{u.nom || 'Non défini'}</div>
+                                                    <div className="text-sm text-muted-foreground truncate">{u.email}</div>
+                                                    <div className="text-xs text-muted-foreground mt-1">
+                                                        {u.dateCreation?.toDate ? formatDistanceToNow(u.dateCreation.toDate(), { addSuffix: true, locale: fr }) : 'Date inconnue'}
+                                                    </div>
+                                                </div>
+                                                <Button variant="outline" size="icon" onClick={() => setEditingUser(u)} disabled={updatingUserId === u.uid} className="shrink-0">
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-2">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Rôle Système</p>
+                                                    <Select
+                                                        value={u.roleSysteme || 'User'}
+                                                        onValueChange={(value: SystemRole) => handleSystemRoleChange(u.uid, value)}
+                                                        disabled={updatingUserId === u.uid || u.uid === user?.uid}
+                                                    >
+                                                        <SelectTrigger className="w-full">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="SuperAdmin">Super Admin</SelectItem>
+                                                            <SelectItem value="Admin">Admin</SelectItem>
+                                                            <SelectItem value="User">Utilisateur</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Rôle Fonctionnel</p>
+                                                    <Select
+                                                        value={u.role}
+                                                        onValueChange={(value: AppRole) => handleRoleChange(u.uid, value)}
+                                                        disabled={updatingUserId === u.uid}
+                                                    >
+                                                        <SelectTrigger className="w-full">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="client">Client</SelectItem>
+                                                            <SelectItem value="restaurateur">Restaurateur</SelectItem>
+                                                            <SelectItem value="livreur">Livreur</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </CardContent>
                         </Card>

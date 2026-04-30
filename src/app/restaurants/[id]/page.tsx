@@ -202,7 +202,7 @@ export default function RestaurantPage() {
                 </div>
 
                 {/* Reviews Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                   <div className="lg:col-span-2">
                     <div className="flex items-center gap-4 mb-6">
                         <h2 className="text-2xl md:text-3xl font-headline text-foreground">Avis</h2>
@@ -217,8 +217,16 @@ export default function RestaurantPage() {
                     
                     <Tabs defaultValue="clients">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="clients"><Users className="mr-2"/>Avis des clients</TabsTrigger>
-                            <TabsTrigger value="ia"><Wand2 className="mr-2"/>Avis de l'IA</TabsTrigger>
+                            <TabsTrigger value="clients" className="text-xs sm:text-sm">
+                                <Users className="mr-1 sm:mr-2 h-4 w-4"/>
+                                <span className="hidden sm:inline">Avis des clients</span>
+                                <span className="sm:hidden">Clients</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="ia" className="text-xs sm:text-sm">
+                                <Wand2 className="mr-1 sm:mr-2 h-4 w-4"/>
+                                <span className="hidden sm:inline">Avis de l'IA</span>
+                                <span className="sm:hidden">IA</span>
+                            </TabsTrigger>
                         </TabsList>
                         <TabsContent value="clients" className="mt-4 space-y-6">
                             {userReviews.length > 0 ? userReviews.map(review => (
@@ -228,14 +236,14 @@ export default function RestaurantPage() {
                             )}
                         </TabsContent>
                         <TabsContent value="ia" className="mt-4 space-y-6">
-                             <div className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg">
+                             <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-4 border rounded-lg">
                                 <p className="text-sm text-muted-foreground flex-1">Générez des avis avec l'IA pour voir des exemples ou écoutez une narration audio.</p>
-                                <div className="flex gap-2">
-                                     <Button onClick={handleGenerateReviews} disabled={loadingAiReviews} variant="outline">
-                                        {loadingAiReviews ? <Loader className="animate-spin mr-2" /> : <Wand2 />}
+                                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                                     <Button onClick={handleGenerateReviews} disabled={loadingAiReviews} variant="outline" className="w-full sm:w-auto">
+                                        {loadingAiReviews ? <Loader className="animate-spin mr-2" /> : <Wand2 className="mr-2" />}
                                         {loadingAiReviews ? 'Génération...' : 'Générer avis'}
                                     </Button>
-                                    <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio || aiReviews.length === 0} variant="outline">
+                                    <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio || aiReviews.length === 0} variant="outline" className="w-full sm:w-auto">
                                         <Ear className="mr-2" />
                                         {isGeneratingAudio ? 'Création...' : 'Écouter'}
                                     </Button>

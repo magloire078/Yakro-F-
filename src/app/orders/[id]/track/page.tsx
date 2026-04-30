@@ -103,10 +103,10 @@ export default function TrackOrderPage() {
             </Button>
              <Card>
                 <CardHeader>
-                    <CardTitle>Suivi de votre commande n°{liveOrder.id.slice(0, 6)}...</CardTitle>
+                    <CardTitle className="text-lg md:text-xl">Suivi de votre commande n°{liveOrder.id.slice(0, 6)}...</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2 relative h-96 md:h-full min-h-[400px] rounded-lg overflow-hidden bg-muted">
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 p-4 md:p-6">
+                    <div className="md:col-span-2 relative h-72 sm:h-80 md:h-full md:min-h-[400px] rounded-lg overflow-hidden bg-muted">
                         {mapUrl ? (
                            <iframe
                                 width="100%"
@@ -117,37 +117,37 @@ export default function TrackOrderPage() {
                                 src={mapUrl}>
                             </iframe>
                         ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                            <div className="flex items-center justify-center h-full text-muted-foreground p-4 text-center">
                                 <p>La carte de suivi est indisponible.</p>
                             </div>
                         )}
                     </div>
-                    <div className="md:col-span-1 space-y-6">
-                        <div className="flex items-start gap-4">
-                            <MapPin className="h-8 w-8 text-red-500 mt-1" />
-                            <div>
+                    <div className="md:col-span-1 space-y-4 md:space-y-6">
+                        <div className="flex items-start gap-3 md:gap-4">
+                            <MapPin className="h-6 w-6 md:h-8 md:w-8 text-red-500 mt-1 shrink-0" />
+                            <div className="min-w-0">
                                 <p className="font-bold">Restaurant</p>
-                                <p className="text-muted-foreground">{restaurant?.nom}</p>
-                                <p className="text-sm text-muted-foreground">{restaurant?.adresse}</p>
+                                <p className="text-sm md:text-base text-muted-foreground truncate">{restaurant?.nom}</p>
+                                <p className="text-xs md:text-sm text-muted-foreground break-words">{restaurant?.adresse}</p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-4">
-                            <Bike className="h-8 w-8 text-primary mt-1" />
-                            <div>
+                        <div className="flex items-start gap-3 md:gap-4">
+                            <Bike className="h-6 w-6 md:h-8 md:w-8 text-primary mt-1 shrink-0" />
+                            <div className="min-w-0">
                                 <p className="font-bold">Livreur</p>
-                                <p className="text-muted-foreground">{livreur?.nom || "En attente d'assignation..."}</p>
+                                <p className="text-sm md:text-base text-muted-foreground truncate">{livreur?.nom || "En attente d'assignation..."}</p>
                                 {livreur?.latitude ? (
-                                    <p className="text-sm text-primary animate-pulse">En mouvement...</p>
+                                    <p className="text-xs md:text-sm text-primary animate-pulse">En mouvement...</p>
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">En attente de localisation...</p>
+                                    <p className="text-xs md:text-sm text-muted-foreground">En attente de localisation...</p>
                                 )}
                             </div>
                         </div>
-                         <div className="flex items-start gap-4">
-                            <Home className="h-8 w-8 text-green-600 mt-1" />
-                            <div>
+                         <div className="flex items-start gap-3 md:gap-4">
+                            <Home className="h-6 w-6 md:h-8 md:w-8 text-green-600 mt-1 shrink-0" />
+                            <div className="min-w-0">
                                 <p className="font-bold">Votre Adresse</p>
-                                <p className="text-muted-foreground">{liveOrder.adresseClient}</p>
+                                <p className="text-sm md:text-base text-muted-foreground break-words">{liveOrder.adresseClient}</p>
                             </div>
                         </div>
                     </div>

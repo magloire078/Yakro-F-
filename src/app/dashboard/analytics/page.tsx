@@ -121,8 +121,8 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         {revenueByRestaurant.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={revenueByRestaurant} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <ResponsiveContainer width="100%" height={250} className="sm:!h-[300px]">
+                                <BarChart data={revenueByRestaurant} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                                     <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${(value as number)/1000}k`} />
                                     <Tooltip
@@ -169,24 +169,44 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         {topSellingItems.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Plat</TableHead>
-                                        <TableHead className="text-center">Ventes</TableHead>
-                                        <TableHead className="text-right">Revenu Brut</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
+                            <>
+                                {/* Desktop / tablet table */}
+                                <div className="hidden sm:block overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Plat</TableHead>
+                                                <TableHead className="text-center">Ventes</TableHead>
+                                                <TableHead className="text-right">Revenu Brut</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {topSellingItems.map(item => (
+                                                <TableRow key={item.name}>
+                                                    <TableCell className="font-medium">{item.name}</TableCell>
+                                                    <TableCell className="text-center">{item.count}</TableCell>
+                                                    <TableCell className="text-right">{item.revenue.toLocaleString('fr-FR')} FCFA</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+
+                                {/* Mobile card list */}
+                                <div className="sm:hidden space-y-3">
                                     {topSellingItems.map(item => (
-                                        <TableRow key={item.name}>
-                                            <TableCell className="font-medium">{item.name}</TableCell>
-                                            <TableCell className="text-center">{item.count}</TableCell>
-                                            <TableCell className="text-right">{item.revenue.toLocaleString('fr-FR')} FCFA</TableCell>
-                                        </TableRow>
+                                        <div key={item.name} className="rounded-lg border p-3 flex items-center justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-medium truncate">{item.name}</p>
+                                                <p className="text-xs text-muted-foreground">{item.count} vente{item.count > 1 ? 's' : ''}</p>
+                                            </div>
+                                            <p className="text-sm font-semibold text-primary shrink-0">
+                                                {item.revenue.toLocaleString('fr-FR')} FCFA
+                                            </p>
+                                        </div>
                                     ))}
-                                </TableBody>
-                            </Table>
+                                </div>
+                            </>
                         ) : (
                             <p className="text-center text-muted-foreground pt-12">Aucun plat vendu pour le moment.</p>
                         )}
