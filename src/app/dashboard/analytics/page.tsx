@@ -7,10 +7,15 @@ import { useData } from '@/contexts/data-context';
 import { BarChart as BarChartIcon, DollarSign, ShoppingCart, Loader, TrendingUp, CreditCard, Users, Clock, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Pie, PieChart, Cell, Legend } from 'recharts';
 import type { Order, PaymentMethod } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { getPaymentMethod } from '@/lib/payment';
+import {
+  OrdersByHourChart,
+  OrdersByWeekdayChart,
+  RevenueByPaymentChart,
+  RevenueByRestaurantChart,
+} from './analytics-charts';
 
 export default function AnalyticsPage() {
     const { user, activeRole } = useAuth();
@@ -176,43 +181,7 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         {revenueByRestaurant.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={revenueByRestaurant} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                    <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${(value as number)/1000}k`} />
-                                    <Tooltip
-                                        cursor={{fill: 'hsl(var(--muted))'}}
-                                        content={({ active, payload }) => {
-                                          if (active && payload && payload.length) {
-                                            return (
-                                              <div className="rounded-lg border bg-background p-2 shadow-sm">
-                                                <div className="grid grid-cols-2 gap-2">
-                                                  <div className="flex flex-col">
-                                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                                      Restaurant
-                                                    </span>
-                                                    <span className="font-bold text-muted-foreground">
-                                                      {payload[0].payload.name}
-                                                    </span>
-                                                  </div>
-                                                  <div className="flex flex-col">
-                                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                                      Revenu Net
-                                                    </span>
-                                                    <span className="font-bold">
-                                                      {(payload[0].value as number).toLocaleString('fr-FR')} FCFA
-                                                    </span>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            )
-                                          }
-                                          return null
-                                        }}
-                                    />
-                                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <RevenueByRestaurantChart data={revenueByRestaurant} />
                         ) : (
                             <p className="text-center text-muted-foreground pt-12">Aucune donnée de revenu pour le moment.</p>
                         )}
@@ -257,25 +226,7 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         {revenueByPayment.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={revenueByPayment}
-                                        dataKey="revenue"
-                                        nameKey="name"
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={100}
-                                        label={({ name, value }) => `${name} ${(value as number).toLocaleString('fr-FR')}`}
-                                    >
-                                        {revenueByPayment.map(entry => (
-                                            <Cell key={entry.method} fill={PAYMENT_COLORS[entry.method]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip formatter={(value: number) => `${value.toLocaleString('fr-FR')} FCFA`} />
-                                    <Legend />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <RevenueByPaymentChart data={revenueByPayment} colors={PAYMENT_COLORS} />
                         ) : (
                             <p className="text-center text-muted-foreground pt-12">Pas encore de paiements enregistrés.</p>
                         )}
@@ -322,14 +273,7 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         {myOrders.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={ordersByHour} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                    <XAxis dataKey="hour" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} interval={1} />
-                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-                                    <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
-                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <OrdersByHourChart data={ordersByHour} />
                         ) : (
                             <p className="text-center text-muted-foreground pt-12">Pas encore assez de données.</p>
                         )}
@@ -343,17 +287,7 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         {myOrders.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={ordersByWeekday} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${(value as number) / 1000}k`} />
-                                    <Tooltip
-                                        cursor={{ fill: 'hsl(var(--muted))' }}
-                                        formatter={(value: number) => `${value.toLocaleString('fr-FR')} FCFA`}
-                                    />
-                                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <OrdersByWeekdayChart data={ordersByWeekday} />
                         ) : (
                             <p className="text-center text-muted-foreground pt-12">Pas encore assez de données.</p>
                         )}

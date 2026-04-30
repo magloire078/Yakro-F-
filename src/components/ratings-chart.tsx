@@ -1,8 +1,13 @@
-
 'use client';
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import dynamic from 'next/dynamic';
 import { Card, CardContent } from './ui/card';
+import { Skeleton } from './ui/skeleton';
+
+const RatingsChartInner = dynamic(
+  () => import('./ratings-chart-inner').then(m => m.RatingsChartInner),
+  { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> }
+);
 
 interface RatingsChartProps {
   data: { rating: number; count: number }[];
@@ -10,29 +15,10 @@ interface RatingsChartProps {
 
 export function RatingsChart({ data }: RatingsChartProps) {
   return (
-     <Card>
-        <CardContent className="p-2 pt-4">
-             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={data} layout="vertical" margin={{ left: -20 }}>
-                <XAxis type="number" hide />
-                <YAxis 
-                    dataKey="rating" 
-                    type="category" 
-                    tickLine={false} 
-                    axisLine={false}
-                    tick={({ x, y, payload }) => (
-                       <g transform={`translate(${x},${y})`}>
-                         <text x={0} y={0} dy={4} textAnchor="start" fill="#666" fontSize={14}>
-                           {payload.value} étoile{payload.value > 1 ? 's' : ''}
-                         </text>
-                       </g>
-                    )}
-                />
-                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={16}/>
-              </BarChart>
-            </ResponsiveContainer>
-        </CardContent>
-     </Card>
+    <Card>
+      <CardContent className="p-2 pt-4">
+        <RatingsChartInner data={data} />
+      </CardContent>
+    </Card>
   );
 }
-    
