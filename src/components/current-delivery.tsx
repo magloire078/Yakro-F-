@@ -5,8 +5,14 @@ import type { Order } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChefHat, Home, Map, Phone, Loader } from 'lucide-react';
-import Link from 'next/link';
+import { ChefHat, Home, Phone, Loader } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import type { MapPoint } from '@/components/leaflet-map';
+
+const LeafletMap = dynamic(
+    () => import('@/components/leaflet-map').then(m => m.LeafletMap),
+    { ssr: false, loading: () => <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Chargement de la carte...</div> }
+);
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -16,20 +22,19 @@ interface CurrentDeliveryProps {
 export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryProps) {
     const [isCompleting, setIsCompleting] = React.useState(false);
 
-    const getOsmLink = (order: Order) => {
-        if (!order.latitudeRestaurant || !order.longitudeRestaurant || !order.latitudeClient || !order.longitudeClient) {
-            return null;
-        }
-        return `https://www.openstreetmap.org/directions?engine=graphhopper_car&route=${order.latitudeRestaurant},${order.longitudeRestaurant};${order.latitudeClient},${order.longitudeClient}`;
-    };
-
     const handleComplete = async () => {
         setIsCompleting(true);
         await onCompleteDelivery();
         setIsCompleting(false);
     };
 
-    const mapsLink = getOsmLink(order);
+    const mapPoints: MapPoint[] = [];
+    if (order.latitudeRestaurant && order.longitudeRestaurant) {
+        mapPoints.push({ lat: order.latitudeRestaurant, lng: order.longitudeRestaurant, label: `Récupérer : ${order.nomRestaurant}`, color: 'red' });
+    }
+    if (order.latitudeClient && order.longitudeClient) {
+        mapPoints.push({ lat: order.latitudeClient, lng: order.longitudeClient, label: `Livrer : ${order.adresseClient}`, color: 'green' });
+    }
 
     return (
         <div className="container mx-auto">
@@ -43,16 +48,23 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                     <CardDescription>Récupérez et livrez la commande suivante.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                    {/* Carte intégrée */}
+                    {mapPoints.length > 0 && (
+                        <div className="h-56 sm:h-64 rounded-lg overflow-hidden border">
+                            <LeafletMap points={mapPoints} className="h-full w-full" />
+                        </div>
+                    )}
+
                     <div className="space-y-4 border-b pb-4">
                         <div className="flex items-start gap-4">
-                            <ChefHat className="text-primary mt-1"/>
+                            <ChefHat className="text-primary mt-1 shrink-0"/>
                             <div>
                                 <p className="font-semibold text-lg">1. Récupérer chez {order.nomRestaurant}</p>
                                 <p className="text-muted-foreground">{order.adresseRestaurant}</p>
                             </div>
                         </div>
-                         <div className="flex items-start gap-4">
-                            <Home className="text-green-500 mt-1"/>
+                        <div className="flex items-start gap-4">
+                            <Home className="text-green-500 mt-1 shrink-0"/>
                             <div>
                                 <p className="font-semibold text-lg">2. Livrer à</p>
                                 <p className="text-muted-foreground">{order.adresseClient}</p>
@@ -60,19 +72,11 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                         </div>
                     </div>
                     <div className="space-y-3">
-                        {mapsLink && (
-                            <Button asChild variant="outline" className="w-full">
-                                <Link href={mapsLink} target="_blank" rel="noopener noreferrer">
-                                    <Map className="mr-2"/>
-                                    Voir sur la carte
-                                </Link>
-                            </Button>
-                        )}
-                         <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4">
                             <p>Contenu : {order.plats.map(i => `${i.quantite}x ${i.nom}`).join(', ')}</p>
                         </div>
-                         <div className="flex items-center gap-4">
-                            <Phone className="text-muted-foreground"/>
+                        <div className="flex items-center gap-4">
+                            <Phone className="text-muted-foreground shrink-0"/>
                             <p>Client : {order.telephoneClient}</p>
                         </div>
                     </div>
@@ -86,5 +90,5 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }
