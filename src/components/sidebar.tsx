@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Icons } from './icons';
-import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, ChefHat, LogOut } from 'lucide-react';
+import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, Megaphone, ChefHat, LogOut, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -41,6 +41,7 @@ export function Sidebar() {
   }
 
   const homeLink = getHomeLink();
+  const isSuperAdmin = userProfile?.roleSysteme === 'SuperAdmin';
 
   return (
     <aside className="w-full h-screen flex flex-col p-6 bg-white border-r md:w-64 fixed left-0 top-0 z-50">
@@ -66,6 +67,15 @@ export function Sidebar() {
                   Accueil
                 </Link>
            </Button>
+
+          {isSuperAdmin && (
+            <Button variant={pathname === '/dashboard/admin' ? 'secondary' : 'ghost'} className={cn("justify-start text-sm font-medium h-11 px-3 rounded-xl transition-colors", pathname === '/dashboard/admin' && "bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20")} asChild>
+                <Link href="/dashboard/admin">
+                  <ShieldCheck className="mr-3 h-4 w-4" />
+                  Administration
+                </Link>
+            </Button>
+          )}
 
           {activeRole === 'restaurateur' && (
             <>
@@ -132,6 +142,14 @@ export function Sidebar() {
                           Mon Profil
                         </Link>
                     </DropdownMenuItem>
+                    {isSuperAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/admin">
+                          <ShieldCheck className="mr-2 h-4 w-4"/>
+                          Administration
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                         <LogOut className="mr-2 h-4 w-4"/>
