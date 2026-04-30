@@ -16,11 +16,11 @@ interface CurrentDeliveryProps {
 export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryProps) {
     const [isCompleting, setIsCompleting] = React.useState(false);
 
-    const getGoogleMapsLink = (order: Order) => {
+    const getOsmLink = (order: Order) => {
         if (!order.latitudeRestaurant || !order.longitudeRestaurant || !order.latitudeClient || !order.longitudeClient) {
             return null;
         }
-        return `https://www.google.com/maps/dir/?api=1&origin=${order.latitudeRestaurant},${order.longitudeRestaurant}&destination=${order.latitudeClient},${order.longitudeClient}&travelmode=driving`;
+        return `https://www.openstreetmap.org/directions?engine=graphhopper_car&route=${order.latitudeRestaurant},${order.longitudeRestaurant};${order.latitudeClient},${order.longitudeClient}`;
     };
 
     const handleComplete = async () => {
@@ -29,7 +29,7 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
         setIsCompleting(false);
     };
 
-    const mapsLink = getGoogleMapsLink(order);
+    const mapsLink = getOsmLink(order);
 
     return (
         <div className="container mx-auto">

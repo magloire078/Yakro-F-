@@ -1,19 +1,23 @@
-
-
 'use client';
 
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useData } from '@/contexts/data-context';
 import { useAuth } from '@/contexts/auth-context';
-import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { Order, UserProfile, Restaurant } from '@/lib/types';
-import { Loader, MapPin, Bike, Home } from 'lucide-react';
+import { MapPin, Bike, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import type { MapPoint } from '@/components/leaflet-map';
+
+const LeafletMap = dynamic(
+  () => import('@/components/leaflet-map').then(m => m.LeafletMap),
+  { ssr: false, loading: () => <div className="flex items-center justify-center h-full text-muted-foreground">Chargement de la carte...</div> }
+);
 
 export default function TrackOrderPage() {
     const params = useParams();
@@ -23,8 +27,7 @@ export default function TrackOrderPage() {
     const { db } = useFirebase();
 
     const orderId = params.id as string;
-    
-    // We get the order from the store but also subscribe to real-time updates for its status
+
     const [liveOrder, setLiveOrder] = React.useState<Order | null>(getOrder(orderId) || null);
     const [livreur, setLivreur] = React.useState<UserProfile | null>(null);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
@@ -34,18 +37,16 @@ export default function TrackOrderPage() {
       const unsubscribeOrder = onSnapshot(orderDocRef, (docSnap) => {
         if (docSnap.exists()) {
           const orderData = { id: docSnap.id, ...docSnap.data() } as Order;
-           // Security check
           if (user && orderData.userId !== user.uid) {
             router.push('/');
             return;
           }
           setLiveOrder(orderData);
 
-          // Once we have the order, fetch related data
           if (orderData.restaurantId) {
             setRestaurant(getRestaurant(orderData.restaurantId) || null);
           }
-          
+
           if (orderData.livreurId) {
               const livreurDocRef = doc(db, 'utilisateurs', orderData.livreurId);
               const unsubscribeLivreur = onSnapshot(livreurDocRef, (livreurSnap) => {
@@ -53,7 +54,7 @@ export default function TrackOrderPage() {
                       setLivreur(livreurSnap.data() as UserProfile);
                   }
               });
-              return () => unsubscribeLivreur(); // Clean up livreur listener
+              return () => unsubscribeLivreur();
           } else {
               setLivreur(null);
           }
@@ -71,28 +72,17 @@ export default function TrackOrderPage() {
             </div>
         );
     }
-    
-    // Interactive map URL
-    const getMapUrl = () => {
-        if (!restaurant?.latitude || !restaurant?.longitude || !liveOrder.latitudeClient || !liveOrder.longitudeClient) {
-            // Can't show directions without both points, maybe show restaurant location?
-            if (restaurant?.latitude && restaurant?.longitude) {
-                 return `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${restaurant.latitude},${restaurant.longitude}`;
-            }
-            return null; // No map if no coords
-        }
-        
-        let url = `https://www.google.com/maps/embed/v1/directions?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&origin=${restaurant.latitude},${restaurant.longitude}&destination=${liveOrder.latitudeClient},${liveOrder.longitudeClient}`;
 
-        // Add livreur as a waypoint if available
-        if (livreur?.latitude && livreur?.longitude) {
-            url += `&waypoints=${livreur.latitude},${livreur.longitude}`;
-        }
-        
-        return url;
+    const mapPoints: MapPoint[] = [];
+    if (restaurant?.latitude && restaurant?.longitude) {
+        mapPoints.push({ lat: restaurant.latitude, lng: restaurant.longitude, label: `Restaurant : ${restaurant.nom}`, color: 'red' });
     }
-    
-    const mapUrl = getMapUrl();
+    if (livreur?.latitude && livreur?.longitude) {
+        mapPoints.push({ lat: livreur.latitude, lng: livreur.longitude, label: `Livreur : ${livreur.nom || 'En route'}`, color: 'blue' });
+    }
+    if (liveOrder.latitudeClient && liveOrder.longitudeClient) {
+        mapPoints.push({ lat: liveOrder.latitudeClient, lng: liveOrder.longitudeClient, label: `Votre adresse : ${liveOrder.adresseClient}`, color: 'green' });
+    }
 
     return (
         <div className="container mx-auto">
@@ -101,24 +91,17 @@ export default function TrackOrderPage() {
                     &larr; Retour à l'accueil
                 </Link>
             </Button>
-             <Card>
+            <Card>
                 <CardHeader>
                     <CardTitle className="text-lg md:text-xl">Suivi de votre commande n°{liveOrder.id.slice(0, 6)}...</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 p-4 md:p-6">
                     <div className="md:col-span-2 relative h-72 sm:h-80 md:h-full md:min-h-[400px] rounded-lg overflow-hidden bg-muted">
-                        {mapUrl ? (
-                           <iframe
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0 }}
-                                loading="lazy"
-                                allowFullScreen
-                                src={mapUrl}>
-                            </iframe>
+                        {mapPoints.length > 0 ? (
+                            <LeafletMap points={mapPoints} className="h-full w-full rounded-lg" />
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground p-4 text-center">
-                                <p>La carte de suivi est indisponible.</p>
+                                <p>La carte de suivi est indisponible (coordonnées manquantes).</p>
                             </div>
                         )}
                     </div>
@@ -143,7 +126,7 @@ export default function TrackOrderPage() {
                                 )}
                             </div>
                         </div>
-                         <div className="flex items-start gap-3 md:gap-4">
+                        <div className="flex items-start gap-3 md:gap-4">
                             <Home className="h-6 w-6 md:h-8 md:w-8 text-green-600 mt-1 shrink-0" />
                             <div className="min-w-0">
                                 <p className="font-bold">Votre Adresse</p>
@@ -156,4 +139,3 @@ export default function TrackOrderPage() {
         </div>
     );
 }
-
