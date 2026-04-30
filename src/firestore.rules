@@ -179,5 +179,18 @@ service cloud.firestore {
       allow read, list: if isSuperAdmin();
       allow update, delete: if isSuperAdmin();
     }
+
+    // Logs d'erreurs côté client. Création autorisée largement (y compris
+    // pour utilisateurs non authentifiés en cas de crash avant login).
+    // Lecture/édition réservée au SuperAdmin pour audit.
+    match /erreurs/{erreurId} {
+      allow create: if request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 1000
+        && request.resource.data.source in ['boundary', 'window', 'unhandledrejection', 'manuel']
+        && request.resource.data.path is string;
+      allow read, list, update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
   }
 }

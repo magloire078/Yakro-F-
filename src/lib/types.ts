@@ -212,6 +212,25 @@ export interface Parrainage {
   date: string; // ISO
 }
 
+export type ErrorSource = 'boundary' | 'window' | 'unhandledrejection' | 'manuel';
+
+export interface ErrorReport {
+  id: string;
+  source: ErrorSource;
+  message: string;
+  stack?: string;
+  /** Chemin de la page au moment de l'erreur. */
+  path: string;
+  userAgent?: string;
+  /** UID si l'utilisateur est authentifié, sinon null. */
+  userId?: string | null;
+  /** Email si disponible (utile pour reproduire). */
+  userEmail?: string | null;
+  date: string; // ISO
+  /** Marqué résolu par un SuperAdmin. */
+  resolu?: boolean;
+}
+
 export interface UserProfile {
     uid: string;
     email: string;

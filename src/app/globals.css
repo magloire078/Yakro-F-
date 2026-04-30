@@ -61,4 +61,29 @@
   .transition-soft {
     @apply transition-all duration-200 ease-in-out;
   }
+
+  /* Skip-link : caché par défaut, visible quand reçoit le focus clavier. */
+  .skip-link {
+    @apply absolute top-2 left-2 z-[100] -translate-y-20 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-ring;
+  }
+
+  /* Focus visible global : meilleur contraste, anneau cohérent. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+/* Respect des préférences de réduction de mouvement.
+   Désactive la majorité des animations / transitions pour les
+   utilisateurs ayant activé prefers-reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

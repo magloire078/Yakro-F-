@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, ShieldCheck, Edit, UserPlus, Users, Utensils, ShoppingCart, Home, UtensilsCrossed, Bike } from 'lucide-react';
+import { Loader, ShieldCheck, Edit, UserPlus, Users, Utensils, ShoppingCart, Home, UtensilsCrossed, Bike, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, AppRole, SystemRole } from '@/lib/types';
@@ -152,6 +152,12 @@ export default function AdminPage() {
                             <Link href="/">
                                 <Home className="mr-2" />
                                 Accueil Client
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline">
+                            <Link href="/dashboard/admin/errors">
+                                <AlertTriangle className="mr-2" />
+                                Logs d'erreurs
                             </Link>
                         </Button>
                         <Button onClick={() => setIsAddUserDialogOpen(true)}>

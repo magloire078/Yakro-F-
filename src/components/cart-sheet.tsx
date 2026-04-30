@@ -192,15 +192,17 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                                     size="icon"
                                     className="h-6 w-6"
                                     onClick={() => updateQuantity(item.id, item.quantite - 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
+                                    aria-label={`Diminuer la quantité de ${item.nom}`}
                                     >
                                     <Minus className="h-3 w-3" />
                                     </Button>
-                                    <span className="w-6 text-center">{item.quantite}</span>
+                                    <span className="w-6 text-center" aria-label={`Quantité : ${item.quantite}`}>{item.quantite}</span>
                                     <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-6 w-6"
                                     onClick={() => updateQuantity(item.id, item.quantite + 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
+                                    aria-label={`Augmenter la quantité de ${item.nom}`}
                                     >
                                     <Plus className="h-3 w-3" />
                                     </Button>
@@ -211,6 +213,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                             size="icon"
                             className="text-muted-foreground hover:text-destructive"
                             onClick={() => removeFromCart(item.id, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
+                            aria-label={`Retirer ${item.nom} du panier`}
                             >
                             <Trash2 className="h-4 w-4" />
                             </Button>
