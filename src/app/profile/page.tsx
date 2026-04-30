@@ -73,12 +73,12 @@ export default function ProfilePage() {
         {/* Left Column: Profile Info & Details */}
         <div className="lg:col-span-2 space-y-8">
           <Card>
-            <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
-              <Avatar className="h-24 w-24 text-3xl">
+            <CardContent className="p-4 md:p-6 flex flex-col sm:flex-row items-center gap-4 md:gap-6">
+              <Avatar className="h-20 w-20 md:h-24 md:w-24 text-3xl">
                 <AvatarFallback>{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 text-center sm:text-left">
-                <CardTitle className="text-3xl">{userProfile?.nom || "Nom non défini"}</CardTitle>
+              <div className="flex-1 text-center sm:text-left min-w-0">
+                <CardTitle className="text-xl sm:text-2xl md:text-3xl truncate">{userProfile?.nom || "Nom non défini"}</CardTitle>
                 <CardDescription className="text-lg flex items-center justify-center sm:justify-start gap-2 mt-1">
                   <Mail className="h-4 w-4" />
                   {user.email}

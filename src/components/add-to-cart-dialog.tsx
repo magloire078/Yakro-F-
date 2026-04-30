@@ -106,25 +106,25 @@ export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild onClick={handleTriggerClick}>{children}</DialogTrigger>
       {hasOptions && (
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="w-[95vw] max-w-[425px] rounded-xl">
           <DialogHeader>
-            <div className="relative w-full h-32 rounded-lg overflow-hidden mb-4">
+            <div className="relative w-full h-36 rounded-lg overflow-hidden mb-3">
                 <Image src={dialogImageSrc} alt={item.nom} width={placeholder.width} height={placeholder.height} className="object-cover w-full h-full" data-ai-hint={item.indiceImage}/>
             </div>
             <DialogTitle>{item.nom}</DialogTitle>
             <DialogDescription>{item.description}</DialogDescription>
             <p className="text-lg font-bold text-primary">{item.prix.toLocaleString('fr-FR')} FCFA</p>
           </DialogHeader>
-          <div className="grid gap-4 py-4 max-h-[40vh] overflow-y-auto pr-2">
+          <div className="grid gap-4 py-2 max-h-[45vh] overflow-y-auto">
             {item.accompagnementsDisponibles && item.accompagnementsDisponibles.length > 0 && (
               <div className="space-y-2">
                 <Label className="font-semibold">Choisissez un accompagnement</Label>
                 <RadioGroup value={selectedSide?.nom} onValueChange={handleSideChange}>
                   {item.accompagnementsDisponibles.map(side => (
-                    <div key={side.nom} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
+                    <div key={side.nom} className="flex items-center justify-between py-1">
+                      <div className="flex items-center space-x-3">
                         <RadioGroupItem value={side.nom} id={`side-${side.nom}`} />
-                        <Label htmlFor={`side-${side.nom}`}>{side.nom}</Label>
+                        <Label htmlFor={`side-${side.nom}`} className="cursor-pointer">{side.nom}</Label>
                       </div>
                       <span className="text-sm text-muted-foreground">+{side.prix.toLocaleString('fr-FR')} FCFA</span>
                     </div>
@@ -137,10 +137,10 @@ export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
                 <Label className="font-semibold">Choisissez une boisson</Label>
                 <RadioGroup value={selectedDrink?.nom} onValueChange={handleDrinkChange}>
                   {item.boissonsDisponibles.map(drink => (
-                    <div key={drink.nom} className="flex items-center justify-between">
-                       <div className="flex items-center space-x-2">
+                    <div key={drink.nom} className="flex items-center justify-between py-1">
+                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value={drink.nom} id={`drink-${drink.nom}`} />
-                        <Label htmlFor={`drink-${drink.nom}`}>{drink.nom}</Label>
+                        <Label htmlFor={`drink-${drink.nom}`} className="cursor-pointer">{drink.nom}</Label>
                       </div>
                       <span className="text-sm text-muted-foreground">+{drink.prix.toLocaleString('fr-FR')} FCFA</span>
                     </div>
@@ -149,14 +149,14 @@ export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
               </div>
             )}
           </div>
-          <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus /></Button>
+          <DialogFooter className="flex-col gap-3 sm:flex-row sm:justify-between sm:items-center w-full">
+            <div className="flex items-center justify-center gap-3">
+              <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus className="h-4 w-4" /></Button>
               <span className="text-lg font-bold w-10 text-center">{quantity}</span>
-              <Button variant="outline" size="icon" onClick={() => setQuantity(q => q+1)}><Plus /></Button>
+              <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => q+1)}><Plus className="h-4 w-4" /></Button>
             </div>
-            <Button onClick={handleAddToCart} className="w-full sm:w-auto">
-              Ajouter - {calculateTotalPrice().toLocaleString('fr-FR')} FCFA
+            <Button onClick={handleAddToCart} className="w-full sm:w-auto" size="lg">
+              Ajouter · {calculateTotalPrice().toLocaleString('fr-FR')} FCFA
             </Button>
           </DialogFooter>
         </DialogContent>

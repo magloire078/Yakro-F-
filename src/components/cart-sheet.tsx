@@ -95,19 +95,19 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                                     <Button
                                     variant="outline"
                                     size="icon"
-                                    className="h-6 w-6"
+                                    className="h-9 w-9"
                                     onClick={() => updateQuantity(item.id, item.quantite - 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
                                     >
-                                    <Minus className="h-3 w-3" />
+                                    <Minus className="h-4 w-4" />
                                     </Button>
-                                    <span className="w-6 text-center">{item.quantite}</span>
+                                    <span className="w-6 text-center font-medium">{item.quantite}</span>
                                     <Button
                                     variant="outline"
                                     size="icon"
-                                    className="h-6 w-6"
+                                    className="h-9 w-9"
                                     onClick={() => updateQuantity(item.id, item.quantite + 1, item.accompagnementSelectionne?.nom, item.boissonSelectionnee?.nom)}
                                     >
-                                    <Plus className="h-3 w-3" />
+                                    <Plus className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>

@@ -198,7 +198,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                     </FormItem>
                 )}
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                     control={form.control}
                     name="tempsDeLivraison"
@@ -227,17 +227,17 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                 />
             </div>
             <div className="space-y-4 rounded-lg border p-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <div>
                         <h4 className="font-medium">Géolocalisation</h4>
                         <p className="text-sm text-muted-foreground">Optionnel, mais recommandé pour les livreurs.</p>
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={handleGetLocation} disabled={isFetchingLocation}>
-                        {isFetchingLocation ? <Loader className="animate-spin" /> : <MapPin />}
+                    <Button type="button" variant="outline" onClick={handleGetLocation} disabled={isFetchingLocation} className="w-full sm:w-auto">
+                        {isFetchingLocation ? <Loader className="animate-spin mr-2" /> : <MapPin className="mr-2" />}
                         Obtenir la position GPS
                     </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="latitude"

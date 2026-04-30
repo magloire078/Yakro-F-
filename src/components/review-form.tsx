@@ -28,7 +28,7 @@ interface ReviewFormProps {
 const StarRatingInput = ({ value, onChange }: { value: number; onChange: (value: number) => void }) => {
   const [hover, setHover] = useState(0);
   return (
-    <div className="flex items-center" onMouseLeave={() => setHover(0)}>
+    <div className="flex items-center gap-1" onMouseLeave={() => setHover(0)}>
       {[...Array(5)].map((_, index) => {
         const ratingValue = index + 1;
         return (
@@ -37,10 +37,10 @@ const StarRatingInput = ({ value, onChange }: { value: number; onChange: (value:
             key={ratingValue}
             onClick={() => onChange(ratingValue)}
             onMouseEnter={() => setHover(ratingValue)}
-            className="focus:outline-none"
+            className="p-1.5 focus:outline-none rounded-md touch-manipulation"
           >
             <Star
-              className={cn("w-6 h-6 cursor-pointer", ratingValue <= (hover || value) ? "text-yellow-400 fill-yellow-400" : "text-gray-300")}
+              className={cn("w-7 h-7 cursor-pointer", ratingValue <= (hover || value) ? "text-yellow-400 fill-yellow-400" : "text-gray-300")}
             />
           </button>
         );
@@ -66,7 +66,7 @@ export function ReviewForm({ onSubmit }: ReviewFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-6 border rounded-lg bg-card">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5 p-4 md:p-6 border rounded-lg bg-card">
         <FormField
           control={form.control}
           name="nomUtilisateur"
@@ -106,7 +106,7 @@ export function ReviewForm({ onSubmit }: ReviewFormProps) {
                 </FormItem>
             )}
         />
-        <Button type="submit">Envoyer l'avis</Button>
+        <Button type="submit" className="w-full">Envoyer l'avis</Button>
       </form>
     </Form>
   );

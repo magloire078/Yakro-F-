@@ -104,7 +104,7 @@ export default function EditProfilePage() {
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <FormField
                                 control={form.control}
                                 name="nom"
@@ -125,7 +125,7 @@ export default function EditProfilePage() {
                                     <FormItem>
                                         <FormLabel>Numéro de téléphone</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Ex: 07 01 02 03 04" {...field} />
+                                            <Input type="tel" inputMode="tel" placeholder="Ex: 07 01 02 03 04" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -138,7 +138,7 @@ export default function EditProfilePage() {
                                     <FormItem>
                                         <FormLabel>Adresse par défaut</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Ex: Yamoussoukro, Quartier des Lacs, Villa 24" {...field} />
+                                            <Input inputMode="text" autoComplete="street-address" placeholder="Ex: Yamoussoukro, Quartier des Lacs, Villa 24" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

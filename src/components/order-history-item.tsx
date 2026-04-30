@@ -46,21 +46,21 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
     <Card className="shadow-md">
       <Accordion type="single" collapsible>
         <AccordionItem value={order.id} className="border-b-0">
-          <AccordionTrigger className="p-6 hover:no-underline">
-            <div className="flex justify-between items-center w-full">
-              <div className="text-left">
-                <p className="font-bold text-lg font-headline">{order.nomRestaurant}</p>
+          <AccordionTrigger className="px-4 py-4 md:p-6 hover:no-underline">
+            <div className="flex justify-between items-start sm:items-center w-full gap-2 pr-2">
+              <div className="text-left min-w-0">
+                <p className="font-bold text-base md:text-lg font-headline truncate">{order.nomRestaurant}</p>
                 <p className="text-sm text-muted-foreground">{new Date(order.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="font-semibold text-lg text-primary">{order.total.toLocaleString('fr-FR')} FCFA</span>
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-3 shrink-0">
+                <span className="font-semibold text-base text-primary whitespace-nowrap">{order.total.toLocaleString('fr-FR')} F</span>
                 <Badge variant={order.statut === 'Livrée' ? 'default' : 'destructive'} className={order.statut === 'Livrée' ? 'bg-green-600' : ''}>
                     {order.statut}
                 </Badge>
               </div>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="p-6 pt-0">
+          <AccordionContent className="px-4 pb-4 pt-0 md:p-6 md:pt-0">
             <div className="space-y-4">
                 {order.plats.map((item, index) => {
                     const menuItem = getMenuItem(item.id);

@@ -24,7 +24,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
   
   return (
     <Card className="shadow-md">
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="flex items-start gap-4">
           <Avatar>
             <AvatarFallback>{initial}</AvatarFallback>
