@@ -384,8 +384,8 @@ export default function AdminPage() {
                                 { label: 'Placées', value: orderStats.placees, icon: Clock, color: 'text-yellow-600' },
                                 { label: 'En Préparation', value: orderStats.enPreparation, icon: ChefHat, color: 'text-orange-600' },
                                 { label: 'En Route', value: orderStats.enRoute, icon: Truck, color: 'text-blue-600' },
-                                { label: 'Livrées', value: orderStats.livrees, icon: CheckCircle2, color: 'text-green-600' },
-                                { label: 'Annulées', value: orderStats.annulees, icon: XCircle, color: 'text-red-600' },
+                                { label: 'Livrées', value: orderStats.livrees, icon: CheckCircle2, color: 'text-green-600 dark:text-green-400' },
+                                { label: 'Annulées', value: orderStats.annulees, icon: XCircle, color: 'text-red-600 dark:text-red-400' },
                             ].map(({ label, value, icon: Icon, color }) => (
                                 <Card key={label} className="hover:bg-muted transition-colors">
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -430,7 +430,7 @@ export default function AdminPage() {
                                                         <Badge variant={
                                                             order.statut === 'Livrée' ? 'default' :
                                                             order.statut === 'Annulée' ? 'destructive' : 'secondary'
-                                                        } className={order.statut === 'Livrée' ? 'bg-green-600' : ''}>
+                                                        } className={order.statut === 'Livrée' ? 'bg-green-600 dark:bg-green-700' : ''}>
                                                             {order.statut}
                                                         </Badge>
                                                     </TableCell>

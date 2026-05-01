@@ -54,7 +54,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
               </div>
               <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-3 shrink-0">
                 <span className="font-semibold text-base text-primary whitespace-nowrap">{order.total.toLocaleString('fr-FR')} F</span>
-                <Badge variant={order.statut === 'Livrée' ? 'default' : 'destructive'} className={order.statut === 'Livrée' ? 'bg-green-600' : ''}>
+                <Badge variant={order.statut === 'Livrée' ? 'default' : 'destructive'} className={order.statut === 'Livrée' ? 'bg-green-600 dark:bg-green-700' : ''}>
                     {order.statut}
                 </Badge>
               </div>

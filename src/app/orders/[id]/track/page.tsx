@@ -107,7 +107,7 @@ export default function TrackOrderPage() {
                     </div>
                     <div className="md:col-span-1 space-y-4 md:space-y-6">
                         <div className="flex items-start gap-3 md:gap-4">
-                            <MapPin className="h-6 w-6 md:h-8 md:w-8 text-red-500 mt-1 shrink-0" />
+                            <MapPin className="h-6 w-6 md:h-8 md:w-8 text-red-500 dark:text-red-400 mt-1 shrink-0" />
                             <div className="min-w-0">
                                 <p className="font-bold">Restaurant</p>
                                 <p className="text-sm md:text-base text-muted-foreground truncate">{restaurant?.nom}</p>
@@ -127,7 +127,7 @@ export default function TrackOrderPage() {
                             </div>
                         </div>
                         <div className="flex items-start gap-3 md:gap-4">
-                            <Home className="h-6 w-6 md:h-8 md:w-8 text-green-600 mt-1 shrink-0" />
+                            <Home className="h-6 w-6 md:h-8 md:w-8 text-green-600 dark:text-green-400 mt-1 shrink-0" />
                             <div className="min-w-0">
                                 <p className="font-bold">Votre Adresse</p>
                                 <p className="text-sm md:text-base text-muted-foreground break-words">{liveOrder.adresseClient}</p>

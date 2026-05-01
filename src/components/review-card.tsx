@@ -13,7 +13,7 @@ const StarRating = ({ rating }: { rating: number }) => (
     {[...Array(5)].map((_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+        className={`w-4 h-4 ${i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
       />
     ))}
   </div>

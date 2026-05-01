@@ -40,7 +40,7 @@ const StarRatingInput = ({ value, onChange }: { value: number; onChange: (value:
             className="p-1.5 focus:outline-none rounded-md touch-manipulation"
           >
             <Star
-              className={cn("w-7 h-7 cursor-pointer", ratingValue <= (hover || value) ? "text-yellow-400 fill-yellow-400" : "text-gray-300")}
+              className={cn("w-7 h-7 cursor-pointer", ratingValue <= (hover || value) ? "text-yellow-400 fill-yellow-400" : "text-gray-300 dark:text-gray-600")}
             />
           </button>
         );

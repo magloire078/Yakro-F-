@@ -82,7 +82,7 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
                 </div>
                  {isFinished && (
                     <div className="mt-8 text-center">
-                        <p className="text-green-600 font-bold">Votre commande a été livrée !</p>
+                        <p className="text-green-600 dark:text-green-400 font-bold">Votre commande a été livrée !</p>
                         <p className="text-sm text-muted-foreground">Ce message disparaîtra dans quelques secondes.</p>
                     </div>
                 )}

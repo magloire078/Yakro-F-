@@ -100,7 +100,7 @@ export default function EarningsPage() {
                                                 <TableCell className="font-medium">{new Date(order.date).toLocaleDateString('fr-FR')}</TableCell>
                                                 <TableCell>{order.nomRestaurant}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant="default" className="bg-green-600">{order.statut}</Badge>
+                                                    <Badge variant="default" className="bg-green-600 dark:bg-green-700">{order.statut}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right font-semibold text-primary">{order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</TableCell>
                                             </TableRow>
