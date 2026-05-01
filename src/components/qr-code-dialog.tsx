@@ -54,7 +54,13 @@ export function QrCodeDialog({ orderId, children }: QrCodeDialogProps) {
           {isLoading && <Loader className="animate-spin h-16 w-16 text-primary" />}
           {qrCodeUrl && (
             <div className="relative w-64 h-64 border-4 border-primary rounded-lg overflow-hidden">
-                <Image src={qrCodeUrl} alt={`QR Code order ${orderId}`} fill className="object-contain" />
+                <Image 
+                  src={qrCodeUrl} 
+                  alt={`QR Code order ${orderId}`} 
+                  fill 
+                  sizes="(max-width: 768px) 100vw, 300px"
+                  className="object-contain" 
+                />
             </div>
           )}
         </div>

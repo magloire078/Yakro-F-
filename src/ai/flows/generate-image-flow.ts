@@ -1,55 +1,41 @@
 
-// Refactored for static export
+// Refactored for stability and static export
 /**
- * @fileOverview A flow for generating an image from a text prompt.
- *
- * - generateImage - A function that generates an image.
- * - GenerateImageInput - The input type for the generateImage function.
- * - GenerateImageOutput - The return type for the generateImage function.
+ * @fileOverview A client-safe wrapper for generating an image from a text prompt.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-
-const GenerateImageInputSchema = z.object({
-  prompt: z.string().describe('The text prompt to generate an image from.'),
-});
-export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
-
-const GenerateImageOutputSchema = z.object({
-  imageDataUri: z
-    .string()
-    .describe(
-      "The generated image as a data URI, including MIME type and Base64 encoding."
-    ),
-});
-export type GenerateImageOutput = z.infer<typeof GenerateImageOutputSchema>;
-
-export async function generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
-  return generateImageFlow(input);
+export interface GenerateImageInput {
+  prompt: string;
 }
 
-const generateImageFlow = ai.defineFlow(
-  {
-    name: 'generateImageFlow',
-    inputSchema: GenerateImageInputSchema,
-    outputSchema: GenerateImageOutputSchema,
-  },
-  async ({ prompt }) => {
-    const { media } = await ai.generate({
-      model: googleAI.model('imagen-4.0-fast-generate-001'),
-      prompt: prompt,
-    });
+export interface GenerateImageOutput {
+  imageDataUri: string;
+}
 
-    const imageUrl = media?.url;
+export async function generateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
+  const isServer = typeof window === 'undefined';
 
-    if (!imageUrl) {
-      throw new Error('Image generation failed to return a URL.');
+  if (isServer) {
+    try {
+      const flowModule = await import('./definitions/generate-image-flow');
+      const flow = flowModule.generateImageFlow;
+      
+      if (typeof flow !== 'function') {
+        throw new Error('Flow is not a function');
+      }
+      
+      return await flow(input);
+    } catch (error) {
+      console.error('Error in generateImageFlow server-side:', error);
+      // Fallback: return empty image data to prevent crash
+      return {
+        imageDataUri: ""
+      };
     }
-
+  } else {
+    console.warn('Genkit image generation is not implemented for static export.');
     return {
-      imageDataUri: imageUrl,
+      imageDataUri: ""
     };
   }
-);
+}

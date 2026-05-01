@@ -18,6 +18,7 @@ export interface GenerateMenuItemOutput {
     nom: string;
     description: string;
     prix: number;
+    categorie: string;
     indiceImage: string;
 }
 
@@ -25,9 +26,21 @@ export async function generateMenuItem(input: GenerateMenuItemInput): Promise<Ge
     const isServer = typeof window === 'undefined';
 
     if (isServer) {
-        // Dynamic import to avoid bundling on client
-        const { generateMenuItemFlow } = await import('./definitions/generate-menu-item-flow');
-        return generateMenuItemFlow(input);
+        try {
+            // Dynamic import to avoid bundling on client
+            const flowModule = await import('./definitions/generate-menu-item-flow');
+            return await flowModule.generateMenuItemFlow(input);
+        } catch (error) {
+            console.error('Error in generateMenuItemFlow server-side:', error);
+            // Fallback to mock on server error
+            return {
+                nom: `Plat suggéré (${input.cuisine})`,
+                description: `Une délicieuse création inspirée par: ${input.description}`,
+                prix: input.prix || 3500,
+                categorie: "Plats",
+                indiceImage: "gastronomie"
+            };
+        }
     } else {
         // On client (Capacitor/Static Export), we should call an external API.
         // For now, we return a mock or throw an error with instructions.
@@ -38,6 +51,7 @@ export async function generateMenuItem(input: GenerateMenuItemInput): Promise<Ge
             nom: `Plat: ${input.description.substring(0, 20)}...`,
             description: `Une version raffinée de: ${input.description}. (Généré en mode statique)`,
             prix: input.prix || 2500,
+            categorie: "Plats",
             indiceImage: "cuisine locale"
         };
     }

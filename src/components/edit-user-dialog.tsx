@@ -75,7 +75,7 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
         description: 'Les modifications ont été enregistrées.',
       });
       onClose();
-    } catch (error) {
+    } catch {
        // Error is handled by the action via the emitter, but we can show a generic toast here.
        // The developer will see the rich error in the console.
       toast({
@@ -94,7 +94,7 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
         <DialogHeader>
           <DialogTitle>Modifier le profil de {userProfile.nom || userProfile.email}</DialogTitle>
           <DialogDescription>
-            Modifiez les informations de l'utilisateur.
+            Modifiez les informations de l&apos;utilisateur.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

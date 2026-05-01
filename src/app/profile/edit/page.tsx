@@ -66,7 +66,7 @@ export default function EditProfilePage() {
                 description: 'Vos informations ont été enregistrées avec succès.',
             });
             router.push('/profile');
-        } catch (error) {
+        } catch {
             // The auth context now handles the server action which emits the error
             // so we just show a generic message here.
             toast({

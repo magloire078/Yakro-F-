@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useData } from '@/contexts/data-context';
 import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, Users, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +15,6 @@ import { format } from 'date-fns';
 export default function RestaurateurHomePage() {
     const { restaurants, orders, isLoading: isDataLoading } = useData();
     const { user, loading: authLoading } = useAuth();
-    const router = useRouter();
 
     const myRestaurants = React.useMemo(() => {
         if (!user) return [];
@@ -65,7 +63,7 @@ export default function RestaurateurHomePage() {
                     </CardHeader>
                     <CardContent>
                         <CardDescription className="text-base">
-                            Il semble que vous n'ayez pas encore de restaurant. Pour commencer à gérer vos commandes et créer des plats, vous devez d'abord enregistrer votre établissement.
+                            Il semble que vous n&apos;ayez pas encore de restaurant. Pour commencer à gérer vos commandes et créer des plats, vous devez d&apos;abord enregistrer votre établissement.
                         </CardDescription>
                          <Button className="mt-6" asChild>
                            <Link href="/dashboard/new-restaurant">Créer mon premier restaurant</Link>
@@ -81,7 +79,7 @@ export default function RestaurateurHomePage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-headline text-primary">Tableau de bord</h1>
-                    <p className="text-muted-foreground">Aperçu de l'activité de vos restaurants aujourd'hui.</p>
+                    <p className="text-muted-foreground">Aperçu de l&apos;activité de vos restaurants aujourd&apos;hui.</p>
                 </div>
                  <div className="flex gap-2">
                     <Button asChild>
@@ -102,7 +100,7 @@ export default function RestaurateurHomePage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Revenu Net (Aujourd'hui)</CardTitle>
+                        <CardTitle className="text-sm font-medium">Revenu Net (Aujourd&apos;hui)</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -112,7 +110,7 @@ export default function RestaurateurHomePage() {
                 </Card>
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Commandes (Aujourd'hui)</CardTitle>
+                        <CardTitle className="text-sm font-medium">Commandes (Aujourd&apos;hui)</CardTitle>
                         <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -190,7 +188,7 @@ export default function RestaurateurHomePage() {
                  <Card>
                     <CardHeader>
                         <CardTitle>Créateur de Plats par IA</CardTitle>
-                        <CardDescription>Pas d'inspiration ? Décrivez un plat et laissez l'IA générer un nom, une description et un prix pour vous.</CardDescription>
+                        <CardDescription>Pas d&apos;inspiration ? Décrivez un plat et laissez l&apos;IA générer un nom, une description et un prix pour vous.</CardDescription>
                     </CardHeader>
                     <CardContent className="text-center">
                         <Wand2 className="h-16 w-16 mx-auto text-primary/50 mb-4" />

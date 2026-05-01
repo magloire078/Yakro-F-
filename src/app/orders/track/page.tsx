@@ -72,7 +72,7 @@ function TrackOrderContent() {
             <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
                 <p>Identifiant de commande manquant.</p>
                 <Button asChild>
-                    <Link href="/">Retour à l'accueil</Link>
+                    <Link href="/">Retour à l&apos;accueil</Link>
                 </Button>
             </div>
         );
@@ -112,7 +112,7 @@ function TrackOrderContent() {
         <div className="container mx-auto px-4 py-8">
             <Button asChild variant="ghost" className="mb-4">
                 <Link href="/">
-                    &larr; Retour à l'accueil
+                    &larr; Retour à l&apos;accueil
                 </Link>
             </Button>
             <Card>

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import type { FirestorePermissionError } from '@/firebase/errors';
-import { AlertCircle } from 'lucide-react';
+
 
 export function FirebaseErrorListener() {
   const { toast } = useToast();
@@ -28,8 +28,8 @@ export function FirebaseErrorListener() {
         title: "Permission Firestore Refusée",
         description: (
           <div className="mt-2 w-full">
-            <p>L'opération de <strong>{readableOperation}</strong> sur le chemin <strong>{error.context.path}</strong> a été bloquée par les règles de sécurité.</p>
-            {error.context.requestResourceData && (
+            <p>L&apos;opération de <strong>{readableOperation}</strong> sur le chemin <strong>{error.context.path}</strong> a été bloquée par les règles de sécurité.</p>
+            {!!error.context.requestResourceData && (
                 <div className="mt-2">
                     <p className="font-semibold">Données de la requête :</p>
                     <pre className="mt-1 text-xs bg-muted p-2 rounded-md overflow-x-auto">

@@ -1,4 +1,3 @@
-
 import { Belleza, Alegreya } from 'next/font/google';
 
 export const belleza = Belleza({

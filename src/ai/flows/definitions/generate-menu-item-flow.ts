@@ -14,6 +14,7 @@ export const GenerateMenuItemOutputSchema = z.object({
     nom: z.string().describe('A creative and appealing name for the dish in French. If a name was provided in the input, refine or use it.'),
     description: z.string().describe('A delicious and enticing description of the dish in French, between 20 and 40 words, based on the user\'s simple description.'),
     prix: z.number().describe('A suggested price in West African CFA Franc (FCFA), should be a multiple of 50 or 100. If a price was provided, use or adjust it.'),
+    categorie: z.enum(["Entrées", "Plats", "Desserts", "Boissons", "Autres"]).describe('The logical category of the dish.'),
     indiceImage: z.string().describe("A 2-word hint for an image for alt text and future AI tasks."),
 });
 
@@ -40,7 +41,9 @@ const textGenerationPrompt = ai.definePrompt({
     3.  **Price:** 
         - If a price was provided, use that price. If it seems completely unrealistic for the dish, you can adjust it slightly, but try to respect the user's input. The final price must be a multiple of 50 or 100.
         - If no price was provided, suggest a realistic price in West African CFA Francs (XOF). The price should be reasonable and a multiple of 50 or 100.
-    4.  **Image Hint:** 
+    4.  **Category:**
+        - Identify the most appropriate category for the dish. Must be exactly one of: "Entrées", "Plats", "Desserts", "Boissons", or "Autres".
+    5.  **Image Hint:** 
         - Create a 2-word hint for an image based on the generated dish name and description. This will be used for alt text and future AI tasks. For example, "Poulet Yassa" -> "grilled chicken".
     
     Return the result in JSON format.

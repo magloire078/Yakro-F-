@@ -4,23 +4,21 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { Loader, User as UserIcon, Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, ShieldAlert } from 'lucide-react';
+import { Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
-import type { Restaurant, UserProfile } from '@/lib/types';
 import Link from 'next/link';
 import { useFirebase } from '@/contexts/firebase-provider';
-import { useToast } from '@/hooks/use-toast';
+
 
 export default function ProfilePage() {
-  const { user, userProfile, activeRole, updateUserProfile } = useAuth();
+  const { user, userProfile, activeRole } = useAuth();
   const { orders, restaurants } = useData();
   const { auth } = useFirebase();
   const router = useRouter();
-  const { toast } = useToast();
   
   const handleSignOut = async () => {
     await auth.signOut();

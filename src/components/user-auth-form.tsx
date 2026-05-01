@@ -46,6 +46,7 @@ export function UserAuthForm() {
   const { toast } = useToast();
   
   const form = useForm<AuthFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(isLoginView ? loginSchema : signupSchema) as any,
     defaultValues: {
         nom: '',
@@ -53,7 +54,7 @@ export function UserAuthForm() {
         password: '',
         telephone: '',
         role: 'client' as AppRole,
-    } as any
+    }
   });
   
   React.useEffect(() => {
@@ -83,7 +84,7 @@ export function UserAuthForm() {
       };
 
       setDoc(userDocRef, profileData, { merge: true })
-        .catch(async (serverError) => {
+        .catch(async () => {
             const permissionError = new FirestorePermissionError({
                 path: userDocRef.path,
                 operation: 'write',
@@ -96,18 +97,19 @@ export function UserAuthForm() {
         title: 'Connexion réussie',
         description: 'Vous êtes maintenant connecté via Google.',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la connexion.';
       toast({
         variant: 'destructive',
         title: 'Erreur de connexion Google',
-        description: error.message || 'Une erreur est survenue lors de la connexion.',
+        description: errorMessage,
       });
     } finally {
       setIsGoogleLoading(false);
     }
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: AuthFormValues) => {
     setIsLoading(true);
     try {
       if (isLoginView) {
@@ -128,7 +130,7 @@ export function UserAuthForm() {
         };
 
         setDoc(userDocRef, profileData)
-            .catch(async (serverError) => {
+            .catch(async () => {
                 const permissionError = new FirestorePermissionError({
                     path: userDocRef.path,
                     operation: 'create',
@@ -142,10 +144,11 @@ export function UserAuthForm() {
             description: `Bienvenue sur Yakro Fê. Votre profil ${data.role} a été créé.`,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       let description = "Une erreur inattendue s'est produite.";
-      if (error.code) {
-          switch(error.code) {
+      const firebaseError = error as { code?: string; message?: string };
+      if (firebaseError.code) {
+          switch(firebaseError.code) {
               case 'auth/email-already-in-use':
                 description = 'Cette adresse e-mail est déjà utilisée.';
                 break;
@@ -155,10 +158,10 @@ export function UserAuthForm() {
                 description = 'Email ou mot de passe incorrect.';
                 break;
               default:
-                description = `Erreur: ${error.code}`;
+                description = `Erreur: ${firebaseError.code}`;
           }
-      } else if (error.message) {
-        description = error.message;
+      } else if (firebaseError.message) {
+        description = firebaseError.message;
       }
       
       toast({

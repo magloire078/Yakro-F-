@@ -4,16 +4,25 @@ export interface MenuOption {
   prix: number;
 }
 
+export interface MenuItemIngredient {
+  stockItemId: string;
+  nom: string;
+  quantite: number;
+  unite: string;
+}
+
 export interface MenuItem {
   id: string;
   nom: string;
   description: string;
   prix: number;
+  categorie: string; // Entrée, Plat, Dessert, Boisson, etc.
   image?: string; // URL de l'image stockée
   indiceImage: string;
   restaurantId: string;
   accompagnementsDisponibles?: MenuOption[];
   boissonsDisponibles?: MenuOption[];
+  ingredients?: MenuItemIngredient[];
 }
 
 export interface Restaurant {
@@ -52,7 +61,8 @@ export interface Order {
   date: string;
   nomRestaurant: string;
   restaurantId: string;
-  statut: 'Placée' | 'En Préparation' | 'En Route' | 'Livrée' | 'Annulée';
+  restaurateurId: string;
+  statut: 'Placée' | 'En Préparation' | 'Prête' | 'En Route' | 'Livrée' | 'Annulée';
   livreurId?: string;
   adresseClient: string;
   adresseRestaurant: string;
@@ -110,3 +120,15 @@ export interface UserProfile {
   latitude?: number;
   longitude?: number;
 }
+
+export interface StockItem {
+  id: string;
+  restaurantId: string;
+  restaurateurId: string;
+  nom: string;
+  quantite: number;
+  unite: string; // kg, g, l, ml, unités, caisses
+  seuilAlerte: number;
+  derniereMiseAJour: string;
+}
+

@@ -39,17 +39,17 @@ export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
 
-  const resetState = () => {
+  const resetState = React.useCallback(() => {
     setQuantity(1);
     setSelectedSide(item.accompagnementsDisponibles?.[0]);
     setSelectedDrink(item.boissonsDisponibles?.[0]);
-  }
+  }, [item.accompagnementsDisponibles, item.boissonsDisponibles]);
 
   React.useEffect(() => {
     if (!isOpen) {
       resetState();
     }
-  }, [isOpen, item]);
+  }, [isOpen, item, resetState]);
 
   const handleAddToCart = () => {
     addToCart({

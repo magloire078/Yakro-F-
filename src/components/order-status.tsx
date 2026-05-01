@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { useEffect } from 'react';
 import { Button } from './ui/button';
-import { CheckCircle, CookingPot, Bike, Home, Map } from 'lucide-react';
+import { CheckCircle, CookingPot, Bike, Home, Map, Package } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ type StatusKey = Order['statut'];
 const statusConfig: Record<StatusKey, { name: string; icon: React.ReactElement; description: string }> = {
   'Placée': { name: 'Placée', icon: <CheckCircle className="h-8 w-8" />, description: "Le restaurant a bien reçu votre commande." },
   'En Préparation': { name: 'En Préparation', icon: <CookingPot className="h-8 w-8" />, description: "Le restaurant prépare votre repas." },
+  'Prête': { name: 'Prête', icon: <Package className="h-8 w-8" />, description: "Votre commande est prête et attend le livreur." },
   'En Route': { name: 'En Route', icon: <Bike className="h-8 w-8" />, description: "Votre livreur est en chemin." },
   'Livrée': { name: 'Livrée', icon: <Home className="h-8 w-8" />, description: "Bon appétit ! Votre commande est arrivée." },
   'Annulée': { name: 'Annulée', icon: <Home className="h-8 w-8" />, description: "Votre commande a été annulée." },
@@ -30,7 +31,7 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
   const statusIndex = allStatuses.findIndex(s => s.name === order.statut);
 
   // Tailwind classes prédéfinies pour éviter les styles inline
-  const progressWidths = ['w-0', 'w-1/3', 'w-2/3', 'w-full'] as const;
+  const progressWidths = ['w-0', 'w-1/4', 'w-1/2', 'w-3/4', 'w-full'] as const;
   const progressClass = progressWidths[Math.min(Math.max(statusIndex, 0), progressWidths.length - 1)];
 
   useEffect(() => {

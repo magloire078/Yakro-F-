@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Html5QrcodeScanner, Html5QrcodeResult } from 'html5-qrcode';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import {
   Dialog,
   DialogContent,
@@ -50,14 +50,14 @@ export function QrScannerDialog({ isOpen, onClose, onScanSuccess }: QrScannerDia
             false
           );
 
-          const handleSuccess = (decodedText: string, result: Html5QrcodeResult) => {
+          const handleSuccess = (decodedText: string) => {
             if (scannerRef.current) {
                 scannerRef.current.clear().catch(console.error);
             }
             onScanSuccess(decodedText);
           };
 
-          const handleError = (errorMessage: string) => {
+          const handleError = () => {
             // silent errors during scan
           };
 
@@ -106,7 +106,7 @@ export function QrScannerDialog({ isOpen, onClose, onScanSuccess }: QrScannerDia
             <CameraOff className="h-4 w-4" />
             <AlertTitle>Accès caméra refusé</AlertTitle>
             <AlertDescription>
-              Veuillez autoriser l'accès à la caméra dans vos paramètres système pour scanner les commandes.
+              Veuillez autoriser l&apos;accès à la caméra dans vos paramètres système pour scanner les commandes.
             </AlertDescription>
           </Alert>
         )}

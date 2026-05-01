@@ -1,9 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import type { Restaurant, MenuItem, Order } from '@/lib/types';
+import type { Restaurant, MenuItem, Order, StockItem } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc, updateDoc, Firestore } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -13,24 +13,29 @@ interface DataState {
     restaurants: Restaurant[];
     menuItems: MenuItem[];
     orders: Order[];
+    stocks: StockItem[];
     isLoading: boolean;
     setRestaurants: (restaurants: Restaurant[]) => void;
     setMenuItems: (menuItems: MenuItem[]) => void;
     setOrders: (orders: Order[]) => void;
+    setStocks: (stocks: StockItem[]) => void;
     setIsLoading: (isLoading: boolean) => void;
     getMenuItem: (id: string) => MenuItem | undefined;
     getRestaurant: (id: string) => Restaurant | undefined;
     getOrder: (id: string) => Order | undefined;
+    getStockItem: (id: string) => StockItem | undefined;
 }
 
 export const useData = create<DataState>((set, get) => ({
     restaurants: [],
     menuItems: [],
     orders: [],
+    stocks: [],
     isLoading: true,
     setRestaurants: (restaurants) => set({ restaurants }),
     setMenuItems: (menuItems) => set({ menuItems }),
     setOrders: (orders) => set({ orders }),
+    setStocks: (stocks) => set({ stocks }),
     setIsLoading: (isLoading) => set({ isLoading }),
     getMenuItem: (id: string) => {
         return get().menuItems.find(i => i.id === id);
@@ -40,6 +45,9 @@ export const useData = create<DataState>((set, get) => ({
     },
     getOrder: (id: string) => {
         return get().orders.find(o => o.id === id);
+    },
+    getStockItem: (id: string) => {
+        return get().stocks.find(s => s.id === id);
     }
 }));
 
@@ -54,7 +62,7 @@ function setupSubscription<T extends DocumentData>(
             const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as unknown as T[];
             callback(list);
         },
-        async (serverError) => {
+        () => {
             const permissionError = new FirestorePermissionError({
                 path: collectionPath,
                 operation: 'list',
@@ -67,7 +75,7 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setIsLoading, restaurants } = useData();
+    const { setRestaurants, setMenuItems, setOrders, setStocks, setIsLoading, restaurants } = useData();
 
     React.useEffect(() => {
         if (!db) return;
@@ -93,27 +101,32 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         let unsubOrders: Unsubscribe | undefined;
+        let unsubStocks: Unsubscribe | undefined;
         const collectionRef = (path: string) => collection(db, path);
 
         if (user && userProfile) {
             let ordersQuery: Query | null = null;
+            let stocksQuery: Query | null = null;
 
             if (userProfile.roleSysteme === 'SuperAdmin') {
                 ordersQuery = query(collectionRef('commandes'));
+                stocksQuery = query(collectionRef('stocks'));
             } else {
                 switch (activeRole) {
                     case 'client':
                         ordersQuery = query(collectionRef('commandes'), where('userId', '==', user.uid));
                         break;
                     case 'restaurateur':
+                        ordersQuery = query(collectionRef('commandes'), where('restaurateurId', '==', user.uid));
+                        
                         const myRestaurantIds = restaurants
                             .filter(r => r.proprietaireId === user.uid)
                             .map(r => r.id);
 
                         if (myRestaurantIds.length > 0) {
-                            ordersQuery = query(collectionRef('commandes'), where('restaurantId', 'in', myRestaurantIds));
+                            stocksQuery = query(collectionRef('stocks'), where('restaurateurId', '==', user.uid));
                         } else {
-                            setOrders([]);
+                            setStocks([]);
                         }
                         break;
                     case 'livreur':
@@ -135,8 +148,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setIsLoading(false);
             }
 
+            if (stocksQuery) {
+                unsubStocks = setupSubscription<StockItem>(stocksQuery, (fetchedStocks) => {
+                    setStocks(fetchedStocks);
+                }, 'stocks');
+            } else {
+                setStocks([]);
+            }
+
         } else {
             setOrders([]);
+            setStocks([]);
             setIsLoading(false);
         }
 
@@ -144,20 +166,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (unsubOrders) {
                 unsubOrders();
             }
+            if (unsubStocks) {
+                unsubStocks();
+            }
         };
-    }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setIsLoading]);
+    }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setStocks, setIsLoading]);
 
     return <>{children}</>;
 };
 
-export const deleteMenuItem = async (db: any, itemId: string) => {
+export const deleteMenuItem = async (db: Firestore, itemId: string) => {
     const itemDocRef = doc(db, 'plats', itemId);
 
     try {
         // TODO: Implement Cloudinary image deletion via server-side action
         // Cloudinary client-side deletion requires API secret and is not recommended here.
         await deleteDoc(itemDocRef);
-    } catch (e: any) {
+    } catch (e) {
         const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,
             operation: 'delete',
@@ -167,7 +192,7 @@ export const deleteMenuItem = async (db: any, itemId: string) => {
     }
 };
 
-export const updateRestaurant = async (db: any, restaurantId: string, data: Partial<Restaurant>, imageFile: File | null = null) => {
+export const updateRestaurant = async (db: Firestore, restaurantId: string, data: Partial<Restaurant>, imageFile: File | null = null) => {
     const restaurantDocRef = doc(db, 'restaurants', restaurantId);
     const updateData: Partial<Restaurant> = { ...data };
 
@@ -195,11 +220,69 @@ export const updateRestaurant = async (db: any, restaurantId: string, data: Part
         }
 
         await updateDoc(restaurantDocRef, updateData);
-    } catch (e: any) {
+    } catch (e) {
         const permissionError = new FirestorePermissionError({
             path: restaurantDocRef.path,
             operation: 'update',
             requestResourceData: updateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
+};
+
+export const deleteRestaurant = async (db: Firestore, restaurantId: string) => {
+    const restaurantDocRef = doc(db, 'restaurants', restaurantId);
+    try {
+        await deleteDoc(restaurantDocRef);
+    } catch (e) {
+        const permissionError = new FirestorePermissionError({
+            path: restaurantDocRef.path,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
+};
+
+export const addStockItem = async (db: Firestore, stockData: Omit<StockItem, 'id'>) => {
+    const stocksCollectionRef = collection(db, 'stocks');
+    try {
+        const docRef = doc(stocksCollectionRef);
+        await updateDoc(docRef, { ...stockData, id: docRef.id });
+        return docRef.id;
+    } catch {
+        // Fallback to setDoc since updateDoc might fail on non-existent auto-id doc in some restricted rules
+        const docRef = doc(stocksCollectionRef);
+        const { setDoc } = await import('firebase/firestore');
+        await setDoc(docRef, { ...stockData, id: docRef.id });
+        return docRef.id;
+    }
+};
+
+export const updateStockItem = async (db: Firestore, stockId: string, data: Partial<StockItem>) => {
+    const stockDocRef = doc(db, 'stocks', stockId);
+    try {
+        await updateDoc(stockDocRef, data);
+    } catch (e) {
+        const permissionError = new FirestorePermissionError({
+            path: stockDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
+};
+
+export const deleteStockItem = async (db: Firestore, stockId: string) => {
+    const stockDocRef = doc(db, 'stocks', stockId);
+    try {
+        await deleteDoc(stockDocRef);
+    } catch (e) {
+        const permissionError = new FirestorePermissionError({
+            path: stockDocRef.path,
+            operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
         throw e;

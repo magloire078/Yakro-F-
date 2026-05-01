@@ -1,5 +1,3 @@
-
-import { EventEmitter } from 'events';
 import type { FirestorePermissionError } from './errors';
 
 type AppEvents = {
@@ -9,18 +7,21 @@ type AppEvents = {
 // We can't use the native EventEmitter because it's not available in the browser
 // This is a simple implementation that will work for our case.
 class BrowserEventEmitter {
-    private listeners: { [key: string]: Function[] } = {};
+    private listeners: { [K in keyof AppEvents]?: AppEvents[K][] } = {};
 
     on<E extends keyof AppEvents>(event: E, listener: AppEvents[E]): void {
         if (!this.listeners[event]) {
             this.listeners[event] = [];
         }
-        this.listeners[event].push(listener);
+        this.listeners[event]!.push(listener);
     }
 
     emit<E extends keyof AppEvents>(event: E, ...args: Parameters<AppEvents[E]>): void {
-        if (this.listeners[event]) {
-            this.listeners[event].forEach(listener => listener(...args));
+        const listeners = this.listeners[event];
+        if (listeners) {
+            (listeners as Array<(...args: unknown[]) => void>).forEach(listener => {
+                (listener as (...args: Parameters<AppEvents[E]>) => void)(...args);
+            });
         }
     }
 }

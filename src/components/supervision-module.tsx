@@ -1,0 +1,358 @@
+'use client';
+
+import * as React from 'react';
+import { 
+    LayoutList, 
+    Map as MapIcon, 
+    Search, 
+    Filter, 
+    MoreHorizontal, 
+    Clock, 
+    Bike, 
+    Utensils, 
+    AlertCircle,
+    Navigation2,
+    Activity,
+    Target,
+    Zap,
+    Maximize2,
+    Store,
+    Package
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { 
+    DropdownMenu, 
+    DropdownMenuContent, 
+    DropdownMenuItem, 
+    DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { useData } from '@/contexts/data-context';
+import { Order } from '@/lib/types';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export function SupervisionModule() {
+    const { orders } = useData();
+    const [view, setView] = React.useState<'list' | 'map'>('list');
+    const [searchTerm, setSearchTerm] = React.useState('');
+
+    const activeOrders = React.useMemo(() => {
+        return orders.filter(o => o.statut !== 'Livrée' && o.statut !== 'Annulée');
+    }, [orders]);
+
+    const filteredOrders = React.useMemo(() => {
+        return activeOrders.filter(o => 
+            o.nomRestaurant.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            o.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [activeOrders, searchTerm]);
+
+    return (
+        <Card className="border-none shadow-[0_20px_60px_rgba(0,0,0,0.6)] bg-[#121214]/90 backdrop-blur-3xl rounded-none overflow-hidden border-t border-white/5">
+            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 z-50" />
+            
+            <CardHeader className="p-10 border-b border-white/5">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                                <Navigation2 className="h-5 w-5 text-orange-500 fill-orange-500/20" />
+                            </div>
+                            <CardTitle className="text-3xl font-black italic uppercase tracking-tighter text-white">
+                                Radar <span className="text-orange-500">Opérationnel</span>
+                            </CardTitle>
+                        </div>
+                        <CardDescription className="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px]">
+                            Flux global: {activeOrders.length} unités en transit actif.
+                        </CardDescription>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-white/5 p-1 border border-white/10">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setView('list')}
+                            className={cn(
+                                "h-12 px-6 rounded-none font-black italic uppercase tracking-tighter text-[11px] transition-all",
+                                view === 'list' ? "bg-orange-500 text-white" : "text-gray-500 hover:text-white"
+                            )}
+                        >
+                            <LayoutList className="h-4 w-4 mr-2" />
+                            Matrice
+                        </Button>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setView('map')}
+                            className={cn(
+                                "h-12 px-6 rounded-none font-black italic uppercase tracking-tighter text-[11px] transition-all",
+                                view === 'map' ? "bg-orange-500 text-white" : "text-gray-500 hover:text-white"
+                            )}
+                        >
+                            <MapIcon className="h-4 w-4 mr-2" />
+                            Tactique
+                        </Button>
+                    </div>
+                </div>
+            </CardHeader>
+
+            <CardContent className="p-0">
+                <div className="p-6 bg-black/20 border-b border-white/5 flex gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                        <Input 
+                            placeholder="INTERCEPTER UNITÉ OU BASTION..." 
+                            className="h-14 pl-14 bg-white/5 border-white/5 rounded-none font-black uppercase tracking-widest text-xs placeholder:text-gray-700 text-white focus:ring-orange-500/30"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <Button variant="outline" size="icon" className="h-14 w-14 rounded-none bg-white/5 border-white/5 hover:bg-white/10 text-white">
+                        <Filter className="h-4 w-4" />
+                    </Button>
+                </div>
+
+                <div className="min-h-[600px] relative">
+                    <AnimatePresence mode="wait">
+                        {view === 'list' ? (
+                            <motion.div 
+                                key="list"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="divide-y divide-white/5"
+                            >
+                                {filteredOrders.length > 0 ? (
+                                    filteredOrders.map((order, idx) => (
+                                        <OrderListItem key={order.id} order={order} index={idx} />
+                                    ))
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-32 text-gray-700">
+                                        <Activity className="h-16 w-16 mb-6 opacity-20 animate-pulse" />
+                                        <p className="font-black uppercase tracking-[0.4em] text-xs italic">Secteur Pacifié: Aucun flux détecté</p>
+                                    </div>
+                                )}
+                            </motion.div>
+                        ) : (
+                            <motion.div 
+                                key="map"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="h-[650px] relative bg-black/40 overflow-hidden"
+                            >
+                                <MapSimulation orders={filteredOrders} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </CardContent>
+            
+            <div className="p-6 bg-black/40 flex justify-between items-center border-t border-white/5">
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-orange-500 animate-ping" />
+                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">TRANSMISSION TEMPS RÉEL ACTIVE</span>
+                    </div>
+                </div>
+                <span className="text-[9px] font-black text-gray-700 uppercase tracking-[0.5em]">YAKRO COMMAND CENTER v4.0</span>
+            </div>
+        </Card>
+    );
+}
+
+function OrderListItem({ order, index }: { order: Order, index: number }) {
+    const statusInfo = {
+        'Placée': { color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20', icon: Clock, label: 'ATTENTE' },
+        'En Préparation': { color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/20', icon: Utensils, label: 'CUISINE' },
+        'Prête': { color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', icon: Package, label: 'PRÊTE' },
+        'En Route': { color: 'text-purple-500', bg: 'bg-purple-500/10', border: 'border-purple-500/20', icon: Bike, label: 'TRANSIT' },
+    };
+
+    const currentStatus = statusInfo[order.statut as keyof typeof statusInfo] || statusInfo['Placée'];
+    const StatusIcon = currentStatus.icon;
+
+    return (
+        <motion.div 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.03 }}
+            className="p-8 hover:bg-white/5 transition-all group relative overflow-hidden"
+        >
+            <div className="absolute top-0 left-0 h-full w-1 bg-white/5 group-hover:bg-orange-500 transition-colors" />
+            
+            <div className="flex items-center justify-between gap-10">
+                <div className="flex items-center gap-8 flex-1">
+                    <div className={cn("h-16 w-16 flex items-center justify-center border group-hover:scale-105 transition-transform", currentStatus.bg, currentStatus.border)}>
+                        <StatusIcon className={cn("h-6 w-6", currentStatus.color)} />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center gap-4">
+                             <span className="text-xl font-black text-white italic tracking-tighter">#{order.id.slice(-6).toUpperCase()}</span>
+                             <Badge className={cn("rounded-none text-[10px] font-black px-3 py-1 border", currentStatus.bg, currentStatus.border, currentStatus.color)}>
+                                {currentStatus.label}
+                             </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-300 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <Store className="h-3.5 w-3.5 text-orange-500/50" />
+                                <span>{order.nomRestaurant}</span>
+                            </div>
+                            <span className="opacity-20">|</span>
+                            <span className="text-orange-500">{(order.total || 0).toLocaleString()} FCFA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="hidden lg:flex flex-col items-end gap-3 min-w-[200px]">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-600">
+                        <Clock className="h-3 w-3 text-orange-500/50" />
+                         DÉLAI: {formatDistanceToNow(new Date(order.date), { locale: fr, addSuffix: true })}
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 overflow-hidden border border-white/5">
+                        <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ 
+                                width: order.statut === 'Placée' ? '20%' : 
+                                       order.statut === 'En Préparation' ? '45%' : 
+                                       order.statut === 'Prête' ? '70%' : '95%' 
+                            }}
+                            className={cn("h-full", currentStatus.color.replace('text', 'bg'))} 
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-12 w-12 rounded-none hover:bg-orange-500/10 text-gray-600 hover:text-orange-500 transition-all border border-transparent hover:border-orange-500/20">
+                        <Maximize2 className="h-5 w-5" />
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-none hover:bg-white/10 text-gray-600 hover:text-white transition-all">
+                                <MoreHorizontal className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64 bg-[#121214] border-white/10 rounded-none p-1 text-white">
+                            <DropdownMenuItem className="rounded-none gap-3 font-black uppercase italic tracking-tighter text-xs py-4 focus:bg-orange-500 cursor-pointer">
+                                <Navigation2 className="h-4 w-4" />
+                                Ouvrir Tracking
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="rounded-none gap-3 font-black uppercase italic tracking-tighter text-xs py-4 focus:bg-red-600 cursor-pointer">
+                                <AlertCircle className="h-4 w-4" />
+                                Alerte Retard
+                            </DropdownMenuItem>
+                            <div className="h-px bg-white/5 my-1" />
+                            <DropdownMenuItem className="rounded-none gap-3 font-black uppercase italic tracking-tighter text-xs py-4 focus:bg-white/10 cursor-pointer text-gray-500">
+                                <Target className="h-4 w-4" />
+                                Logs Unité
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function MapSimulation({ orders }: { orders: Order[] }) {
+    const markers = React.useMemo(() => {
+        return orders.map((order, idx) => ({
+            id: order.id,
+            x: 20 + (idx * 15) % 60 + Math.random() * 10,
+            y: 20 + (idx * 20) % 60 + Math.random() * 10,
+            type: order.statut === 'En Route' ? 'delivery' : 'restaurant',
+            status: order.statut
+        }));
+    }, [orders]);
+
+    return (
+        <div className="w-full h-full relative overflow-hidden bg-[#0A0A0B] flex items-center justify-center">
+            {/* Tactical Grid */}
+            <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[length:40px_40px]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]" />
+            
+            <div className="relative w-full h-full p-20">
+                <svg viewBox="0 0 800 600" className="w-full h-full fill-none stroke-white/5">
+                    <circle cx="400" cy="300" r="100" className="stroke-orange-500/10" strokeDasharray="10 10" />
+                    <circle cx="400" cy="300" r="200" className="stroke-orange-500/5" strokeDasharray="5 5" />
+                    <circle cx="400" cy="300" r="300" className="stroke-white/[0.02]" />
+                    <line x1="400" y1="0" x2="400" y2="600" className="stroke-white/[0.02]" />
+                    <line x1="0" y1="300" x2="800" y2="300" className="stroke-white/[0.02]" />
+                    
+                    <motion.circle 
+                        cx="400" cy="300" r="150" 
+                        className="stroke-orange-500/20" 
+                        strokeWidth="1"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    />
+                </svg>
+
+                {markers.map((marker) => (
+                    <motion.div
+                        key={marker.id}
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="absolute"
+                        style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                    >
+                        <div className="relative -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
+                            <div className={cn(
+                                "h-5 w-5 rounded-none border border-white flex items-center justify-center rotate-45 group-hover:scale-125 transition-transform",
+                                marker.status === 'En Route' ? 'bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : 'bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.5)]'
+                            )}>
+                                {marker.status === 'En Route' ? <Bike className="h-3 w-3 -rotate-45 text-white" /> : <Store className="h-3 w-3 -rotate-45 text-white" />}
+                            </div>
+                            
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
+                                <div className="bg-[#121214] text-white p-4 border border-white/10 rounded-none shadow-3xl min-w-[150px]">
+                                    <div className="text-[10px] font-black uppercase italic tracking-tighter text-orange-500 mb-1">UNITÉ ACTIVÉE</div>
+                                    <div className="text-sm font-black italic tracking-tighter uppercase mb-2">#{marker.id.slice(-6)}</div>
+                                    <div className="h-px bg-white/5 mb-2" />
+                                    <div className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{marker.status}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                ))}
+
+                <div className="absolute top-10 left-10 flex flex-col gap-4">
+                    <div className="bg-black/80 backdrop-blur-md p-6 border border-white/5 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <Zap className="h-4 w-4 text-orange-500" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">YAM-NET ALPHA</span>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-10">
+                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">SIGNAL</span>
+                                <span className="text-[9px] font-black text-green-500">STABLE</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-10">
+                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">SYNC</span>
+                                <span className="text-[9px] font-black text-white">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="absolute bottom-10 right-10 flex gap-6 bg-black/80 backdrop-blur-md p-6 border border-white/5">
+                    <div className="flex items-center gap-3">
+                        <div className="h-2 w-2 bg-orange-500 rotate-45 shadow-[0_0_10px_rgba(249,115,22,1)]" />
+                        <span className="text-[9px] font-black text-white uppercase tracking-widest">BASTION</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="h-2 w-2 bg-purple-500 rotate-45 shadow-[0_0_10px_rgba(168,85,247,1)]" />
+                        <span className="text-[9px] font-black text-white uppercase tracking-widest"> UNITÉ TRANSIT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

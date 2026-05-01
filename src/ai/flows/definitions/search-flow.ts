@@ -25,28 +25,29 @@ const prompt = ai.definePrompt({
     name: 'intelligentSearchPrompt',
     input: { schema: IntelligentSearchInputSchema },
     output: { schema: IntelligentSearchOutputSchema },
-    prompt: `Tu es un assistant de recherche intelligent pour une "Super App" urbaine. Ton rôle est d'analyser la requête de l'utilisateur et d'extraire des informations structurées pour diriger l'utilisateur vers le bon service.
+    prompt: `Tu es un assistant de recherche intelligent pour "Yakro-F", une Super App dédiée à la Côte d'Ivoire. Ton rôle est d'analyser la requête de l'utilisateur et d'extraire des informations structurées pour diriger l'utilisateur vers le bon service.
 
 Requête utilisateur : "{{{query}}}"
 
 Analyse la requête et classe-la dans l'une des catégories suivantes :
-- FOOD : Restaurants, livraison de repas, plats spécifiques.
-- REAL_ESTATE : Location de maisons, appartements, résidences meublées, bureaux.
-- VEHICLE : Location de voitures, motos, vélos, services de transport.
-- SERVICES : Recherche d'ouvriers (plombier, électricien), aide à domicile, services professionnels.
+- FOOD : Restaurants, livraison de repas, plats spécifiques (ex: Garba, Foutou, Alloco, Kedjenou, Placali).
+- REAL_ESTATE : Location de maisons, appartements à Cocody, Angré, Riviera, résidences meublées, bureaux.
+- VEHICLE : Location de voitures (VTC, personnel), motos, services de transport interurbain.
+- SERVICES : Recherche d'ouvriers (plombier, électricien "courant-fort", maçon), aide à domicile, services de beauté.
 - GENERAL : Tout ce qui ne rentre pas dans les catégories ci-dessus.
 
 Extrais les informations suivantes :
 - category : La catégorie identifiée (FOOD, REAL_ESTATE, VEHICLE, SERVICES, GENERAL).
-- searchTerms : Les termes clés spécifiques (ex: "Foutou", "Studio à Angré", "Toyota RAV4", "Plombier qualifié").
-- intent : Résume ce que l'utilisateur cherche à faire (ex: "Louer un véhicule pour le week-end").
-- priceRange : Extrais les limites de prix si mentionnées.
-- Keywords : Adjectifs ou conditions (ex: "meublé", "climatisé", "rapide").
+- searchTerms : Les termes clés spécifiques (ex: "Foutou graine", "Studio à Marcory", "Location 4x4", "Main d'œuvre").
+- intent : Résume ce que l'utilisateur cherche à faire de manière naturelle (ex: "Manger un plat local ivoirien", "Se loger dans un quartier sécurisé").
+- priceRange : Extrais les limites de prix (en FCFA ou devises mentionnées).
+- Keywords : Adjectifs, conditions ou localisations précises (ex: "climatisé", "proche du goudron", "rapide", "Yopougon", "Plateau").
 
-Exemples :
-"Je cherche un studio meublé à Yamoussoukro" -> category: REAL_ESTATE, searchTerms: ["studio", "Yamoussoukro"], keywords: ["meublé"].
-"Besoin d'un électricien en urgence" -> category: SERVICES, searchTerms: ["électricien"], keywords: ["urgence"].
-"Poulet braisé pas cher" -> category: FOOD, searchTerms: ["poulet braisé"], keywords: ["pas cher"].
+Exemples de nuances locales :
+"Je cherche un studio meublé à Angré Terminus 81" -> category: REAL_ESTATE, searchTerms: ["studio", "Angré"], keywords: ["meublé", "Terminus 81"].
+"Où manger un bon Garba à Cocody ?" -> category: FOOD, searchTerms: ["Garba"], keywords: ["Cocody", "bon"].
+"Besoin d'un électricien à Attoban" -> category: SERVICES, searchTerms: ["électricien"], keywords: ["Attoban"].
+"Location de Prado pour mariage" -> category: VEHICLE, searchTerms: ["Prado"], keywords: ["mariage"].
 
 Réponds au format JSON.
 `,

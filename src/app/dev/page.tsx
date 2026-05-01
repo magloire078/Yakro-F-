@@ -50,11 +50,11 @@ export default function DevPage() {
                     description: result.message,
                 });
             }
-        } catch (error: any) {
+        } catch (error) {
             toast({
                 variant: 'destructive',
                 title: 'Erreur lors du peuplement',
-                description: error.message || "Une erreur est survenue.",
+                description: error instanceof Error ? error.message : "Une erreur est survenue.",
             });
         } finally {
             setIsSeeding(false);

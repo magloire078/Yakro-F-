@@ -7,14 +7,10 @@ import type { Order } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { CurrentDelivery } from '@/components/current-delivery';
 import { AvailableDeliveries } from '@/components/available-deliveries';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useFirebase } from '@/contexts/firebase-provider';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { updateOrderStatusAction } from '@/app/actions/order-actions';
 
 export default function LivreurHomePage() {
     const { user, userProfile, updateUserProfile } = useAuth();
-    const { db } = useFirebase();
     const { orders, isLoading } = useData();
     const [currentDelivery, setCurrentDelivery] = React.useState<Order | null>(null);
     const { toast } = useToast();
@@ -28,46 +24,49 @@ export default function LivreurHomePage() {
 
     const handleAcceptDelivery = async (delivery: Order) => {
         if (!user) return;
-        const orderRef = doc(db, 'commandes', delivery.id);
-        const updateData = { statut: 'En Route', livreurId: user.uid };
-
-        updateDoc(orderRef, updateData)
-            .then(() => {
-                toast({
-                    title: "Course acceptée !",
-                    description: `Vous allez livrer la commande de ${delivery.nomRestaurant}.`,
-                });
-            })
-            .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: orderRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData,
-                } satisfies SecurityRuleContext);
-                errorEmitter.emit('permission-error', permissionError);
+        
+        try {
+            await updateOrderStatusAction({
+                orderId: delivery.id,
+                status: 'En Route',
+                delivererId: user.uid,
+                orderData: delivery
             });
+            toast({
+                title: "Course acceptée !",
+                description: `Vous allez livrer la commande de ${delivery.nomRestaurant}.`,
+            });
+        } catch (e) {
+            console.error(e);
+            toast({
+                variant: 'destructive',
+                title: 'Erreur',
+                description: 'Impossible d\'accepter la course.',
+            });
+        }
     };
 
     const handleCompleteDelivery = async () => {
         if (!currentDelivery) return;
-        const orderRef = doc(db, 'commandes', currentDelivery.id);
-        const updateData = { statut: 'Livrée' };
-
-        updateDoc(orderRef, updateData)
-            .then(() => {
-                toast({
-                    title: "Livraison terminée !",
-                    description: `Bien joué !`,
-                });
-            })
-            .catch(async (serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: orderRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData,
-                } satisfies SecurityRuleContext);
-                errorEmitter.emit('permission-error', permissionError);
+        
+        try {
+            await updateOrderStatusAction({
+                orderId: currentDelivery.id,
+                status: 'Livrée',
+                orderData: currentDelivery
             });
+            toast({
+                title: "Livraison terminée !",
+                description: `Bien joué !`,
+            });
+        } catch (e) {
+            console.error(e);
+            toast({
+                variant: 'destructive',
+                title: 'Erreur',
+                description: 'Impossible de terminer la livraison.',
+            });
+        }
     }
 
     if (currentDelivery) {

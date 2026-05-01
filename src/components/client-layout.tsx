@@ -9,10 +9,16 @@ import { MobileHeader } from '@/components/mobile-header';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
-  const { loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const pathname = usePathname();
   
-  const isAuthPage = pathname === '/login' || pathname === '/profile-selection';
+  const isLandingOrAuthPage = 
+    pathname === '/login' || 
+    pathname === '/profile-selection' || 
+    pathname === '/complete-profile' ||
+    pathname === '/intro' ||
+    pathname === '/marketing' ||
+    (!user && pathname === '/');
 
   if (authLoading) {
     return (
@@ -22,12 +28,12 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isAuthPage) {
+  if (isLandingOrAuthPage) {
     return <>{children}</>;
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-foreground transition-colors duration-300">
+    <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="hidden md:flex">
         <Sidebar />
       </div>

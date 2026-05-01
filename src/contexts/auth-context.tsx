@@ -15,15 +15,14 @@ interface AuthContextType {
   loading: boolean;
   activeRole: AppRole;
   setActiveRole: (role: AppRole) => void;
-  updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: any }>;
-  updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: any }>;
+  updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: FirestorePermissionError | Error }>;
+  updateOtherUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: FirestorePermissionError | Error }>;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 const getInitialActiveRole = (): AppRole => {
-  if (typeof window === 'undefined') return 'client';
-  return (localStorage.getItem('activeRole') as AppRole) || 'client';
+  return 'client'; // Start safe for SSR
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -41,6 +40,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
       }
     });
+
+    // Load active role from localStorage on mount
+    if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') {
+        const storedRole = window.localStorage.getItem('activeRole') as AppRole | null;
+        if (storedRole) {
+            setActiveRoleState(storedRole);
+        }
+    }
+
     return () => unsubscribeAuth();
   }, [auth]);
 
@@ -56,17 +64,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
             setUserProfile(profile);
 
-            const storedRole = localStorage.getItem('activeRole') as AppRole | null;
-            if (!storedRole) {
-              setActiveRoleState(profile.role);
-              localStorage.setItem('activeRole', profile.role);
+            if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') {
+              const storedRole = window.localStorage.getItem('activeRole') as AppRole | null;
+              if (!storedRole) {
+                setActiveRoleState(profile.role);
+                if (typeof window.localStorage.setItem === 'function') {
+                    window.localStorage.setItem('activeRole', profile.role);
+                }
+              }
             }
           } else {
             setUserProfile(null);
           }
           setLoading(false);
         },
-        async (serverError) => {
+        () => {
           const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'get',
@@ -88,7 +100,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const setActiveRole = (role: AppRole) => {
     setActiveRoleState(role);
-    localStorage.setItem('activeRole', role);
+    if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.setItem === 'function') {
+      window.localStorage.setItem('activeRole', role);
+    }
   }
 
   const updateUserProfile = React.useCallback(async (uid: string, data: Partial<UserProfile>) => {
@@ -96,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await updateDoc(userDocRef, data);
       return { success: true };
-    } catch (serverError) {
+    } catch {
       const permissionError = new FirestorePermissionError({
         path: userDocRef.path,
         operation: 'update',
@@ -112,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await updateDoc(userDocRef, data);
       return { success: true };
-    } catch (serverError) {
+    } catch {
       const permissionError = new FirestorePermissionError({
         path: userDocRef.path,
         operation: 'update',

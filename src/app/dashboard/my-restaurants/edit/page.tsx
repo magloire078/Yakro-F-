@@ -3,11 +3,13 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/contexts/data-context';
+import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader, ChefHat, ArrowLeft } from 'lucide-react';
+import { Loader, ChefHat } from 'lucide-react';
+import { MobileBackButton } from '@/components/mobile-back-button';
+import { motion } from 'framer-motion';
 import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useFirebase } from '@/contexts/firebase-provider';
@@ -16,32 +18,7 @@ import { RestaurantForm, type RestaurantFormValues } from '@/components/restaura
 import { doc, updateDoc } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-
-const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-        throw new Error("Cloudinary configuration missing.");
-    }
-
-    const formData = new FormData();
-    formData.append('file', fileOrDataUrl);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('public_id', path);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formData
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to upload image to Cloudinary');
-    }
-
-    const data = await response.json();
-    return data.secure_url;
-};
+import { uploadImage } from '@/lib/cloudinary';
 
 function EditRestaurantContent() {
     const { getRestaurant } = useData();
@@ -125,33 +102,86 @@ function EditRestaurantContent() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <Button variant="ghost" asChild className="mb-4">
-                <Link href="/dashboard/my-restaurants">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Retour à mes restaurants
-                </Link>
-            </Button>
-            <div className="max-w-2xl mx-auto">
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
-                            <ChefHat className="h-8 w-8 text-primary" />
-                            <div>
-                                <CardTitle className="text-2xl">Modifier "{restaurant.nom}"</CardTitle>
-                                <CardDescription>Mettez à jour les informations de votre établissement.</CardDescription>
-                            </div>
+        <div className="min-h-screen relative overflow-hidden bg-[#0A0A0B] pb-20">
+            {/* Immersive Background */}
+            <div className="absolute inset-0 z-0">
+                <Image
+                    src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=2070&auto=format&fit=crop"
+                    alt="Kitchen Background"
+                    fill
+                    className="object-cover opacity-20 scale-110 animate-slow-zoom"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+            </div>
+
+            <div className="relative z-10 container mx-auto pt-10 px-4">
+                <div className="max-w-3xl mx-auto">
+                    {/* Mobile Navigation */}
+                    <div className="md:hidden absolute top-6 left-4 z-50">
+                        <MobileBackButton label="Restaurants" href="/dashboard/my-restaurants" />
+                    </div>
+
+                    {/* Back Navigation (Desktop) */}
+                    <Link 
+                        href="/dashboard/my-restaurants" 
+                        className="hidden md:inline-flex items-center gap-2 text-gray-500 hover:text-orange-500 transition-colors font-bold uppercase tracking-widest text-[10px] mb-8 group"
+                    >
+                        <span className="transition-transform group-hover:-translate-x-1">←</span>
+                        Retour à la Flotte
+                    </Link>
+
+                    {/* Header */}
+                    <div className="text-center mb-12 pt-16 md:pt-0">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-6"
+                        >
+                            <ChefHat className="h-3.5 w-3.5 text-orange-500" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500">Optimisation d&apos;Établissement</span>
+                        </motion.div>
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-white mb-4 leading-none"
+                        >
+                            Raffiner <span className="text-orange-500">{restaurant.nom}</span>
+                        </motion.h1>
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-gray-400 font-medium max-w-md mx-auto text-sm md:text-base italic uppercase tracking-widest"
+                        >
+                            Perfectionnez les détails de votre signature gastronomique pour une expérience client inégalée.
+                        </motion.p>
+                    </div>
+
+                    {/* Form Card */}
+                    <div className="bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-8 md:p-12 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
+                        
+                        <div className="relative z-10">
+                            <RestaurantForm
+                                onSubmit={onSubmit}
+                                initialData={restaurant}
+                                isLoading={isLoading}
+                                submitButtonText="Actualiser mon Prestige"
+                            />
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        <RestaurantForm
-                            onSubmit={onSubmit}
-                            initialData={restaurant}
-                            isLoading={isLoading}
-                            submitButtonText="Enregistrer les modifications"
-                        />
-                    </CardContent>
-                </Card>
+
+                        {/* Decorative Element */}
+                        <div className="absolute -top-20 -left-20 h-64 w-64 bg-orange-500/5 rounded-full blur-3xl" />
+                    </div>
+
+                    {/* Footer Info */}
+                    <div className="mt-12 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">
+                            Certifié Yakro Elite Standards
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -159,7 +189,11 @@ function EditRestaurantContent() {
 
 export default function EditRestaurantPage() {
     return (
-        <React.Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader className="h-16 w-16 animate-spin text-primary" /></div>}>
+        <React.Suspense fallback={
+            <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center">
+                <Loader className="h-16 w-16 animate-spin text-orange-500" />
+            </div>
+        }>
             <EditRestaurantContent />
         </React.Suspense>
     );

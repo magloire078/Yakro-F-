@@ -125,10 +125,10 @@ export default function MarketingPage() {
                    {restaurantImage ? (
                      <Image src={restaurantImage} alt={selectedRestaurant?.nom || "Image de référence"} width={300} height={150} className="object-contain rounded-md" />
                    ) : (
-                    <p className="text-sm text-muted-foreground">L'image du restaurant apparaîtra ici.</p>
+                    <p className="text-sm text-muted-foreground">L&apos;image du restaurant apparaîtra ici.</p>
                    )}
                 </div>
-                <p className="text-xs text-muted-foreground">L'IA animera cette image ou s'en inspirera. Si aucune image n'est disponible, l'IA créera une vidéo de A à Z.</p>
+                <p className="text-xs text-muted-foreground">L&apos;IA animera cette image ou s&apos;en inspirera. Si aucune image n&apos;est disponible, l&apos;IA créera une vidéo de A à Z.</p>
             </div>
 
             <Button onClick={handleGenerateVideo} disabled={loading || !selectedRestaurant} className="w-full" size="lg">
@@ -144,7 +144,7 @@ export default function MarketingPage() {
                  {loading && (
                     <div className="text-center text-muted-foreground p-8">
                       <Loader className="animate-spin h-12 w-12 mx-auto mb-4 text-primary" />
-                      <p className="font-semibold">L'IA réalise votre chef-d'œuvre...</p>
+                      <p className="font-semibold">L&apos;IA réalise votre chef-d&apos;œuvre...</p>
                       <p className="text-sm">Cette opération peut prendre une minute.</p>
                     </div>
                   )}

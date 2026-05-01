@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { CartItem, MenuItem, Order, MenuOption } from '@/lib/types';
+import type { CartItem, Order } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
@@ -20,22 +20,13 @@ interface CartContextType {
   cartSubtotal: number;
   cartDeliveryFee: number;
   cartCount: number;
-  placeOrder: () => Promise<{ success: boolean; error?: any }>;
+  placeOrder: () => Promise<{ success: boolean; error?: FirestorePermissionError | Error }>;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
 
 const getInitialCart = (): CartItem[] => {
-  if (typeof window === 'undefined') {
-    return [];
-  }
-  try {
-    const item = window.localStorage.getItem('yakro-fe-cart');
-    return item ? JSON.parse(item) : [];
-  } catch (error) {
-    console.warn('Error reading localStorage cart', error);
-    return [];
-  }
+  return []; // Start empty for SSR safety
 };
 
 const COMMISSION_RATE = 0.15; // 15% commission
@@ -66,9 +57,30 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user, userProfile } = useAuth();
   const { db } = useFirebase();
 
+  // Load from localStorage on mount
   React.useEffect(() => {
     try {
-      window.localStorage.setItem('yakro-fe-cart', JSON.stringify(cartItems));
+      if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') {
+        const item = window.localStorage.getItem('yakro-fe-cart');
+        if (item) {
+          setCartItems(JSON.parse(item));
+        }
+      }
+    } catch (error) {
+      console.warn('Error reading from localStorage cart', error);
+    }
+  }, []);
+
+  // Sync to localStorage on changes
+  React.useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.setItem === 'function') {
+        if (cartItems.length > 0) {
+          window.localStorage.setItem('yakro-fe-cart', JSON.stringify(cartItems));
+        } else {
+          window.localStorage.setItem('yakro-fe-cart', JSON.stringify([]));
+        }
+      }
     } catch (error) {
       console.warn('Error writing to localStorage cart', error);
     }
@@ -189,6 +201,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       date: new Date().toISOString(),
       nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
       restaurantId: restaurantId,
+      restaurateurId: restaurant?.proprietaireId || '',
       statut: 'Placée',
       adresseClient: userProfile.adresseParDefaut,
       adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
@@ -208,7 +221,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearCart();
       window.dispatchEvent(new CustomEvent('place-order'));
       return { success: true };
-    } catch (serverError) {
+    } catch {
       const permissionError = new FirestorePermissionError({
         path: orderDocRef.path,
         operation: 'create',

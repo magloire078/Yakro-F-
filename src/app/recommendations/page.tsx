@@ -8,7 +8,7 @@ import { getPersonalizedRecommendationsAction } from '@/app/actions/ai-actions';
 import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Recommendations as RecommendationsComponent, RecommendationsSkeleton } from '@/components/recommendations';
 import { Loader, UserX } from 'lucide-react';
-import type { Order, Restaurant, MenuItem } from '@/lib/types';
+import type { Order, Restaurant } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 

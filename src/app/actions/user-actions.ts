@@ -13,7 +13,7 @@ type SetupInitialUserParams = {
 }
 
 export async function setupInitialUserAction(userData: SetupInitialUserParams) {
-    const userDocRef = doc(db, 'utilisateurs', userData.uid);
+    const userDocRef = doc(db!, 'utilisateurs', userData.uid);
 
     try {
         const userDoc = await getDoc(userDocRef);
@@ -31,7 +31,7 @@ export async function setupInitialUserAction(userData: SetupInitialUserParams) {
 
             await setDoc(userDocRef, newUserProfile);
         }
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("Error setting up initial user: ", e);
         throw e;
     }
@@ -42,12 +42,12 @@ export async function updateUserProfileAction(uid: string, data: Partial<UserPro
     if (!uid) {
         throw new Error('User ID is required to update a profile.');
     }
-    const userDocRef = doc(db, 'utilisateurs', uid);
+    const userDocRef = doc(db!, 'utilisateurs', uid);
 
     try {
         await updateDoc(userDocRef, data);
         // revalidatePath removed for static export
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("Error updating user profile: ", e);
         throw e;
     }

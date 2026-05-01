@@ -1,8 +1,8 @@
+import '@/lib/server-polyfills';
 import './globals.css';
 import Providers from '@/contexts/providers';
 import { ClientLayout } from '@/components/client-layout';
 import { belleza, alegreya } from '@/app/fonts';
-import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={cn("font-body antialiased", belleza.variable, alegreya.variable)}>
+      <body className={`${belleza.variable} ${alegreya.variable} font-body antialiased`}>
         <Providers>
           <ClientLayout>{children}</ClientLayout>
         </Providers>

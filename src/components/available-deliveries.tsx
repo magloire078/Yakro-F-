@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { QrScannerDialog } from '@/components/qr-scanner-dialog';
-import { cn } from '@/lib/utils';
+import { updateOrderStatusAction } from '@/app/actions/order-actions';
+
 
 interface AvailableDeliveriesProps {
     orders: Order[];
@@ -86,7 +87,7 @@ export function AvailableDeliveries({
                     toast({ title: `Vous êtes en ligne !` });
                     setIsUpdatingStatus(false);
                 },
-                (error) => {
+                () => {
                     toast({ 
                         variant: 'destructive', 
                         title: 'Position requise', 
@@ -106,21 +107,30 @@ export function AvailableDeliveries({
         }
     }
 
-    const handleScanSuccess = (orderId: string) => {
+    const handleScanSuccess = async (orderId: string) => {
         setIsScannerOpen(false);
-        const orderToAccept = availableDeliveries.find(o => o.id === orderId);
-        if (orderToAccept) {
-            handleAccept(orderToAccept);
+        if (!userId) return;
+
+        setIsAccepting(orderId);
+        try {
+            await updateOrderStatusAction({
+                orderId,
+                status: 'En Route',
+                delivererId: userId,
+            });
             toast({
                 title: "Commande scannée !",
                 description: "Validation réussie, bonne route !",
             });
-        } else {
+        } catch (err) {
+            console.error(err);
             toast({
                 variant: 'destructive',
                 title: 'QR Code invalide',
-                description: "Cette commande n'est pas prête ou ne vous est pas destinée.",
+                description: "Cette commande n'a pas pu être validée ou n'existe pas.",
             });
+        } finally {
+            setIsAccepting(null);
         }
     };
     
@@ -226,7 +236,7 @@ export function AvailableDeliveries({
                         </div>
                         <p className="text-xl font-bold text-primary">Hors ligne</p>
                         <p className="text-sm text-muted-foreground max-w-[250px]">
-                            Passez en service pour commencer à gagner de l'argent et recevoir des courses.
+                            Passez en service pour commencer à gagner de l&apos;argent et recevoir des courses.
                         </p>
                     </div>
                 )}

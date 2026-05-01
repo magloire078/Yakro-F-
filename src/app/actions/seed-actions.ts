@@ -11,16 +11,16 @@ export async function seedDatabaseAction(userId: string) {
         throw new Error("User ID is required to seed the database.");
     }
 
-    const restaurantsRef = collection(db, 'restaurants');
+    const restaurantsRef = collection(db!, 'restaurants');
 
     try {
         const restaurantsSnap = await getDocs(restaurantsRef);
 
         if (restaurantsSnap.empty) {
-            const batch = writeBatch(db);
+            const batch = writeBatch(db!);
 
             const restaurantDocs = initialRestaurants.map((resto) => {
-                const docRef = doc(collection(db, 'restaurants'));
+                const docRef = doc(collection(db!, 'restaurants'));
                 const newResto: Omit<Restaurant, 'id'> = {
                     ...resto,
                     proprietaireId: userId,
@@ -36,7 +36,7 @@ export async function seedDatabaseAction(userId: string) {
                 const assignedRestaurant = restaurantDocs[restaurantIndex];
 
                 if (assignedRestaurant) {
-                    const itemDocRef = doc(collection(db, 'plats'));
+                    const itemDocRef = doc(collection(db!, 'plats'));
                     const placeholder = getPlaceholderImage(item.indiceImage);
                     batch.set(itemDocRef, {
                         ...item,
@@ -53,7 +53,7 @@ export async function seedDatabaseAction(userId: string) {
         } else {
             return { success: false, message: 'Database is not empty, seeding skipped.' };
         }
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("Error seeding database: ", e);
         throw e;
     }

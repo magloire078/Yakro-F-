@@ -20,16 +20,15 @@ import { Loader } from 'lucide-react';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useAuth } from '@/contexts/auth-context';
+
 import type { AppRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -104,11 +103,12 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
             description: "Dans une application de production, cela se ferait via un backend sécurisé. La création directe peut être bloquée par les règles de sécurité.",
         });
         onClose();
-    } catch(e: any) {
+    } catch(e: unknown) {
+        const error = e as Error;
         toast({
           variant: "destructive",
           title: "Erreur lors de la création",
-          description: e.message || "Une erreur est survenue."
+          description: error.message || "Une erreur est survenue."
         });
     } finally {
         setIsSubmitting(false);
@@ -185,7 +185,7 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
                     <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting && <Loader className="animate-spin" />}
-                        Créer l'utilisateur
+                        Créer l&apos;utilisateur
                     </Button>
                 </DialogFooter>
             </form>

@@ -85,6 +85,7 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Poulet Braisé Complet',
         description: 'Un poulet entier mariné aux épices locales et braisé à la perfection, servi avec frites et salade.',
         prix: 7500,
+        categorie: 'Plat',
         indiceImage: 'braised chicken ivorian',
         accompagnementsDisponibles: [
             { nom: 'Alloco', prix: 500 },
@@ -99,6 +100,7 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Poisson Braisé',
         description: 'Belle carpe braisée, accompagnée de sa sauce spéciale et d\'attiéké frais.',
         prix: 6000,
+        categorie: 'Plat',
         indiceImage: 'grilled fish african food',
         accompagnementsDisponibles: [
             { nom: 'Frites de Patate Douce', prix: 700 },
@@ -114,6 +116,7 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Filet de Boeuf et sa sauce au poivre',
         description: 'Tendre filet de bœuf poêlé, nappé d\'une onctueuse sauce au poivre vert, et accompagné de gratin dauphinois.',
         prix: 12500,
+        categorie: 'Plat',
         indiceImage: 'beef fillet pepper sauce',
         boissonsDisponibles: [
             { nom: 'Verre de vin rouge', prix: 2500 },
@@ -124,6 +127,7 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Salade Niçoise Revisitée',
         description: 'Une version gastronomique de la célèbre salade niçoise, avec du thon frais mi-cuit.',
         prix: 8500,
+        categorie: 'Entrée',
         indiceImage: 'nicoise salad gourmet'
     },
     // Pizza Bella
@@ -131,6 +135,7 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Pizza Reine',
         description: 'La classique et indémodable : sauce tomate, mozzarella, jambon, et champignons frais.',
         prix: 5500,
+        categorie: 'Plat',
         indiceImage: 'regina pizza classic',
         boissonsDisponibles: [
             { nom: 'Fanta', prix: 500 },
@@ -141,6 +146,7 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Pizza 4 Saisons',
         description: 'Un quart de chaque saveur : artichauts, jambon, champignons, et poivrons.',
         prix: 6500,
+        categorie: 'Plat',
         indiceImage: 'four seasons pizza'
     },
     // Le Régal d'Afrique
@@ -148,12 +154,14 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Brochettes de Mérou',
         description: 'Tendres cubes de mérou marinés et grillés, servis avec une sauce chien et de l\'alloco.',
         prix: 7000,
+        categorie: 'Plat',
         indiceImage: 'fish skewers grilled'
     },
     {
         nom: 'Agneau Diby',
         description: 'Fines tranches d\'agneau marinées à la sénégalaise et grillées, un délice !',
         prix: 8000,
+        categorie: 'Plat',
         indiceImage: 'lamb diby african barbecue'
     },
     // La Pâtisserie Gourmande
@@ -161,12 +169,14 @@ export const initialMenuItems: Omit<MenuItem, 'id' | 'restaurantId' | 'image'>[]
         nom: 'Tarte au citron meringuée',
         description: 'Un équilibre parfait entre l\'acidité du citron et la douceur de la meringue italienne.',
         prix: 2500,
+        categorie: 'Dessert',
         indiceImage: 'lemon tart meringue'
     },
     {
         nom: 'Mille-feuille',
         description: 'Pâte feuilletée croustillante et crème pâtissière légère à la vanille de Madagascar.',
         prix: 3000,
+        categorie: 'Dessert',
         indiceImage: 'mille feuille pastry'
     }
 ];

@@ -38,6 +38,7 @@ const StarRatingInput = ({ value, onChange }: { value: number; onChange: (value:
             onClick={() => onChange(ratingValue)}
             onMouseEnter={() => setHover(ratingValue)}
             className="focus:outline-none"
+            aria-label={`Évaluer ${ratingValue} sur 5 étoiles`}
           >
             <Star
               className={cn("w-6 h-6 cursor-pointer", ratingValue <= (hover || value) ? "text-yellow-400 fill-yellow-400" : "text-gray-300")}
@@ -106,7 +107,7 @@ export function ReviewForm({ onSubmit }: ReviewFormProps) {
                 </FormItem>
             )}
         />
-        <Button type="submit">Envoyer l'avis</Button>
+        <Button type="submit">Envoyer l&apos;avis</Button>
       </form>
     </Form>
   );

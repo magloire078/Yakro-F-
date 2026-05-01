@@ -27,6 +27,8 @@ const ThemeRoleProvider = ({ children }: { children: React.ReactNode }) => {
         theme = 'client';
     }
 
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
     document.documentElement.setAttribute('data-theme', theme);
   }, [activeRole, userProfile, pathname]);
 
@@ -35,7 +37,7 @@ const ThemeRoleProvider = ({ children }: { children: React.ReactNode }) => {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem>
       <FirebaseProvider>
         <AuthProvider>
           <ThemeRoleProvider>

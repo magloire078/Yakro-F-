@@ -27,8 +27,27 @@ export async function intelligentSearch(input: IntelligentSearchInput): Promise<
   const isServer = typeof window === 'undefined';
 
   if (isServer) {
-    const { intelligentSearchFlow } = await import('./definitions/search-flow');
-    return intelligentSearchFlow(input);
+    try {
+      const flowModule = await import('./definitions/search-flow');
+      const flow = flowModule.intelligentSearchFlow;
+      
+      if (typeof flow !== 'function') {
+        console.error('intelligentSearchFlow is not a function!', typeof flow);
+        throw new Error('Flow is not a function');
+      }
+      
+      return await flow(input);
+    } catch (error) {
+      console.error('Error in intelligentSearchFlow server-side:', error);
+      // Fallback to mock on server error to prevent 500
+      return {
+        category: 'GENERAL',
+        keywords: [input.query.substring(0, 10)],
+        cuisine: [],
+        searchTerms: [input.query],
+        intent: `Recherche générale pour: ${input.query}`,
+      };
+    }
   } else {
     console.warn('La recherche Genkit n\'est pas encore implémentée via API externe pour l\'export statique.');
 

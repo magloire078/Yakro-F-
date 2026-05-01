@@ -6,13 +6,14 @@ import { getPersonalizedRecommendations, type PersonalizedRecommendationsInput, 
 import { intelligentSearch, type IntelligentSearchInput, type IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { generateMenuItem, type GenerateMenuItemInput, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
 import { generateVideo, type GenerateVideoInput, type GenerateVideoOutput } from '@/ai/flows/generate-video-flow';
+import { generateImage, type GenerateImageInput, type GenerateImageOutput } from '@/ai/flows/generate-image-flow';
 
 export async function generateReviewsAction(input: GenerateReviewsInput): Promise<{ success: true; data: GenerateReviewsOutput } | { success: false; error: string }> {
     try {
         const data = await generateReviews(input);
         return { success: true, data };
-    } catch (e: any) {
-        return { success: false, error: e.message || "Erreur lors de la génération des avis." };
+    } catch (e: unknown) {
+        return { success: false, error: e instanceof Error ? e.message : "Erreur lors de la génération des avis." };
     }
 }
 
@@ -20,8 +21,8 @@ export async function generateAudioReviewAction(input: GenerateAudioReviewInput)
     try {
         const data = await generateAudioReview(input);
         return { success: true, data };
-    } catch (e: any) {
-        return { success: false, error: e.message || "Erreur lors de la génération de l'audio." };
+    } catch (e: unknown) {
+        return { success: false, error: e instanceof Error ? e.message : "Erreur lors de la génération de l'audio." };
     }
 }
 
@@ -29,8 +30,8 @@ export async function getPersonalizedRecommendationsAction(input: PersonalizedRe
     try {
         const data = await getPersonalizedRecommendations(input);
         return { success: true, data };
-    } catch (e: any) {
-        return { success: false, error: e.message || "Erreur lors de la récupération des recommandations." };
+    } catch (e: unknown) {
+        return { success: false, error: e instanceof Error ? e.message : "Erreur lors de la récupération des recommandations." };
     }
 }
 
@@ -38,8 +39,8 @@ export async function intelligentSearchAction(input: IntelligentSearchInput): Pr
     try {
         const data = await intelligentSearch(input);
         return { success: true, data };
-    } catch (e: any) {
-        return { success: false, error: e.message || "Erreur lors de la recherche intelligente." };
+    } catch (e: unknown) {
+        return { success: false, error: e instanceof Error ? e.message : "Erreur lors de la recherche intelligente." };
     }
 }
 
@@ -47,8 +48,8 @@ export async function generateMenuItemAction(input: GenerateMenuItemInput): Prom
     try {
         const data = await generateMenuItem(input);
         return { success: true, data };
-    } catch (e: any) {
-        return { success: false, error: e.message || "Erreur lors de la génération du plat." };
+    } catch (e: unknown) {
+        return { success: false, error: e instanceof Error ? e.message : "Erreur lors de la génération du plat." };
     }
 }
 
@@ -56,8 +57,23 @@ export async function generateVideoAction(input: GenerateVideoInput): Promise<{ 
     try {
         const result = await generateVideo(input);
         return { success: true, data: result };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('generateVideoAction error:', error);
-        return { success: false, error: error?.message || 'Erreur inconnue lors de la génération vidéo.' };
+        return { success: false, error: error instanceof Error ? error.message : 'Erreur inconnue lors de la génération vidéo.' };
+    }
+}
+
+export async function generateImageAction(input: GenerateImageInput): Promise<{ success: true; data: GenerateImageOutput } | { success: false; error: string }> {
+    try {
+        const data = await generateImage(input);
+        
+        if (!data.imageDataUri) {
+            throw new Error("L'IA n'a pas pu générer d'image.");
+        }
+
+        return { success: true, data };
+    } catch (error: unknown) {
+        console.error('generateImageAction error:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Erreur lors de la génération de l\'image.' };
     }
 }
