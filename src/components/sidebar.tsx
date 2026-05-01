@@ -44,15 +44,15 @@ export function Sidebar() {
   const isSuperAdmin = userProfile?.roleSysteme === 'SuperAdmin';
 
   return (
-    <aside className="w-full h-screen flex flex-col p-6 bg-white border-r md:w-64 fixed left-0 top-0 z-50">
+    <aside className="w-full h-screen flex flex-col p-6 bg-white/70 backdrop-blur-md border-r border-white/60 md:w-64 fixed left-0 top-0 z-50">
        <div className="flex justify-between items-center mb-10">
             <Link href={homeLink} className="flex items-center space-x-3">
                 <div className="bg-[#4F46E5]/10 p-2 rounded-xl">
                     <Icons.logo className="h-8 w-8 text-[#4F46E5]" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-headline text-xl font-bold text-[#4F46E5] leading-tight">Yakro</span>
-                    <span className="font-headline text-xl font-bold text-[#4F46E5] leading-tight ml-1">Fê</span>
+                    <span className="font-headline text-3xl font-bold text-[#4F46E5] leading-none">Yakro</span>
+                    <span className="font-headline text-3xl font-bold text-[#4F46E5] leading-none ml-1">Fê</span>
                 </div>
             </Link>
             <div className="hidden md:block">

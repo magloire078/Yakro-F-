@@ -1,7 +1,7 @@
 import './globals.css';
 import Providers from '@/contexts/providers';
 import { ClientLayout } from '@/components/client-layout';
-import { belleza, alegreya } from '@/app/fonts';
+import { belleza, alegreya, caveat } from '@/app/fonts';
 import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 
@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={cn("font-body antialiased", belleza.variable, alegreya.variable)}>
+      <body className={cn("font-body antialiased app-gradient-bg min-h-screen", belleza.variable, alegreya.variable, caveat.variable)}>
         <Providers>
           <ClientLayout>{children}</ClientLayout>
         </Providers>

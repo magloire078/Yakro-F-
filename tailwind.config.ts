@@ -12,7 +12,9 @@ export default {
     extend: {
       fontFamily: {
         body: ['var(--font-alegreya)', 'serif'],
-        headline: ['var(--font-belleza)', 'sans-serif'],
+        headline: ['var(--font-caveat)', 'cursive'],
+        display: ['var(--font-caveat)', 'cursive'],
+        sans: ['var(--font-belleza)', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

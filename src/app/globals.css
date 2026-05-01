@@ -55,10 +55,35 @@
   .btn-mobile {
     @apply min-h-[48px] px-6 text-base;
   }
+
+  .font-headline {
+    font-family: var(--font-caveat), cursive;
+    letter-spacing: 0.005em;
+    line-height: 1.05;
+  }
 }
 
 @layer components {
   .transition-soft {
     @apply transition-all duration-200 ease-in-out;
+  }
+
+  .app-gradient-bg {
+    background-color: #F8FAFC;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.10) 0px, transparent 45%),
+      radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.07) 0px, transparent 45%),
+      radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 45%),
+      radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.06) 0px, transparent 45%),
+      linear-gradient(180deg, #FAFBFF 0%, #F4F6FB 60%, #EEF1F8 100%);
+    background-attachment: fixed;
+  }
+
+  .dark .app-gradient-bg {
+    background-color: #0B1020;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.20) 0px, transparent 45%),
+      radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.10) 0px, transparent 45%),
+      linear-gradient(180deg, #0F172A 0%, #111A33 100%);
   }
 }

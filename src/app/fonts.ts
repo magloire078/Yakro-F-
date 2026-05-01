@@ -1,5 +1,5 @@
 
-import { Belleza, Alegreya } from 'next/font/google';
+import { Belleza, Alegreya, Caveat } from 'next/font/google';
 
 export const belleza = Belleza({
   subsets: ['latin'],
@@ -10,4 +10,10 @@ export const belleza = Belleza({
 export const alegreya = Alegreya({
   subsets: ['latin'],
   variable: '--font-alegreya',
+});
+
+export const caveat = Caveat({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-caveat',
 });
