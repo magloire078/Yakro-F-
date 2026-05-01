@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Search, Sparkles, Loader, X, Zap, Mic, MicOff } from 'lucide-react';
+import { Search, Sparkles, Loader, X, Zap, Mic } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { intelligentSearchAction } from '@/app/actions/ai-actions';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
@@ -9,6 +9,33 @@ import { Badge } from './ui/badge';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Types pour l'API SpeechRecognition
+interface SpeechRecognitionEvent extends Event {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+    length: number;
+  };
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+
+interface SpeechRecognitionInstance extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onend: () => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  start: () => void;
+  stop: () => void;
+}
 
 interface IntelligentSearchBarProps {
   onSearchChange: (searchTerm: string) => void;
@@ -22,21 +49,29 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
   const [isAiLoading, setIsAiLoading] = React.useState(false);
   const [isFocused, setIsFocused] = React.useState(false);
   const [isListening, setIsListening] = React.useState(false);
-  const recognitionRef = React.useRef<any>(null);
+  const recognitionRef = React.useRef<SpeechRecognitionInstance | null>(null);
   
   React.useEffect(() => {
     if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
+      const SpeechRecognition = (window as unknown as { 
+        SpeechRecognition: unknown; 
+        webkitSpeechRecognition: unknown; 
+      }).SpeechRecognition || (window as unknown as { 
+        webkitSpeechRecognition: unknown; 
+      }).webkitSpeechRecognition;
+      
+      const SpeechRecognitionConstructor = SpeechRecognition as { new(): SpeechRecognitionInstance };
+      recognitionRef.current = new SpeechRecognitionConstructor();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'fr-FR';
 
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = Array.from(event.results)
-          .map((result: any) => result[0])
-          .map((result: any) => result.transcript)
-          .join('');
+      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+        const results = event.results;
+        let transcript = '';
+        for (let i = 0; i < results.length; i++) {
+          transcript += results[i][0].transcript;
+        }
         
         setSearchTerm(transcript);
         onSearchChange(transcript);
@@ -46,7 +81,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
         setIsListening(false);
       };
 
-      recognitionRef.current.onerror = (event: any) => {
+      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
       };

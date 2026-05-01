@@ -5,12 +5,14 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, Users, ArrowRight } from 'lucide-react';
+import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, ArrowRight, Activity, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 export default function RestaurateurHomePage() {
     const { restaurants, orders, isLoading: isDataLoading } = useData();
@@ -27,7 +29,6 @@ export default function RestaurateurHomePage() {
         if (myRestaurantIds.length === 0) return [];
         return orders.filter(o => myRestaurantIds.includes(o.restaurantId));
     }, [orders, myRestaurantIds]);
-
 
     const stats = React.useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
@@ -47,161 +48,230 @@ export default function RestaurateurHomePage() {
 
     if (isDataLoading || authLoading) {
         return (
-            <div className="flex h-full w-full items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-primary" />
+            <div className="flex h-screen w-full items-center justify-center bg-slate-50/50">
+                <Loader className="h-12 w-12 animate-spin text-orange-500" />
             </div>
         );
     }
     
     if (myRestaurants.length === 0) {
         return (
-             <div className="flex h-full w-full items-center justify-center">
-                <Card className="max-w-lg text-center p-8">
-                    <CardHeader>
-                        <ChefHat className="h-16 w-16 mx-auto text-primary" />
-                        <CardTitle className="text-2xl mt-4">Bienvenue sur votre espace restaurateur !</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <CardDescription className="text-base">
-                            Il semble que vous n&apos;ayez pas encore de restaurant. Pour commencer à gérer vos commandes et créer des plats, vous devez d&apos;abord enregistrer votre établissement.
-                        </CardDescription>
-                         <Button className="mt-6" asChild>
-                           <Link href="/dashboard/new-restaurant">Créer mon premier restaurant</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+             <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50/50">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-lg w-full"
+                >
+                    <Card className="bg-white/70 backdrop-blur-xl border-white/40 shadow-2xl shadow-slate-200/50 p-8 text-center">
+                        <CardHeader>
+                            <div className="h-20 w-20 mx-auto bg-orange-50 rounded-full flex items-center justify-center mb-6">
+                                <ChefHat className="h-10 w-10 text-orange-500" />
+                            </div>
+                            <CardTitle className="text-3xl font-black tracking-tight text-slate-900 italic">Bienvenue Elite !</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <CardDescription className="text-slate-500 text-lg leading-relaxed mb-8">
+                                Prêt à lancer votre empire culinaire ? Enregistrez votre premier établissement pour commencer à gérer vos commandes.
+                            </CardDescription>
+                             <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 rounded-none transition-all" asChild>
+                               <Link href="/dashboard/new-restaurant">
+                                    <Sparkles className="mr-2 h-5 w-5" />
+                                    Créer mon Restaurant
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </div>
         )
     }
 
     return (
-        <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-headline text-primary">Tableau de bord</h1>
-                    <p className="text-muted-foreground">Aperçu de l&apos;activité de vos restaurants aujourd&apos;hui.</p>
+        <div className="min-h-screen bg-slate-50/50 pb-20">
+            {/* Header Section */}
+            <div className="relative h-[250px] md:h-[300px] overflow-hidden bg-slate-900 flex items-center">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070')] bg-cover bg-center opacity-30 scale-110 animate-slow-zoom" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50" />
+                
+                <div className="container mx-auto px-4 relative z-10 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-4"
+                    >
+                        <Activity className="h-3.5 w-3.5 text-orange-500 animate-pulse" />
+                        <span className="text-[10px] font-bold tracking-[0.2em] text-white uppercase">Tableau de Bord Elite</span>
+                    </motion.div>
+                    <motion.h1 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-4xl md:text-7xl font-black tracking-tighter text-white italic mb-4"
+                    >
+                        Gestion <span className="text-orange-500">Premium</span>
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-white/70 font-medium max-w-xl mx-auto text-sm md:text-lg"
+                    >
+                        Supervisez vos opérations avec l&apos;excellence Yakro Elite.
+                    </motion.p>
                 </div>
-                 <div className="flex gap-2">
-                    <Button asChild>
+            </div>
+
+            <div className="container mx-auto px-4 -mt-12 relative z-20 space-y-8">
+                {/* Action Bar */}
+                <div className="flex flex-wrap justify-center gap-4">
+                    <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-xl">
                        <Link href="/dashboard/orders">
-                            <ClipboardList />
-                            Gérer les commandes
+                            <ClipboardList className="mr-2 h-4 w-4 text-orange-500" />
+                            Commandes
                         </Link>
                     </Button>
-                     <Button asChild variant="outline">
+                    <Button asChild variant="outline" className="bg-white/70 backdrop-blur-md border-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-lg hover:border-orange-500/30">
                        <Link href="/dashboard/menu">
-                            <BookOpenCheck />
-                           Voir mes menus
+                            <BookOpenCheck className="mr-2 h-4 w-4 text-orange-500" />
+                            Menu
                         </Link>
                     </Button>
                 </div>
-            </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Revenu Net (Aujourd&apos;hui)</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.revenueToday.toLocaleString('fr-FR')} FCFA</div>
-                        <p className="text-xs text-muted-foreground">Basé sur les commandes livrées</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Commandes (Aujourd&apos;hui)</CardTitle>
-                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.ordersTodayCount}</div>
-                        <p className="text-xs text-muted-foreground">Toutes les commandes reçues ce jour</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Statut des Commandes Actives</CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent className="flex justify-around pt-2">
-                        <div className="text-center">
-                            <p className="text-lg font-bold">{stats.pendingCount}</p>
-                            <p className="text-xs text-muted-foreground">En attente</p>
-                        </div>
-                         <div className="text-center">
-                            <p className="text-lg font-bold">{stats.preparingCount}</p>
-                            <p className="text-xs text-muted-foreground">En prépa.</p>
-                        </div>
-                         <div className="text-center">
-                            <p className="text-lg font-bold">{stats.inTransitCount}</p>
-                            <p className="text-xs text-muted-foreground">En route</p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                        { label: 'Revenu du Jour', value: stats.revenueToday, sub: 'Commandes livrées', icon: DollarSign, unit: 'FCFA' },
+                        { label: 'Commandes Total', value: stats.ordersTodayCount, sub: 'Volume journalier', icon: ShoppingCart, unit: 'ITEMS' },
+                        { label: 'En Préparation', value: stats.preparingCount, sub: 'Commandes actives', icon: ChefHat, unit: 'PLATS' }
+                    ].map((item, idx) => (
+                        <motion.div 
+                            key={idx}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 + idx * 0.1 }}
+                            className="bg-white/70 backdrop-blur-xl border border-white p-8 relative overflow-hidden group hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500"
+                        >
+                            <div className="flex justify-between items-start mb-6">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-orange-500 transition-colors">{item.label}</span>
+                                <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-orange-50 transition-all">
+                                    <item.icon className="h-4 w-4 text-slate-400 group-hover:text-orange-500" />
+                                </div>
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-4xl font-black tracking-tighter text-slate-900 group-hover:text-orange-500 transition-colors">
+                                    {item.value.toLocaleString('fr-FR')}
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                    {item.unit}
+                                </span>
+                            </div>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase mt-4 tracking-widest">{item.sub}</p>
+                        </motion.div>
+                    ))}
+                </div>
 
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Dernières Commandes</CardTitle>
-                        <CardDescription>Voici les 5 dernières commandes reçues par vos établissements.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                       {stats.latestOrders.length > 0 ? (
-                           <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Client</TableHead>
-                                        <TableHead>Statut</TableHead>
-                                        <TableHead className="text-right">Montant</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {stats.latestOrders.map(order => (
-                                        <TableRow key={order.id}>
-                                            <TableCell>
-                                                <div className="font-medium">{order.nomRestaurant}</div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    {format(new Date(order.date), "dd/MM/yyyy HH:mm")}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">{order.statut}</Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right font-medium">{order.total.toLocaleString('fr-FR')} FCFA</TableCell>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Latest Orders */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="lg:col-span-8 bg-white/70 backdrop-blur-xl border border-white p-0 overflow-hidden shadow-xl"
+                    >
+                        <div className="p-8 border-b border-slate-100 flex justify-between items-center">
+                            <div>
+                                <h3 className="text-lg font-black tracking-tight text-slate-900 uppercase">Dernières Commandes</h3>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Flux en temps réel</p>
+                            </div>
+                            <Button variant="ghost" size="sm" asChild className="text-[10px] font-black uppercase tracking-widest hover:text-orange-500">
+                                <Link href="/dashboard/orders">Tout voir <ArrowRight className="ml-2 h-3 w-3" /></Link>
+                            </Button>
+                        </div>
+                        <div className="p-0">
+                            {stats.latestOrders.length > 0 ? (
+                                <Table>
+                                    <TableHeader className="bg-slate-50/50">
+                                        <TableRow className="hover:bg-transparent border-none">
+                                            <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 pl-8">Client / Heure</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-widest">Statut</TableHead>
+                                            <TableHead className="text-right text-[10px] font-black uppercase tracking-widest py-4 pr-8">Montant</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                       ) : (
-                           <p className="text-muted-foreground text-center py-8">Aucune commande pour le moment.</p>
-                       )}
-                       <div className="mt-4 flex justify-end">
-                           <Button variant="ghost" asChild>
-                               <Link href="/dashboard/orders">
-                                   Voir toutes les commandes <ArrowRight className="ml-2" />
-                               </Link>
-                           </Button>
-                       </div>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Créateur de Plats par IA</CardTitle>
-                        <CardDescription>Pas d&apos;inspiration ? Décrivez un plat et laissez l&apos;IA générer un nom, une description et un prix pour vous.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                        <Wand2 className="h-16 w-16 mx-auto text-primary/50 mb-4" />
-                        <p className="text-muted-foreground mb-6">Ajoutez rapidement de nouveaux plats à vos menus en utilisant notre assistant intelligent.</p>
-                        <Button asChild size="lg">
-                           <Link href="/dashboard/new-menu-item">
-                                <Wand2 />
-                                Commencer à créer
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {stats.latestOrders.map((order) => (
+                                            <TableRow key={order.id} className="group hover:bg-slate-50/30 border-slate-50 transition-colors">
+                                                <TableCell className="py-5 pl-8">
+                                                    <div className="font-bold text-slate-900 group-hover:text-orange-600 transition-colors">{order.nomRestaurant}</div>
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">
+                                                        {format(new Date(order.date), "dd MMM · HH:mm")}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge className={cn(
+                                                        "text-[9px] font-black uppercase tracking-widest rounded-none px-3 py-1 border-none",
+                                                        order.statut === 'Livrée' ? "bg-green-100 text-green-700" :
+                                                        order.statut === 'En Préparation' ? "bg-orange-100 text-orange-700" :
+                                                        "bg-slate-100 text-slate-600"
+                                                    )}>
+                                                        {order.statut}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right py-5 pr-8">
+                                                    <span className="font-black text-slate-900">{order.total.toLocaleString('fr-FR')}</span>
+                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">FCFA</span>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            ) : (
+                                <div className="text-center py-20">
+                                    <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <ShoppingCart className="h-6 w-6 text-slate-300" />
+                                    </div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aucune commande pour le moment</p>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
 
+                    {/* AI Assistant */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.7 }}
+                        className="lg:col-span-4 bg-slate-900 p-8 relative overflow-hidden flex flex-col justify-between"
+                    >
+                        <div className="absolute top-0 right-0 p-4">
+                            <Wand2 className="h-20 w-20 text-white/5 -rotate-12" />
+                        </div>
+                        
+                        <div className="relative z-10">
+                            <div className="h-12 w-12 bg-orange-500 rounded-none flex items-center justify-center mb-6 shadow-lg shadow-orange-500/20">
+                                <Activity className="h-6 w-6 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-black tracking-tight text-white italic leading-tight">
+                                Intelligence <span className="text-orange-500 block">Créative Yakro</span>
+                            </h3>
+                            <p className="text-white/50 text-xs font-bold uppercase tracking-widest mt-4 leading-relaxed">
+                                Laissez notre IA générer vos menus, descriptions et prix optimisés.
+                            </p>
+                        </div>
+
+                        <div className="mt-12 relative z-10">
+                            <Button asChild size="lg" className="w-full bg-white hover:bg-orange-500 hover:text-white text-slate-900 font-black uppercase tracking-widest text-[10px] py-6 rounded-none transition-all duration-500">
+                               <Link href="/dashboard/new-menu-item">
+                                    <Wand2 className="mr-2 h-4 w-4" />
+                                    Commencer à créer
+                                </Link>
+                            </Button>
+                        </div>
+                        
+                        {/* Decorative background glow */}
+                        <div className="absolute -bottom-20 -left-20 h-64 w-64 bg-orange-500/20 rounded-full blur-[100px]" />
+                    </motion.div>
+                </div>
             </div>
         </div>
     );

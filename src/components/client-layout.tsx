@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Sidebar } from '@/components/sidebar';
 import { MobileHeader } from '@/components/mobile-header';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
+import { cn } from '@/lib/utils';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -32,14 +33,22 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/restaurateur');
+
   return (
-    <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
+    <div className={cn(
+      "flex min-h-screen transition-colors duration-300",
+      isDashboard ? "bg-slate-50 text-slate-900" : "bg-background text-foreground"
+    )}>
       <div className="hidden md:flex">
         <Sidebar />
       </div>
       <div className="flex-1 flex flex-col md:pl-64">
         <MobileHeader />
-        <main className="flex-1 p-4 md:p-10 pb-24 md:pb-10">
+        <main className={cn(
+          "flex-1 pb-24 md:pb-10",
+          isDashboard ? "p-0" : "p-4 md:p-10"
+        )}>
           {children}
         </main>
         <BottomNavBar />

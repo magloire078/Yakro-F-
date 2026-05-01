@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { DollarSign, ShoppingCart, TrendingUp, BarChart3, PieChart, Activity, Calendar } from 'lucide-react';
+import { DollarSign, ShoppingCart, TrendingUp, BarChart3, PieChart, Activity } from 'lucide-react';
 import { 
     isWithinInterval, 
     startOfDay, 
@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
     const filteredOrders = React.useMemo(() => {
         if (myRestaurantIds.length === 0) return [];
         
-        let baseOrders = orders.filter(o => myRestaurantIds.includes(o.restaurantId) && o.statut === 'Livrée');
+        const baseOrders = orders.filter(o => myRestaurantIds.includes(o.restaurantId) && o.statut === 'Livrée');
         
         if (selectedRange === 'all') return baseOrders;
 
@@ -126,10 +126,12 @@ export default function AnalyticsPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#0A0A0B] pb-24 relative overflow-hidden">
-            {/* Immersive Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-[1000px] bg-gradient-to-b from-orange-500/5 via-transparent to-transparent opacity-50" />
-            <div className="absolute -top-[500px] -right-[500px] w-[1000px] h-[1000px] bg-orange-500/5 rounded-full blur-[200px]" />
+        <div className="min-h-screen bg-white pb-24 relative overflow-hidden">
+            {/* Elite Platinum Background Elements */}
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(249,115,22,0.08),transparent_70%)]" />
+            <div className="absolute top-[-5%] left-[-10%] w-[800px] h-[800px] bg-slate-100/40 rounded-full blur-[140px] pointer-events-none" />
+            <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] bg-orange-50/50 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-[30%] right-[10%] w-[400px] h-[400px] bg-white rounded-full blur-[100px] pointer-events-none shadow-[0_0_100px_rgba(249,115,22,0.05)]" />
 
             {/* Elite Analytics Header */}
             <div className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden flex items-center justify-center">
@@ -140,32 +142,32 @@ export default function AnalyticsPage() {
                         fill
                         className="object-cover opacity-20 scale-110 animate-slow-zoom"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/60 to-black/80 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-slate-50/60 to-white/80 z-10" />
                 </div>
-                <div className="relative z-30 text-center space-y-6 px-6 max-w-4xl">
+                <div className="relative z-30 text-center space-y-4 md:space-y-6 px-6 max-w-4xl">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-2"
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/40 border border-orange-500/10 backdrop-blur-xl mb-2 shadow-sm"
                     >
-                        <Activity className="h-3.5 w-3.5 text-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Intelligence Financière</span>
+                        <Activity className="h-3.5 w-3.5 text-orange-500 animate-pulse" />
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-orange-600">Intelligence Stratégique</span>
                     </motion.div>
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-8xl font-black uppercase tracking-tighter text-white italic leading-none"
+                        className="text-4xl md:text-8xl font-black tracking-tight md:tracking-tighter text-slate-900 italic leading-[1.1] md:leading-none"
                     >
-                        Vision <span className="text-orange-500">Stratégique</span>
+                        Analyse <span className="text-orange-500 drop-shadow-sm">Elite</span>
                     </motion.h1>
                     <motion.p 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-gray-400 font-medium max-w-xl mx-auto text-xs md:text-lg"
+                        className="text-slate-500 font-medium max-w-xl mx-auto text-sm md:text-lg leading-relaxed"
                     >
-                        Analysez vos performances avec une précision chirurgicale et optimisez la rentabilité de votre empire culinaire.
+                        Pilotez votre performance avec une clarté absolue et une précision chirurgicale.
                     </motion.p>
                 </div>
             </div>
@@ -183,10 +185,10 @@ export default function AnalyticsPage() {
                             transition={{ delay: 0.3 + idx * 0.05 }}
                             onClick={() => setSelectedRange(range.id)}
                             className={cn(
-                                "relative px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-500 border rounded-none",
+                                "relative px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-500 border",
                                 selectedRange === range.id 
-                                    ? "bg-orange-500 border-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.3)]" 
-                                    : "bg-[#121214]/60 backdrop-blur-md border-white/5 text-gray-500 hover:border-white/20 hover:text-white"
+                                    ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-200" 
+                                    : "bg-white/60 backdrop-blur-md border-slate-200 text-slate-500 hover:border-orange-500/30 hover:text-orange-600"
                             )}
                         >
                             {range.label}
@@ -217,24 +219,24 @@ export default function AnalyticsPage() {
                             ].map((item, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="group bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-8 relative overflow-hidden transition-all duration-500 hover:border-orange-500/30"
+                                    className="group bg-white/70 backdrop-blur-xl border border-white p-8 relative overflow-hidden transition-all duration-500 hover:border-orange-500/20 hover:shadow-2xl hover:shadow-slate-200/50 shadow-sm"
                                 >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="flex justify-between items-start mb-6">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 group-hover:text-orange-500 transition-colors">{item.label}</span>
-                                        <div className={`p-2 bg-white/5 rounded-none border border-white/5 group-hover:border-orange-500/30 transition-all`}>
-                                            <item.icon className={`h-4 w-4 ${item.color === 'orange' ? 'text-orange-500' : 'text-white'}`} />
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-orange-500 transition-colors">{item.label}</span>
+                                        <div className={`p-2 bg-slate-50 rounded-lg border border-slate-100 group-hover:border-orange-500/20 group-hover:bg-orange-50 transition-all`}>
+                                            <item.icon className={`h-4 w-4 ${item.color === 'orange' ? 'text-orange-500' : 'text-slate-400 group-hover:text-orange-500'}`} />
                                         </div>
                                     </div>
                                     <div className="flex items-baseline gap-2">
-                                        <span className={`text-4xl font-black tracking-tighter ${item.color === 'orange' ? 'text-orange-500' : 'text-white'}`}>
+                                        <span className={`text-4xl md:text-5xl font-black tracking-tighter ${item.color === 'orange' ? 'text-orange-500' : 'text-slate-900'}`}>
                                             {item.value.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                                         </span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                                             {item.unit || 'FCFA'}
                                         </span>
                                     </div>
-                                    <p className="text-[9px] font-bold text-gray-600 uppercase mt-4 tracking-widest">{item.sub}</p>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase mt-4 tracking-[0.15em]">{item.sub}</p>
                                     
                                     {/* Decorative element */}
                                     <div className="absolute -bottom-6 -right-6 h-24 w-24 bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/10 transition-all" />
@@ -245,13 +247,13 @@ export default function AnalyticsPage() {
                         {/* Detailed Analytics Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 md:mt-10">
                             {/* Revenue Chart */}
-                            <div className="lg:col-span-7 bg-[#121214]/60 backdrop-blur-md border border-white/5 p-8 relative overflow-hidden">
+                            <div className="lg:col-span-7 bg-white/80 backdrop-blur-xl border border-white p-8 relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 shadow-sm">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-xl font-black italic uppercase tracking-tighter text-white">Domination Territoriale</h2>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1">Revenu net par établissement</p>
+                                        <h2 className="text-xl md:text-2xl font-black italic tracking-tight text-slate-900">Domination Territoriale</h2>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Revenu net par établissement</p>
                                     </div>
-                                    <BarChart3 className="h-5 w-5 text-gray-700" />
+                                    <BarChart3 className="h-5 w-5 text-slate-400" />
                                 </div>
                                 
                                 <div className="h-[400px] w-full">
@@ -260,17 +262,17 @@ export default function AnalyticsPage() {
                                             <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                                                 <XAxis 
                                                     dataKey="name" 
-                                                    stroke="#333" 
+                                                    stroke="#cbd5e1" 
                                                     fontSize={10}
-                                                    fontWeight="900"
+                                                    fontWeight="700"
                                                     axisLine={false}
                                                     tickLine={false}
                                                     dy={15}
                                                 />
                                                 <YAxis 
-                                                    stroke="#333" 
+                                                    stroke="#cbd5e1" 
                                                     fontSize={10}
-                                                    fontWeight="900"
+                                                    fontWeight="700"
                                                     axisLine={false}
                                                     tickLine={false}
                                                     tickFormatter={(value) => `${(value as number)/1000}k`} 
@@ -280,9 +282,9 @@ export default function AnalyticsPage() {
                                                     content={({ active, payload }) => {
                                                       if (active && payload && payload.length) {
                                                         return (
-                                                          <div className="bg-[#0A0A0B] border border-white/10 p-4 shadow-2xl">
+                                                          <div className="bg-white border border-slate-100 p-4 shadow-2xl">
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-1">{payload[0].payload.name}</p>
-                                                            <p className="text-2xl font-black tracking-tighter text-white">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[8px] opacity-40 uppercase tracking-widest ml-1">FCFA</span></p>
+                                                            <p className="text-2xl font-black tracking-tighter text-slate-900">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[8px] opacity-40 uppercase tracking-widest ml-1">FCFA</span></p>
                                                           </div>
                                                         )
                                                       }
@@ -312,13 +314,13 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Top Sellers Table */}
-                            <div className="lg:col-span-5 bg-[#121214]/60 backdrop-blur-md border border-white/5 p-8">
+                            <div className="lg:col-span-5 bg-white/80 backdrop-blur-xl border border-white p-8 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 shadow-sm">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-xl font-black italic uppercase tracking-tighter text-white">Palmarès d&apos;Élite</h2>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1">Top 5 des créations les plus prisées</p>
+                                        <h2 className="text-xl md:text-2xl font-black italic tracking-tight text-slate-900">Palmarès d&apos;Élite</h2>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Top 5 des créations les plus prisées</p>
                                     </div>
-                                    <PieChart className="h-5 w-5 text-gray-700" />
+                                    <PieChart className="h-5 w-5 text-slate-400" />
                                 </div>
 
                                 {topSellingItems.length > 0 ? (
@@ -328,7 +330,7 @@ export default function AnalyticsPage() {
                                                 <div className="flex items-center gap-4">
                                                     <span className="text-xs font-black italic text-gray-700 group-hover:text-orange-500 transition-colors w-4">0{index + 1}</span>
                                                     <div>
-                                                        <p className="text-sm font-black uppercase tracking-tighter text-white group-hover:text-orange-500 transition-colors">{item.name}</p>
+                                                        <p className="text-sm font-black uppercase tracking-tighter text-slate-900 group-hover:text-orange-500 transition-colors">{item.name}</p>
                                                         <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{item.count} Unités vendues</p>
                                                     </div>
                                                 </div>
@@ -355,9 +357,10 @@ export default function AnalyticsPage() {
                                     </div>
                                 )}
                                 
-                                <div className="mt-12 p-6 bg-orange-500/5 border border-orange-500/10">
+                                <div className="mt-12 p-6 bg-slate-50 border border-slate-100 rounded-xl relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full" />
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 mb-2">Conseil de l&apos;Expert</h4>
-                                    <p className="text-[11px] font-medium text-gray-400 leading-relaxed italic">
+                                    <p className="text-xs font-medium text-slate-600 leading-relaxed italic relative z-10">
                                         &ldquo;Votre plat signature génère {stats.totalRevenue > 0 ? ((topSellingItems[0]?.revenue / stats.totalRevenue) * 100).toFixed(1) : 0}% de votre revenu net. Envisagez de créer une déclinaison Premium pour maximiser vos marges.&rdquo;
                                     </p>
                                 </div>
