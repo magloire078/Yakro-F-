@@ -169,7 +169,7 @@ export default function RestaurantPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4 md:p-8 md:rounded-xl">
                     <div className="text-white">
-                        <h1 className="text-2xl md:text-4xl font-display">{restaurant.nom}</h1>
+                        <h1 className="text-3xl md:text-5xl font-display">{restaurant.nom}</h1>
                         <p className="text-md md:text-lg">{restaurant.cuisine}</p>
                     </div>
                 </div>

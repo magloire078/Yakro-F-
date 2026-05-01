@@ -46,9 +46,9 @@ export default function LoginPage() {
                     priority
                 />
                 <div className="absolute inset-0 bg-primary/70" />
-                <div className="relative z-20 flex items-center text-lg font-medium">
+                <div className="relative z-20 flex items-center font-medium">
                     <Icons.logo className="h-8 w-8 mr-2 text-primary-foreground" />
-                    Yakro Fê
+                    <span className="font-display text-3xl">Yakro Fê</span>
                 </div>
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">
@@ -62,7 +62,7 @@ export default function LoginPage() {
             <div className="lg:p-8">
                  <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                     <div className="flex flex-col space-y-2 text-center">
-                        <h1 className="text-2xl font-semibold tracking-tight">
+                        <h1 className="font-display text-3xl text-primary">
                             Accédez à votre compte
                         </h1>
                         <p className="text-sm text-muted-foreground">
