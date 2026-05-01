@@ -51,8 +51,8 @@ export function Sidebar() {
                     <Icons.logo className="h-8 w-8 text-[#4F46E5]" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-headline text-3xl font-bold text-[#4F46E5] leading-none">Yakro</span>
-                    <span className="font-headline text-3xl font-bold text-[#4F46E5] leading-none ml-1">Fê</span>
+                    <span className="font-display text-3xl font-bold text-[#4F46E5] leading-none">Yakro</span>
+                    <span className="font-display text-3xl font-bold text-[#4F46E5] leading-none ml-1">Fê</span>
                 </div>
             </Link>
             <div className="hidden md:block">

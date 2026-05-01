@@ -135,7 +135,7 @@ export function AvailableDeliveries({
         <div className="container mx-auto pb-20">
             <div className="flex flex-col gap-6 mb-8">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-headline text-primary">Courses</h1>
+                    <h1 className="text-3xl font-display text-primary">Courses</h1>
                     <div className="flex items-center gap-3 bg-card px-4 py-2 rounded-full border shadow-sm">
                         <Label htmlFor="service-status" className="text-sm font-semibold">
                             {isEnService ? 'En ligne' : 'Hors ligne'}

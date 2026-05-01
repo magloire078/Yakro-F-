@@ -169,7 +169,7 @@ export default function RestaurantPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4 md:p-8 md:rounded-xl">
                     <div className="text-white">
-                        <h1 className="text-2xl md:text-4xl font-headline">{restaurant.nom}</h1>
+                        <h1 className="text-2xl md:text-4xl font-display">{restaurant.nom}</h1>
                         <p className="text-md md:text-lg">{restaurant.cuisine}</p>
                     </div>
                 </div>
@@ -192,7 +192,7 @@ export default function RestaurantPage() {
                 </div>
 
                 {/* Menu Section */}
-                <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Menu</h2>
+                <h2 className="text-2xl md:text-3xl font-display text-foreground mb-6">Menu</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-16">
                     {restaurantMenu.length > 0 ? restaurantMenu.map(item => (
                         <MenuItemCard key={item.id} item={item} />
@@ -205,7 +205,7 @@ export default function RestaurantPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
                   <div className="lg:col-span-2">
                     <div className="flex items-center gap-4 mb-6">
-                        <h2 className="text-2xl md:text-3xl font-headline text-foreground">Avis</h2>
+                        <h2 className="text-2xl md:text-3xl font-display text-foreground">Avis</h2>
                         {allReviews.length > 0 && (
                             <div className="flex items-center gap-2 text-xl font-bold">
                                 <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
@@ -271,12 +271,12 @@ export default function RestaurantPage() {
 
                   <div className="lg:col-span-1 space-y-8">
                      <div>
-                        <h2 className="text-2xl font-headline text-foreground mb-4">Laissez votre avis</h2>
+                        <h2 className="text-2xl font-display text-foreground mb-4">Laissez votre avis</h2>
                         <ReviewForm onSubmit={handleAddReview} />
                      </div>
                      {allReviews.length > 0 && (
                         <div>
-                          <h2 className="text-2xl font-headline text-foreground mb-4">Répartition des notes</h2>
+                          <h2 className="text-2xl font-display text-foreground mb-4">Répartition des notes</h2>
                           <RatingsChart data={ratingsDistribution} />
                         </div>
                      )}

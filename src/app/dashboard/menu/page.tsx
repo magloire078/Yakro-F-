@@ -87,7 +87,7 @@ export default function DashboardMenuPage() {
             <div className="flex items-center gap-4 mb-8">
                 <BookOpenCheck className="h-10 w-10 text-primary" />
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-headline text-primary">Gestion de Menu</h1>
+                    <h1 className="text-2xl md:text-3xl font-display text-primary">Gestion de Menu</h1>
                     <p className="text-muted-foreground">Visualisez et gérez tous les plats de vos restaurants.</p>
                 </div>
             </div>

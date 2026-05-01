@@ -44,7 +44,7 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
     <section>
         <Card className="w-full bg-primary/5 border-primary/20 shadow-lg">
             <CardHeader className="text-center">
-                 <h2 className="text-2xl font-headline text-primary">Suivi de votre commande</h2>
+                 <h2 className="text-2xl font-display text-primary">Suivi de votre commande</h2>
                  <p className="text-muted-foreground">Votre commande de <span className="font-semibold text-foreground">{order.nomRestaurant}</span></p>
             </CardHeader>
             <CardContent className="flex flex-col items-center text-center">

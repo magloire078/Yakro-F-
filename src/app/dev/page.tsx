@@ -71,7 +71,7 @@ export default function DevPage() {
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Outils de Développement</h1>
+            <h1 className="text-2xl md:text-3xl font-display text-primary mb-8">Outils de Développement</h1>
             <div className="max-w-lg mx-auto">
                 <Card>
                     <CardHeader>

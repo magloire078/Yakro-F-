@@ -350,7 +350,7 @@ export default function CustomerHomePage() {
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
         <section className="text-center bg-card p-6 md:p-12 rounded-2xl shadow-lg">
-          <h1 className="text-2xl md:text-3xl font-headline text-primary">Les saveurs de Yakro, chez vous.</h1>
+          <h1 className="text-2xl md:text-3xl font-display text-primary">Les saveurs de Yakro, chez vous.</h1>
           <p className="mt-2 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous.
           </p>
@@ -380,7 +380,7 @@ export default function CustomerHomePage() {
           <section>
              <div className="flex items-center gap-4 mb-6">
                 <Star className="text-primary fill-primary" />
-                <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants en vedette</h2>
+                <h2 className="text-2xl md:text-3xl font-display text-foreground">Restaurants en vedette</h2>
              </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {isLoading ? renderSkeletons(4) : featuredRestaurants.map(restaurant => (
@@ -392,7 +392,7 @@ export default function CustomerHomePage() {
 
 
       <section>
-        <h2 className="text-2xl md:text-3xl font-headline text-foreground mb-6">Explorer par catégories</h2>
+        <h2 className="text-2xl md:text-3xl font-display text-foreground mb-6">Explorer par catégories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {categories.map((category) => (
             <Card 
@@ -412,7 +412,7 @@ export default function CustomerHomePage() {
       <section>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl md:text-3xl font-headline text-foreground">
+            <h2 className="text-2xl md:text-3xl font-display text-foreground">
               {searchQuery || interpretedSearch || activeFilter || selectedCategory ? 'Résultats' : 'Tous les Restaurants'}
             </h2>
             {getFilterLabel() && <Badge>{getFilterLabel()}</Badge>}
@@ -431,7 +431,7 @@ export default function CustomerHomePage() {
       <section>
         <Card className="bg-primary text-primary-foreground p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl md:text-3xl font-headline">Vous êtes un restaurateur ?</h2>
+            <h2 className="text-2xl md:text-3xl font-display">Vous êtes un restaurateur ?</h2>
             <p className="mt-2 max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité.</p>
           </div>
           <Button variant="secondary" size="lg" className="shrink-0" asChild>

@@ -80,7 +80,7 @@ export default function RestaurateurHomePage() {
         <div className="container mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-headline text-primary">Tableau de bord</h1>
+                    <h1 className="text-2xl md:text-3xl font-display text-primary">Tableau de bord</h1>
                     <p className="text-muted-foreground">Aperçu de l'activité de vos restaurants aujourd'hui.</p>
                 </div>
                  <div className="flex gap-2">

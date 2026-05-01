@@ -102,7 +102,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   if (isCarousel) {
       return (
         <section className="w-full">
-          <h2 className="text-3xl font-headline text-foreground mb-6">Pour Vous</h2>
+          <h2 className="text-3xl font-display text-foreground mb-6">Pour Vous</h2>
           <Carousel
             opts={{
               align: "start",

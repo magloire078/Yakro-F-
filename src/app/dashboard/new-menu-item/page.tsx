@@ -156,7 +156,7 @@ export default function NewMenuItemPage() {
 
     return (
         <div className="container mx-auto max-w-2xl px-4 py-8">
-            <h1 className="text-2xl md:text-3xl font-headline text-[#4F46E5] mb-8">Créateur de Plats IA</h1>
+            <h1 className="text-2xl md:text-3xl font-display text-[#4F46E5] mb-8">Créateur de Plats IA</h1>
             
             <div className="flex flex-col gap-10">
                 {/* Step 1: Input */}

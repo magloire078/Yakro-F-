@@ -38,7 +38,7 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
 
     return (
         <div className="container mx-auto">
-            <h1 className="text-2xl md:text-4xl font-headline text-primary mb-6 md:mb-8">Livraison en cours</h1>
+            <h1 className="text-2xl md:text-4xl font-display text-primary mb-6 md:mb-8">Livraison en cours</h1>
             <Card className="bg-primary/5">
                 <CardHeader>
                     <CardTitle className="flex justify-between items-center">

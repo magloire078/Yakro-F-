@@ -135,7 +135,7 @@ export default function DashboardOrdersPage() {
 
     return (
         <div className="container mx-auto pb-20">
-            <h1 className="text-2xl md:text-3xl font-headline text-primary mb-6">Suivi des Commandes</h1>
+            <h1 className="text-2xl md:text-3xl font-display text-primary mb-6">Suivi des Commandes</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 <section>
                     <h2 className="text-xl font-headline mb-4 flex items-center gap-2">

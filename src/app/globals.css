@@ -56,10 +56,11 @@
     @apply min-h-[48px] px-6 text-base;
   }
 
-  .font-headline {
+  .font-display {
     font-family: var(--font-caveat), cursive;
+    font-size: 1.35em;
     letter-spacing: 0.005em;
-    line-height: 1.05;
+    line-height: 1;
   }
 }
 
@@ -69,21 +70,21 @@
   }
 
   .app-gradient-bg {
-    background-color: #F8FAFC;
+    background-color: #F4F6FE;
     background-image:
-      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.10) 0px, transparent 45%),
-      radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.07) 0px, transparent 45%),
-      radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 45%),
-      radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.06) 0px, transparent 45%),
-      linear-gradient(180deg, #FAFBFF 0%, #F4F6FB 60%, #EEF1F8 100%);
+      radial-gradient(at 8% 0%, rgba(99, 102, 241, 0.22) 0px, transparent 50%),
+      radial-gradient(at 100% 12%, rgba(236, 72, 153, 0.18) 0px, transparent 55%),
+      radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.16) 0px, transparent 55%),
+      radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.18) 0px, transparent 55%),
+      linear-gradient(160deg, #FFF7F0 0%, #F2F4FE 50%, #EAF1FF 100%);
     background-attachment: fixed;
   }
 
   .dark .app-gradient-bg {
     background-color: #0B1020;
     background-image:
-      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.20) 0px, transparent 45%),
-      radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.10) 0px, transparent 45%),
-      linear-gradient(180deg, #0F172A 0%, #111A33 100%);
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.30) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.18) 0px, transparent 55%),
+      linear-gradient(160deg, #0F172A 0%, #1A1538 60%, #111A33 100%);
   }
 }

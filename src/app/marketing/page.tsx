@@ -83,7 +83,7 @@ export default function MarketingPage() {
   return (
     <div className="container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-2xl md:text-3xl font-headline text-primary">Marketing Vidéo IA</h1>
+        <h1 className="text-2xl md:text-3xl font-display text-primary">Marketing Vidéo IA</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -134,7 +134,7 @@ export default function MarketingPage() {
         </Card>
         
         <div className="flex flex-col">
-            <h2 className="text-2xl font-headline mb-4">Résultat</h2>
+            <h2 className="text-2xl font-display mb-4">Résultat</h2>
             <Card className="flex-1 flex items-center justify-center bg-muted/30">
                  {loading && (
                     <div className="text-center text-muted-foreground p-8">

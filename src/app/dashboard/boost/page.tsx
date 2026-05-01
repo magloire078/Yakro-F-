@@ -58,7 +58,7 @@ export default function BoostPage() {
             <div className="flex items-center gap-4 mb-8">
                 <Rocket className="h-10 w-10 text-primary" />
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-headline text-primary">Booster la Visibilité</h1>
+                    <h1 className="text-2xl md:text-3xl font-display text-primary">Booster la Visibilité</h1>
                     <p className="text-muted-foreground">Mettez vos restaurants en vedette pour attirer plus de clients.</p>
                 </div>
             </div>
