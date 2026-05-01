@@ -17,7 +17,7 @@ export function MobileHeader() {
   const { activeRole } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white/60 bg-white/70 backdrop-blur-md px-4 md:hidden">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 md:hidden">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon">

@@ -27,25 +27,25 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
+    --background: 224 47% 9%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
+    --card: 222 33% 16%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 222 33% 16%;
     --popover-foreground: 210 40% 98%;
-    --primary: 243 75% 59%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
+    --primary: 243 80% 70%;
+    --primary-foreground: 224 47% 9%;
+    --secondary: 217 26% 22%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
+    --muted: 217 26% 22%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 217 26% 22%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 30%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 243 75% 59%;
+    --border: 217 26% 24%;
+    --input: 217 26% 24%;
+    --ring: 243 80% 70%;
   }
 
   input, textarea, select {

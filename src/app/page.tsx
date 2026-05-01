@@ -349,7 +349,7 @@ export default function CustomerHomePage() {
       {activeOrder ? (
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
-        <section className="text-center bg-white/60 backdrop-blur-md border border-white/70 p-6 md:p-12 rounded-3xl shadow-lg">
+        <section className="text-center bg-white/60 dark:bg-slate-900/50 backdrop-blur-md border border-white/70 dark:border-slate-800/60 p-6 md:p-12 rounded-3xl shadow-lg">
           <h1 className="text-3xl md:text-5xl font-display text-primary">Les saveurs de Yakro, chez vous.</h1>
           <p className="mt-2 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous.

@@ -44,7 +44,7 @@ export function Sidebar() {
   const isSuperAdmin = userProfile?.roleSysteme === 'SuperAdmin';
 
   return (
-    <aside className="w-full h-screen flex flex-col p-6 bg-white/70 backdrop-blur-md border-r border-white/60 md:w-64 fixed left-0 top-0 z-50">
+    <aside className="w-full h-screen flex flex-col p-6 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border-r border-white/60 dark:border-slate-800/60 md:w-64 fixed left-0 top-0 z-50">
        <div className="flex justify-between items-center mb-10">
             <Link href={homeLink} className="flex items-center space-x-3">
                 <div className="bg-[#4F46E5]/10 p-2 rounded-xl">
@@ -123,13 +123,13 @@ export function Sidebar() {
            {!loading && user && (
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                         <Avatar className="h-10 w-10 rounded-xl">
                             <AvatarFallback className="bg-[#4F46E5]/10 text-[#4F46E5] text-xs font-bold">{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-bold truncate leading-tight text-neutral-800">{userProfile?.nom || user.email}</p>
-                            <p className="text-[10px] text-neutral-400 capitalize font-medium">{activeRole}</p>
+                            <p className="text-sm font-bold truncate leading-tight text-neutral-800 dark:text-slate-100">{userProfile?.nom || user.email}</p>
+                            <p className="text-[10px] text-neutral-400 dark:text-slate-400 capitalize font-medium">{activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>

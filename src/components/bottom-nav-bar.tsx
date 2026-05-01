@@ -53,7 +53,7 @@ export function BottomNavBar() {
     if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
 
     return (
-        <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white/80 backdrop-blur-md border-t border-white/60 md:hidden">
+        <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border-t border-white/60 dark:border-slate-800/60 md:hidden">
             <div className={cn("grid h-full mx-auto font-medium", gridColsClass)}>
                 {links.map((link) => {
                      const isActive = pathname === link.href;
