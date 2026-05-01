@@ -10,6 +10,7 @@ import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
+import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { OrderStatus } from '@/components/order-status';
 import type { Order, Restaurant, MenuItem } from '@/lib/types';
@@ -349,8 +350,14 @@ export default function CustomerHomePage() {
       {activeOrder ? (
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
-        <section className="text-center bg-white/60 dark:bg-slate-900/50 backdrop-blur-md border border-white/70 dark:border-slate-800/60 p-6 md:p-12 rounded-3xl shadow-lg">
-          <h1 className="text-3xl md:text-5xl font-display text-primary">Les saveurs de Yakro, chez vous.</h1>
+        <section className="text-center bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border border-white/70 dark:border-slate-800/60 p-6 md:p-12 rounded-3xl shadow-lg">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="bg-primary/10 p-2.5 rounded-2xl">
+              <Icons.logo className="h-9 w-9 md:h-11 md:w-11 text-primary" />
+            </div>
+            <span className="font-display text-4xl md:text-5xl font-bold text-primary leading-none">Yakro Fê</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-display font-bold text-slate-900 dark:text-slate-50">Les saveurs de Yakro, chez vous.</h1>
           <p className="mt-2 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Les meilleurs plats des restaurants de Yamoussoukro, directement chez vous.
           </p>

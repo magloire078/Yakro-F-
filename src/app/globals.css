@@ -58,6 +58,7 @@
 
   .font-display {
     font-family: var(--font-caveat), cursive;
+    font-weight: 600;
     font-size: 1.35em;
     letter-spacing: 0.005em;
     line-height: 1;
