@@ -27,6 +27,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { updateUserProfileAction } from '@/app/actions/user-actions';
+import { logAdminAction } from '@/lib/audit-logs';
+import { useAuth } from '@/contexts/auth-context';
+import { useFirebase } from '@/contexts/firebase-provider';
 
 
 interface EditUserDialogProps {
@@ -44,6 +47,8 @@ const editUserSchema = z.object({
 type EditUserFormValues = z.infer<typeof editUserSchema>;
 
 export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogProps) {
+  const { user } = useAuth();
+  const { db } = useFirebase();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -74,6 +79,17 @@ export function EditUserDialog({ isOpen, onClose, userProfile }: EditUserDialogP
         title: 'Profil utilisateur mis à jour',
         description: 'Les modifications ont été enregistrées.',
       });
+
+      if (user) {
+        await logAdminAction(db, {
+          adminId: user.uid,
+          adminEmail: user.email || 'unknown',
+          action: 'UPDATE_USER',
+          targetId: userProfile.uid,
+          details: `Mise à jour du profil de ${userProfile.nom || userProfile.email}`
+        });
+      }
+
       onClose();
     } catch {
        // Error is handled by the action via the emitter, but we can show a generic toast here.

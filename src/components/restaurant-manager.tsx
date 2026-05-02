@@ -34,7 +34,8 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useAuth } from '@/contexts/auth-context';
-import { logAdminAction } from '@/lib/audit-logs';
+import { logAdminAction, type AdminAction } from '@/lib/audit-logs';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -44,16 +45,41 @@ export function RestaurantManager() {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    const handleAction = async (restaurant: Restaurant, action: 'FEATURE_RESTAURANT' | 'SUSPEND_RESTAURANT') => {
+    const handleAction = async (restaurant: Restaurant, action: 'FEATURE_RESTAURANT' | 'UNFEATURE_RESTAURANT' | 'SUSPEND_RESTAURANT' | 'ACTIVATE_RESTAURANT') => {
         if (!user) return;
 
         try {
+            const restaurantRef = doc(db, 'restaurants', restaurant.id);
+            let updateData = {};
+            let detailMessage = "";
+
+            switch (action) {
+                case 'FEATURE_RESTAURANT':
+                    updateData = { enVedette: true };
+                    detailMessage = `Mise en vedette du restaurant ${restaurant.nom}`;
+                    break;
+                case 'UNFEATURE_RESTAURANT':
+                    updateData = { enVedette: false };
+                    detailMessage = `Retrait des vedettes du restaurant ${restaurant.nom}`;
+                    break;
+                case 'SUSPEND_RESTAURANT':
+                    updateData = { suspendu: true };
+                    detailMessage = `Suspension du restaurant ${restaurant.nom}`;
+                    break;
+                case 'ACTIVATE_RESTAURANT':
+                    updateData = { suspendu: false };
+                    detailMessage = `Réactivation du restaurant ${restaurant.nom}`;
+                    break;
+            }
+
+            await updateDoc(restaurantRef, updateData);
+
             await logAdminAction(db, {
                 adminId: user.uid,
                 adminEmail: user.email || 'unknown',
-                action,
+                action: action as AdminAction,
                 targetId: restaurant.id,
-                details: `${action === 'FEATURE_RESTAURANT' ? 'Mise en vedette' : 'Suspension'} du restaurant ${restaurant.nom}`
+                details: detailMessage
             });
 
             toast({
@@ -61,7 +87,8 @@ export function RestaurantManager() {
                 description: `Action tracée dans les registres d'audit Yakro.`,
                 className: "bg-[#121214] border-orange-500 text-white font-black uppercase italic tracking-tighter"
             });
-        } catch {
+        } catch (error) {
+            console.error(error);
             toast({
                 variant: 'destructive',
                 title: "ÉCHEC CRITIQUE",
@@ -162,8 +189,16 @@ export function RestaurantManager() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)] animate-pulse" />
-                                                <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">OPÉRATIONNEL</span>
+                                                <div className={cn(
+                                                    "h-1.5 w-1.5 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)] animate-pulse",
+                                                    restaurant.suspendu ? "bg-red-500 shadow-red-500" : "bg-green-500 shadow-green-500"
+                                                )} />
+                                                <span className={cn(
+                                                    "text-[10px] font-black uppercase tracking-widest",
+                                                    restaurant.suspendu ? "text-red-500" : "text-green-500"
+                                                )}>
+                                                    {restaurant.suspendu ? 'SUSPENDU' : 'OPÉRATIONNEL'}
+                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right px-10">
@@ -180,18 +215,18 @@ export function RestaurantManager() {
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem 
                                                         className="rounded-none gap-3 font-black uppercase italic tracking-tighter text-xs py-4 focus:bg-green-600 focus:text-white cursor-pointer transition-colors"
-                                                        onClick={() => handleAction(restaurant, 'FEATURE_RESTAURANT')}
+                                                        onClick={() => handleAction(restaurant, restaurant.enVedette ? 'UNFEATURE_RESTAURANT' : 'FEATURE_RESTAURANT')}
                                                     >
                                                         <TrendingUp className="h-4 w-4" />
-                                                        Propulser (En Vedette)
+                                                        {restaurant.enVedette ? 'Retirer des Vedettes' : 'Propulser (En Vedette)'}
                                                     </DropdownMenuItem>
                                                     <div className="h-px bg-white/5 my-1" />
                                                     <DropdownMenuItem 
                                                         className="rounded-none gap-3 font-black uppercase italic tracking-tighter text-xs py-4 focus:bg-red-600 focus:text-white cursor-pointer transition-colors text-red-500"
-                                                        onClick={() => handleAction(restaurant, 'SUSPEND_RESTAURANT')}
+                                                        onClick={() => handleAction(restaurant, restaurant.suspendu ? 'ACTIVATE_RESTAURANT' : 'SUSPEND_RESTAURANT')}
                                                     >
                                                         <ShieldAlert className="h-4 w-4" />
-                                                        Interruption de Service
+                                                        {restaurant.suspendu ? 'Réactiver le Service' : 'Interruption de Service'}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

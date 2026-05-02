@@ -40,6 +40,35 @@ export function SupervisionModule() {
     const { orders } = useData();
     const [view, setView] = React.useState<'list' | 'map'>('list');
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [events, setEvents] = React.useState<{ id: string; msg: string; time: Date; type: 'departure' | 'arrival' | 'preparation' }[]>([]);
+
+    // Simuler des événements en direct basés sur les commandes
+    React.useEffect(() => {
+        if (orders.length === 0) return;
+        
+        const possibleMsgs = [
+            "Unité #TX-{id} vient de quitter le Bastion {restau}",
+            "Commande #{id} est désormais en phase de transit Alpha",
+            "Bastion {restau} a finalisé la préparation de l'unité #{id}",
+            "Alerte: Flux critique détecté sur le secteur {restau}"
+        ];
+
+        const interval = setInterval(() => {
+            const randomOrder = orders[Math.floor(Math.random() * orders.length)];
+            const msg = possibleMsgs[Math.floor(Math.random() * possibleMsgs.length)]
+                .replace('{id}', randomOrder.id.slice(-4).toUpperCase())
+                .replace('{restau}', randomOrder.nomRestaurant);
+            
+            setEvents(prev => [{
+                id: Math.random().toString(36).substr(2, 9),
+                msg,
+                time: new Date(),
+                type: (Math.random() > 0.5 ? 'departure' : 'preparation') as 'departure' | 'preparation'
+            }, ...prev].slice(0, 10));
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [orders]);
 
     const activeOrders = React.useMemo(() => {
         return orders.filter(o => o.statut !== 'Livrée' && o.statut !== 'Annulée');
@@ -144,9 +173,37 @@ export function SupervisionModule() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="h-[650px] relative bg-black/40 overflow-hidden"
+                                className="h-[650px] relative bg-black/40 overflow-hidden flex"
                             >
-                                <MapSimulation orders={filteredOrders} />
+                                <div className="flex-1 relative">
+                                    <MapSimulation orders={filteredOrders} />
+                                </div>
+                                <div className="w-80 border-l border-white/5 bg-[#121214]/60 backdrop-blur-md overflow-hidden flex flex-col">
+                                    <div className="p-6 border-b border-white/5">
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 italic">Flux d&apos;Événements Live</h3>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+                                        <AnimatePresence initial={false}>
+                                            {events.map(event => (
+                                                <motion.div
+                                                    key={event.id}
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    className="p-4 bg-white/5 border border-white/5 rounded-none group hover:border-orange-500/30 transition-colors"
+                                                >
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                                                        <span className="text-[8px] font-bold text-gray-600 tabular-nums">{event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                                    </div>
+                                                    <p className="text-[10px] font-black uppercase tracking-tight text-gray-400 group-hover:text-white transition-colors leading-relaxed">
+                                                        {event.msg}
+                                                    </p>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -262,13 +319,25 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
 
 function MapSimulation({ orders }: { orders: Order[] }) {
     const markers = React.useMemo(() => {
-        return orders.map((order, idx) => ({
-            id: order.id,
-            x: 20 + (idx * 15) % 60 + Math.random() * 10,
-            y: 20 + (idx * 20) % 60 + Math.random() * 10,
-            type: order.statut === 'En Route' ? 'delivery' : 'restaurant',
-            status: order.statut
-        }));
+        return orders.map((order, idx) => {
+            const x = 20 + (idx * 15) % 60 + Math.random() * 10;
+            const y = 20 + (idx * 20) % 60 + Math.random() * 10;
+            
+            // Pour les vecteurs, on simule une destination
+            const destX = x + (Math.random() > 0.5 ? 15 : -15);
+            const destY = y + (Math.random() > 0.5 ? 15 : -15);
+
+            return {
+                id: order.id,
+                x,
+                y,
+                destX,
+                destY,
+                type: order.statut === 'En Route' ? 'delivery' : 'restaurant',
+                status: order.statut,
+                isNew: (Date.now() - new Date(order.date).getTime()) < 300000 // 5 mins
+            };
+        });
     }, [orders]);
 
     return (
@@ -293,6 +362,33 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                         animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
                         transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                     />
+
+                    {/* Vector Lines for Transit Units */}
+                    {markers.filter(m => m.status === 'En Route').map(m => (
+                        <g key={`vector-${m.id}`}>
+                            <motion.line
+                                x1={`${m.x}%`}
+                                y1={`${m.y}%`}
+                                x2={`${m.destX}%`}
+                                y2={`${m.destY}%`}
+                                className="stroke-purple-500/20"
+                                strokeWidth="1"
+                                strokeDasharray="4 4"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                            />
+                            <motion.circle
+                                r="2"
+                                fill="#A855F7"
+                                initial={{ offset: 0 }}
+                                animate={{ 
+                                    cx: [`${m.x}%`, `${m.destX}%`],
+                                    cy: [`${m.y}%`, `${m.destY}%`]
+                                }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                            />
+                        </g>
+                    ))}
                 </svg>
 
                 {markers.map((marker) => (
@@ -304,19 +400,41 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                         style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
                     >
                         <div className="relative -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
+                            {/* Ping Animation for new/critical orders */}
+                            {marker.isNew && (
+                                <motion.div 
+                                    className="absolute inset-0 bg-orange-500/40 rounded-none rotate-45"
+                                    initial={{ scale: 1, opacity: 0.5 }}
+                                    animate={{ scale: 2.5, opacity: 0 }}
+                                    transition={{ duration: 1.5, repeat: Infinity }}
+                                />
+                            )}
+
                             <div className={cn(
-                                "h-5 w-5 rounded-none border border-white flex items-center justify-center rotate-45 group-hover:scale-125 transition-transform",
+                                "h-5 w-5 rounded-none border border-white flex items-center justify-center rotate-45 group-hover:scale-125 transition-transform relative z-10",
                                 marker.status === 'En Route' ? 'bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : 'bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.5)]'
                             )}>
                                 {marker.status === 'En Route' ? <Bike className="h-3 w-3 -rotate-45 text-white" /> : <Store className="h-3 w-3 -rotate-45 text-white" />}
                             </div>
                             
                             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
-                                <div className="bg-[#121214] text-white p-4 border border-white/10 rounded-none shadow-3xl min-w-[150px]">
-                                    <div className="text-[10px] font-black uppercase italic tracking-tighter text-orange-500 mb-1">UNITÉ ACTIVÉE</div>
+                                <div className="bg-[#121214] text-white p-4 border border-white/10 rounded-none shadow-3xl min-w-[180px] backdrop-blur-xl">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="text-[10px] font-black uppercase italic tracking-tighter text-orange-500">UNITÉ ACTIVÉE</div>
+                                        {marker.isNew && <span className="text-[8px] font-black bg-orange-500 px-1 text-white animate-pulse">NEW</span>}
+                                    </div>
                                     <div className="text-sm font-black italic tracking-tighter uppercase mb-2">#{marker.id.slice(-6)}</div>
                                     <div className="h-px bg-white/5 mb-2" />
-                                    <div className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{marker.status}</div>
+                                    <div className="flex items-center gap-2">
+                                        <div className={cn("h-1.5 w-1.5 rounded-full", marker.status === 'En Route' ? 'bg-purple-500' : 'bg-orange-500')} />
+                                        <div className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{marker.status}</div>
+                                    </div>
+                                    {marker.status === 'En Route' && (
+                                        <div className="mt-2 pt-2 border-t border-white/5 flex items-center gap-2 text-[8px] font-black text-gray-600 italic">
+                                            <Navigation2 className="h-2 w-2" />
+                                            VECTEUR DE TRANSIT CALCULÉ
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

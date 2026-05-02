@@ -5,18 +5,24 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, ArrowRight, Activity, Sparkles } from 'lucide-react';
+import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, ArrowRight, Activity, Sparkles, Check, Play, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { motion } from 'framer-motion';
+import { format, subDays } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { updateOrderStatusAction } from '@/app/actions/order-actions';
+import { Order } from '@/lib/types';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 
 export default function RestaurateurHomePage() {
     const { restaurants, orders, isLoading: isDataLoading } = useData();
     const { user, loading: authLoading } = useAuth();
+    const { toast } = useToast();
+    const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
 
     const myRestaurants = React.useMemo(() => {
         if (!user) return [];
@@ -45,6 +51,58 @@ export default function RestaurateurHomePage() {
             latestOrders: myOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
         };
     }, [myOrders]);
+
+    const topItems = React.useMemo(() => {
+        const itemMap: { [key: string]: { name: string; count: number; revenue: number } } = {};
+        myOrders.filter(o => o.statut === 'Livrée').forEach(order => {
+            order.plats.forEach(item => {
+                if (!itemMap[item.id]) itemMap[item.id] = { name: item.nom, count: 0, revenue: 0 };
+                itemMap[item.id].count += item.quantite;
+                const price = item.prix + (item.accompagnementSelectionne?.prix || 0) + (item.boissonSelectionnee?.prix || 0);
+                itemMap[item.id].revenue += price * item.quantite;
+            });
+        });
+        return Object.values(itemMap).sort((a, b) => b.count - a.count).slice(0, 3);
+    }, [myOrders]);
+
+    const revenueTrend = React.useMemo(() => {
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const d = subDays(new Date(), i);
+            return format(d, 'yyyy-MM-dd');
+        }).reverse();
+
+        return last7Days.map(date => {
+            const dayOrders = myOrders.filter(o => o.date.startsWith(date) && o.statut === 'Livrée');
+            return {
+                date: format(new Date(date), 'dd/MM'),
+                revenue: dayOrders.reduce((sum, o) => sum + o.revenuNet, 0)
+            };
+        });
+    }, [myOrders]);
+
+    const handleStatusUpdate = async (order: Order, newStatus: Order['statut']) => {
+        setIsUpdating(order.id);
+        try {
+            await updateOrderStatusAction({
+                orderId: order.id,
+                status: newStatus,
+                orderData: order
+            });
+            toast({
+                title: "Statut Mis à Jour",
+                description: `La commande est maintenant: ${newStatus}`,
+            });
+        } catch (e) {
+            console.error(e);
+            toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Impossible de mettre à jour la commande.",
+            });
+        } finally {
+            setIsUpdating(null);
+        }
+    };
 
     if (isDataLoading || authLoading) {
         return (
@@ -172,67 +230,168 @@ export default function RestaurateurHomePage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Latest Orders */}
+                    {/* Latest Orders & Performance */}
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.6 }}
-                        className="lg:col-span-8 bg-white/70 backdrop-blur-xl border border-white p-0 overflow-hidden shadow-xl"
+                        className="lg:col-span-8 space-y-8"
                     >
-                        <div className="p-8 border-b border-slate-100 flex justify-between items-center">
-                            <div>
-                                <h3 className="text-lg font-black tracking-tight text-slate-900 uppercase">Dernières Commandes</h3>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Flux en temps réel</p>
-                            </div>
-                            <Button variant="ghost" size="sm" asChild className="text-[10px] font-black uppercase tracking-widest hover:text-orange-500">
-                                <Link href="/dashboard/orders">Tout voir <ArrowRight className="ml-2 h-3 w-3" /></Link>
-                            </Button>
-                        </div>
-                        <div className="p-0">
-                            {stats.latestOrders.length > 0 ? (
-                                <Table>
-                                    <TableHeader className="bg-slate-50/50">
-                                        <TableRow className="hover:bg-transparent border-none">
-                                            <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 pl-8">Client / Heure</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-widest">Statut</TableHead>
-                                            <TableHead className="text-right text-[10px] font-black uppercase tracking-widest py-4 pr-8">Montant</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {stats.latestOrders.map((order) => (
-                                            <TableRow key={order.id} className="group hover:bg-slate-50/30 border-slate-50 transition-colors">
-                                                <TableCell className="py-5 pl-8">
-                                                    <div className="font-bold text-slate-900 group-hover:text-orange-600 transition-colors">{order.nomRestaurant}</div>
-                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">
-                                                        {format(new Date(order.date), "dd MMM · HH:mm")}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge className={cn(
-                                                        "text-[9px] font-black uppercase tracking-widest rounded-none px-3 py-1 border-none",
-                                                        order.statut === 'Livrée' ? "bg-green-100 text-green-700" :
-                                                        order.statut === 'En Préparation' ? "bg-orange-100 text-orange-700" :
-                                                        "bg-slate-100 text-slate-600"
-                                                    )}>
-                                                        {order.statut}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right py-5 pr-8">
-                                                    <span className="font-black text-slate-900">{order.total.toLocaleString('fr-FR')}</span>
-                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">FCFA</span>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <div className="text-center py-20">
-                                    <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <ShoppingCart className="h-6 w-6 text-slate-300" />
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aucune commande pour le moment</p>
+                        {/* Table Card */}
+                        <div className="bg-white/70 backdrop-blur-xl border border-white p-0 overflow-hidden shadow-xl">
+                            <div className="p-8 border-b border-slate-100 flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-lg font-black tracking-tight text-slate-900 uppercase">Dernières Commandes</h3>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Flux en temps réel</p>
                                 </div>
-                            )}
+                                <Button variant="ghost" size="sm" asChild className="text-[10px] font-black uppercase tracking-widest hover:text-orange-500">
+                                    <Link href="/dashboard/orders">Tout voir <ArrowRight className="ml-2 h-3 w-3" /></Link>
+                                </Button>
+                            </div>
+                            <div className="p-0">
+                                {stats.latestOrders.length > 0 ? (
+                                    <Table>
+                                        <TableHeader className="bg-slate-50/50">
+                                            <TableRow className="hover:bg-transparent border-none">
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 pl-8">Client / Heure</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest">Statut</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Action</TableHead>
+                                                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest py-4 pr-8">Montant</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <AnimatePresence>
+                                                {stats.latestOrders.map((order) => (
+                                                    <TableRow key={order.id} className="group hover:bg-slate-50/30 border-slate-50 transition-colors">
+                                                        <TableCell className="py-5 pl-8">
+                                                            <div className="font-bold text-slate-900 group-hover:text-orange-600 transition-colors">{order.nomRestaurant}</div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">
+                                                                {format(new Date(order.date), "dd MMM · HH:mm")}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Badge className={cn(
+                                                                "text-[9px] font-black uppercase tracking-widest rounded-none px-3 py-1 border-none",
+                                                                order.statut === 'Livrée' ? "bg-green-100 text-green-700" :
+                                                                order.statut === 'En Préparation' ? "bg-orange-100 text-orange-700" :
+                                                                "bg-slate-100 text-slate-600"
+                                                            )}>
+                                                                {order.statut}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-center">
+                                                            <div className="flex justify-center gap-2">
+                                                                {order.statut === 'Placée' && (
+                                                                    <Button 
+                                                                        size="icon" 
+                                                                        variant="outline" 
+                                                                        className="h-8 w-8 rounded-none border-orange-500/20 text-orange-500 hover:bg-orange-500 hover:text-white transition-all"
+                                                                        onClick={() => handleStatusUpdate(order, 'En Préparation')}
+                                                                        disabled={isUpdating === order.id}
+                                                                    >
+                                                                        {isUpdating === order.id ? <Loader className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+                                                                    </Button>
+                                                                )}
+                                                                {order.statut === 'En Préparation' && (
+                                                                    <Button 
+                                                                        size="icon" 
+                                                                        variant="outline" 
+                                                                        className="h-8 w-8 rounded-none border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white transition-all"
+                                                                        onClick={() => handleStatusUpdate(order, 'Prête')}
+                                                                        disabled={isUpdating === order.id}
+                                                                    >
+                                                                        {isUpdating === order.id ? <Loader className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="text-right py-5 pr-8">
+                                                            <span className="font-black text-slate-900">{order.total.toLocaleString('fr-FR')}</span>
+                                                            <span className="text-[9px] font-bold text-slate-400 ml-1">FCFA</span>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </AnimatePresence>
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <div className="text-center py-20">
+                                        <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <ShoppingCart className="h-6 w-6 text-slate-300" />
+                                        </div>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aucune commande pour le moment</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Performance Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Revenue Trend Mini Chart */}
+                            <div className="bg-white/70 backdrop-blur-xl border border-white p-8 shadow-xl">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tendance Revenus</h4>
+                                        <p className="text-lg font-black italic text-slate-900">7 derniers jours</p>
+                                    </div>
+                                    <TrendingUp className="h-5 w-5 text-orange-500" />
+                                </div>
+                                <div className="h-[120px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={revenueTrend}>
+                                            <Tooltip 
+                                                cursor={{fill: 'rgba(0,0,0,0.02)'}}
+                                                content={({ active, payload }: { active?: boolean; payload?: Array<{ value?: number }> }) => {
+                                                    if (active && payload && payload.length) {
+                                                        return (
+                                                            <div className="bg-slate-900 text-white p-2 text-[10px] font-bold uppercase tracking-widest">
+                                                                {payload[0].value?.toLocaleString()} F
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                }}
+                                            />
+                                            <Bar dataKey="revenue" radius={[2, 2, 0, 0]}>
+                                                {revenueTrend.map((entry, index) => (
+                                                    <Cell 
+                                                        key={`cell-${index}`} 
+                                                        fill={index === revenueTrend.length - 1 ? '#f97316' : '#e2e8f0'} 
+                                                        className="hover:fill-orange-400 transition-colors"
+                                                    />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Top Selling Items */}
+                            <div className="bg-white/70 backdrop-blur-xl border border-white p-8 shadow-xl">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Best-Sellers</h4>
+                                        <p className="text-lg font-black italic text-slate-900">Top 3 Plats</p>
+                                    </div>
+                                    <Sparkles className="h-5 w-5 text-orange-500" />
+                                </div>
+                                <div className="space-y-4">
+                                    {topItems.map((item, idx) => (
+                                        <div key={idx} className="flex items-center justify-between group">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] font-black text-orange-500 bg-orange-50 w-5 h-5 flex items-center justify-center">0{idx+1}</span>
+                                                <span className="text-xs font-bold text-slate-700 group-hover:text-orange-600 transition-colors uppercase tracking-tight">{item.name}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] font-black text-slate-900">{item.count} <span className="text-slate-400">Ventes</span></p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {topItems.length === 0 && (
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest py-4">En attente de données...</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
 
@@ -252,11 +411,16 @@ export default function RestaurateurHomePage() {
                                 <Activity className="h-6 w-6 text-white" />
                             </div>
                             <h3 className="text-2xl font-black tracking-tight text-white italic leading-tight">
-                                Intelligence <span className="text-orange-500 block">Créative Yakro</span>
+                                Intelligence <span className="text-orange-500 block">Stratégique Yakro</span>
                             </h3>
-                            <p className="text-white/50 text-xs font-bold uppercase tracking-widest mt-4 leading-relaxed">
-                                Laissez notre IA générer vos menus, descriptions et prix optimisés.
-                            </p>
+                            <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-none relative">
+                                <p className="text-orange-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Conseil du Jour</p>
+                                <p className="text-white/70 text-[11px] font-bold italic leading-relaxed">
+                                    {topItems.length > 0 
+                                        ? `Votre "${topItems[0].name}" performe exceptionnellement. Créez un pack "Elite" incluant ce plat pour booster vos ventes de 15%.`
+                                        : "Analysez vos ventes pour identifier votre plat signature et optimiser votre rentabilité."}
+                                </p>
+                            </div>
                         </div>
 
                         <div className="mt-12 relative z-10">

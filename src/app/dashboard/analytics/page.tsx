@@ -5,12 +5,17 @@ import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
 import { DollarSign, ShoppingCart, TrendingUp, BarChart3, PieChart, Activity } from 'lucide-react';
 import { 
-    isWithinInterval, 
-    startOfDay, 
-    startOfWeek, 
     startOfMonth, 
     startOfYear, 
-    endOfDay 
+    startOfDay,
+    startOfWeek,
+    endOfDay,
+    subDays,
+    subWeeks,
+    subMonths,
+    subYears,
+    isWithinInterval,
+    format
 } from 'date-fns';
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
@@ -39,69 +44,100 @@ export default function AnalyticsPage() {
         return restaurants.filter(r => r.proprietaireId === user.uid).map(r => r.id);
     }, [restaurants, activeRole, user]);
 
-    const filteredOrders = React.useMemo(() => {
-        if (myRestaurantIds.length === 0) return [];
+    const analyticsData = React.useMemo(() => {
+        if (myRestaurantIds.length === 0) return { current: [], previous: [] };
         
         const baseOrders = orders.filter(o => myRestaurantIds.includes(o.restaurantId) && o.statut === 'Livrée');
         
-        if (selectedRange === 'all') return baseOrders;
+        if (selectedRange === 'all') return { current: baseOrders, previous: [] };
 
         const now = new Date();
-        let startDate: Date;
+        let currentStart: Date;
+        let previousStart: Date;
+        let previousEnd: Date;
 
         switch (selectedRange) {
             case 'today':
-                startDate = startOfDay(now);
+                currentStart = startOfDay(now);
+                previousStart = startOfDay(subDays(now, 1));
+                previousEnd = endOfDay(subDays(now, 1));
                 break;
             case 'week':
-                startDate = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+                currentStart = startOfWeek(now, { weekStartsOn: 1 });
+                previousStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+                previousEnd = endOfDay(subDays(currentStart, 1));
                 break;
             case 'month':
-                startDate = startOfMonth(now);
+                currentStart = startOfMonth(now);
+                previousStart = startOfMonth(subMonths(now, 1));
+                previousEnd = endOfDay(subDays(currentStart, 1));
                 break;
             case 'year':
-                startDate = startOfYear(now);
+                currentStart = startOfYear(now);
+                previousStart = startOfYear(subYears(now, 1));
+                previousEnd = endOfDay(subDays(currentStart, 1));
                 break;
             default:
-                return baseOrders;
+                return { current: baseOrders, previous: [] };
         }
 
-        return baseOrders.filter(order => {
-            const orderDate = new Date(order.date);
-            return isWithinInterval(orderDate, { start: startDate, end: endOfDay(now) });
+        const current = baseOrders.filter(order => {
+            const date = new Date(order.date);
+            return isWithinInterval(date, { start: currentStart, end: now });
         });
+
+        const previous = baseOrders.filter(order => {
+            const date = new Date(order.date);
+            return isWithinInterval(date, { start: previousStart, end: previousEnd });
+        });
+
+        return { current, previous };
     }, [orders, myRestaurantIds, selectedRange]);
 
     const stats = React.useMemo(() => {
-        const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.revenuNet, 0);
-        const totalOrders = filteredOrders.length;
-        const averageOrderValue = totalOrders > 0 ? filteredOrders.reduce((sum, order) => sum + order.total, 0) / totalOrders : 0;
+        const calculateStats = (orderList: typeof orders) => {
+            const revenue = orderList.reduce((sum, order) => sum + order.revenuNet, 0);
+            const count = orderList.length;
+            const avg = count > 0 ? orderList.reduce((sum, order) => sum + order.total, 0) / count : 0;
+            return { revenue, count, avg };
+        };
+
+        const current = calculateStats(analyticsData.current);
+        const previous = calculateStats(analyticsData.previous);
+
+        const calculateGrowth = (curr: number, prev: number) => {
+            if (prev === 0) return curr > 0 ? 100 : 0;
+            return ((curr - prev) / prev) * 100;
+        };
 
         return {
-            totalRevenue,
-            totalOrders,
-            averageOrderValue
+            totalRevenue: current.revenue,
+            totalOrders: current.count,
+            averageOrderValue: current.avg,
+            revenueGrowth: calculateGrowth(current.revenue, previous.revenue),
+            ordersGrowth: calculateGrowth(current.count, previous.count),
+            avgGrowth: calculateGrowth(current.avg, previous.avg)
         };
-    }, [filteredOrders]);
+    }, [analyticsData]);
     
     const revenueByRestaurant = React.useMemo(() => {
         const data = restaurants
           .filter(r => myRestaurantIds.includes(r.id))
           .map(restaurant => {
-            const restaurantOrders = filteredOrders.filter(o => o.restaurantId === restaurant.id);
+            const restaurantOrders = analyticsData.current.filter(o => o.restaurantId === restaurant.id);
             const revenue = restaurantOrders.reduce((sum, order) => sum + order.revenuNet, 0);
             return {
                 name: restaurant.nom.length > 12 ? restaurant.nom.substring(0, 12) + '...' : restaurant.nom,
                 revenue
             };
         });
-        return data.filter(d => d.revenue > 0);
-    }, [filteredOrders, restaurants, myRestaurantIds]);
+        return data.filter(d => d.revenue > 0).sort((a, b) => b.revenue - a.revenue);
+    }, [analyticsData, restaurants, myRestaurantIds]);
 
     const topSellingItems = React.useMemo(() => {
         const itemMap: { [key: string]: { name: string; count: number; revenue: number } } = {};
 
-        filteredOrders.forEach(order => {
+        analyticsData.current.forEach(order => {
             order.plats.forEach(item => {
                 if (!itemMap[item.id]) {
                     itemMap[item.id] = { name: item.nom, count: 0, revenue: 0 };
@@ -115,7 +151,63 @@ export default function AnalyticsPage() {
         return Object.values(itemMap)
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);
-    }, [filteredOrders]);
+    }, [analyticsData]);
+    
+    const revenueTrend = React.useMemo(() => {
+        const now = new Date();
+        let days: number;
+
+        switch (selectedRange) {
+            case 'today': days = 1; break;
+            case 'week': days = 7; break;
+            case 'month': days = 30; break;
+            case 'year': days = 12; break;
+            case 'all': days = 6; break; // Show last 6 months for "All"
+            default: return [];
+        }
+
+        const data = [];
+        for (let i = 0; i < days; i++) {
+            let d: Date;
+            let label: string;
+
+            if (selectedRange === 'year' || selectedRange === 'all') {
+                d = startOfMonth(subMonths(now, (days - 1) - i));
+                label = format(d, 'MMM');
+            } else {
+                d = subDays(now, (days - 1) - i);
+                label = format(d, 'dd/MM');
+            }
+
+            const currentStart = startOfDay(d);
+            const currentEnd = endOfDay(d);
+            
+            let prevD: Date;
+            if (selectedRange === 'week') prevD = subWeeks(d, 1);
+            else if (selectedRange === 'month') prevD = subMonths(d, 1);
+            else if (selectedRange === 'year' || selectedRange === 'all') prevD = subYears(d, 1);
+            else prevD = subDays(d, 1);
+
+            const prevStart = startOfDay(prevD);
+            const prevEnd = endOfDay(prevD);
+
+            const currentRevenue = analyticsData.current
+                .filter(o => isWithinInterval(new Date(o.date), { start: currentStart, end: currentEnd }))
+                .reduce((sum, o) => sum + o.revenuNet, 0);
+
+            const previousRevenue = analyticsData.previous
+                .filter(o => isWithinInterval(new Date(o.date), { start: prevStart, end: prevEnd }))
+                .reduce((sum, o) => sum + o.revenuNet, 0);
+
+            data.push({
+                name: label,
+                current: currentRevenue,
+                previous: previousRevenue
+            });
+        }
+
+        return data;
+    }, [selectedRange, analyticsData]);
     
     const ranges: { id: TimeRange; label: string }[] = [
         { id: 'today', label: "Aujourd'hui" },
@@ -209,9 +301,9 @@ export default function AnalyticsPage() {
                         {/* Key Metrics Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[
-                                { label: 'Revenu Net', value: stats.totalRevenue, sub: 'Après commission Yakro Go', icon: DollarSign, color: 'orange' },
-                                { label: 'Flux de Commandes', value: stats.totalOrders, sub: 'Activité sur la période', icon: ShoppingCart, color: 'white', unit: 'ITEMS' },
-                                { label: 'Valeur de Signature', value: stats.averageOrderValue, sub: 'Panier moyen brut', icon: TrendingUp, color: 'white' }
+                                { label: 'Revenu Net', value: stats.totalRevenue, growth: stats.revenueGrowth, sub: 'Après commission Yakro Go', icon: DollarSign, color: 'orange' },
+                                { label: 'Flux de Commandes', value: stats.totalOrders, growth: stats.ordersGrowth, sub: 'Activité sur la période', icon: ShoppingCart, color: 'white', unit: 'ITEMS' },
+                                { label: 'Valeur de Signature', value: stats.averageOrderValue, growth: stats.avgGrowth, sub: 'Panier moyen brut', icon: TrendingUp, color: 'white' }
                             ].map((item, idx) => (
                                 <div 
                                     key={idx} 
@@ -219,7 +311,19 @@ export default function AnalyticsPage() {
                                 >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="flex justify-between items-start mb-6">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-orange-500 transition-colors">{item.label}</span>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 group-hover:text-orange-500 transition-colors">{item.label}</span>
+                                            {selectedRange !== 'all' && (
+                                                <div className={cn(
+                                                    "flex items-center gap-1 text-[10px] font-bold",
+                                                    item.growth >= 0 ? "text-emerald-500" : "text-rose-500"
+                                                )}>
+                                                    {item.growth >= 0 ? <TrendingUp className="h-3 w-3" /> : <Activity className="h-3 w-3 rotate-180" />}
+                                                    <span>{Math.abs(item.growth).toFixed(1)}%</span>
+                                                    <span className="text-white/20 ml-1">vs période précédente</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className={`p-3 bg-white/5 rounded-2xl border border-white/10 group-hover:border-orange-500/20 group-hover:bg-orange-500/10 transition-all`}>
                                             <item.icon className={`h-5 w-5 ${item.color === 'orange' ? 'text-orange-500' : 'text-white/40 group-hover:text-orange-500'}`} />
                                         </div>
@@ -242,25 +346,44 @@ export default function AnalyticsPage() {
                         
                         {/* Detailed Analytics Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                            {/* Revenue Chart */}
-                            <div className="lg:col-span-7 bg-[#121214]/60 backdrop-blur-xl border border-white/5 p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
-                                <div className="flex items-center justify-between mb-10">
+                            {/* Revenue Trend Chart - Full Width */}
+                            <div className="lg:col-span-12 bg-[#121214]/60 backdrop-blur-xl border border-white/5 p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Domination Territoriale</h2>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">Revenu net par établissement</p>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Évolution de l&apos;Empire</h2>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">Revenu net actuel vs période précédente</p>
                                     </div>
-                                    <div className="p-3 bg-white/5 rounded-2xl">
-                                        <BarChart3 className="h-6 w-6 text-orange-500" />
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Actuel</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-white/10" />
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Précédent</span>
+                                        </div>
+                                        <div className="p-3 bg-white/5 rounded-2xl">
+                                            <Activity className="h-6 w-6 text-orange-500" />
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div className="h-[400px] w-full">
-                                    {revenueByRestaurant.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                                                <XAxis 
+                                <div className="h-[350px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={revenueTrend} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
+                                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.1}/>
+                                                </linearGradient>
+                                                <linearGradient id="colorPrevious" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="rgba(255,255,255,0.1)" stopOpacity={0.8}/>
+                                                    <stop offset="95%" stopColor="rgba(255,255,255,0.1)" stopOpacity={0}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis 
                                                     dataKey="name" 
-                                                    stroke="rgba(255,255,255,0.2)" 
+                                                    stroke="rgba(255,255,255,0.1)" 
                                                     fontSize={10}
                                                     fontWeight="900"
                                                     axisLine={false}
@@ -268,7 +391,7 @@ export default function AnalyticsPage() {
                                                     dy={15}
                                                 />
                                                 <YAxis 
-                                                    stroke="rgba(255,255,255,0.2)" 
+                                                    stroke="rgba(255,255,255,0.1)" 
                                                     fontSize={10}
                                                     fontWeight="900"
                                                     axisLine={false}
@@ -276,11 +399,90 @@ export default function AnalyticsPage() {
                                                     tickFormatter={(value) => `${(value as number)/1000}k`} 
                                                 />
                                                 <Tooltip
-                                                    cursor={{fill: 'rgba(255,255,255,0.03)'}}
+                                                    cursor={{fill: 'rgba(255,255,255,0.02)'}}
+                                                    content={({ active, payload }) => {
+                                                      if (active && payload && payload.length) {
+                                                        const curr = payload.find(p => p.dataKey === 'current')?.value as number || 0;
+                                                        const prev = payload.find(p => p.dataKey === 'previous')?.value as number || 0;
+                                                        const growth = prev !== 0 ? ((curr - prev) / prev) * 100 : 0;
+
+                                                        return (
+                                                          <div className="bg-[#0A0A0B] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-xl space-y-3">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">{payload[0].payload.name}</p>
+                                                            <div className="space-y-1">
+                                                                <p className="text-2xl font-black italic tracking-tighter text-white">{curr.toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
+                                                                <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Précédent: {prev.toLocaleString('fr-FR')} F</p>
+                                                            </div>
+                                                            {prev > 0 && (
+                                                                <div className={cn(
+                                                                    "inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter",
+                                                                    growth >= 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                                                                )}>
+                                                                    {growth >= 0 ? '▲' : '▼'} {Math.abs(growth).toFixed(1)}%
+                                                                </div>
+                                                            )}
+                                                          </div>
+                                                        )
+                                                      }
+                                                      return null
+                                                    }}
+                                                />
+                                            <Bar dataKey="previous" fill="url(#colorPrevious)" radius={[4, 4, 0, 0]} barSize={20} />
+                                            <Bar dataKey="current" fill="url(#colorCurrent)" radius={[4, 4, 0, 0]} barSize={20} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Revenue by Restaurant */}
+                            <div className="lg:col-span-7 bg-[#121214]/60 backdrop-blur-xl border border-white/5 p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                                <div className="flex items-center justify-between mb-10">
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Répartition Elite</h2>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">Revenu net par établissement</p>
+                                    </div>
+                                    <div className="p-3 bg-white/5 rounded-2xl">
+                                        <BarChart3 className="h-6 w-6 text-orange-500" />
+                                    </div>
+                                </div>
+                                
+                                <div className="h-[350px] w-full">
+                                    {revenueByRestaurant.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.9}/>
+                                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.3}/>
+                                                </linearGradient>
+                                                <linearGradient id="colorEmpty" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="rgba(255,255,255,0.1)" stopOpacity={0.5}/>
+                                                    <stop offset="95%" stopColor="rgba(255,255,255,0.05)" stopOpacity={0.1}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis 
+                                                    dataKey="name" 
+                                                    stroke="rgba(255,255,255,0.1)" 
+                                                    fontSize={10}
+                                                    fontWeight="900"
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    dy={15}
+                                                />
+                                                <YAxis 
+                                                    stroke="rgba(255,255,255,0.1)" 
+                                                    fontSize={10}
+                                                    fontWeight="900"
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    tickFormatter={(value) => `${(value as number)/1000}k`} 
+                                                />
+                                                <Tooltip
+                                                    cursor={{fill: 'rgba(255,255,255,0.02)'}}
                                                     content={({ active, payload }) => {
                                                       if (active && payload && payload.length) {
                                                         return (
-                                                          <div className="bg-[#121214] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-xl">
+                                                          <div className="bg-[#0A0A0B] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-xl">
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2">{payload[0].payload.name}</p>
                                                             <p className="text-3xl font-black italic tracking-tighter text-white">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
                                                           </div>
@@ -289,12 +491,12 @@ export default function AnalyticsPage() {
                                                       return null
                                                     }}
                                                 />
-                                                <Bar dataKey="revenue" radius={[6, 6, 0, 0]} barSize={45}>
+                                                <Bar dataKey="revenue" radius={[12, 12, 0, 0]} barSize={50} animationDuration={1500}>
                                                     {revenueByRestaurant.map((entry, index) => (
                                                         <Cell 
                                                             key={`cell-${index}`} 
-                                                            fill={index === 0 ? '#f97316' : 'rgba(255,255,255,0.1)'} 
-                                                            className="transition-all duration-500 hover:fill-orange-500"
+                                                            fill={index === 0 ? 'url(#colorRevenue)' : 'url(#colorEmpty)'} 
+                                                            className="transition-all duration-500 cursor-pointer hover:opacity-80"
                                                         />
                                                     ))}
                                                 </Bar>
@@ -315,17 +517,17 @@ export default function AnalyticsPage() {
                             <div className="lg:col-span-5 bg-[#121214]/60 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Palmarès d&apos;Élite</h2>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">Top 5 des créations les plus prisées</p>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Palmarès de Signature</h2>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">Les 5 créations les plus dominantes</p>
                                     </div>
                                     <div className="p-3 bg-white/5 rounded-2xl">
                                         <PieChart className="h-6 w-6 text-orange-500" />
                                     </div>
                                 </div>
-
-                                {topSellingItems.length > 0 ? (
-                                    <div className="space-y-8">
-                                        {topSellingItems.map((item, index) => (
+                                
+                                <div className="space-y-8">
+                                    {topSellingItems.length > 0 ? (
+                                        topSellingItems.map((item, index) => (
                                             <div key={item.name} className="group relative flex items-center justify-between py-2">
                                                 <div className="flex items-center gap-5">
                                                     <span className="text-lg font-black italic text-white/10 group-hover:text-orange-500 transition-colors w-6">0{index + 1}</span>
@@ -346,22 +548,22 @@ export default function AnalyticsPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="h-[300px] flex items-center justify-center text-center">
-                                        <div className="space-y-4">
-                                            <PieChart className="h-16 w-16 text-white/10 mx-auto" />
-                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Aucune commande sur cette période</p>
+                                        ))
+                                    ) : (
+                                        <div className="h-[250px] flex items-center justify-center text-center">
+                                            <div className="space-y-4">
+                                                <PieChart className="h-16 w-16 text-white/10 mx-auto" />
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">En attente de commandes...</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                                 
                                 <div className="mt-12 p-8 bg-white/5 border border-white/5 rounded-[2rem] relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700" />
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 mb-3">Conseil de l&apos;Expert</h4>
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 mb-3">Vision Stratégique</h4>
                                     <p className="text-xs font-bold text-white/60 leading-relaxed italic relative z-10">
-                                        &ldquo;Votre plat signature génère {stats.totalRevenue > 0 ? ((topSellingItems[0]?.revenue / stats.totalRevenue) * 100).toFixed(1) : 0}% de votre revenu net. Envisagez de créer une déclinaison <span className="text-white">Premium</span> pour maximiser vos marges.&rdquo;
+                                        &ldquo;Votre plat signature génère {stats.totalRevenue > 0 ? ((topSellingItems[0]?.revenue / stats.totalRevenue) * 100).toFixed(1) : 0}% de votre revenu net. Une optimisation de marge sur ce produit impacterait drastiquement votre rentabilité globale.&rdquo;
                                     </p>
                                 </div>
                             </div>

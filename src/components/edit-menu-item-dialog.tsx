@@ -20,6 +20,8 @@ import { useFirebase } from '@/contexts/firebase-provider';
 import { doc, updateDoc } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { logAdminAction } from '@/lib/audit-logs';
+import { useAuth } from '@/contexts/auth-context';
 
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -56,6 +58,7 @@ interface EditMenuItemDialogProps {
 
 export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDialogProps) {
   const { db } = useFirebase();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -113,6 +116,17 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
         title: 'Plat mis à jour',
         description: 'Les modifications ont été enregistrées.',
       });
+
+      if (user) {
+        await logAdminAction(db, {
+          adminId: user.uid,
+          adminEmail: user.email || 'unknown',
+          action: 'UPDATE_MENU_ITEM',
+          targetId: menuItem.id,
+          details: `Mise à jour du plat "${menuItem.nom}"`
+        });
+      }
+
       onClose();
     } catch {
       toast({

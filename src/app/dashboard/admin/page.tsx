@@ -11,12 +11,13 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 import Link from 'next/link';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, Timestamp } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { AddUserDialog } from '@/components/add-user-dialog';
 import { useData } from '@/contexts/data-context';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 import { SupervisionModule } from '@/components/supervision-module';
 import { RestaurantManager } from '@/components/restaurant-manager';
@@ -27,7 +28,7 @@ import { intelligentSearchAction } from '@/app/actions/ai-actions';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { logAdminAction } from '@/lib/audit-logs';
+import { logAdminAction, type AuditLogEntry } from '@/lib/audit-logs';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
@@ -46,6 +47,9 @@ export default function AdminPage() {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [searchResult, setSearchResult] = React.useState<{ category: string; keywords: string[] } | null>(null);
     const [isSearching, setIsSearching] = React.useState(false);
+    const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
+    const [logSearchQuery, setLogSearchQuery] = React.useState('');
+    const [logDisplayLimit, setLogDisplayLimit] = React.useState(50);
 
     React.useEffect(() => {
         if (authLoading) return;
@@ -61,7 +65,7 @@ export default function AdminPage() {
         if (userProfile?.roleSysteme === 'SuperAdmin') {
             setDataLoading(true);
             const usersCollectionRef = query(collection(db, 'utilisateurs'));
-            const unsubscribe = onSnapshot(usersCollectionRef,
+            const unsubscribeUsers = onSnapshot(usersCollectionRef,
                 (snapshot) => {
                     const users = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
                     setAllUsers(users);
@@ -71,7 +75,21 @@ export default function AdminPage() {
                     setDataLoading(false);
                 }
             );
-            return () => unsubscribe();
+
+            const auditLogsRef = query(collection(db, 'audit_logs'));
+            const unsubscribeLogs = onSnapshot(auditLogsRef, (snapshot) => {
+                const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLogEntry));
+                setAuditLogs(logs.sort((a, b) => {
+                    const timeA = (a.timestamp as Timestamp)?.seconds || 0;
+                    const timeB = (b.timestamp as Timestamp)?.seconds || 0;
+                    return timeB - timeA;
+                }));
+            });
+
+            return () => {
+                unsubscribeUsers();
+                unsubscribeLogs();
+            };
         } else {
             setDataLoading(!userProfile);
         }
@@ -117,6 +135,17 @@ export default function AdminPage() {
         if (parts.length > 1 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
         return name.substring(0, 2).toUpperCase();
     }
+
+    const filteredLogs = React.useMemo(() => {
+        return auditLogs.filter(log => {
+            const searchStr = `${log.adminEmail} ${log.action} ${log.details}`.toLowerCase();
+            return searchStr.includes(logSearchQuery.toLowerCase());
+        });
+    }, [auditLogs, logSearchQuery]);
+
+    const displayedLogs = React.useMemo(() => {
+        return filteredLogs.slice(0, logDisplayLimit);
+    }, [filteredLogs, logDisplayLimit]);
 
     const latestUsers = React.useMemo(() => {
         if (!allUsers) return [];
@@ -256,6 +285,7 @@ export default function AdminPage() {
                                     { id: 'restaurants', icon: Store, label: 'Établissements' },
                                     { id: 'users', icon: Users, label: 'Utilisateurs' },
                                     { id: 'finances', icon: TrendingUp, label: 'Flux Financiers' },
+                                    { id: 'security', icon: ShieldAlert, label: 'Sécurité' },
                                     { id: 'reports', icon: FileText, label: 'Archives' },
                                     { id: 'ai', icon: Zap, label: 'Yakro AI' }
                                 ].map(tab => (
@@ -278,6 +308,73 @@ export default function AdminPage() {
                                 <TabsContent value="live" className="m-0 outline-none"><SupervisionModule /></TabsContent>
                                 <TabsContent value="restaurants" className="m-0 outline-none"><RestaurantManager /></TabsContent>
                                 <TabsContent value="finances" className="m-0 outline-none"><FinancialAnalytics /></TabsContent>
+                                <TabsContent value="security" className="m-0 outline-none">
+                                    <div className="bg-[#121214]/60 backdrop-blur-md border border-white/5 p-8">
+                                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                                            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Journal d&apos;Audit <span className="text-orange-500">Sécurisé</span></h2>
+                                            <div className="flex items-center gap-4 w-full md:w-auto">
+                                                <Input 
+                                                    value={logSearchQuery}
+                                                    onChange={(e) => setLogSearchQuery(e.target.value)}
+                                                    placeholder="FILTRER LES ACTIONS..."
+                                                    className="h-10 bg-white/5 border-white/10 rounded-none text-[10px] font-black uppercase tracking-widest min-w-[250px]"
+                                                />
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-orange-500/50 hidden lg:block">PROTCOLE DE TRAÇABILITÉ ACTIF</div>
+                                            </div>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <Table>
+                                                <TableHeader className="border-white/5">
+                                                    <TableRow className="hover:bg-transparent border-white/5">
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Horodatage</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Administrateur</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Action</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Cible</TableHead>
+                                                        <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Détails</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {displayedLogs.map((log) => (
+                                                        <TableRow key={log.id} className="border-white/5 hover:bg-white/5 transition-colors group">
+                                                            <TableCell className="py-6 text-[11px] font-mono text-gray-500">
+                                                                {(log.timestamp as Timestamp)?.toDate ? (log.timestamp as Timestamp).toDate().toLocaleString() : 'RECORDER...'}
+                                                            </TableCell>
+                                                            <TableCell className="py-6">
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-black text-xs text-white uppercase italic tracking-tight">{log.adminEmail}</span>
+                                                                    <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">ID: {log.adminId.substring(0, 8)}...</span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="py-6">
+                                                                <Badge variant="outline" className="rounded-none border-orange-500/30 text-orange-500 bg-orange-500/5 text-[9px] font-black uppercase tracking-widest py-1 px-2">
+                                                                    {log.action}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="py-6 text-[11px] font-bold text-gray-400">
+                                                                {log.targetId}
+                                                            </TableCell>
+                                                            <TableCell className="py-6 text-[11px] text-gray-500">
+                                                                {log.details}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                        
+                                        {filteredLogs.length > logDisplayLimit && (
+                                            <div className="mt-8 flex justify-center">
+                                                <Button 
+                                                    onClick={() => setLogDisplayLimit(prev => prev + 50)}
+                                                    variant="outline"
+                                                    className="rounded-none border-white/10 hover:bg-orange-500 hover:text-white font-black italic uppercase tracking-widest text-[10px]"
+                                                >
+                                                    Charger plus de journaux
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </TabsContent>
                                 <TabsContent value="reports" className="m-0 outline-none"><ReportCenter /></TabsContent>
                                 
                                 <TabsContent value="users" className="m-0 outline-none">

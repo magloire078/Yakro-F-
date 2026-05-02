@@ -8,14 +8,11 @@ import type { Order, StockItem } from './types';
  * @param order La commande livrée
  */
 export async function decrementStockForOrder(db: Firestore, order: Order) {
-    console.log(`[STOCK] Début de la déduction pour la commande ${order.id} (${order.nomRestaurant})`);
-    
     // On regroupe tous les ingrédients à déduire pour éviter les écritures multiples sur le même item
     const deductions: { [stockItemId: string]: { nom: string, quantite: number } } = {};
 
     for (const plat of order.plats) {
         if (plat.ingredients && plat.ingredients.length > 0) {
-            console.log(`[STOCK] Traitement du plat: ${plat.nom} (x${plat.quantite})`);
             for (const ingredient of plat.ingredients) {
                 const totalQuantiteADeduire = ingredient.quantite * plat.quantite;
                 if (!deductions[ingredient.stockItemId]) {
@@ -23,36 +20,29 @@ export async function decrementStockForOrder(db: Firestore, order: Order) {
                 }
                 deductions[ingredient.stockItemId].quantite += totalQuantiteADeduire;
             }
-        } else {
-            console.log(`[STOCK] Le plat ${plat.nom} n'a pas d'ingrédients configurés.`);
         }
     }
 
     const stockItemIds = Object.keys(deductions);
     if (stockItemIds.length === 0) {
-        console.log("[STOCK] Aucun ingrédient à déduire pour cette commande.");
         return;
     }
 
     const batch = writeBatch(db);
     const now = new Date().toISOString();
 
-    console.log(`[STOCK] Préparation du batch pour ${stockItemIds.length} articles de stock.`);
-
     for (const stockItemId of stockItemIds) {
         const stockRef = doc(db, 'stocks', stockItemId);
-        const { nom, quantite } = deductions[stockItemId];
+        const { quantite } = deductions[stockItemId];
         
         batch.update(stockRef, {
             quantite: increment(-quantite),
             derniereMiseAJour: now
         });
-        console.log(`[STOCK] Prévu: Déduction de ${quantite} pour ${nom} (ID: ${stockItemId})`);
     }
 
     try {
         await batch.commit();
-        console.log(`[STOCK] Succès: Tous les stocks ont été mis à jour pour la commande ${order.id}`);
     } catch (error) {
         console.error(`[STOCK] ERREUR CRITIQUE lors du commit du batch:`, error);
         throw error; // On propage pour que l'appelant (server action) soit au courant

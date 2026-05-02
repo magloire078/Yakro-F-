@@ -37,6 +37,7 @@ export interface Restaurant {
   indiceImage: string;
   adresse?: string;
   enVedette?: boolean;
+  suspendu?: boolean;
   latitude?: number;
   longitude?: number;
 }

@@ -1,19 +1,30 @@
-import { Firestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Firestore, collection, addDoc, serverTimestamp, Timestamp, FieldValue } from 'firebase/firestore';
 
 export type AdminAction = 
     | 'SUSPEND_RESTAURANT' 
     | 'ACTIVATE_RESTAURANT' 
     | 'FEATURE_RESTAURANT' 
     | 'UNFEATURE_RESTAURANT'
+    | 'UPDATE_RESTAURANT'
+    | 'UPDATE_MENU_ITEM'
     | 'CHANGE_USER_ROLE'
-    | 'DELETE_USER';
+    | 'UPDATE_USER'
+    | 'DELETE_USER'
+    | 'LOGIN_FAILURE'
+    | 'SYSTEM_CONFIG_CHANGE';
 
-interface AuditLogData {
+export interface AuditLogData {
     adminId: string;
     adminEmail: string;
     action: AdminAction;
     targetId: string;
     details: string;
+    metadata?: Record<string, unknown>;
+}
+
+export interface AuditLogEntry extends AuditLogData {
+    id: string;
+    timestamp: Timestamp | FieldValue;
 }
 
 /**

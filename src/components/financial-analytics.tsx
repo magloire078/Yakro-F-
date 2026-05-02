@@ -8,6 +8,8 @@ import { useData } from '@/contexts/data-context';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { format, subDays, isSameDay } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface CustomTooltipProps {
     active?: boolean;
@@ -40,13 +42,17 @@ export function FinancialAnalytics() {
     }, [orders]);
 
     const chartData = React.useMemo(() => {
-        const days = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
-        return days.map((day) => ({
-            name: day,
-            revenue: Math.floor(stats.totalCommission / 7) * (1 + Math.random() * 0.5),
-            sales: Math.floor(stats.totalSales / 7) * (1 + Math.random() * 0.5)
-        }));
-    }, [stats]);
+        return Array.from({ length: 7 }).map((_, i) => {
+            const date = subDays(new Date(), 6 - i);
+            const dayOrders = orders.filter(o => isSameDay(new Date(o.date), date));
+            
+            return {
+                name: format(date, 'EEE', { locale: fr }).toUpperCase(),
+                revenue: dayOrders.reduce((acc, o) => acc + (o.montantCommission || 0), 0),
+                sales: dayOrders.reduce((acc, o) => acc + (o.total || 0), 0)
+            };
+        });
+    }, [orders]);
 
     return (
         <div className="space-y-10">
