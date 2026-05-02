@@ -174,7 +174,7 @@ export default function StockPage() {
             </div>
 
             {/* Elite Stock Header */}
-            <div className="relative h-[45vh] w-full overflow-hidden flex items-center justify-center pt-16">
+            <div className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop"
@@ -185,9 +185,14 @@ export default function StockPage() {
                     <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0B]/0 via-[#0A0A0B]/80 to-[#0A0A0B] z-10" />
                 </div>
                 
-                <MobileBackButton />
+                {/* Mobile Back Button — pattern my-restaurants */}
+                <MobileBackButton 
+                    label="Dashboard" 
+                    href="/dashboard" 
+                    className="md:hidden absolute top-6 left-4 z-50 mb-0"
+                />
 
-                <div className="relative z-30 text-center space-y-6 px-6 max-w-4xl">
+                <div className="relative z-30 text-center space-y-6 px-6 max-w-4xl pt-10 md:pt-0">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}

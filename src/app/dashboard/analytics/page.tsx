@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Elite Analytics Header */}
-            <div className="relative h-[45vh] w-full overflow-hidden flex items-center justify-center pt-16">
+            <div className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="https://images.unsplash.com/photo-1551288049-bbbda5366991?q=80&w=2070&auto=format&fit=crop"
@@ -237,9 +237,14 @@ export default function AnalyticsPage() {
                     <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0B]/0 via-[#0A0A0B]/80 to-[#0A0A0B] z-10" />
                 </div>
                 
-                <MobileBackButton />
+                {/* Mobile Back Button — pattern my-restaurants */}
+                <MobileBackButton 
+                    label="Dashboard" 
+                    href="/dashboard" 
+                    className="md:hidden absolute top-6 left-4 z-50 mb-0"
+                />
 
-                <div className="relative z-30 text-center space-y-6 px-6 max-w-4xl">
+                <div className="relative z-30 text-center space-y-4 px-6 max-w-4xl pt-10 md:pt-0">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -252,7 +257,7 @@ export default function AnalyticsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-6xl md:text-8xl font-black italic tracking-tighter text-white leading-[0.8]"
+                        className="text-5xl md:text-8xl font-black italic tracking-tighter text-white leading-[0.85] uppercase"
                     >
                         Analyse <span className="text-orange-500">Elite</span>
                     </motion.h1>
@@ -260,16 +265,16 @@ export default function AnalyticsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-white/60 font-medium max-w-xl mx-auto text-sm md:text-lg leading-relaxed"
+                        className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] md:text-xs italic"
                     >
-                        Pilotez votre performance avec une clarté absolue et une précision chirurgicale.
+                        Pilotez votre performance avec précision chirurgicale
                     </motion.p>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 max-w-7xl -mt-16 relative z-40 space-y-12">
-                {/* Time Range Selector */}
-                <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8 bg-[#121214]/60 backdrop-blur-xl border border-white/5 p-3 rounded-[2rem] shadow-2xl inline-flex mx-auto">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl -mt-12 md:-mt-16 relative z-40 space-y-10 md:space-y-12">
+                {/* Time Range Selector — sticky scrollable on mobile like menu categories */}
+                <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 py-4 mb-4 flex overflow-x-auto gap-3 no-scrollbar scroll-smooth snap-x bg-[#0A0A0B]/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
                     {ranges.map((range, idx) => (
                         <motion.button
                             key={range.id}
@@ -278,10 +283,10 @@ export default function AnalyticsPage() {
                             transition={{ delay: 0.3 + idx * 0.05 }}
                             onClick={() => setSelectedRange(range.id)}
                             className={cn(
-                                "relative px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+                                "flex-none snap-start px-5 py-3 md:px-6 md:py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
                                 selectedRange === range.id 
                                     ? "bg-orange-500 text-white shadow-xl shadow-orange-500/20" 
-                                    : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
+                                    : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white border border-white/5"
                             )}
                         >
                             {range.label}
@@ -299,7 +304,7 @@ export default function AnalyticsPage() {
                         className="space-y-12"
                     >
                         {/* Key Metrics Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                             {[
                                 { label: 'Revenu Net', value: stats.totalRevenue, growth: stats.revenueGrowth, sub: 'Après commission Yakro Go', icon: DollarSign, color: 'orange' },
                                 { label: 'Flux de Commandes', value: stats.totalOrders, growth: stats.ordersGrowth, sub: 'Activité sur la période', icon: ShoppingCart, color: 'white', unit: 'ITEMS' },

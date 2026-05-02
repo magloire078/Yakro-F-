@@ -26,12 +26,10 @@ let analytics: Analytics | undefined;
  * Initialize Firebase services safely for client-side use.
  */
 function initFirebase() {
-
   try {
     if (getApps().length === 0) {
       if (!firebaseConfig.apiKey) {
-        console.warn("Firebase: NEXT_PUBLIC_FIREBASE_API_KEY is missing.");
-      } else {
+        throw new Error("NEXT_PUBLIC_FIREBASE_API_KEY is missing. Check your .env file.");
       }
       app = initializeApp(firebaseConfig);
     } else {
@@ -60,12 +58,9 @@ function initFirebase() {
             }
         }).catch(err => console.warn("Analytics not supported or failed to load:", err));
     }
-
-
-
   } catch (error) {
     console.error("Firebase initialization failed:", error);
-    // Rethrow or handle so the provider knows
+    throw error; // Rethrow to let the provider handle it
   }
 }
 
