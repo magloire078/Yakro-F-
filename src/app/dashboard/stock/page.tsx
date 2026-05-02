@@ -120,7 +120,7 @@ export default function StockPage() {
 
     if (isLoading) {
         return (
-            <div className="flex h-[80vh] w-full items-center justify-center bg-[#0A0A0B]">
+            <div className="flex h-[80vh] w-full items-center justify-center bg-white">
                 <div className="relative">
                     <div className="h-20 w-20 border-2 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
                     <Package className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-orange-500" />
@@ -131,15 +131,15 @@ export default function StockPage() {
 
     if (myRestaurants.length === 0) {
         return (
-            <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
                 {/* Decorative background elements */}
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full bg-orange-500/10 blur-[120px]" />
                 </div>
 
                 <div className="relative mb-12 z-10">
-                    <div className="h-32 w-32 bg-white/5 border border-white/10 rounded-[2.5rem] flex items-center justify-center backdrop-blur-xl shadow-2xl relative">
-                        <Warehouse className="h-14 w-14 text-white/20" />
+                    <div className="h-32 w-32 bg-slate-100 border border-slate-200 rounded-[2.5rem] flex items-center justify-center backdrop-blur-xl shadow-2xl relative">
+                        <Warehouse className="h-14 w-14 text-slate-400" />
                         <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
                             <Plus className="h-6 w-6 text-white" />
                         </div>
@@ -147,10 +147,10 @@ export default function StockPage() {
                 </div>
 
                 <div className="relative z-10 space-y-6 max-w-lg">
-                    <h1 className="text-5xl font-black italic tracking-tighter text-white leading-[0.9]">
+                    <h1 className="text-5xl font-black italic tracking-tighter text-slate-900 leading-[0.9]">
                         Stockage <span className="text-orange-500">Non Configuré</span>
                     </h1>
-                    <p className="text-sm font-bold text-white/40 uppercase tracking-[0.2em] leading-relaxed">
+                    <p className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] leading-relaxed">
                         Vous devez posséder un établissement actif pour commencer à gérer votre <span className="text-white font-black italic">Inventaire d&apos;Excellence</span>.
                     </p>
                     <div className="pt-8">
@@ -166,12 +166,7 @@ export default function StockPage() {
         );
     }
     return (
-        <div className="min-h-screen bg-[#0A0A0B] pb-24 relative overflow-hidden text-white">
-            {/* Elite Background Pattern */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-orange-500/10 blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-orange-500/5 blur-[120px]" />
-            </div>
+        <div className="min-h-screen bg-white pb-24 relative overflow-hidden">
 
             {/* Elite Stock Header */}
             <div className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden flex items-center justify-center">
@@ -180,15 +175,15 @@ export default function StockPage() {
                         src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop"
                         alt="Inventory Background"
                         fill
-                        className="object-cover opacity-20 scale-110 animate-slow-zoom"
+                        className="object-cover opacity-10 scale-110 animate-slow-zoom"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0B]/0 via-[#0A0A0B]/80 to-[#0A0A0B] z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/30 to-transparent z-10" />
                 </div>
                 
                 {/* Mobile Back Button — pattern my-restaurants */}
                 <MobileBackButton 
                     label="Dashboard" 
-                    href="/dashboard" 
+                    href="/restaurateur" 
                     className="md:hidden absolute top-6 left-4 z-50 mb-0"
                 />
 
@@ -196,17 +191,17 @@ export default function StockPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 shadow-sm backdrop-blur-md mb-2"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-4"
                     >
-                        <Warehouse className="h-4 w-4 text-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Gestion de l&apos;Approvisionnement</span>
+                        <Warehouse className="h-3 w-3 text-orange-500" />
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-orange-500">Gestion de l&apos;Approvisionnement</span>
                     </motion.div>
                     
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-6xl md:text-8xl font-black italic tracking-tighter text-white leading-[0.8] mb-4"
+                        className="text-6xl md:text-8xl font-black italic tracking-tighter text-slate-900 leading-[0.8] mb-4"
                     >
                         Contrôle <span className="text-orange-500">Inventaire</span>
                     </motion.h1>
@@ -218,15 +213,15 @@ export default function StockPage() {
                         className="flex justify-center gap-12 md:gap-24 mt-8"
                     >
                         <div className="text-center group">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-2 group-hover:text-white transition-colors">Total</p>
-                            <p className="text-3xl md:text-5xl font-black italic text-white tracking-tighter group-hover:scale-110 transition-transform">{stats.total}</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-slate-900 transition-colors">Total</p>
+                            <p className="text-3xl md:text-5xl font-black italic text-slate-900 tracking-tighter group-hover:scale-110 transition-transform">{stats.total}</p>
                         </div>
-                        <div className="w-px h-12 bg-white/10 self-center" />
+                        <div className="w-px h-12 bg-slate-300 self-center" />
                         <div className="text-center group">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2">Faible</p>
                             <p className="text-3xl md:text-5xl font-black italic text-amber-500 tracking-tighter group-hover:scale-110 transition-transform">{stats.low}</p>
                         </div>
-                        <div className="w-px h-12 bg-white/10 self-center" />
+                        <div className="w-px h-12 bg-slate-300 self-center" />
                         <div className="text-center group">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500 mb-2">Ruptures</p>
                             <p className="text-3xl md:text-5xl font-black italic text-red-500 tracking-tighter group-hover:scale-110 transition-transform">{stats.critical}</p>
@@ -237,7 +232,7 @@ export default function StockPage() {
 
             <div className="container mx-auto px-4 max-w-7xl -mt-16 relative z-40 space-y-12">
                 <Tabs defaultValue="inventaire" className="w-full">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 bg-[#121214]/60 backdrop-blur-xl border border-white/5 p-3 rounded-[2rem] shadow-2xl">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 bg-white/70 backdrop-blur-xl border border-slate-200/60 p-3 rounded-[2rem] shadow-lg">
                         <TabsList className="bg-white/5 h-14 md:h-16 p-1 w-full md:w-auto rounded-2xl">
                             <TabsTrigger 
                                 value="inventaire" 
@@ -374,17 +369,17 @@ export default function StockPage() {
                         </div>
 
                         {/* Inventory Container */}
-                        <div className="bg-[#121214]/60 backdrop-blur-xl border border-white/5 rounded-[3rem] shadow-2xl relative overflow-hidden p-4 md:p-8">
+                        <div className="bg-white/70 backdrop-blur-xl border border-slate-200/60 rounded-[3rem] shadow-lg relative overflow-hidden p-4 md:p-8">
                             {/* Desktop View */}
                             <div className="hidden md:block">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="hover:bg-transparent border-white/5">
-                                            <TableHead className="py-8 px-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Référence</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Statut Logistique</TableHead>
-                                            <TableHead className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Volume Actuel</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Flux Temporel</TableHead>
-                                            <TableHead className="text-right px-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Actions</TableHead>
+                                        <TableRow className="hover:bg-transparent border-slate-200/60">
+                                            <TableHead className="py-8 px-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Référence</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Statut Logistique</TableHead>
+                                            <TableHead className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Volume Actuel</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Flux Temporel</TableHead>
+                                            <TableHead className="text-right px-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -402,12 +397,12 @@ export default function StockPage() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             exit={{ opacity: 0, scale: 0.98 }}
                                                             transition={{ delay: index * 0.03 }}
-                                                            className="group border-white/5 hover:bg-white/5 transition-all rounded-2xl"
+                                                            className="group border-slate-200/60 hover:bg-slate-50 transition-all rounded-2xl"
                                                         >
                                                             <TableCell className="py-10 px-8">
                                                                 <div className="flex flex-col">
-                                                                    <span className="font-black text-2xl italic tracking-tighter text-white group-hover:text-orange-500 transition-colors">{item.nom}</span>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-2 flex items-center gap-2">
+                                                                    <span className="font-black text-2xl italic tracking-tighter text-slate-900 group-hover:text-orange-500 transition-colors">{item.nom}</span>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2 flex items-center gap-2">
                                                                         <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-sm shadow-orange-500/20" /> {restaurantName}
                                                                     </span>
                                                                 </div>
@@ -425,17 +420,17 @@ export default function StockPage() {
                                                             <TableCell className="text-center">
                                                                 <div className="flex items-center justify-center gap-8">
                                                                     <button 
-                                                                        className="h-12 w-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/10 transition-all font-black text-2xl"
+                                                                        className="h-12 w-12 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/10 transition-all font-black text-2xl"
                                                                         onClick={() => handleUpdateQuantity(item.id, item.quantite - 1)}
                                                                     >
                                                                         -
                                                                     </button>
                                                                     <div className="min-w-[100px] group-hover:scale-110 transition-transform">
-                                                                        <span className="text-4xl font-black italic tracking-tighter text-white">{item.quantite}</span>
-                                                                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mt-1">{item.unite}</p>
+                                                                        <span className="text-4xl font-black italic tracking-tighter text-slate-900">{item.quantite}</span>
+                                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{item.unite}</p>
                                                                     </div>
                                                                     <button 
-                                                                        className="h-12 w-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-emerald-500 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all font-black text-2xl"
+                                                                        className="h-12 w-12 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all font-black text-2xl"
                                                                         onClick={() => handleUpdateQuantity(item.id, item.quantite + 1)}
                                                                     >
                                                                         +
@@ -443,7 +438,7 @@ export default function StockPage() {
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell>
-                                                                <div className="flex items-center gap-3 text-white/40 font-bold italic">
+                                                                <div className="flex items-center gap-3 text-slate-400 font-bold italic">
                                                                     <div className="p-2 bg-white/5 rounded-lg">
                                                                         <History className="h-4 w-4 opacity-50" />
                                                                     </div>
@@ -474,8 +469,8 @@ export default function StockPage() {
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-3">
-                                                                <h3 className="text-2xl font-black italic tracking-tight text-white uppercase">Aucune référence</h3>
-                                                                <p className="text-white/40 font-medium max-w-xs mx-auto">Ajustez vos filtres ou effectuez une nouvelle acquisition.</p>
+                                                                <h3 className="text-2xl font-black italic tracking-tight text-slate-900 uppercase">Aucune référence</h3>
+                                                                <p className="text-slate-400 font-medium max-w-xs mx-auto">Ajustez vos filtres ou effectuez une nouvelle acquisition.</p>
                                                             </div>
                                                             <Button 
                                                                 variant="outline" 
@@ -507,40 +502,38 @@ export default function StockPage() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: index * 0.05 }}
-                                                className="bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-col gap-6 backdrop-blur-xl"
+                                                className="bg-white border border-slate-100 p-6 rounded-3xl flex flex-col gap-6 shadow-sm"
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <div>
-                                                        <h3 className="font-black text-xl italic tracking-tighter text-white leading-tight">{item.nom}</h3>
+                                                        <h3 className="font-black text-xl italic tracking-tighter text-slate-900 leading-tight">{item.nom}</h3>
                                                         <div className="flex items-center gap-2 mt-2">
                                                             <MapPin className="h-3 w-3 text-orange-500" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">{restaurantName}</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{restaurantName}</span>
                                                         </div>
                                                     </div>
                                                     <Badge className={cn(
                                                         "rounded-full px-3 py-1 font-black italic text-[8px] tracking-tight uppercase border shadow-sm",
-                                                        isCritical ? "bg-red-500/20 text-red-500 border-red-500/30" : 
-                                                        isLow ? "bg-amber-500/20 text-amber-500 border-amber-500/30 animate-pulse" : 
                                                         "bg-emerald-500/20 text-emerald-500 border-emerald-500/30"
                                                     )}>
                                                         {isCritical ? 'Rupture' : isLow ? 'Critique' : 'Optimal'}
                                                     </Badge>
                                                 </div>
 
-                                                <div className="flex items-center justify-between bg-white/5 rounded-2xl p-4 border border-white/10">
+                                                <div className="flex items-center justify-between bg-slate-100 rounded-2xl p-4 border border-slate-200">
                                                     <div className="flex items-center gap-4">
                                                         <button 
-                                                            className="h-10 w-10 bg-white/5 rounded-xl flex items-center justify-center text-white/40 active:text-red-500 active:bg-red-500/10 transition-colors font-black text-xl border border-white/10"
+                                                            className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 active:text-red-500 active:bg-red-500/10 transition-colors font-black text-xl border border-slate-200"
                                                             onClick={() => handleUpdateQuantity(item.id, item.quantite - 1)}
                                                         >
                                                             -
                                                         </button>
                                                         <div className="text-center min-w-[70px]">
-                                                            <span className="text-2xl font-black italic tracking-tighter text-white">{item.quantite}</span>
-                                                            <p className="text-[9px] font-black text-white/30 uppercase tracking-widest">{item.unite}</p>
+                                                            <span className="text-2xl font-black italic tracking-tighter text-slate-900">{item.quantite}</span>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.unite}</p>
                                                         </div>
                                                         <button 
-                                                            className="h-10 w-10 bg-white/5 rounded-xl flex items-center justify-center text-white/40 active:text-emerald-500 active:bg-emerald-500/10 transition-colors font-black text-xl border border-white/10"
+                                                            className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 active:text-emerald-500 active:bg-emerald-500/10 transition-colors font-black text-xl border border-slate-200"
                                                             onClick={() => handleUpdateQuantity(item.id, item.quantite + 1)}
                                                         >
                                                             +
@@ -548,7 +541,7 @@ export default function StockPage() {
                                                     </div>
                                                     
                                                     <div className="flex flex-col items-end gap-2">
-                                                        <div className="flex items-center gap-1.5 text-white/30 text-[9px] font-black italic uppercase">
+                                                        <div className="flex items-center gap-1.5 text-slate-400 text-[9px] font-black italic uppercase">
                                                             <History className="h-3 w-3" />
                                                             {format(new Date(item.derniereMiseAJour), "dd MMM")}
                                                         </div>
@@ -567,7 +560,7 @@ export default function StockPage() {
                                     })
                                 ) : (
                                     <div className="py-20 text-center">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Aucune référence</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Aucune référence</p>
                                     </div>
                                 )}
                             </div>
@@ -586,7 +579,7 @@ export default function StockPage() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 30 }}
-                            className="p-10 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] relative overflow-hidden group shadow-2xl"
+                            className="p-10 bg-white/70 backdrop-blur-2xl border border-slate-200/60 rounded-[3rem] relative overflow-hidden group shadow-lg"
                         >
                             <div className="absolute top-0 left-0 w-2 h-full bg-orange-500" />
                             <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
@@ -594,8 +587,8 @@ export default function StockPage() {
                                     <AlertTriangle className="h-10 w-10 text-orange-500 animate-pulse" />
                                 </div>
                                 <div className="flex-1 text-center md:text-left space-y-3">
-                                    <h4 className="text-3xl font-black italic tracking-tighter text-white leading-none">Vigilance Approvisionnement</h4>
-                                    <p className="text-sm font-bold text-white/40 uppercase tracking-widest leading-relaxed">
+                                    <h4 className="text-3xl font-black italic tracking-tighter text-slate-900 leading-none">Vigilance Approvisionnement</h4>
+                                    <p className="text-sm font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
                                         Plusieurs références ont franchi le seuil critique de sécurité. <span className="text-orange-500 font-black italic">Urgence Logistique</span> détectée.
                                     </p>
                                 </div>

@@ -38,7 +38,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={cn(
       "flex min-h-screen transition-colors duration-300",
-      isDashboard ? "bg-slate-50 text-slate-900" : "bg-background text-foreground"
+      isDashboard ? "bg-[#0A0A0B] text-white dark" : "bg-background text-foreground"
     )}>
       <div className="hidden md:flex">
         <Sidebar />

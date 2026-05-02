@@ -111,10 +111,10 @@ export default function DashboardMenuPage() {
     if (!user || activeRole !== 'restaurateur') return null;
 
     return (
-        <div className="min-h-screen bg-[#0A0A0B] pb-32 overflow-x-hidden relative">
+        <div className="min-h-screen bg-white pb-32 overflow-x-hidden relative">
             {/* Elite Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(249,115,22,0.1),transparent_70%)]" />
-            <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-orange-500/5 rounded-full blur-[140px] pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(249,115,22,0.05),transparent_70%)]" />
+            <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-orange-500/[0.02] rounded-full blur-[140px] pointer-events-none" />
 
             {/* Cinematic Hero Section */}
             <div className="relative h-[40vh] md:h-[50vh] overflow-hidden">
@@ -123,15 +123,14 @@ export default function DashboardMenuPage() {
                         src="https://images.unsplash.com/photo-1550966842-2862ba996344?q=80&w=2070&auto=format&fit=crop"
                         alt="Menu Background"
                         fill
-                        className="object-cover opacity-20 scale-105 animate-slow-zoom"
-                        priority
+                        className="object-cover opacity-30 grayscale-[20%]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/60 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/60 to-transparent z-10" />
                 </div>
                 
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pt-10 relative z-20">
                     <div className="md:hidden absolute top-6 left-4 z-50">
-                        <MobileBackButton label="Retour" href="/dashboard" />
+                        <MobileBackButton label="Retour" href="/restaurateur" />
                     </div>
 
                     <motion.div 
@@ -146,7 +145,7 @@ export default function DashboardMenuPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-5xl md:text-8xl font-black italic tracking-tighter text-white mb-2 leading-none uppercase"
+                        className="text-5xl md:text-8xl font-black italic tracking-tighter text-slate-900 mb-2 leading-none uppercase"
                     >
                         Votre <span className="text-orange-500">Carte</span>
                     </motion.h1>
@@ -154,7 +153,7 @@ export default function DashboardMenuPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-gray-500 font-bold text-[10px] md:text-xs tracking-[0.4em] uppercase italic"
+                        className="text-slate-400 font-bold text-[10px] md:text-xs tracking-[0.4em] uppercase italic"
                     >
                         Gestion des saveurs et des expériences
                     </motion.p>
@@ -163,7 +162,7 @@ export default function DashboardMenuPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-30">
                 {/* Category Selector */}
-                <div className="sticky top-0 z-40 -mx-4 px-4 py-4 mb-8 md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:mb-10 flex overflow-x-auto gap-3 no-scrollbar scroll-smooth snap-x bg-[#0A0A0B]/80 backdrop-blur-xl md:bg-transparent">
+                <div className="sticky top-0 z-40 -mx-4 px-4 py-4 mb-8 md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:mb-10 flex overflow-x-auto gap-3 no-scrollbar scroll-smooth snap-x bg-white/80 backdrop-blur-xl md:bg-transparent">
                     {categories.map((category, idx) => (
                         <motion.button
                             key={category}
@@ -174,8 +173,8 @@ export default function DashboardMenuPage() {
                             className={cn(
                                 "flex-none snap-start px-6 md:px-8 py-3.5 md:py-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500 border",
                                 selectedCategory === category 
-                                    ? "bg-white border-white text-black shadow-xl shadow-white/10" 
-                                    : "bg-[#121214]/60 backdrop-blur-md border-white/5 text-gray-500 hover:border-orange-500/30 hover:text-orange-500"
+                                    ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/10" 
+                                    : "bg-slate-50/60 backdrop-blur-md border-slate-200/50 text-slate-500 hover:border-orange-500/30 hover:text-orange-500"
                             )}
                         >
                             {category}
@@ -199,7 +198,7 @@ export default function DashboardMenuPage() {
                                         initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className="group relative bg-[#121214]/60 backdrop-blur-xl border border-white/5 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/10 flex flex-col h-full rounded-none"
+                                        className="group relative bg-white/70 backdrop-blur-xl border border-slate-200/60 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/10 flex flex-col h-full rounded-2xl"
                                     >
                                         <div className="aspect-[16/10] relative overflow-hidden">
                                             {item.image ? (
@@ -210,31 +209,31 @@ export default function DashboardMenuPage() {
                                                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />
                                             ) : (
-                                                <div className="absolute inset-0 bg-[#1A1A1C] flex items-center justify-center">
-                                                    <ChefHat className="h-12 w-12 text-white/5" />
+                                                <div className="absolute inset-0 bg-slate-50 flex items-center justify-center border-b border-slate-100">
+                                                    <ChefHat className="h-12 w-12 text-slate-200" />
                                                 </div>
                                             )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent opacity-80" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-80" />
                                             
                                             <div className="absolute bottom-4 left-4">
-                                                <div className="bg-orange-500 px-4 py-1.5 text-[11px] font-black italic uppercase text-white shadow-xl">
+                                                <div className="bg-orange-500 px-4 py-1.5 text-[11px] font-black italic uppercase text-white shadow-xl rounded-lg">
                                                     {item.prix.toLocaleString('fr-FR')} FCFA
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="p-6 flex-grow flex flex-col">
-                                            <h3 className="text-xl md:text-2xl font-black italic tracking-tight text-white group-hover:text-orange-500 transition-colors mb-2 uppercase">
+                                            <h3 className="text-xl md:text-2xl font-black italic tracking-tight text-slate-900 group-hover:text-orange-500 transition-colors mb-2 uppercase">
                                                 {item.nom}
                                             </h3>
-                                            <p className="text-gray-500 text-sm font-medium line-clamp-2 mb-6 leading-relaxed italic">
+                                            <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-6 leading-relaxed italic">
                                                 {item.description}
                                             </p>
 
-                                            <div className="mt-auto flex items-center gap-3 pt-6 border-t border-white/5">
+                                            <div className="mt-auto flex items-center gap-3 pt-6 border-t border-slate-100">
                                                 <Button 
                                                     variant="outline" 
-                                                    className="flex-1 h-12 bg-white/5 border-white/5 hover:bg-white hover:text-black text-white rounded-none font-black uppercase tracking-widest text-[9px] transition-all duration-500"
+                                                    className="flex-1 h-12 bg-white border-slate-200 hover:bg-orange-500 hover:border-orange-500 hover:text-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all duration-500 shadow-sm"
                                                     onClick={() => setEditingItem(item)}
                                                 >
                                                     <Edit className="h-3.5 w-3.5 mr-2" />
@@ -245,27 +244,27 @@ export default function DashboardMenuPage() {
                                                     <AlertDialogTrigger asChild>
                                                         <Button 
                                                             variant="outline" 
-                                                            className="h-12 w-12 bg-red-500/5 border-red-500/10 hover:bg-red-500 hover:text-white text-red-500 rounded-none transition-all duration-500"
+                                                            className="h-12 w-12 bg-white border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-500 rounded-xl transition-all duration-500 shadow-sm"
                                                             disabled={isDeleting === item.id}
                                                         >
                                                             {isDeleting === item.id ? <Loader className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                                         </Button>
                                                     </AlertDialogTrigger>
-                                                    <AlertDialogContent className="bg-[#121214] border-white/5 rounded-none shadow-2xl">
+                                                    <AlertDialogContent className="bg-white/90 border border-slate-200 rounded-2xl shadow-2xl backdrop-blur-xl">
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle className="font-black italic tracking-tight text-2xl text-white uppercase">Confirmation</AlertDialogTitle>
-                                                            <AlertDialogDescription className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">
+                                                            <AlertDialogTitle className="font-black italic tracking-tight text-2xl text-slate-900 uppercase">Confirmation</AlertDialogTitle>
+                                                            <AlertDialogDescription className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">
                                                                 Voulez-vous vraiment retirer &quot;{item.nom}&quot; de votre carte ? Cette action est définitive.
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter className="mt-8 gap-3">
-                                                            <AlertDialogCancel className="bg-white/5 border-white/5 text-gray-400 hover:bg-white/10 rounded-none font-black uppercase tracking-widest text-[9px]">
+                                                            <AlertDialogCancel className="bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 rounded-xl font-black uppercase tracking-widest text-[9px]">
                                                                 Annuler
                                                             </AlertDialogCancel>
                                                             <AlertDialogAction 
                                                                 onClick={() => handleDeleteItem(item.id)} 
                                                                 disabled={!!isDeleting}
-                                                                className="bg-red-500 hover:bg-red-600 text-white rounded-none font-black italic tracking-tight px-8 uppercase"
+                                                                className="bg-red-500 hover:bg-red-600 text-white rounded-xl font-black italic tracking-tight px-8 uppercase"
                                                             >
                                                                 Supprimer
                                                             </AlertDialogAction>
@@ -280,13 +279,13 @@ export default function DashboardMenuPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="max-w-2xl mx-auto bg-[#121214]/60 backdrop-blur-xl border border-white/5 p-16 text-center shadow-2xl relative overflow-hidden rounded-none mt-12">
+                            <div className="max-w-2xl mx-auto bg-white/70 backdrop-blur-xl border border-slate-200/60 p-16 text-center shadow-2xl relative overflow-hidden rounded-3xl mt-12">
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
-                                <div className="bg-orange-500/10 w-24 h-24 rounded-none flex items-center justify-center mx-auto mb-8 border border-orange-500/20">
+                                <div className="bg-orange-500/10 w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-orange-500/20">
                                     <BookOpenCheck className="h-10 w-10 text-orange-500" />
                                 </div>
-                                <h2 className="text-4xl font-black italic tracking-tight text-white mb-4 uppercase">Carte Blanche</h2>
-                                <p className="text-gray-500 font-bold mb-10 text-xs uppercase tracking-[0.2em] italic">
+                                <h2 className="text-4xl font-black italic tracking-tight text-slate-900 mb-4 uppercase">Carte Blanche</h2>
+                                <p className="text-slate-500 font-bold mb-10 text-xs uppercase tracking-[0.2em] italic">
                                     Aucun article n&apos;est répertorié dans cette catégorie pour le moment.
                                 </p>
                             </div>
@@ -296,9 +295,9 @@ export default function DashboardMenuPage() {
 
                 {/* Add Button */}
                 <div className="mt-16 flex justify-center">
-                    <Button asChild className="h-16 px-12 bg-white hover:bg-gray-100 text-black rounded-none font-black italic tracking-tight text-lg shadow-2xl shadow-white/10 transition-all duration-500 hover:scale-105 group uppercase">
+                    <Button asChild className="h-16 px-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-orange-500/20 transition-all duration-500 hover:scale-105 group uppercase">
                         <Link href="/dashboard/new-menu-item" className="flex items-center gap-3">
-                            <Plus className="h-6 w-6 text-orange-500 group-hover:rotate-90 transition-transform duration-500" />
+                            <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-500" />
                             Ajouter un Chef-d&apos;œuvre
                         </Link>
                     </Button>
@@ -307,7 +306,7 @@ export default function DashboardMenuPage() {
 
             {/* Floating Action Button for Mobile */}
             <div className="fixed bottom-8 right-6 z-50 md:hidden">
-                <Button asChild className="h-16 w-16 bg-orange-500 hover:bg-orange-600 text-white rounded-none shadow-2xl shadow-orange-500/20 p-0 hover:scale-110 transition-all">
+                <Button asChild className="h-16 w-16 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-2xl shadow-orange-500/20 p-0 hover:scale-110 transition-all">
                     <Link href="/dashboard/new-menu-item" className="flex items-center justify-center">
                         <Plus className="h-8 w-8" />
                     </Link>
@@ -324,7 +323,7 @@ export default function DashboardMenuPage() {
 
             {/* Bottom Branding */}
             <div className="text-center py-24 opacity-20 group hover:opacity-40 transition-opacity">
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 italic">
+                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400 italic">
                     Yakro Gastronomie &bull; Excellence Culinaire
                 </p>
             </div>

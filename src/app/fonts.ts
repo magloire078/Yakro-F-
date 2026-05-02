@@ -1,4 +1,4 @@
-import { Belleza, Alegreya } from 'next/font/google';
+import { Belleza, Alegreya, Sora } from 'next/font/google';
 
 export const belleza = Belleza({
   subsets: ['latin'],
@@ -9,4 +9,9 @@ export const belleza = Belleza({
 export const alegreya = Alegreya({
   subsets: ['latin'],
   variable: '--font-alegreya',
+});
+
+export const sora = Sora({
+  subsets: ['latin'],
+  variable: '--font-sora',
 });

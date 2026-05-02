@@ -48,6 +48,20 @@ export default function AdminPage() {
     const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
     const [logSearchQuery, setLogSearchQuery] = React.useState('');
     const [logDisplayLimit, setLogDisplayLimit] = React.useState(50);
+    const [activeTab, setActiveTab] = React.useState('live');
+
+    // Persist tab state
+    React.useEffect(() => {
+        const savedTab = localStorage.getItem('yakro-admin-active-tab');
+        if (savedTab) {
+            setActiveTab(savedTab);
+        }
+    }, []);
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        localStorage.setItem('yakro-admin-active-tab', value);
+    };
 
     React.useEffect(() => {
         if (authLoading) return;
@@ -154,89 +168,93 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0A0A0B] text-white">
+        <div className="min-h-screen bg-[#0A0A0B] text-white overflow-x-hidden font-sora">
             {/* Cinematic Hero Header */}
-            <div className="relative h-[35vh] min-h-[350px] w-full overflow-hidden flex items-end pb-12 px-6">
+            <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="https://images.unsplash.com/photo-1451187534959-42266104411e?q=80&w=2070&auto=format&fit=crop"
                         alt="Network Grid"
                         fill
-                        className="object-cover opacity-20 scale-105 animate-slow-zoom"
+                        className="object-cover opacity-10 scale-110 animate-slow-zoom"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/40 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/60 z-10" />
                 </div>
 
-                <div className="relative z-20 container mx-auto">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                        <div className="space-y-4">
-                            <motion.div 
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-2"
-                            >
-                                <ShieldCheck className="h-3.5 w-3.5 text-orange-500" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">Autorité Suprême</span>
-                            </motion.div>
-                            <motion.h1 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none"
-                            >
-                                Centre de <span className="text-orange-500">Contrôle</span>
-                            </motion.h1>
-                            <motion.p 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-gray-500 italic"
-                            >
-                                Supervision intégrale de l&apos;écosystème Yakro Go.
-                            </motion.p>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <Sheet>
-                                <SheetTrigger asChild>
-                                    <Button variant="outline" size="icon" className="h-14 w-14 bg-white/5 border-white/10 rounded-none relative hover:bg-orange-500/10 transition-colors">
-                                        <Bell className="h-6 w-6 text-orange-500" />
-                                        <span className="absolute top-0 right-0 h-3 w-3 bg-red-500 border-2 border-[#0A0A0B] animate-pulse" />
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent className="w-full sm:max-w-md bg-[#121214]/95 backdrop-blur-xl border-white/5 text-white shadow-2xl">
-                                    <SheetHeader className="pb-10 border-b border-white/5">
-                                        <SheetTitle className="text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
-                                            <Bell className="h-8 w-8 text-orange-500" />
-                                            Alertes <span className="text-orange-500">Live</span>
-                                        </SheetTitle>
-                                        <SheetDescription className="text-gray-500 font-bold uppercase tracking-widest text-[9px]">Anomalies et événements système</SheetDescription>
-                                    </SheetHeader>
-                                    <ScrollArea className="h-[calc(100vh-150px)] mt-6 pr-4">
-                                        <AdminAlerts />
-                                    </ScrollArea>
-                                </SheetContent>
-                            </Sheet>
-                            
-                            <Button asChild className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-none font-black italic uppercase tracking-tighter hover:bg-white/10 transition-all">
-                                <Link href="/">
-                                    <Home className="mr-3 h-5 w-5 text-gray-500" />
-                                    Quitter
-                                </Link>
-                            </Button>
-                            
-                            <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white rounded-none font-black italic uppercase tracking-tighter shadow-[0_0_30px_rgba(249,115,22,0.3)] transition-all">
-                                <UserPlus className="mr-3 h-5 w-5" />
-                                Enrôler
-                            </Button>
-                        </div>
+                <div className="relative z-30 text-center space-y-8 px-6 max-w-5xl pt-10 md:pt-0">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-2 shadow-2xl"
+                    >
+                        <ShieldCheck className="h-4 w-4 text-orange-500" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500">Autorité Suprême Yakro</span>
+                    </motion.div>
+                    
+                    <div className="space-y-4">
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-6xl md:text-9xl font-black italic uppercase tracking-tighter text-white leading-none mb-4"
+                        >
+                            Centre de <span className="text-orange-500 italic">Contrôle</span>
+                        </motion.h1>
+                        <motion.p 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-slate-500 font-black uppercase tracking-[0.4em] text-[10px] md:text-xs italic"
+                        >
+                            Supervision intégrale et commandement de l&apos;écosystème
+                        </motion.p>
                     </div>
+
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="flex flex-wrap justify-center gap-4 mt-10"
+                    >
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="outline" className="h-14 px-8 bg-white/5 border-white/10 rounded-2xl font-black italic uppercase tracking-tighter hover:bg-orange-500/10 transition-all group">
+                                    <Bell className="mr-3 h-5 w-5 text-orange-500 group-hover:scale-110 transition-transform" />
+                                    Alertes <span className="ml-2 px-2 py-0.5 bg-red-500 text-[10px] rounded-full animate-pulse">Live</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent className="w-full sm:max-w-md bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/5 text-white shadow-2xl">
+                                <SheetHeader className="pb-10 border-b border-white/5">
+                                    <SheetTitle className="text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                                        <Bell className="h-8 w-8 text-orange-500" />
+                                        Alertes <span className="text-orange-500">Système</span>
+                                    </SheetTitle>
+                                    <SheetDescription className="text-slate-500 font-black uppercase tracking-[0.2em] text-[9px]">Anomalies et événements critiques</SheetDescription>
+                                </SheetHeader>
+                                <ScrollArea className="h-[calc(100vh-150px)] mt-6 pr-4">
+                                    <AdminAlerts />
+                                </ScrollArea>
+                            </SheetContent>
+                        </Sheet>
+                        
+                        <Button asChild className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-2xl font-black italic uppercase tracking-tighter hover:bg-white/10 transition-all">
+                            <Link href="/">
+                                <Home className="mr-3 h-5 w-5 text-slate-500" />
+                                Quitter
+                            </Link>
+                        </Button>
+                        
+                        <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic uppercase tracking-tighter shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all hover:scale-105">
+                            <UserPlus className="mr-3 h-5 w-5" />
+                            Enrôler Citoyen
+                        </Button>
+                    </motion.div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-6 -mt-10 relative z-40 pb-32">
+            <div className="container mx-auto px-6 -mt-20 relative z-40 pb-32">
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
                     {[
                         { title: 'Citoyens', value: allUsers.length, icon: Users, color: 'orange' },
                         { title: 'Bastions', value: restaurants.length, icon: Store, color: 'white' },
@@ -245,27 +263,32 @@ export default function AdminPage() {
                     ].map((stat, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 + (idx * 0.05) }}
-                            className="bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-8 relative group overflow-hidden"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.4 + (idx * 0.1), duration: 0.5, ease: "easeOut" }}
+                            whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                            className={`bg-white/5 backdrop-blur-3xl border border-white/5 p-8 relative group overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-orange-500/50 hover:shadow-orange-500/10 animate-float`}
+                            style={{ animationDelay: `${idx * 1.5}s` }}
                         >
-                            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="flex justify-between items-start mb-6">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 group-hover:text-orange-500 transition-colors">{stat.title}</span>
-                                <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-orange-500' : 'text-gray-400'}`} />
+                            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
+                            <div className="flex justify-between items-start mb-6 relative z-10">
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 group-hover:text-orange-500 transition-colors">{stat.title}</span>
+                                <div className={`p-2 rounded-xl ${stat.color === 'orange' ? 'bg-orange-500/10' : 'bg-white/5'}`}>
+                                    <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-orange-500' : 'text-slate-400'}`} />
+                                </div>
                             </div>
-                            <div className="text-4xl font-black tracking-tighter italic">
+                            <div className="text-4xl md:text-6xl font-black tracking-tighter italic text-white group-hover:scale-105 transition-transform duration-500 relative z-10">
                                 {stat.value}
                             </div>
                         </motion.div>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
                     <div className="lg:col-span-3 space-y-10">
-                        <Tabs defaultValue="live" className="space-y-10">
-                            <TabsList className="h-auto bg-white/5 border border-white/5 p-1 rounded-none flex-wrap justify-start gap-1">
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-10">
+                            <TabsList className="h-auto bg-white/5 border border-white/5 p-1.5 rounded-3xl flex-wrap justify-start gap-1.5 backdrop-blur-3xl">
                                 {[
                                     { id: 'live', icon: Navigation2, label: 'Supervision' },
                                     { id: 'restaurants', icon: Store, label: 'Établissements' },
@@ -277,7 +300,7 @@ export default function AdminPage() {
                                     <TabsTrigger 
                                         key={tab.id}
                                         value={tab.id} 
-                                        className="h-12 px-6 rounded-none data-[state=active]:bg-orange-500 data-[state=active]:text-white font-black italic uppercase tracking-tighter text-[11px] transition-all"
+                                        className="h-12 px-6 rounded-2xl data-[state=active]:bg-orange-500 data-[state=active]:text-white font-black italic uppercase tracking-tighter text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-white/5"
                                     >
                                         <tab.icon className="h-4 w-4 mr-3" />
                                         {tab.label}
@@ -290,21 +313,28 @@ export default function AdminPage() {
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5 }}
                             >
-                                <TabsContent value="live" className="m-0 outline-none"><SupervisionModule /></TabsContent>
-                                <TabsContent value="restaurants" className="m-0 outline-none"><RestaurantManager /></TabsContent>
-                                <TabsContent value="finances" className="m-0 outline-none"><FinancialAnalytics /></TabsContent>
-                                <TabsContent value="security" className="m-0 outline-none">
-                                    <div className="bg-[#121214]/60 backdrop-blur-md border border-white/5 p-8">
-                                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-                                            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Journal d&apos;Audit <span className="text-orange-500">Sécurisé</span></h2>
+                                <TabsContent value="live" className="m-0 outline-none animate-in fade-in duration-700"><SupervisionModule /></TabsContent>
+                                <TabsContent value="restaurants" className="m-0 outline-none animate-in fade-in duration-700"><RestaurantManager /></TabsContent>
+                                <TabsContent value="finances" className="m-0 outline-none animate-in fade-in duration-700"><FinancialAnalytics /></TabsContent>
+                                <TabsContent value="security" className="m-0 outline-none animate-in fade-in duration-700">
+                                    <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+                                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
+                                            <div className="space-y-2">
+                                                <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Journal d&apos;Audit <span className="text-orange-500 italic">Sécurisé</span></h2>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">TRAÇABILITÉ TOTALE DES OPÉRATIONS DE COMMANDEMENT</p>
+                                            </div>
                                             <div className="flex items-center gap-4 w-full md:w-auto">
                                                 <Input 
                                                     value={logSearchQuery}
                                                     onChange={(e) => setLogSearchQuery(e.target.value)}
                                                     placeholder="FILTRER LES ACTIONS..."
-                                                    className="h-10 bg-white/5 border-white/10 rounded-none text-[10px] font-black uppercase tracking-widest min-w-[250px]"
+                                                    className="h-12 bg-white/5 border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest min-w-[250px] focus:ring-orange-500/50"
                                                 />
-                                                <div className="text-[10px] font-black uppercase tracking-widest text-orange-500/50 hidden lg:block">PROTCOLE DE TRAÇABILITÉ ACTIF</div>
+                                                <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full">
+                                                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-orange-500">PROTOCOLE ACTIF</span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="overflow-x-auto">
@@ -331,7 +361,7 @@ export default function AdminPage() {
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-6">
-                                                                <Badge variant="outline" className="rounded-none border-orange-500/30 text-orange-500 bg-orange-500/5 text-[9px] font-black uppercase tracking-widest py-1 px-2">
+                                                                <Badge variant="outline" className="rounded-xl border-orange-500/30 text-orange-500 bg-orange-500/10 text-[9px] font-black uppercase tracking-widest py-1.5 px-3">
                                                                     {log.action}
                                                                 </Badge>
                                                             </TableCell>
@@ -352,7 +382,7 @@ export default function AdminPage() {
                                                 <Button 
                                                     onClick={() => setLogDisplayLimit(prev => prev + 50)}
                                                     variant="outline"
-                                                    className="rounded-none border-white/10 hover:bg-orange-500 hover:text-white font-black italic uppercase tracking-widest text-[10px]"
+                                                    className="rounded-2xl border-white/10 hover:bg-orange-500 hover:text-white font-black italic uppercase tracking-widest text-[10px] h-12 px-8 transition-all hover:scale-105"
                                                 >
                                                     Charger plus de journaux
                                                 </Button>
@@ -360,12 +390,22 @@ export default function AdminPage() {
                                         )}
                                     </div>
                                 </TabsContent>
-                                <TabsContent value="reports" className="m-0 outline-none"><ReportCenter /></TabsContent>
+                                <TabsContent value="reports" className="m-0 outline-none animate-in fade-in duration-700"><ReportCenter /></TabsContent>
                                 
-                                <TabsContent value="users" className="m-0 outline-none">
+                                <TabsContent value="users" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                                        <div className="lg:col-span-2 bg-[#121214]/60 backdrop-blur-md border border-white/5 p-8">
-                                            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-8">Registre des <span className="text-orange-500">Comptes</span></h2>
+                                        <div className="lg:col-span-2 bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+                                            <div className="flex items-center justify-between mb-12 relative z-10">
+                                                <div className="space-y-2">
+                                                    <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Registre des <span className="text-orange-500 italic">Comptes</span></h2>
+                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
+                                                </div>
+                                                <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:scale-105 shadow-xl">
+                                                    <UserPlus className="mr-2 h-4 w-4" />
+                                                    NOUVEAU
+                                                </Button>
+                                            </div>
                                             <div className="overflow-x-auto">
                                                 <Table>
                                                     <TableHeader className="border-white/5">
@@ -380,8 +420,8 @@ export default function AdminPage() {
                                                             <TableRow key={u.uid} className="border-white/5 hover:bg-white/5 transition-colors group">
                                                                 <TableCell className="py-6">
                                                                     <div className="flex items-center gap-4">
-                                                                        <Avatar className="h-10 w-10 rounded-none border border-white/10 group-hover:border-orange-500/30 transition-colors">
-                                                                            <AvatarFallback className="bg-white/5 text-xs font-black">{getInitials(u.nom || u.email)}</AvatarFallback>
+                                                                        <Avatar className="h-12 w-12 rounded-2xl border border-white/10 group-hover:border-orange-500/30 transition-all group-hover:scale-110 shadow-lg">
+                                                                            <AvatarFallback className="bg-white/10 text-xs font-black text-orange-500">{getInitials(u.nom || u.email)}</AvatarFallback>
                                                                         </Avatar>
                                                                         <div className="flex flex-col">
                                                                             <span className="font-black text-sm text-white uppercase italic tracking-tight">{u.nom || 'UTILISATEUR ANONYME'}</span>
@@ -391,19 +431,19 @@ export default function AdminPage() {
                                                                 </TableCell>
                                                                 <TableCell className="py-6">
                                                                     <Select value={u.roleSysteme || 'User'} onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}>
-                                                                        <SelectTrigger className="w-[140px] h-10 bg-white/5 border-white/10 rounded-none text-[10px] font-black uppercase italic tracking-widest focus:ring-orange-500/50">
+                                                                        <SelectTrigger className="w-[140px] h-12 bg-white/5 border-white/10 rounded-2xl text-[10px] font-black uppercase italic tracking-widest focus:ring-orange-500/50 transition-all hover:bg-white/10">
                                                                             <SelectValue />
                                                                         </SelectTrigger>
-                                                                        <SelectContent className="bg-[#121214] border-white/10 text-white rounded-none">
-                                                                            <SelectItem value="SuperAdmin" className="focus:bg-orange-500 text-[10px] font-black uppercase italic tracking-widest py-3">SUPERADMIN</SelectItem>
-                                                                            <SelectItem value="Admin" className="focus:bg-orange-500 text-[10px] font-black uppercase italic tracking-widest py-3">ADMIN</SelectItem>
-                                                                            <SelectItem value="User" className="focus:bg-orange-500 text-[10px] font-black uppercase italic tracking-widest py-3">USER</SelectItem>
+                                                                        <SelectContent className="bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/10 text-white rounded-2xl overflow-hidden shadow-2xl">
+                                                                            <SelectItem value="SuperAdmin" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">SUPERADMIN</SelectItem>
+                                                                            <SelectItem value="Admin" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">ADMIN</SelectItem>
+                                                                            <SelectItem value="User" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">USER</SelectItem>
                                                                         </SelectContent>
                                                                     </Select>
                                                                 </TableCell>
                                                                 <TableCell className="text-right py-6">
-                                                                    <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} className="h-10 w-10 hover:bg-orange-500/10 hover:text-orange-500 rounded-none border border-transparent hover:border-orange-500/20">
-                                                                        <Edit className="h-4 w-4" />
+                                                                    <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} className="h-12 w-12 hover:bg-orange-500/10 hover:text-orange-500 rounded-2xl border border-transparent hover:border-orange-500/20 transition-all hover:scale-110">
+                                                                        <Edit className="h-5 w-5" />
                                                                     </Button>
                                                                 </TableCell>
                                                             </TableRow>
@@ -413,22 +453,28 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                         <div className="lg:col-span-1 space-y-8">
-                                            <div className="bg-[#121214]/60 border border-white/5 p-8 relative overflow-hidden">
-                                                <div className="absolute top-0 right-0 p-4">
-                                                    <UserPlus className="h-4 w-4 text-orange-500/20" />
+                                            <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                    <UserPlus className="h-12 w-12 text-orange-500" />
                                                 </div>
-                                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-8 italic">Flux d&apos;Enrôlement</h3>
-                                                <div className="space-y-6">
-                                                    {latestUsers.map(u => (
-                                                        <div key={u.uid} className="flex items-center gap-4 group">
-                                                            <div className="h-10 w-10 bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-orange-500/30 transition-colors">
-                                                                <span className="text-[10px] font-black">{getInitials(u.nom || u.email)}</span>
+                                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-10 italic">FLUX D&apos;ENRÔLEMENT RÉCENT</h3>
+                                                <div className="space-y-8 relative z-10">
+                                                    {latestUsers.map((u, i) => (
+                                                        <motion.div 
+                                                            key={u.uid} 
+                                                            initial={{ opacity: 0, x: 20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ delay: 0.1 * i }}
+                                                            className="flex items-center gap-5 group/item"
+                                                        >
+                                                            <div className="h-12 w-12 bg-white/5 flex items-center justify-center rounded-2xl border border-white/10 group-hover/item:border-orange-500/30 transition-all group-hover/item:bg-orange-500/5">
+                                                                <span className="text-xs font-black text-orange-500">{getInitials(u.nom || u.email)}</span>
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-xs font-black text-gray-300 uppercase italic truncate max-w-[120px]">{u.nom || 'Anonyme'}</span>
-                                                                <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">NOUVEL ADHÉRENT</span>
+                                                                <span className="text-sm font-black text-white uppercase italic tracking-tight group-hover/item:text-orange-500 transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
+                                                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">IDENTIFIÉ RÉCEMMENT</span>
                                                             </div>
-                                                        </div>
+                                                        </motion.div>
                                                     ))}
                                                 </div>
                                             </div>
@@ -444,16 +490,16 @@ export default function AdminPage() {
                     <div className="lg:col-span-1 space-y-10">
                         <AdminAlerts />
                         
-                        <div className="bg-orange-500 p-8 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-6 opacity-20 rotate-12 transition-transform group-hover:rotate-0">
-                                <ShieldAlert className="h-24 w-24 text-white" />
+                        <div className="bg-orange-500 p-10 rounded-[3rem] relative overflow-hidden group shadow-[0_30px_60px_rgba(249,115,22,0.3)] animate-float" style={{ animationDelay: '1s' }}>
+                            <div className="absolute top-0 right-0 p-8 opacity-20 rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110">
+                                <ShieldAlert className="h-32 w-32 text-white" />
                             </div>
-                            <h3 className="text-xl font-black italic uppercase tracking-tighter text-white mb-4">Support Elite</h3>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-100 mb-8 leading-relaxed">
-                                Ligne directe avec l&apos;unité d&apos;intervention technique Yakro.
+                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-4 relative z-10">Support <span className="text-orange-200">Elite</span></h3>
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-100 mb-10 leading-relaxed relative z-10 max-w-[80%]">
+                                Ligne directe avec l&apos;unité d&apos;intervention technique Yakro pour les opérations critiques.
                             </p>
-                            <Button variant="secondary" className="h-12 w-full bg-white text-orange-500 hover:bg-gray-100 rounded-none font-black italic uppercase tracking-tighter transition-all">
-                                SOLICITER AIDE
+                            <Button variant="secondary" className="h-14 w-full bg-white text-orange-500 hover:bg-orange-50 rounded-[1.5rem] font-black italic uppercase tracking-tighter transition-all hover:scale-105 shadow-2xl relative z-10">
+                                SOLLICITER AIDE
                             </Button>
                         </div>
                         
