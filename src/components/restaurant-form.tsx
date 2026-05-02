@@ -126,11 +126,11 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
                 {/* Image Upload Section */}
                 <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2 block">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 block">
                         Identité Visuelle
                     </Label>
                     <Label htmlFor="image-upload" className="cursor-pointer group block">
-                        <div className="relative w-full h-64 overflow-hidden bg-[#0A0A0B] border border-white/5 transition-all duration-500 group-hover:border-orange-500/30 flex items-center justify-center">
+                        <div className="relative w-full h-64 overflow-hidden bg-slate-50 border border-slate-200/60 rounded-2xl transition-all duration-500 group-hover:border-orange-500/50 flex items-center justify-center shadow-sm">
                             {imagePreview ? (
                                 <>
                                     {imagePreview.includes('res.cloudinary.com') ? (
@@ -140,7 +140,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                                             fill
                                             crop="fill"
                                             gravity="auto"
-                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                            className="object-cover transition-transform duration-1000 group-hover:scale-105"
                                         />
                                     ) : (
                                         <Image 
@@ -148,24 +148,24 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                                             alt="Aperçu" 
                                             fill 
                                             sizes="(max-width: 768px) 100vw, 400px"
-                                            className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                                            className="object-cover transition-transform duration-1000 group-hover:scale-105" 
                                         />
                                     )}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                         <div className="flex flex-col items-center gap-2">
                                             <Upload className="h-8 w-8 text-white" />
-                                            <span className="text-white font-bold uppercase tracking-tighter text-xs">Changer l&apos;image</span>
+                                            <span className="text-white font-black uppercase tracking-widest text-[10px]">Changer l&apos;Image</span>
                                         </div>
                                     </div>
                                 </>
                             ) : (
                                 <div className="text-center p-8 space-y-4">
-                                    <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-white/5 border border-white/10 mb-2">
-                                        <Upload className="h-6 w-6 text-orange-500" />
+                                    <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white border border-slate-100 mb-2 group-hover:scale-110 transition-transform duration-500">
+                                        <Upload className="h-8 w-8 text-orange-500" />
                                     </div>
                                     <div>
-                                        <p className="text-white font-black italic uppercase tracking-tighter text-lg">Sélectionner une Image</p>
-                                        <p className="text-gray-500 text-xs font-medium uppercase tracking-widest mt-1">Format recommandé: 16:9</p>
+                                        <p className="text-slate-900 font-black italic uppercase tracking-tighter text-xl leading-none">Sélectionner une Image</p>
+                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-3">Format recommandé: 16:9</p>
                                     </div>
                                 </div>
                             )}
@@ -181,12 +181,12 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                         name="nom"
                         render={({ field }) => (
                             <FormItem className="space-y-2">
-                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Nom de l&apos;établissement</FormLabel>
+                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Nom de l&apos;établissement</FormLabel>
                                 <FormControl>
                                     <Input 
                                         placeholder="Ex: Le Palais de la Savane" 
                                         {...field} 
-                                        className="h-14 bg-white/5 border-white/10 rounded-none focus-visible:ring-orange-500 focus-visible:border-orange-500 text-white font-medium transition-all"
+                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-slate-900 font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -199,12 +199,12 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                         name="cuisine"
                         render={({ field }) => (
                             <FormItem className="space-y-2">
-                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Type de Cuisine</FormLabel>
+                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Type de Cuisine</FormLabel>
                                 <FormControl>
                                     <Input 
                                         placeholder="Ex: Ivoirienne Moderne, Grillades" 
                                         {...field} 
-                                        className="h-14 bg-white/5 border-white/10 rounded-none focus-visible:ring-orange-500 focus-visible:border-orange-500 text-white font-medium transition-all"
+                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-slate-900 font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -218,12 +218,12 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                     name="adresse"
                     render={({ field }) => (
                         <FormItem className="space-y-2">
-                            <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Localisation Précise</FormLabel>
+                            <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Localisation Précise</FormLabel>
                             <FormControl>
                                 <Input 
                                     placeholder="Ex: Yamoussoukro, Quartier 2000, Axe Royal" 
                                     {...field} 
-                                    className="h-14 bg-white/5 border-white/10 rounded-none focus-visible:ring-orange-500 focus-visible:border-orange-500 text-white font-medium transition-all"
+                                    className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-slate-900 font-medium transition-all shadow-sm"
                                 />
                             </FormControl>
                             <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -237,12 +237,12 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                         name="tempsDeLivraison"
                         render={({ field }) => (
                             <FormItem className="space-y-2">
-                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Délai Estime (min)</FormLabel>
+                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Délai Estime (min)</FormLabel>
                                 <FormControl>
                                     <Input 
                                         type="number" 
                                         {...field} 
-                                        className="h-14 bg-white/5 border-white/10 rounded-none focus-visible:ring-orange-500 focus-visible:border-orange-500 text-white font-medium transition-all"
+                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-slate-900 font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -254,12 +254,12 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                         name="fraisDeLivraison"
                         render={({ field }) => (
                             <FormItem className="space-y-2">
-                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Service Fee (FCFA)</FormLabel>
+                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Service Fee (FCFA)</FormLabel>
                                 <FormControl>
                                     <Input 
                                         type="number" 
                                         {...field} 
-                                        className="h-14 bg-white/5 border-white/10 rounded-none focus-visible:ring-orange-500 focus-visible:border-orange-500 text-white font-medium transition-all"
+                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-slate-900 font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -268,31 +268,31 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                     />
                 </div>
 
-                <div className="space-y-6 pt-6 border-t border-white/5">
+                <div className="space-y-6 pt-10 border-t border-slate-100">
                     <div className="flex justify-between items-center gap-4">
                         <div>
-                            <h4 className="text-white font-black italic uppercase tracking-tighter text-lg leading-tight">Géolocalisation</h4>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-1">Précision stratégique pour les livreurs</p>
+                            <h4 className="text-slate-900 font-black italic uppercase tracking-tighter text-xl leading-tight">Géolocalisation</h4>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mt-2">Précision stratégique pour les livreurs</p>
                         </div>
                         <Button 
                             type="button" 
                             variant="outline" 
                             onClick={handleGetLocation} 
                             disabled={isFetchingLocation}
-                            className="rounded-none border-white/10 bg-white/5 hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-all font-bold uppercase tracking-tighter text-[10px] h-12"
+                            className="rounded-xl border-slate-200 bg-white hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[11px] h-12 px-6 shadow-sm"
                         >
                             {isFetchingLocation ? <Loader className="animate-spin h-4 w-4" /> : <MapPin className="h-4 w-4 mr-2" />}
                             Auto-Détection
                         </Button>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
                             name="latitude"
                             render={({ field }) => (
                                 <FormItem className="space-y-2">
-                                    <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Latitude</FormLabel>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Latitude</FormLabel>
                                     <FormControl>
                                         <Input 
                                             type="number" 
@@ -300,7 +300,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                                             placeholder="6.8213" 
                                             {...field} 
                                             value={field.value ?? ''} 
-                                            className="h-12 bg-[#0A0A0B] border-white/5 rounded-none text-gray-400 font-mono text-xs"
+                                            className="h-12 bg-slate-50 border-slate-100 rounded-xl text-slate-900 font-mono text-xs focus-visible:ring-orange-500 shadow-inner"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -312,7 +312,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                             name="longitude"
                             render={({ field }) => (
                                 <FormItem className="space-y-2">
-                                    <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Longitude</FormLabel>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Longitude</FormLabel>
                                     <FormControl>
                                         <Input 
                                             type="number" 
@@ -320,7 +320,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                                             placeholder="-5.2768" 
                                             {...field} 
                                             value={field.value ?? ''} 
-                                            className="h-12 bg-[#0A0A0B] border-white/5 rounded-none text-gray-400 font-mono text-xs"
+                                            className="h-12 bg-slate-50 border-slate-100 rounded-xl text-slate-900 font-mono text-xs focus-visible:ring-orange-500 shadow-inner"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -333,7 +333,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
                 <Button 
                     type="submit" 
                     disabled={isLoading} 
-                    className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white font-black italic uppercase tracking-tighter text-xl rounded-none shadow-2xl shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white font-black italic uppercase tracking-tighter text-xl rounded-2xl shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
                 >
                     {isLoading ? (
                         <Loader className="mr-3 h-6 w-6 animate-spin" />

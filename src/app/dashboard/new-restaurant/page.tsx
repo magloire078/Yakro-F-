@@ -104,16 +104,16 @@ export default function NewRestaurantPage() {
     }
 
     return (
-        <div className="min-h-screen relative overflow-hidden bg-[#0A0A0B] pb-20">
+        <div className="min-h-screen relative overflow-hidden bg-white pb-20">
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
                 <Image
                     src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop"
                     alt="Culinary Background"
                     fill
-                    className="object-cover opacity-20 scale-110 animate-slow-zoom"
+                    className="object-cover opacity-10 scale-110 animate-slow-zoom"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
             </div>
 
             <div className="relative z-10 container mx-auto pt-10 px-4">
@@ -137,7 +137,7 @@ export default function NewRestaurantPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-white mb-4 leading-none"
+                            className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-slate-900 mb-4 leading-none"
                         >
                             Érigez votre <span className="text-orange-500">Empire</span>
                         </motion.h1>
@@ -145,15 +145,15 @@ export default function NewRestaurantPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-gray-400 font-medium max-w-md mx-auto text-sm md:text-base italic uppercase tracking-widest"
+                            className="text-slate-500 font-medium max-w-md mx-auto text-sm md:text-base italic uppercase tracking-widest"
                         >
                             Rejoignez le cercle exclusif des restaurateurs Yakro Go et redéfinissez la gastronomie locale.
                         </motion.p>
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-8 md:p-12 shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
+                    <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 p-8 md:p-12 shadow-2xl relative overflow-hidden rounded-3xl">
+                        <div className="absolute top-0 left-0 w-[2px] h-full bg-orange-500" />
                         
                         <div className="relative z-10">
                             <RestaurantForm
@@ -169,7 +169,7 @@ export default function NewRestaurantPage() {
 
                     {/* Footer Info */}
                     <div className="mt-12 text-center">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
                             Propulsé par la Technologie Yakro Intelligence
                         </p>
                     </div>
