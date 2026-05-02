@@ -53,7 +53,6 @@ export function Sidebar({ onNavigate }: SidebarProps) {
     { href: '/dashboard/menu', label: 'Mes Menus', icon: BookOpen, roles: ['restaurateur'] },
     { href: '/dashboard/orders', label: 'Commandes', icon: ClipboardList, roles: ['restaurateur'] },
     { href: '/dashboard/analytics', label: 'Statistiques', icon: BarChart, roles: ['restaurateur'] },
-    { href: '/marketing', label: 'Marketing IA', icon: Megaphone, roles: ['restaurateur'] },
     { href: '/dashboard/boost', label: 'Visibilité', icon: Rocket, roles: ['restaurateur'] },
     { href: '/dashboard/stock', label: 'Stocks', icon: Package, roles: ['restaurateur'] },
   ];

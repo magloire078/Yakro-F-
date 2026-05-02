@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, ShieldCheck, Edit, UserPlus, Users, Home, Store, TrendingUp, Bell, Zap, FileText, Activity, ShieldAlert, Cpu, Navigation2 } from 'lucide-react';
+import { Loader, ShieldCheck, Edit, UserPlus, Users, Home, Store, TrendingUp, Bell, FileText, Activity, ShieldAlert, Cpu, Navigation2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, SystemRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -24,7 +24,7 @@ import { RestaurantManager } from '@/components/restaurant-manager';
 import { FinancialAnalytics } from '@/components/financial-analytics';
 import { AdminAlerts } from '@/components/admin-alerts';
 import { ReportCenter } from '@/components/report-center';
-import { intelligentSearchAction } from '@/app/actions/ai-actions';
+
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -44,9 +44,7 @@ export default function AdminPage() {
     const [editingUser, setEditingUser] = React.useState<UserProfile | null>(null);
     const [isAddUserDialogOpen, setIsAddUserDialogOpen] = React.useState(false);
     
-    const [searchQuery, setSearchQuery] = React.useState('');
-    const [searchResult, setSearchResult] = React.useState<{ category: string; keywords: string[] } | null>(null);
-    const [isSearching, setIsSearching] = React.useState(false);
+
     const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
     const [logSearchQuery, setLogSearchQuery] = React.useState('');
     const [logDisplayLimit, setLogDisplayLimit] = React.useState(50);
@@ -115,19 +113,7 @@ export default function AdminPage() {
         }
     };
 
-    const runAiSearchTest = async () => {
-        if (!searchQuery.trim()) return;
-        setIsSearching(true);
-        try {
-            const result = await intelligentSearchAction({ query: searchQuery });
-            if (result.success) setSearchResult(result.data);
-            else toast({ variant: 'destructive', title: 'Erreur IA', description: result.error });
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsSearching(false);
-        }
-    };
+
 
     const getInitials = (name: string | undefined) => {
         if (!name) return '?';
@@ -255,7 +241,7 @@ export default function AdminPage() {
                         { title: 'Citoyens', value: allUsers.length, icon: Users, color: 'orange' },
                         { title: 'Bastions', value: restaurants.length, icon: Store, color: 'white' },
                         { title: 'Flux', value: orders.length, icon: Activity, color: 'white' },
-                        { title: 'Processus IA', value: '1.2K', icon: Cpu, color: 'white' }
+                        { title: 'Opérations', value: 'Active', icon: Cpu, color: 'white' }
                     ].map((stat, idx) => (
                         <motion.div
                             key={idx}
@@ -286,8 +272,7 @@ export default function AdminPage() {
                                     { id: 'users', icon: Users, label: 'Utilisateurs' },
                                     { id: 'finances', icon: TrendingUp, label: 'Flux Financiers' },
                                     { id: 'security', icon: ShieldAlert, label: 'Sécurité' },
-                                    { id: 'reports', icon: FileText, label: 'Archives' },
-                                    { id: 'ai', icon: Zap, label: 'Yakro AI' }
+                                    { id: 'reports', icon: FileText, label: 'Archives' }
                                 ].map(tab => (
                                     <TabsTrigger 
                                         key={tab.id}
@@ -451,43 +436,7 @@ export default function AdminPage() {
                                     </div>
                                 </TabsContent>
 
-                                <TabsContent value="ai" className="m-0 outline-none">
-                                    <div className="bg-slate-900 border border-purple-500/20 p-12 relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:opacity-20 transition-opacity">
-                                            <Zap className="h-40 w-40 text-purple-500" />
-                                        </div>
-                                        <div className="relative z-10 max-w-2xl">
-                                            <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-6">Yakro AI <span className="text-purple-500">Sandbox</span></h3>
-                                            <p className="text-gray-400 font-medium mb-10 text-sm leading-relaxed">
-                                                Interrogez le moteur neural Yakro pour des analyses prédictives ou des recherches intelligentes dans la base de données administrative.
-                                            </p>
-                                            <div className="flex gap-4">
-                                                <Input 
-                                                    value={searchQuery} 
-                                                    onChange={e => setSearchQuery(e.target.value)} 
-                                                    placeholder="EX: ANALYSER LES TENDANCES DE CONSOMMATION..." 
-                                                    className="h-16 bg-black/40 border-white/10 rounded-none text-sm font-black uppercase tracking-widest placeholder:opacity-20 focus:ring-purple-500/50 px-6" 
-                                                />
-                                                <Button 
-                                                    onClick={runAiSearchTest} 
-                                                    disabled={isSearching} 
-                                                    className="h-16 px-10 bg-purple-600 hover:bg-purple-700 text-white rounded-none font-black italic uppercase tracking-tighter"
-                                                >
-                                                    {isSearching ? <Loader className="animate-spin h-6 w-6" /> : "PROCESS"}
-                                                </Button>
-                                            </div>
-                                            {searchResult && (
-                                                <motion.pre 
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className="mt-10 p-8 bg-black/60 border border-purple-500/30 rounded-none text-[10px] font-mono text-purple-400 overflow-x-auto"
-                                                >
-                                                    {JSON.stringify(searchResult, null, 2)}
-                                                </motion.pre>
-                                            )}
-                                        </div>
-                                    </div>
-                                </TabsContent>
+
                             </motion.div>
                         </Tabs>
                     </div>
