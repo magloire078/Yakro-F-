@@ -7,9 +7,15 @@ describe('canTransitionOrder', () => {
       expect(canTransitionOrder('Placée', 'En Préparation', 'restaurateur')).toBe(true);
     });
 
+    it('accepts En Préparation → Prête', () => {
+      expect(canTransitionOrder('En Préparation', 'Prête', 'restaurateur')).toBe(true);
+    });
+
     it('rejects every other transition', () => {
       expect(canTransitionOrder('Placée', 'En Route', 'restaurateur')).toBe(false);
+      expect(canTransitionOrder('Placée', 'Prête', 'restaurateur')).toBe(false);
       expect(canTransitionOrder('En Préparation', 'Livrée', 'restaurateur')).toBe(false);
+      expect(canTransitionOrder('Prête', 'En Route', 'restaurateur')).toBe(false);
       expect(canTransitionOrder('En Route', 'Livrée', 'restaurateur')).toBe(false);
     });
   });
@@ -23,6 +29,10 @@ describe('canTransitionOrder', () => {
       expect(canTransitionOrder('En Préparation', 'En Route', 'livreur')).toBe(true);
     });
 
+    it('accepts Prête → En Route (nominal handoff)', () => {
+      expect(canTransitionOrder('Prête', 'En Route', 'livreur')).toBe(true);
+    });
+
     it('accepts En Route → Livrée', () => {
       expect(canTransitionOrder('En Route', 'Livrée', 'livreur')).toBe(true);
     });
@@ -30,6 +40,7 @@ describe('canTransitionOrder', () => {
     it('rejects skipping straight to Livrée', () => {
       expect(canTransitionOrder('Placée', 'Livrée', 'livreur')).toBe(false);
       expect(canTransitionOrder('En Préparation', 'Livrée', 'livreur')).toBe(false);
+      expect(canTransitionOrder('Prête', 'Livrée', 'livreur')).toBe(false);
     });
 
     it('rejects accepting orders (Placée → En Préparation)', () => {

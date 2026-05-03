@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { QrScannerDialog } from '@/components/qr-scanner-dialog';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
+import { canTransitionOrder } from '@/lib/order-transitions';
 
 
 interface AvailableDeliveriesProps {
@@ -40,7 +41,7 @@ export function AvailableDeliveries({
     
     const availableDeliveries = React.useMemo(() => {
         if (!isEnService) return [];
-        return orders.filter(o => o.statut === 'En Préparation');
+        return orders.filter(o => canTransitionOrder(o.statut, 'En Route', 'livreur'));
     }, [orders, isEnService]);
 
     const handleAccept = async (delivery: Order) => {
@@ -209,7 +210,11 @@ export function AvailableDeliveries({
                                 <span className="text-xs font-semibold text-muted-foreground">
                                     {delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)
                                 </span>
-                               <Button onClick={() => handleAccept(delivery)} disabled={isAccepting !== null} size="sm">
+                               <Button
+                                 onClick={() => handleAccept(delivery)}
+                                 disabled={isAccepting !== null || !canTransitionOrder(delivery.statut, 'En Route', 'livreur')}
+                                 size="sm"
+                               >
                                  {isAccepting === delivery.id ? <Loader className="animate-spin h-4 w-4" /> : "Prendre la course"}
                                </Button>
                            </div>

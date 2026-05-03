@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
 import { Order } from '@/lib/types';
+import { canTransitionOrder } from '@/lib/order-transitions';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 
 export default function RestaurateurHomePage() {
@@ -281,10 +282,10 @@ export default function RestaurateurHomePage() {
                                                         </TableCell>
                                                         <TableCell className="text-center">
                                                             <div className="flex justify-center gap-2">
-                                                                {order.statut === 'Placée' && (
-                                                                    <Button 
-                                                                        size="icon" 
-                                                                        variant="outline" 
+                                                                {canTransitionOrder(order.statut, 'En Préparation', 'restaurateur') && (
+                                                                    <Button
+                                                                        size="icon"
+                                                                        variant="outline"
                                                                         className="h-8 w-8 rounded-none border-orange-500/20 text-orange-500 hover:bg-orange-500 hover:text-white transition-all"
                                                                         onClick={() => handleStatusUpdate(order, 'En Préparation')}
                                                                         disabled={isUpdating === order.id}
@@ -292,10 +293,10 @@ export default function RestaurateurHomePage() {
                                                                         {isUpdating === order.id ? <Loader className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
                                                                     </Button>
                                                                 )}
-                                                                {order.statut === 'En Préparation' && (
-                                                                    <Button 
-                                                                        size="icon" 
-                                                                        variant="outline" 
+                                                                {canTransitionOrder(order.statut, 'Prête', 'restaurateur') && (
+                                                                    <Button
+                                                                        size="icon"
+                                                                        variant="outline"
                                                                         className="h-8 w-8 rounded-none border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white transition-all"
                                                                         onClick={() => handleStatusUpdate(order, 'Prête')}
                                                                         disabled={isUpdating === order.id}

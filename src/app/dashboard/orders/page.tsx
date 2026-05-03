@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { QrCodeDialog } from '@/components/qr-code-dialog';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
+import { canTransitionOrder } from '@/lib/order-transitions';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import Image from 'next/image';
@@ -155,10 +156,10 @@ export default function DashboardOrdersPage() {
                 </Accordion>
                 
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                    {order.statut === 'Placée' && (
-                        <Button 
-                            onClick={() => handleAcceptOrder(order)} 
-                            disabled={isUpdating === order.id} 
+                    {canTransitionOrder(order.statut, 'En Préparation', 'restaurateur') && (
+                        <Button
+                            onClick={() => handleAcceptOrder(order)}
+                            disabled={isUpdating === order.id}
                             className="flex-1 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-[1.25rem] font-black italic uppercase tracking-[0.2em] transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl shadow-orange-500/20 text-[11px] border-none"
                         >
                             {isUpdating === order.id ? <Loader className="h-5 w-5 animate-spin" /> : <ChefHat className="mr-3 w-5 h-5" />}

@@ -17,12 +17,14 @@ export function canTransitionOrder(
   if (current === next) return false;
 
   if (role === 'restaurateur') {
-    return current === 'Placée' && next === 'En Préparation';
+    if (next === 'En Préparation') return current === 'Placée';
+    if (next === 'Prête') return current === 'En Préparation';
+    return false;
   }
 
   if (role === 'livreur') {
     if (next === 'En Route') {
-      return current === 'Placée' || current === 'En Préparation';
+      return current === 'Placée' || current === 'En Préparation' || current === 'Prête';
     }
     if (next === 'Livrée') {
       return current === 'En Route';

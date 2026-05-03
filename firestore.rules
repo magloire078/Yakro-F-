@@ -102,8 +102,14 @@ service cloud.firestore {
            resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation' &&
            orderCoreUnchanged()) ||
 
-          // Le livreur prend en charge (En Préparation/Placée -> En Route)
-          (getUserData().role == 'livreur' && (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée') &&
+          // Le restaurateur marque prête (En Préparation -> Prête)
+          ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId)) &&
+           resource.data.statut == 'En Préparation' && request.resource.data.statut == 'Prête' &&
+           orderCoreUnchanged()) ||
+
+          // Le livreur prend en charge (Placée/En Préparation/Prête -> En Route)
+          (getUserData().role == 'livreur' &&
+           (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée' || resource.data.statut == 'Prête') &&
            request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid &&
            orderCoreUnchanged()) ||
 
@@ -118,14 +124,20 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
-    match /stocks {
-      allow list: if isUserAuthenticated();
-    }
-
     match /stocks/{stockId} {
-      allow list: if isUserAuthenticated();
-      allow get: if isUserAuthenticated() && (resource.data.restaurateurId == request.auth.uid || isSuperAdmin());
-      allow write: if isUserAuthenticated() && (request.resource.data.restaurateurId == request.auth.uid || isSuperAdmin());
+      // Lecture per-doc — `list` est validée à partir de cette même règle,
+      // ce qui force les clients à filtrer par `restaurateurId`.
+      allow read: if isUserAuthenticated() && (
+        resource.data.restaurateurId == request.auth.uid || isSuperAdmin()
+      );
+
+      allow create, update: if isUserAuthenticated() && (
+        request.resource.data.restaurateurId == request.auth.uid || isSuperAdmin()
+      );
+
+      allow delete: if isUserAuthenticated() && (
+        resource.data.restaurateurId == request.auth.uid || isSuperAdmin()
+      );
     }
   }
 }

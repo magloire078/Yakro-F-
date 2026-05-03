@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChefHat, Home, Map, Phone, Loader } from 'lucide-react';
 import Link from 'next/link';
+import { canTransitionOrder } from '@/lib/order-transitions';
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -77,7 +78,12 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
-                        <Button className="w-full" size="lg" onClick={handleComplete} disabled={isCompleting}>
+                        <Button
+                            className="w-full"
+                            size="lg"
+                            onClick={handleComplete}
+                            disabled={isCompleting || !canTransitionOrder(order.statut, 'Livrée', 'livreur')}
+                        >
                             {isCompleting && <Loader className="animate-spin mr-2" />}
                             Marquer comme livré
                         </Button>
