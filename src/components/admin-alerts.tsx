@@ -1,15 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { 
-    AlertTriangle, 
-    Clock, 
-    Flame, 
-    CheckCircle2,
+import {
+    AlertTriangle,
+    Clock,
     ArrowRight,
     ShieldCheck
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useData } from '@/contexts/data-context';
 import { differenceInMinutes } from 'date-fns';

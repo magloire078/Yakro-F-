@@ -78,7 +78,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { setRestaurants, setMenuItems, setOrders, setStocks, setIsLoading, restaurants } = useData();
 
     React.useEffect(() => {
-        if (!db) return;
+        if (!db || authLoading) return;
+
+        if (!user) {
+            setRestaurants([]);
+            setMenuItems([]);
+            setIsLoading(false);
+            return;
+        }
 
         setIsLoading(true);
         const collectionRef = (path: string) => collection(db, path);
@@ -93,7 +100,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             unsubMenuItems();
             clearTimeout(timer);
         };
-    }, [db, setRestaurants, setMenuItems, setIsLoading]);
+    }, [db, user, authLoading, setRestaurants, setMenuItems, setIsLoading]);
 
     React.useEffect(() => {
         if (authLoading || !db) {
@@ -179,9 +186,9 @@ export const deleteMenuItem = async (db: Firestore, itemId: string) => {
     const itemDocRef = doc(db, 'plats', itemId);
 
     try {
-        // TODO: Implement Cloudinary image deletion via server-side action
-        // Cloudinary client-side deletion requires API secret and is not recommended here.
         await deleteDoc(itemDocRef);
+        const { deleteCloudinaryImageAction } = await import('@/app/actions/cloudinary-actions');
+        void deleteCloudinaryImageAction(`plats/${itemId}`);
     } catch (e) {
         const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,
@@ -235,6 +242,8 @@ export const deleteRestaurant = async (db: Firestore, restaurantId: string) => {
     const restaurantDocRef = doc(db, 'restaurants', restaurantId);
     try {
         await deleteDoc(restaurantDocRef);
+        const { deleteCloudinaryImageAction } = await import('@/app/actions/cloudinary-actions');
+        void deleteCloudinaryImageAction(`restaurants/${restaurantId}`);
     } catch (e) {
         const permissionError = new FirestorePermissionError({
             path: restaurantDocRef.path,

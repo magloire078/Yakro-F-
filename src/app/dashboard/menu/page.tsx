@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { MenuItem } from '@/lib/types';
 import { doc, deleteDoc } from 'firebase/firestore';
+import { deleteCloudinaryImageAction } from '@/app/actions/cloudinary-actions';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -92,6 +93,7 @@ export default function DashboardMenuPage() {
         setIsDeleting(itemId);
         try {
             await deleteDoc(doc(db, 'plats', itemId));
+            void deleteCloudinaryImageAction(`plats/${itemId}`);
             toast({
                 title: 'Plat supprimé',
                 description: 'Le plat a été retiré de votre menu.',

@@ -1,24 +1,20 @@
 'use client';
 
 import * as React from 'react';
-import { 
-    FileText, 
-    FileSpreadsheet, 
-    Calendar, 
-    ChevronRight, 
+import {
+    FileSpreadsheet,
+    Calendar,
+    ChevronRight,
     TrendingUp,
     Download,
-    Printer,
-    Search
+    Printer
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useData } from '@/contexts/data-context';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, eachDayOfInterval, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { motion } from 'framer-motion';
 
 export function ReportCenter() {
     const { orders } = useData();

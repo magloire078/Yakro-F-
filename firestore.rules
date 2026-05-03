@@ -39,23 +39,23 @@ service cloud.firestore {
     }
 
     match /restaurants/{restaurantId} {
-      allow read: if true;
+      allow read: if isUserAuthenticated();
       allow create: if isUserAuthenticated() && isUser(request.resource.data.proprietaireId) && userExists() && getUserData().role == 'restaurateur';
       allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
     }
-    
+
     match /restaurants {
-      allow list: if true;
+      allow list: if isUserAuthenticated();
     }
-    
+
     match /plats/{platId} {
-        allow read: if true;
+        allow read: if isUserAuthenticated();
         allow create: if isUserAuthenticated() && isRestaurantOwner(request.resource.data.restaurantId);
         allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
     }
-    
+
     match /plats {
-      allow list: if true;
+      allow list: if isUserAuthenticated();
     }
 
     match /commandes {
