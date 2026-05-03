@@ -24,9 +24,25 @@ service cloud.firestore {
     }
     
     function isSuperAdmin() {
-      return isUserAuthenticated() && 
-             userExists() && 
+      return isUserAuthenticated() &&
+             userExists() &&
              getUserData().get('roleSysteme', 'User') == 'SuperAdmin';
+    }
+
+    // Empêche la mutation des champs sensibles d'une commande lors d'une
+    // transition d'état (le statut et livreurId sont gérés à part dans la règle).
+    function orderCoreUnchanged() {
+      return request.resource.data.userId == resource.data.userId
+        && request.resource.data.restaurantId == resource.data.restaurantId
+        && request.resource.data.restaurateurId == resource.data.restaurateurId
+        && request.resource.data.total == resource.data.total
+        && request.resource.data.sousTotal == resource.data.sousTotal
+        && request.resource.data.fraisDeLivraison == resource.data.fraisDeLivraison
+        && request.resource.data.tauxCommission == resource.data.tauxCommission
+        && request.resource.data.montantCommission == resource.data.montantCommission
+        && request.resource.data.revenuNet == resource.data.revenuNet
+        && request.resource.data.plats == resource.data.plats
+        && request.resource.data.date == resource.data.date;
     }
 
     match /utilisateurs/{userId} {
@@ -58,13 +74,12 @@ service cloud.firestore {
       allow list: if isUserAuthenticated();
     }
 
-    match /commandes {
-      allow list: if isUserAuthenticated();
-    }
-    
     match /commandes/{orderId} {
+      // Lecture : un utilisateur ne voit que les commandes qui le concernent.
+      // Le moteur de règles applique cette contrainte aux `list` queries également,
+      // ce qui force les clients à filtrer correctement leurs requêtes.
       allow read: if isUserAuthenticated() && (
-        resource.data.userId == request.auth.uid || 
+        resource.data.userId == request.auth.uid ||
         resource.data.restaurateurId == request.auth.uid ||
         resource.data.livreurId == request.auth.uid ||
         isSuperAdmin() ||
@@ -72,22 +87,35 @@ service cloud.firestore {
         isRestaurantOwner(resource.data.restaurantId)
       );
 
-      allow create: if isUserAuthenticated() && isUser(request.resource.data.userId);
+      // Création : champs serveur verrouillés pour empêcher la triche.
+      allow create: if isUserAuthenticated()
+        && isUser(request.resource.data.userId)
+        && request.resource.data.statut == 'Placée'
+        && !('livreurId' in request.resource.data)
+        && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
+        && request.resource.data.restaurateurId ==
+             get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.proprietaireId;
 
       allow update: if isUserAuthenticated() && (
           // Le restaurateur accepte (Placée -> En Préparation)
-          ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId)) && 
-           resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
-          
-          // Le livreur prend en charge (En Préparation -> En Route)
-          (getUserData().role == 'livreur' && (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée') && 
-           request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
-          
+          ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId)) &&
+           resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation' &&
+           orderCoreUnchanged()) ||
+
+          // Le livreur prend en charge (En Préparation/Placée -> En Route)
+          (getUserData().role == 'livreur' && (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée') &&
+           request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid &&
+           orderCoreUnchanged()) ||
+
           // Le livreur termine (En Route -> Livrée)
-          (resource.data.livreurId == request.auth.uid && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          
+          (resource.data.livreurId == request.auth.uid && resource.data.statut == 'En Route' &&
+           request.resource.data.statut == 'Livrée' &&
+           orderCoreUnchanged()) ||
+
           isSuperAdmin()
       );
+
+      allow delete: if isSuperAdmin();
     }
 
     match /stocks {
