@@ -29,6 +29,15 @@ service cloud.firestore {
              getUserData().get('roleSysteme', 'User') == 'SuperAdmin';
     }
 
+    // Empêche un utilisateur d'auto-promouvoir son rôle ou son niveau système
+    // en se mettant à jour lui-même.
+    function userPrivilegesUnchanged() {
+      return request.resource.data.role == resource.data.role
+        && request.resource.data.get('roleSysteme', 'User')
+             == resource.data.get('roleSysteme', 'User')
+        && request.resource.data.get('uid', '') == resource.data.get('uid', '');
+    }
+
     // Empêche la mutation des champs sensibles d'une commande lors d'une
     // transition d'état (le statut et livreurId sont gérés à part dans la règle).
     function orderCoreUnchanged() {
@@ -46,10 +55,26 @@ service cloud.firestore {
     }
 
     match /utilisateurs/{userId} {
-      allow read, update: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
-      allow create: if isUserAuthenticated() && isUser(userId);
+      allow read: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
+
+      // Création : seul l'utilisateur lui-même peut créer son profil, avec un
+      // rôle valide et roleSysteme verrouillé à 'User' (l'élévation est
+      // réservée aux SuperAdmin via update).
+      allow create: if isUserAuthenticated()
+        && isUser(userId)
+        && request.resource.data.role in ['client', 'restaurateur', 'livreur']
+        && request.resource.data.get('roleSysteme', 'User') == 'User';
+
+      // Update : l'utilisateur peut modifier son profil mais ni son rôle
+      // applicatif ni son niveau système (ni son uid). SuperAdmin peut tout.
+      allow update: if isUserAuthenticated() && (
+        (isUser(userId) && userPrivilegesUnchanged()) ||
+        isSuperAdmin()
+      );
+
+      allow delete: if isSuperAdmin();
     }
-    
+
     match /utilisateurs {
       allow list: if isSuperAdmin();
     }

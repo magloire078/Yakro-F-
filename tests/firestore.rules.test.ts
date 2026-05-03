@@ -197,6 +197,74 @@ describe('firestore.rules — /commandes update', () => {
   });
 });
 
+describe('firestore.rules — /utilisateurs', () => {
+  beforeEach(seed);
+
+  it('lets a user create their own profile with a valid role', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'client',
+        roleSysteme: 'User',
+      }),
+    );
+  });
+
+  it('rejects self-creation with roleSysteme = SuperAdmin', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertFails(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'client',
+        roleSysteme: 'SuperAdmin',
+      }),
+    );
+  });
+
+  it('rejects self-creation with an unknown role', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertFails(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'admin',
+        roleSysteme: 'User',
+      }),
+    );
+  });
+
+  it('lets a user update benign fields on their own profile', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), { telephone: '+225...' }),
+    );
+  });
+
+  it('forbids a user from promoting their own role', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), { role: 'restaurateur' }),
+    );
+  });
+
+  it('forbids a user from setting roleSysteme = SuperAdmin', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), { roleSysteme: 'SuperAdmin' }),
+    );
+  });
+
+  it('forbids reading another user’s profile', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(getDoc(doc(db, 'utilisateurs', RESTAURATEUR_UID)));
+  });
+
+  it('forbids deleting a user profile when not SuperAdmin', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(deleteDoc(doc(db, 'utilisateurs', OTHER_USER_UID)));
+  });
+});
+
 describe('firestore.rules — /stocks', () => {
   beforeEach(async () => {
     await seed();
