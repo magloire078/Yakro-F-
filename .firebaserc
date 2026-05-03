@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "yakro-go"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

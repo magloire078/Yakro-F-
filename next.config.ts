@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    // Optimize chunking to reduce ChunkLoadError in large apps
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts', '@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
   },
   images: {
     remotePatterns: [

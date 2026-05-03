@@ -9,9 +9,9 @@ import {
     Store,
     TrendingUp,
     ShieldAlert,
-    Filter
+    Filter,
+    Trash2
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -38,6 +38,7 @@ import { logAdminAction, type AdminAction } from '@/lib/audit-logs';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { deleteRestaurantAction } from '@/app/actions/restaurant-actions';
 
 export function RestaurantManager() {
     const { restaurants } = useData();
@@ -45,7 +46,7 @@ export function RestaurantManager() {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    const handleAction = async (restaurant: Restaurant, action: 'FEATURE_RESTAURANT' | 'UNFEATURE_RESTAURANT' | 'SUSPEND_RESTAURANT' | 'ACTIVATE_RESTAURANT') => {
+    const handleAction = async (restaurant: Restaurant, action: 'FEATURE_RESTAURANT' | 'UNFEATURE_RESTAURANT' | 'SUSPEND_RESTAURANT' | 'ACTIVATE_RESTAURANT' | 'DELETE_RESTAURANT') => {
         if (!user) return;
 
         try {
@@ -70,9 +71,20 @@ export function RestaurantManager() {
                     updateData = { suspendu: false };
                     detailMessage = `Réactivation du restaurant ${restaurant.nom}`;
                     break;
+                case 'DELETE_RESTAURANT':
+                    if (window.confirm(`Êtes-vous absolument sûr de vouloir supprimer définitivement ${restaurant.nom} ? Cette action est irréversible.`)) {
+                        detailMessage = `SUPPRESSION DÉFINITIVE du restaurant ${restaurant.nom}`;
+                    } else {
+                        return;
+                    }
+                    break;
             }
 
-            await updateDoc(restaurantRef, updateData);
+            if (action === 'DELETE_RESTAURANT') {
+                await deleteRestaurantAction(restaurant.id);
+            } else {
+                await updateDoc(restaurantRef, updateData);
+            }
 
             await logAdminAction(db, {
                 adminId: user.uid,
@@ -226,6 +238,14 @@ export function RestaurantManager() {
                                                     >
                                                         <ShieldAlert className="h-4 w-4" />
                                                         {restaurant.suspendu ? 'Réactiver le Service' : 'Interruption de Service'}
+                                                    </DropdownMenuItem>
+                                                    <div className="h-px bg-border/50 my-1" />
+                                                    <DropdownMenuItem 
+                                                        className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-red-700 focus:text-white cursor-pointer transition-colors text-red-600"
+                                                        onClick={() => handleAction(restaurant, 'DELETE_RESTAURANT')}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        Suppression Définitive
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

@@ -60,7 +60,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   return (
     <aside className={cn(
       "flex flex-col h-full p-6 transition-all duration-300 relative",
-      "bg-white/80 dark:bg-[#0A0A0B]/95 backdrop-blur-2xl border-r border-slate-200/50 dark:border-white/5",
+      "bg-card/80 backdrop-blur-2xl border-r border-border/50",
       "md:w-64 md:fixed md:left-0 md:top-0 md:z-50 md:h-screen"
     )}>
         {/* Mobile Close Button */}
@@ -124,19 +124,19 @@ export function Sidebar({ onNavigate }: SidebarProps) {
            {!loading && user && (
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all group active:scale-95">
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 border border-border/50 cursor-pointer hover:bg-muted transition-all group active:scale-95">
                         <Avatar className="h-10 w-10 rounded-xl border border-orange-500/20 shadow-lg shadow-orange-500/10">
                             <AvatarFallback className="bg-orange-500/10 text-orange-500 text-xs font-black italic">{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-black truncate leading-tight text-neutral-800 dark:text-white uppercase tracking-tight">{userProfile?.nom || user.email}</p>
+                            <p className="text-sm font-black truncate leading-tight text-foreground uppercase tracking-tight">{userProfile?.nom || user.email}</p>
                             <p className="text-[10px] text-orange-500/70 capitalize font-bold italic tracking-widest">{activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 mb-4 p-2 bg-white/95 dark:bg-[#0A0A0B]/95 backdrop-blur-xl border-slate-200/50 dark:border-white/10 rounded-2xl shadow-2xl" align="start">
-                    <DropdownMenuLabel className="px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-500">Compte</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-slate-100 dark:bg-white/5" />
+                <DropdownMenuContent className="w-64 mb-4 p-2 bg-popover/95 backdrop-blur-xl border-border/50 rounded-2xl shadow-2xl" align="start">
+                    <DropdownMenuLabel className="px-3 py-2 text-xs font-black uppercase tracking-widest text-muted-foreground">Compte</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-border/50" />
                      <DropdownMenuItem asChild onClick={onNavigate} className="rounded-xl focus:bg-orange-500/10 focus:text-orange-500 cursor-pointer h-10 mb-1">
                         <Link href="/profile" className="flex items-center font-bold text-xs uppercase tracking-widest">
                           <User className="mr-3 h-4 w-4"/>

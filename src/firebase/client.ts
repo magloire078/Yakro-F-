@@ -29,7 +29,11 @@ function initFirebase() {
   try {
     if (getApps().length === 0) {
       if (!firebaseConfig.apiKey) {
-        throw new Error("NEXT_PUBLIC_FIREBASE_API_KEY is missing. Check your .env file.");
+        // En mode serveur (API routes), on peut tolérer l'absence de clé API 
+        // si on n'utilise pas Auth client, mais pour Firestore c'est mieux de l'avoir.
+        if (typeof window !== 'undefined') {
+          throw new Error("NEXT_PUBLIC_FIREBASE_API_KEY is missing. Check your .env file.");
+        }
       }
       app = initializeApp(firebaseConfig);
     } else {
@@ -39,7 +43,7 @@ function initFirebase() {
     if (!app) return;
 
     // Initialize missing services if they haven't been initialized yet
-    if (!auth) {
+    if (!auth && typeof window !== 'undefined') {
         auth = getAuth(app);
     }
     

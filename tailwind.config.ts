@@ -11,9 +11,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['var(--font-alegreya)', 'serif'],
-        headline: ['var(--font-belleza)', 'sans-serif'],
+        body: ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
+        headline: ['var(--font-fraunces)', 'Georgia', 'serif'],
+        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
         sora: ['var(--font-sora)', 'sans-serif'],
+        ui: ['var(--font-sora)', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

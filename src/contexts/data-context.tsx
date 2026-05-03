@@ -3,11 +3,12 @@
 import * as React from 'react';
 import type { Restaurant, MenuItem, Order, StockItem } from '@/lib/types';
 import { create } from 'zustand';
-import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc, updateDoc, Firestore } from 'firebase/firestore';
+import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, doc, deleteDoc, updateDoc, Firestore } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { deleteMenuItemAction } from '@/app/actions/menu-item-actions';
 
 interface DataState {
     restaurants: Restaurant[];
@@ -96,11 +97,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [db, setRestaurants, setMenuItems, setIsLoading]);
 
     React.useEffect(() => {
-        if (authLoading || !db) {
+        // Don't start role-specific listeners if auth is still loading, 
+        // if user is not logged in, or if profile isn't ready.
+        if (authLoading || !db || !user || !userProfile) {
             return;
         }
 
         let unsubOrders: Unsubscribe | undefined;
+        let unsubOrders2: Unsubscribe | undefined; // Used for livreur split query
         let unsubStocks: Unsubscribe | undefined;
         const collectionRef = (path: string) => collection(db, path);
 
@@ -118,7 +122,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         break;
                     case 'restaurateur':
                         ordersQuery = query(collectionRef('commandes'), where('restaurateurId', '==', user.uid));
-                        
+
                         const myRestaurantIds = restaurants
                             .filter(r => r.proprietaireId === user.uid)
                             .map(r => r.id);
@@ -130,19 +134,49 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         }
                         break;
                     case 'livreur':
-                        ordersQuery = query(collectionRef('commandes'), or(
-                            where('statut', '==', 'En Préparation'),
-                            where('livreurId', '==', user.uid)
-                        ));
+                        // Split OR query into two separate simple queries to avoid Firestore
+                        // permission evaluation issues with compound OR on realtime listeners.
+                        // Query 1: orders available to pick up
+                        ordersQuery = query(collectionRef('commandes'), where('statut', 'in', ['En Préparation', 'Placée', 'Prête']));
+                        // Query 2 (livreur's own deliveries) is handled below via unsubOrders2
                         break;
                 }
             }
 
+            // Merge function for livreur's two separate queries
+            const mergedOrdersRef = { current: [] as Order[] };
+            const mergedAvailableRef = { current: [] as Order[] };
+
             if (ordersQuery) {
-                unsubOrders = setupSubscription<Order>(ordersQuery, (fetchedOrders) => {
-                    setOrders(fetchedOrders);
-                    setIsLoading(false);
-                }, 'commandes');
+                if (activeRole === 'livreur') {
+                    // Query 1: available orders
+                    unsubOrders = setupSubscription<Order>(ordersQuery, (available) => {
+                        mergedAvailableRef.current = available;
+                        // Merge: available orders + livreur's own deliveries (deduplicated)
+                        const myDeliveries = mergedOrdersRef.current;
+                        const allIds = new Set(myDeliveries.map(o => o.id));
+                        const merged = [...myDeliveries, ...available.filter(o => !allIds.has(o.id))];
+                        setOrders(merged);
+                        setIsLoading(false);
+                    }, 'commandes');
+
+                    // Query 2: livreur's own deliveries (En Route, Livrée)
+                    const myDeliveriesQuery = query(collectionRef('commandes'), where('livreurId', '==', user.uid));
+                    unsubOrders2 = setupSubscription<Order>(myDeliveriesQuery, (myDeliveries) => {
+                        mergedOrdersRef.current = myDeliveries;
+                        // Merge: available orders + livreur's own deliveries (deduplicated)
+                        const available = mergedAvailableRef.current;
+                        const allIds = new Set(myDeliveries.map(o => o.id));
+                        const merged = [...myDeliveries, ...available.filter(o => !allIds.has(o.id))];
+                        setOrders(merged);
+                        setIsLoading(false);
+                    }, 'commandes');
+                } else {
+                    unsubOrders = setupSubscription<Order>(ordersQuery, (fetchedOrders) => {
+                        setOrders(fetchedOrders);
+                        setIsLoading(false);
+                    }, 'commandes');
+                }
             } else {
                 setOrders([]);
                 setIsLoading(false);
@@ -157,18 +191,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
         } else {
+            // Not logged in or no profile - clear role-specific data
             setOrders([]);
             setStocks([]);
             setIsLoading(false);
         }
 
         return () => {
-            if (unsubOrders) {
-                unsubOrders();
-            }
-            if (unsubStocks) {
-                unsubStocks();
-            }
+            if (unsubOrders) unsubOrders();
+            if (unsubOrders2) unsubOrders2();
+            if (unsubStocks) unsubStocks();
         };
     }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setStocks, setIsLoading]);
 
@@ -176,13 +208,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const deleteMenuItem = async (db: Firestore, itemId: string) => {
-    const itemDocRef = doc(db, 'plats', itemId);
-
     try {
-        // TODO: Implement Cloudinary image deletion via server-side action
-        // Cloudinary client-side deletion requires API secret and is not recommended here.
-        await deleteDoc(itemDocRef);
+        await deleteMenuItemAction(itemId);
     } catch (e) {
+        const itemDocRef = doc(db, 'plats', itemId);
         const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,
             operation: 'delete',

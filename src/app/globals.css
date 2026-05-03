@@ -24,6 +24,11 @@
     --input: 34 30% 88%;
     --ring: 33 100% 50%;
     --radius: 1.5rem;
+    --chart-1: 33 100% 50%;
+    --chart-2: 215 25% 27%;
+    --chart-3: 199 89% 48%;
+    --chart-4: 47 95% 55%;
+    --chart-5: 142 71% 45%;
   }
 
   .dark {
@@ -46,6 +51,11 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 33 100% 50%;
+    --chart-1: 33 100% 50%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 199 89% 48%;
+    --chart-4: 47 95% 55%;
+    --chart-5: 142 71% 45%;
   }
 
   * {
@@ -59,7 +69,27 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* Headlines default to Fraunces - the editorial serif */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-optical-sizing: auto;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+
+  /* Preserve sora for specific UI labels */
+  label, .font-ui {
+    font-family: var(--font-sora), sans-serif;
   }
 
   ::selection {
@@ -68,6 +98,7 @@
 
   input, textarea, select {
     font-size: 16px !important;
+    font-family: var(--font-jakarta), system-ui, sans-serif;
   }
 
   /* Custom Scrollbar */
@@ -116,6 +147,40 @@
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400;
+  }
+
+  /* ── Premium Food Typography Utilities ── */
+
+  /* Hero display - utilisé uniquement pour les grandes bannières */
+  .text-food-hero {
+    font-family: var(--font-fraunces), Georgia, serif;
+    @apply text-3xl md:text-5xl font-bold tracking-tight leading-tight;
+    font-optical-sizing: auto;
+  }
+
+  /* Titre de section - sobres et lisibles */
+  .text-section-title {
+    font-family: var(--font-fraunces), Georgia, serif;
+    @apply text-xl md:text-2xl font-semibold tracking-tight leading-snug;
+    font-optical-sizing: auto;
+  }
+
+  /* Label discret - Sora, sans majuscules */
+  .text-food-label {
+    font-family: var(--font-sora), sans-serif;
+    @apply text-xs font-semibold tracking-wide text-muted-foreground;
+  }
+
+  /* Prix - Fraunces, sobre */
+  .text-price {
+    font-family: var(--font-fraunces), Georgia, serif;
+    @apply font-bold tracking-tight;
+  }
+
+  /* Corps de texte mis en avant */
+  .text-food-body {
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+    @apply text-sm font-medium leading-relaxed;
   }
 
   .animate-float {

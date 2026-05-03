@@ -2,102 +2,169 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    function isUserAuthenticated() {
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function isAuth() {
       return request.auth != null;
     }
-    
+
     function isUser(uid) {
-      return isUserAuthenticated() && request.auth.uid == uid;
+      return isAuth() && request.auth.uid == uid;
     }
-    
+
     function getUserData() {
       return get(/databases/$(database)/documents/utilisateurs/$(request.auth.uid)).data;
     }
-    
+
     function userExists() {
       return exists(/databases/$(database)/documents/utilisateurs/$(request.auth.uid));
     }
 
-    function isRestaurantOwner(restaurantId) {
-       return isUserAuthenticated() && exists(/databases/$(database)/documents/restaurants/$(restaurantId)) && isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
+    function getRole() {
+      return isAuth() ? getUserData().get('role', 'client') : 'client';
     }
-    
+
+    function getSystemRole() {
+      return isAuth() && userExists() ? getUserData().get('roleSysteme', 'User') : 'User';
+    }
+
     function isSuperAdmin() {
-      return isUserAuthenticated() && 
-             userExists() && 
-             getUserData().get('roleSysteme', 'User') == 'SuperAdmin';
+      return isAuth() && getSystemRole() == 'SuperAdmin';
     }
 
+    function isRestaurateur() {
+      return isAuth() && getRole() == 'restaurateur';
+    }
+
+    function isLivreur() {
+      return isAuth() && getRole() == 'livreur';
+    }
+
+    function isRestaurantOwner(restaurantId) {
+      return isAuth()
+        && exists(/databases/$(database)/documents/restaurants/$(restaurantId))
+        && isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
+    }
+
+    // ── Utilisateurs ─────────────────────────────────────────────────────
     match /utilisateurs/{userId} {
-      allow read, update: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
-      allow create: if isUserAuthenticated() && isUser(userId);
-    }
-    
-    match /utilisateurs {
-      allow list: if isSuperAdmin();
+      allow get:    if isAuth() && (isUser(userId) || isSuperAdmin() || isRestaurateur());
+      allow list:   if isSuperAdmin() || isRestaurateur();
+      allow create: if isAuth() && isUser(userId);
+      allow update: if isAuth() && (isUser(userId) || isSuperAdmin());
+      allow delete: if isSuperAdmin();
     }
 
+    // ── Restaurants ───────────────────────────────────────────────────────
     match /restaurants/{restaurantId} {
-      allow read: if true;
-      allow create: if isUserAuthenticated() && isUser(request.resource.data.proprietaireId) && userExists() && getUserData().role == 'restaurateur';
-      allow update, delete: if isRestaurantOwner(restaurantId) || isSuperAdmin();
-    }
-    
-    match /restaurants {
-      allow list: if true;
-    }
-    
-    match /plats/{platId} {
-        allow read: if true;
-        allow create: if isUserAuthenticated() && isRestaurantOwner(request.resource.data.restaurantId);
-        allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
-    }
-    
-    match /plats {
-      allow list: if true;
+      allow read, list: if true;
+      allow create: if isAuth()
+        && isUser(request.resource.data.proprietaireId)
+        && userExists()
+        && getUserData().role == 'restaurateur';
+      allow update: if isRestaurantOwner(restaurantId) || isSuperAdmin();
+      allow delete: if isSuperAdmin();
     }
 
-    match /commandes {
-      allow list: if isUserAuthenticated();
+    // ── Plats ─────────────────────────────────────────────────────────────
+    match /plats/{platId} {
+      allow read, list: if true;
+      allow create: if isAuth() && isRestaurantOwner(request.resource.data.restaurantId);
+      allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
     }
-    
+
+    // ── Commandes ─────────────────────────────────────────────────────────
     match /commandes/{orderId} {
-      allow read: if isUserAuthenticated() && (
-        resource.data.userId == request.auth.uid || 
+      allow list: if isAuth();
+
+      allow get: if isAuth() && (
+        isSuperAdmin() ||
+        resource.data.userId == request.auth.uid ||
         resource.data.restaurateurId == request.auth.uid ||
         resource.data.livreurId == request.auth.uid ||
+        (isLivreur() && resource.data.statut in ['En Préparation', 'Placée', 'Prête'])
+      );
+
+      allow create: if isAuth() && isUser(request.resource.data.userId);
+
+      allow update: if isAuth() && (
         isSuperAdmin() ||
-        (resource.data.statut == 'En Préparation' && getUserData().role == 'livreur') ||
-        isRestaurantOwner(resource.data.restaurantId)
-      );
 
-      allow create: if isUserAuthenticated() && isUser(request.resource.data.userId);
+        // Restaurateur : accepte (Placée → En Préparation)
+        ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId))
+          && resource.data.statut == 'Placée'
+          && request.resource.data.statut == 'En Préparation') ||
 
-      allow update: if isUserAuthenticated() && (
-          // Le restaurateur accepte (Placée -> En Préparation)
-          ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId)) && 
-           resource.data.statut == 'Placée' && request.resource.data.statut == 'En Préparation') ||
-          
-          // Le livreur prend en charge (En Préparation -> En Route)
-          (getUserData().role == 'livreur' && (resource.data.statut == 'En Préparation' || resource.data.statut == 'Placée') && 
-           request.resource.data.statut == 'En Route' && request.resource.data.livreurId == request.auth.uid) ||
-          
-          // Le livreur termine (En Route -> Livrée)
-          (resource.data.livreurId == request.auth.uid && resource.data.statut == 'En Route' && request.resource.data.statut == 'Livrée') ||
-          
-          isSuperAdmin()
+        // Restaurateur : marque prête (En Préparation → Prête)
+        ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId))
+          && resource.data.statut == 'En Préparation'
+          && request.resource.data.statut == 'Prête') ||
+
+        // Livreur : prend en charge (Placée/En Préparation/Prête → En Route)
+        (isLivreur()
+          && resource.data.statut in ['Placée', 'En Préparation', 'Prête']
+          && request.resource.data.statut == 'En Route'
+          && request.resource.data.livreurId == request.auth.uid) ||
+
+        // Livreur : livre (En Route → Livrée)
+        (resource.data.livreurId == request.auth.uid
+          && resource.data.statut == 'En Route'
+          && request.resource.data.statut == 'Livrée') ||
+
+        // Client : annule sa propre commande
+        (resource.data.userId == request.auth.uid
+          && resource.data.statut == 'Placée'
+          && request.resource.data.statut == 'Annulée')
       );
     }
 
-    match /stocks {
-      allow list: if isUserAuthenticated();
-    }
-
+    // ── Stocks ────────────────────────────────────────────────────────────
     match /stocks/{stockId} {
-      allow list: if isUserAuthenticated();
-      allow get: if isUserAuthenticated() && (resource.data.restaurateurId == request.auth.uid || isSuperAdmin());
-      allow write: if isUserAuthenticated() && (request.resource.data.restaurateurId == request.auth.uid || isSuperAdmin());
+      allow list: if isAuth() && (isSuperAdmin() || isRestaurateur());
+      allow get:  if isAuth() && (
+        isSuperAdmin() ||
+        resource.data.restaurateurId == request.auth.uid
+      );
+      allow create: if isAuth() && (
+        isSuperAdmin() ||
+        (isRestaurateur() && request.resource.data.restaurateurId == request.auth.uid)
+      );
+      allow update, delete: if isAuth() && (
+        isSuperAdmin() ||
+        resource.data.restaurateurId == request.auth.uid
+      );
+    }
+
+    // ── Avis / Reviews ────────────────────────────────────────────────────
+    match /avis/{avisId} {
+      allow read, list: if true;
+      allow create: if isAuth() && isUser(request.resource.data.userId);
+      allow update, delete: if isAuth() && (isUser(resource.data.userId) || isSuperAdmin());
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────
+    match /notifications/{notifId} {
+      allow list: if isAuth() && resource.data.destinataireId == request.auth.uid;
+      allow get:  if isAuth() && resource.data.destinataireId == request.auth.uid;
+      allow create: if isAuth();
+      allow update: if isAuth() && resource.data.destinataireId == request.auth.uid;
+      allow delete: if isAuth() && (resource.data.destinataireId == request.auth.uid || isSuperAdmin());
+    }
+
+    // ── Boost / Promotions ────────────────────────────────────────────────
+    match /boosts/{boostId} {
+      allow read, list: if true;
+      allow create: if isAuth() && isRestaurateur();
+      allow update, delete: if isAuth() && (
+        resource.data.restaurateurId == request.auth.uid || isSuperAdmin()
+      );
+    }
+    
+    // ── Audit Logs ────────────────────────────────────────────────────────
+    match /audit_logs/{logId} {
+      allow read: if isSuperAdmin() || (resource != null && resource.data.timestamp < (request.time - duration.value(30, 'd')));
+      allow create: if isAuth(); // Permettre aux admins de créer des logs
+      allow delete: if isSuperAdmin() || (resource != null && resource.data.timestamp < (request.time - duration.value(30, 'd')));
     }
   }
 }

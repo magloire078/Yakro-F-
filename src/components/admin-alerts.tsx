@@ -4,12 +4,9 @@ import * as React from 'react';
 import { 
     AlertTriangle, 
     Clock, 
-    Flame, 
-    CheckCircle2,
     ArrowRight,
     ShieldCheck
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useData } from '@/contexts/data-context';
 import { differenceInMinutes } from 'date-fns';
