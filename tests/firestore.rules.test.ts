@@ -265,6 +265,48 @@ describe('firestore.rules — /utilisateurs', () => {
   });
 });
 
+describe('firestore.rules — /livreurs_public', () => {
+  beforeEach(seed);
+
+  it('lets the livreur publish their own public doc', async () => {
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'livreurs_public', LIVREUR_UID), {
+        nom: 'Yao',
+        latitude: 7.69,
+        longitude: -5.03,
+      }),
+    );
+  });
+
+  it('forbids a livreur from writing another livreur’s public doc', async () => {
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'livreurs_public', 'other-livreur'), { nom: 'spoof' }),
+    );
+  });
+
+  it('lets any authenticated user read a livreur public doc', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'livreurs_public', LIVREUR_UID), {
+        nom: 'Yao',
+        latitude: 7.69,
+        longitude: -5.03,
+      });
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(getDoc(doc(db, 'livreurs_public', LIVREUR_UID)));
+  });
+
+  it('forbids unauthenticated reads of livreurs_public', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'livreurs_public', LIVREUR_UID), { nom: 'Yao' });
+    });
+    const db = env.unauthenticatedContext().firestore();
+    await assertFails(getDoc(doc(db, 'livreurs_public', LIVREUR_UID)));
+  });
+});
+
 describe('firestore.rules — /stocks', () => {
   beforeEach(async () => {
     await seed();

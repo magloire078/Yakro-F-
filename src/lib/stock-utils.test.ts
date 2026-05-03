@@ -3,13 +3,13 @@ import type { Order } from './types';
 
 const updateMock = vi.fn();
 const commitMock = vi.fn().mockResolvedValue(undefined);
-const writeBatchMock = vi.fn((_db: unknown) => ({ update: updateMock, commit: commitMock }));
+const writeBatchMock = vi.fn(() => ({ update: updateMock, commit: commitMock }));
 const incrementMock = vi.fn((n: number) => ({ __increment: n }));
 const docMock = vi.fn((_db: unknown, collection: string, id: string) => ({ collection, id }));
 
 vi.mock('firebase/firestore', () => ({
   doc: (db: unknown, collection: string, id: string) => docMock(db, collection, id),
-  writeBatch: (db: unknown) => writeBatchMock(db),
+  writeBatch: () => writeBatchMock(),
   increment: (n: number) => incrementMock(n),
   getDoc: vi.fn(),
 }));

@@ -149,6 +149,14 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // Profil public d'un livreur (nom + position) consultable par tout
+    // utilisateur authentifié pour le suivi de commande. Le livreur est
+    // seul autorisé à publier ses propres données.
+    match /livreurs_public/{livreurId} {
+      allow read: if isUserAuthenticated();
+      allow write: if isUser(livreurId);
+    }
+
     match /stocks/{stockId} {
       // Lecture per-doc — `list` est validée à partir de cette même règle,
       // ce qui force les clients à filtrer par `restaurateurId`.
