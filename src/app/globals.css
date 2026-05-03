@@ -95,7 +95,15 @@
   }
 
   .glass-dark {
-    @apply bg-slate-900/80 backdrop-blur-2xl border border-white/10 shadow-2xl;
+    @apply bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-2xl;
+  }
+
+  .glass-premium {
+    @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-3xl border border-white dark:border-white/10 shadow-2xl;
+  }
+
+  .glass-header {
+    @apply bg-white/10 dark:bg-black/10 backdrop-blur-3xl border border-white/20 dark:border-white/10;
   }
 
   .glass-orange {

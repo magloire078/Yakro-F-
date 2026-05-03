@@ -17,11 +17,14 @@ import { useData } from '@/contexts/data-context';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, eachDayOfInterval, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 
 export function ReportCenter() {
     const { orders } = useData();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [selectedMonth, setSelectedMonth] = React.useState(new Date());
 
     const months = React.useMemo(() => {
@@ -132,11 +135,11 @@ export function ReportCenter() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
                 {/* Selector Section */}
                 <div className="lg:col-span-1 space-y-8">
-                    <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                    <div className="bg-card/40 backdrop-blur-3xl border border-border/50 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Calendar className="h-12 w-12 text-orange-500" />
                         </div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-10 italic">PÉRIODE D&apos;ANALYSE</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground mb-10 italic">PÉRIODE D&apos;ANALYSE</h3>
                         
                         <div className="space-y-3 relative z-10">
                             {months.map((month) => {
@@ -149,7 +152,7 @@ export function ReportCenter() {
                                             "w-full flex items-center justify-between p-5 rounded-2xl transition-all duration-500 group/btn border border-transparent relative overflow-hidden",
                                             isSelected
                                                 ? "bg-orange-500 text-white shadow-[0_10px_20px_rgba(249,115,22,0.3)] scale-[1.02]"
-                                                : "bg-white/5 text-slate-400 hover:bg-white/10 hover:border-white/5 hover:text-white"
+                                                : "bg-card/50 text-muted-foreground hover:bg-card hover:border-border/50 hover:text-foreground"
                                         )}
                                     >
                                         {isSelected && (
@@ -159,7 +162,7 @@ export function ReportCenter() {
                                             <span className="font-black uppercase italic tracking-tighter text-xs">{format(month, 'MMMM yyyy', { locale: fr })}</span>
                                             <span className={cn(
                                                 "text-[8px] font-bold uppercase tracking-widest",
-                                                isSelected ? "text-orange-100" : "text-slate-600"
+                                                isSelected ? "text-orange-100" : "text-muted-foreground/50"
                                             )}>Période Archive</span>
                                         </div>
                                         <ChevronRight className={cn(
@@ -183,7 +186,7 @@ export function ReportCenter() {
                                 <FileSpreadsheet className="mr-3 h-4 w-4" />
                                 Données CSV
                             </Button>
-                            <Button onClick={handlePrint} className="w-full h-12 bg-slate-900/40 text-white hover:bg-slate-900/60 rounded-xl font-black italic uppercase tracking-tighter border border-white/10 transition-all hover:scale-105">
+                            <Button onClick={handlePrint} className="w-full h-12 bg-background/40 text-foreground hover:bg-background/60 rounded-xl font-black italic uppercase tracking-tighter border border-border/50 transition-all hover:scale-105">
                                 <Printer className="mr-3 h-4 w-4" />
                                 Format PDF
                             </Button>
@@ -193,7 +196,7 @@ export function ReportCenter() {
 
                 {/* Report Content */}
                 <div className="lg:col-span-3 space-y-10">
-                    <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                    <div className="bg-card/40 backdrop-blur-3xl border border-border/50 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 blur-[120px] rounded-full -mr-48 -mt-48" />
                         
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative z-10">
@@ -202,28 +205,28 @@ export function ReportCenter() {
                                     <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
                                     <span className="text-[9px] font-black uppercase tracking-widest text-orange-500">Document Certifié</span>
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-none">
+                                <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground leading-none">
                                     Rapport <span className="text-orange-500 italic">Administratif</span>
                                 </h2>
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 italic">
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground italic">
                                     Synthèse des performances • {format(selectedMonth, 'MMMM yyyy', { locale: fr })}
                                 </p>
                             </div>
                             
                             <div className="flex gap-4">
                                 <div className="text-right hidden md:block">
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-600">GÉNÉRÉ LE</p>
-                                    <p className="text-sm font-black italic text-slate-400">{format(new Date(), 'dd MMMM yyyy', { locale: fr })}</p>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">GÉNÉRÉ LE</p>
+                                    <p className="text-sm font-black italic text-muted-foreground">{format(new Date(), 'dd MMMM yyyy', { locale: fr })}</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Stats Summary */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 relative z-10">
-                            <div className="p-8 bg-white/5 border border-white/5 rounded-[2rem] group/stat hover:border-orange-500/30 transition-all duration-500">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover/stat:text-orange-500 transition-colors">VOLUME TRANSACTIONNEL</p>
+                            <div className="p-8 bg-card/30 border border-border/50 rounded-[2rem] group/stat hover:border-orange-500/30 transition-all duration-500">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-2 group-hover/stat:text-orange-500 transition-colors">VOLUME TRANSACTIONNEL</p>
                                 <div className="flex items-baseline gap-2">
-                                    <p className="text-4xl font-black italic tracking-tighter text-white">{reportStats.totalSales.toLocaleString()}</p>
+                                    <p className="text-4xl font-black italic tracking-tighter text-foreground">{reportStats.totalSales.toLocaleString()}</p>
                                     <span className="text-xs font-black text-orange-500 tracking-widest">FCFA</span>
                                 </div>
                             </div>
@@ -231,7 +234,7 @@ export function ReportCenter() {
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/60 mb-2 group-hover/stat:text-orange-500 transition-colors">COMMISSIONS COLLECTÉES</p>
                                 <div className="flex items-baseline gap-2">
                                     <p className="text-4xl font-black italic tracking-tighter text-orange-500">{reportStats.totalCommission.toLocaleString()}</p>
-                                    <span className="text-xs font-black text-white tracking-widest">FCFA</span>
+                                    <span className="text-xs font-black text-foreground tracking-widest">FCFA</span>
                                 </div>
                             </div>
                         </div>
@@ -246,12 +249,12 @@ export function ReportCenter() {
                                             <stop offset="100%" stopColor="#F97316" stopOpacity={0.3} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff" strokeOpacity={0.03} />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#ffffff" : "#000000"} strokeOpacity={isDark ? 0.03 : 0.06} />
                                     <XAxis 
                                         dataKey="day" 
                                         axisLine={false} 
                                         tickLine={false} 
-                                        tick={{ fontSize: 10, fontWeight: '900', fill: '#4b5563', letterSpacing: '0.1em' }} 
+                                        tick={{ fontSize: 10, fontWeight: '900', fill: isDark ? '#4b5563' : '#94a3b8', letterSpacing: '0.1em' }} 
                                     />
                                     <YAxis hide />
                                     <Tooltip 
@@ -259,12 +262,12 @@ export function ReportCenter() {
                                         content={({ active, payload }) => {
                                             if (active && payload && payload.length) {
                                                 return (
-                                                    <div className="bg-[#0A0A0B]/90 backdrop-blur-3xl border border-white/10 p-5 shadow-3xl rounded-[1.5rem]">
-                                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-3">{payload[0].payload.fullDate}</p>
+                                                    <div className="bg-card/90 backdrop-blur-3xl border border-border/50 p-5 shadow-3xl rounded-[1.5rem]">
+                                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-3">{payload[0].payload.fullDate}</p>
                                                         <p className="text-orange-500 font-black text-lg italic tracking-tighter">{(payload[0].value || 0).toLocaleString()} FCFA</p>
                                                         <div className="mt-2 flex items-center gap-2">
                                                             <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                                                            <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">{payload[0].payload.count} OPÉRATIONS</span>
+                                                            <span className="text-[7px] font-bold text-muted-foreground/60 uppercase tracking-widest">{payload[0].payload.count} OPÉRATIONS</span>
                                                         </div>
                                                     </div>
                                                 );
@@ -276,7 +279,7 @@ export function ReportCenter() {
                                         {reportStats.dailyData.map((entry, index) => (
                                             <Cell 
                                                 key={`cell-${index}`} 
-                                                fill={entry.total > 0 ? "url(#barGradient)" : '#ffffff'} 
+                                                fill={entry.total > 0 ? "url(#barGradient)" : (isDark ? '#ffffff' : '#e2e8f0')} 
                                                 fillOpacity={entry.total > 0 ? 1 : 0.05}
                                             />
                                         ))}
@@ -289,31 +292,31 @@ export function ReportCenter() {
                         <div className="relative z-10">
                             <div className="flex items-center gap-3 mb-8">
                                 <TrendingUp className="h-5 w-5 text-orange-500" />
-                                <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">Bastions à Haut Rendement</h3>
+                                <h3 className="text-xl font-black italic uppercase tracking-tighter text-foreground">Bastions à Haut Rendement</h3>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="border-b border-white/5">
+                                    <thead className="border-b border-border/50">
                                         <tr className="text-left">
-                                            <th className="py-6 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">ÉTABLISSEMENT</th>
-                                            <th className="py-6 px-4 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">VOLUME D&apos;AFFAIRES</th>
-                                            <th className="py-6 px-4 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">TRANSACTIONS</th>
+                                            <th className="py-6 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">ÉTABLISSEMENT</th>
+                                            <th className="py-6 px-4 text-right text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">VOLUME D&apos;AFFAIRES</th>
+                                            <th className="py-6 px-4 text-right text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">TRANSACTIONS</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/5">
+                                    <tbody className="divide-y divide-border/50">
                                         {reportStats.topRestaurants.map((r, idx) => (
-                                            <tr key={idx} className="group/row hover:bg-white/5 transition-colors">
+                                            <tr key={idx} className="group/row hover:bg-card/50 transition-colors">
                                                 <td className="py-6 px-4">
-                                                    <span className="font-black text-sm text-white uppercase italic tracking-tight group-hover/row:text-orange-500 transition-colors">
+                                                    <span className="font-black text-sm text-foreground uppercase italic tracking-tight group-hover/row:text-orange-500 transition-colors">
                                                         {r.name}
                                                     </span>
                                                 </td>
                                                 <td className="py-6 px-4 text-right">
-                                                    <span className="text-sm font-black text-white">{r.total.toLocaleString()}</span>
+                                                    <span className="text-sm font-black text-foreground">{r.total.toLocaleString()}</span>
                                                     <span className="ml-2 text-[9px] font-bold text-orange-500 uppercase">FCFA</span>
                                                 </td>
                                                 <td className="py-6 px-4 text-right">
-                                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{r.count} unités</span>
+                                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{r.count} unités</span>
                                                 </td>
                                             </tr>
                                         ))}
@@ -323,8 +326,8 @@ export function ReportCenter() {
                         </div>
 
                         {/* Footer decorative text */}
-                        <div className="mt-20 pt-10 border-t border-white/5 text-center opacity-20">
-                            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-500">
+                        <div className="mt-20 pt-10 border-t border-border/50 text-center opacity-20">
+                            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-muted-foreground">
                                 YAKRO GO SUPREME AUTHORITY &bull; PROTOCOLE DE RAPPORT V9.4
                             </p>
                         </div>

@@ -158,7 +158,7 @@ export default function AdminPage() {
 
     if (dataLoading || isPublicDataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return (
-            <div className="flex h-screen w-full items-center justify-center bg-[#0A0A0B]">
+            <div className="flex h-screen w-full items-center justify-center bg-background">
                 <div className="relative">
                     <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-full scale-150 animate-pulse" />
                     <Loader className="h-16 w-16 animate-spin text-orange-500 relative" />
@@ -168,7 +168,7 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0A0A0B] text-white overflow-x-hidden font-sora">
+        <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-sora">
             {/* Cinematic Hero Header */}
             <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
@@ -176,9 +176,9 @@ export default function AdminPage() {
                         src="https://images.unsplash.com/photo-1451187534959-42266104411e?q=80&w=2070&auto=format&fit=crop"
                         alt="Network Grid"
                         fill
-                        className="object-cover opacity-10 scale-110 animate-slow-zoom"
+                        className="object-cover opacity-10 dark:opacity-20 scale-110 animate-slow-zoom"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/60 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/60 z-10" />
                 </div>
 
                 <div className="relative z-30 text-center space-y-8 px-6 max-w-5xl pt-10 md:pt-0">
@@ -196,7 +196,7 @@ export default function AdminPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-6xl md:text-9xl font-black italic uppercase tracking-tighter text-white leading-none mb-4"
+                            className="text-6xl md:text-9xl font-black italic uppercase tracking-tighter text-foreground leading-none mb-4"
                         >
                             Centre de <span className="text-orange-500 italic">Contrôle</span>
                         </motion.h1>
@@ -218,12 +218,12 @@ export default function AdminPage() {
                     >
                         <Sheet>
                             <SheetTrigger asChild>
-                                <Button variant="outline" className="h-14 px-8 bg-white/5 border-white/10 rounded-2xl font-black italic uppercase tracking-tighter hover:bg-orange-500/10 transition-all group">
+                                <Button variant="outline" className="h-14 px-8 bg-card/50 border-border rounded-2xl font-black italic uppercase tracking-tighter hover:bg-orange-500/10 transition-all group">
                                     <Bell className="mr-3 h-5 w-5 text-orange-500 group-hover:scale-110 transition-transform" />
-                                    Alertes <span className="ml-2 px-2 py-0.5 bg-red-500 text-[10px] rounded-full animate-pulse">Live</span>
+                                    Alertes <span className="ml-2 px-2 py-0.5 bg-red-500 text-[10px] text-white rounded-full animate-pulse">Live</span>
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent className="w-full sm:max-w-md bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/5 text-white shadow-2xl">
+                            <SheetContent className="w-full sm:max-w-md bg-background/95 backdrop-blur-3xl border-border text-foreground shadow-2xl">
                                 <SheetHeader className="pb-10 border-b border-white/5">
                                     <SheetTitle className="text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
                                         <Bell className="h-8 w-8 text-orange-500" />
@@ -237,7 +237,7 @@ export default function AdminPage() {
                             </SheetContent>
                         </Sheet>
                         
-                        <Button asChild className="h-14 px-8 bg-white/5 border border-white/10 text-white rounded-2xl font-black italic uppercase tracking-tighter hover:bg-white/10 transition-all">
+                        <Button asChild className="h-14 px-8 bg-card/50 border border-border text-foreground rounded-2xl font-black italic uppercase tracking-tighter hover:bg-card transition-all">
                             <Link href="/">
                                 <Home className="mr-3 h-5 w-5 text-slate-500" />
                                 Quitter
@@ -267,7 +267,7 @@ export default function AdminPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.4 + (idx * 0.1), duration: 0.5, ease: "easeOut" }}
                             whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                            className={`bg-white/5 backdrop-blur-3xl border border-white/5 p-8 relative group overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-orange-500/50 hover:shadow-orange-500/10 animate-float`}
+                            className={`bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-8 relative group overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-orange-500/50 hover:shadow-orange-500/10 animate-float`}
                             style={{ animationDelay: `${idx * 1.5}s` }}
                         >
                             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -278,7 +278,7 @@ export default function AdminPage() {
                                     <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-orange-500' : 'text-slate-400'}`} />
                                 </div>
                             </div>
-                            <div className="text-4xl md:text-6xl font-black tracking-tighter italic text-white group-hover:scale-105 transition-transform duration-500 relative z-10">
+                            <div className="text-4xl md:text-6xl font-black tracking-tighter italic text-foreground group-hover:scale-105 transition-transform duration-500 relative z-10">
                                 {stat.value}
                             </div>
                         </motion.div>
@@ -288,7 +288,7 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
                     <div className="lg:col-span-3 space-y-10">
                         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-10">
-                            <TabsList className="h-auto bg-white/5 border border-white/5 p-1.5 rounded-3xl flex-wrap justify-start gap-1.5 backdrop-blur-3xl">
+                            <TabsList className="h-auto bg-card/50 dark:bg-white/5 border border-border dark:border-white/5 p-1.5 rounded-3xl flex-wrap justify-start gap-1.5 backdrop-blur-3xl">
                                 {[
                                     { id: 'live', icon: Navigation2, label: 'Supervision' },
                                     { id: 'restaurants', icon: Store, label: 'Établissements' },
@@ -300,7 +300,7 @@ export default function AdminPage() {
                                     <TabsTrigger 
                                         key={tab.id}
                                         value={tab.id} 
-                                        className="h-12 px-6 rounded-2xl data-[state=active]:bg-orange-500 data-[state=active]:text-white font-black italic uppercase tracking-tighter text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-white/5"
+                                        className="h-12 px-6 rounded-2xl data-[state=active]:bg-orange-500 data-[state=active]:text-white font-black italic uppercase tracking-tighter text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-card/50 dark:hover:bg-white/5"
                                     >
                                         <tab.icon className="h-4 w-4 mr-3" />
                                         {tab.label}
@@ -317,11 +317,11 @@ export default function AdminPage() {
                                 <TabsContent value="restaurants" className="m-0 outline-none animate-in fade-in duration-700"><RestaurantManager /></TabsContent>
                                 <TabsContent value="finances" className="m-0 outline-none animate-in fade-in duration-700"><FinancialAnalytics /></TabsContent>
                                 <TabsContent value="security" className="m-0 outline-none animate-in fade-in duration-700">
-                                    <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                                    <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
                                         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
                                             <div className="space-y-2">
-                                                <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Journal d&apos;Audit <span className="text-orange-500 italic">Sécurisé</span></h2>
+                                                <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-foreground leading-none">Journal d&apos;Audit <span className="text-orange-500 italic">Sécurisé</span></h2>
                                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">TRAÇABILITÉ TOTALE DES OPÉRATIONS DE COMMANDEMENT</p>
                                             </div>
                                             <div className="flex items-center gap-4 w-full md:w-auto">
@@ -329,7 +329,7 @@ export default function AdminPage() {
                                                     value={logSearchQuery}
                                                     onChange={(e) => setLogSearchQuery(e.target.value)}
                                                     placeholder="FILTRER LES ACTIONS..."
-                                                    className="h-12 bg-white/5 border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest min-w-[250px] focus:ring-orange-500/50"
+                                                    className="h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest min-w-[250px] focus:ring-orange-500/50"
                                                 />
                                                 <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full">
                                                     <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
@@ -340,7 +340,7 @@ export default function AdminPage() {
                                         <div className="overflow-x-auto">
                                             <Table>
                                                 <TableHeader className="border-white/5">
-                                                    <TableRow className="hover:bg-transparent border-white/5">
+                                                    <TableRow className="hover:bg-transparent border-border dark:border-white/5">
                                                         <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Horodatage</TableHead>
                                                         <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Administrateur</TableHead>
                                                         <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Action</TableHead>
@@ -350,13 +350,13 @@ export default function AdminPage() {
                                                 </TableHeader>
                                                 <TableBody>
                                                     {displayedLogs.map((log) => (
-                                                        <TableRow key={log.id} className="border-white/5 hover:bg-white/5 transition-colors group">
+                                                        <TableRow key={log.id} className="border-border dark:border-white/5 hover:bg-card/80 dark:hover:bg-white/5 transition-colors group">
                                                             <TableCell className="py-6 text-[11px] font-mono text-gray-500">
                                                                 {(log.timestamp as Timestamp)?.toDate ? (log.timestamp as Timestamp).toDate().toLocaleString() : 'RECORDER...'}
                                                             </TableCell>
                                                             <TableCell className="py-6">
                                                                 <div className="flex flex-col">
-                                                                    <span className="font-black text-xs text-white uppercase italic tracking-tight">{log.adminEmail}</span>
+                                                                    <span className="font-black text-xs text-foreground uppercase italic tracking-tight">{log.adminEmail}</span>
                                                                     <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">ID: {log.adminId.substring(0, 8)}...</span>
                                                                 </div>
                                                             </TableCell>
@@ -394,11 +394,11 @@ export default function AdminPage() {
                                 
                                 <TabsContent value="users" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                                        <div className="lg:col-span-2 bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                                        <div className="lg:col-span-2 bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                                             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
                                             <div className="flex items-center justify-between mb-12 relative z-10">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Registre des <span className="text-orange-500 italic">Comptes</span></h2>
+                                                    <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-foreground leading-none">Registre des <span className="text-orange-500 italic">Comptes</span></h2>
                                                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
                                                 </div>
                                                 <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:scale-105 shadow-xl">
@@ -409,7 +409,7 @@ export default function AdminPage() {
                                             <div className="overflow-x-auto">
                                                 <Table>
                                                     <TableHeader className="border-white/5">
-                                                        <TableRow className="hover:bg-transparent border-white/5">
+                                                        <TableRow className="hover:bg-transparent border-border dark:border-white/5">
                                                             <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Identité</TableHead>
                                                             <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Privilèges</TableHead>
                                                             <TableHead className="text-right text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Actions</TableHead>
@@ -417,24 +417,24 @@ export default function AdminPage() {
                                                     </TableHeader>
                                                     <TableBody>
                                                         {allUsers.map((u) => (
-                                                            <TableRow key={u.uid} className="border-white/5 hover:bg-white/5 transition-colors group">
+                                                            <TableRow key={u.uid} className="border-border dark:border-white/5 hover:bg-card/80 dark:hover:bg-white/5 transition-colors group">
                                                                 <TableCell className="py-6">
                                                                     <div className="flex items-center gap-4">
                                                                         <Avatar className="h-12 w-12 rounded-2xl border border-white/10 group-hover:border-orange-500/30 transition-all group-hover:scale-110 shadow-lg">
-                                                                            <AvatarFallback className="bg-white/10 text-xs font-black text-orange-500">{getInitials(u.nom || u.email)}</AvatarFallback>
+                                                                            <AvatarFallback className="bg-card dark:bg-white/10 text-xs font-black text-orange-500">{getInitials(u.nom || u.email)}</AvatarFallback>
                                                                         </Avatar>
                                                                         <div className="flex flex-col">
-                                                                            <span className="font-black text-sm text-white uppercase italic tracking-tight">{u.nom || 'UTILISATEUR ANONYME'}</span>
+                                                                            <span className="font-black text-sm text-foreground uppercase italic tracking-tight">{u.nom || 'UTILISATEUR ANONYME'}</span>
                                                                             <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{u.email}</span>
                                                                         </div>
                                                                     </div>
                                                                 </TableCell>
                                                                 <TableCell className="py-6">
                                                                     <Select value={u.roleSysteme || 'User'} onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}>
-                                                                        <SelectTrigger className="w-[140px] h-12 bg-white/5 border-white/10 rounded-2xl text-[10px] font-black uppercase italic tracking-widest focus:ring-orange-500/50 transition-all hover:bg-white/10">
+                                                                        <SelectTrigger className="w-[140px] h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 rounded-2xl text-[10px] font-black uppercase italic tracking-widest focus:ring-orange-500/50 transition-all hover:bg-card dark:hover:bg-white/10">
                                                                             <SelectValue />
                                                                         </SelectTrigger>
-                                                                        <SelectContent className="bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/10 text-white rounded-2xl overflow-hidden shadow-2xl">
+                                                                        <SelectContent className="bg-popover/95 backdrop-blur-3xl border-border text-foreground rounded-2xl overflow-hidden shadow-2xl">
                                                                             <SelectItem value="SuperAdmin" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">SUPERADMIN</SelectItem>
                                                                             <SelectItem value="Admin" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">ADMIN</SelectItem>
                                                                             <SelectItem value="User" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">USER</SelectItem>
@@ -453,7 +453,7 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                         <div className="lg:col-span-1 space-y-8">
-                                            <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                                            <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
                                                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                                                     <UserPlus className="h-12 w-12 text-orange-500" />
                                                 </div>
@@ -467,11 +467,11 @@ export default function AdminPage() {
                                                             transition={{ delay: 0.1 * i }}
                                                             className="flex items-center gap-5 group/item"
                                                         >
-                                                            <div className="h-12 w-12 bg-white/5 flex items-center justify-center rounded-2xl border border-white/10 group-hover/item:border-orange-500/30 transition-all group-hover/item:bg-orange-500/5">
+                                                            <div className="h-12 w-12 bg-card/50 dark:bg-white/5 flex items-center justify-center rounded-2xl border border-border dark:border-white/10 group-hover/item:border-orange-500/30 transition-all group-hover/item:bg-orange-500/5">
                                                                 <span className="text-xs font-black text-orange-500">{getInitials(u.nom || u.email)}</span>
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-black text-white uppercase italic tracking-tight group-hover/item:text-orange-500 transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
+                                                                <span className="text-sm font-black text-foreground uppercase italic tracking-tight group-hover/item:text-orange-500 transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
                                                                 <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">IDENTIFIÉ RÉCEMMENT</span>
                                                             </div>
                                                         </motion.div>

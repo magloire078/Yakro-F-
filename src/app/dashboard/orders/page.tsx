@@ -74,7 +74,7 @@ export default function DashboardOrdersPage() {
             layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="group relative glass-dark overflow-hidden transition-all duration-500 hover:border-orange-500/50 hover:shadow-2xl rounded-[2.5rem] shadow-xl"
+            className="group relative glass overflow-hidden transition-all duration-500 hover:border-orange-500/50 hover:shadow-2xl rounded-[2.5rem] shadow-xl"
         >
             {/* Status Bar */}
             <div className={`absolute top-0 left-0 w-1.5 h-full transition-all duration-500 ${
@@ -90,7 +90,7 @@ export default function DashboardOrdersPage() {
                             </div>
                             <span className="text-[10px] font-bold text-slate-500">#{order.id.slice(-6).toUpperCase()}</span>
                         </div>
-                        <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-white group-hover:text-orange-500 transition-colors uppercase leading-none">
+                        <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-foreground dark:text-white group-hover:text-orange-500 transition-colors uppercase leading-none">
                             {order.nomRestaurant}
                         </h3>
                     </div>
@@ -102,7 +102,7 @@ export default function DashboardOrdersPage() {
                         }`}>
                             {order.statut === 'Placée' ? 'Nouveau' : 'En Cuisine'}
                         </Badge>
-                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-foreground/5 border border-foreground/5">
                             <Clock className="h-3 w-3 text-slate-500" />
                             <span className="text-[10px] font-black text-slate-400 italic">
                                 {new Date(order.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
@@ -111,20 +111,20 @@ export default function DashboardOrdersPage() {
                     </div>
                 </div>
 
-                <Accordion type="single" collapsible className="border-t border-white/5">
+                <Accordion type="single" collapsible className="border-t border-foreground/5">
                     <AccordionItem value="details" className="border-none">
-                        <AccordionTrigger className="py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:no-underline hover:text-white transition-colors">
+                        <AccordionTrigger className="py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:no-underline hover:text-foreground dark:hover:text-white transition-colors">
                             Détails du Festin
                         </AccordionTrigger>
                         <AccordionContent className="space-y-5 pb-6">
                             {order.plats.map((item, idx) => (
-                                <div key={idx} className="flex justify-between items-center group/item p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <div key={idx} className="flex justify-between items-center group/item p-4 rounded-2xl bg-foreground/[0.02] border border-foreground/5 hover:bg-foreground/[0.04] transition-colors">
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center gap-3">
                                             <div className="h-6 w-6 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
                                                 <span className="text-orange-500 font-black italic text-[10px]">{item.quantite}</span>
                                             </div>
-                                            <span className="font-black text-xs md:text-sm tracking-tight text-white">{item.nom}</span>
+                                            <span className="font-black text-xs md:text-sm tracking-tight text-foreground dark:text-white">{item.nom}</span>
                                         </div>
                                         {item.accompagnementSelectionne && (
                                             <span className="text-[9px] text-slate-500 font-bold tracking-widest ml-9 uppercase italic">
@@ -138,12 +138,12 @@ export default function DashboardOrdersPage() {
                                 </div>
                             ))}
                             
-                            <div className="pt-6 mt-2 border-t border-white/5">
+                            <div className="pt-6 mt-2 border-t border-foreground/5">
                                 <div className="flex justify-between items-center bg-orange-500/5 p-6 rounded-3xl border border-orange-500/10 relative overflow-hidden group/revenue">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full" />
                                     <div className="space-y-1 relative z-10">
                                         <p className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-500/60">Revenu Net Garanti</p>
-                                        <p className="text-3xl md:text-4xl font-black italic tracking-tighter text-white">
+                                        <p className="text-3xl md:text-4xl font-black italic tracking-tighter text-foreground dark:text-white">
                                             {order.revenuNet.toLocaleString('fr-FR')} <span className="text-[12px] opacity-40 normal-case font-bold ml-1">FCFA</span>
                                         </p>
                                     </div>
@@ -193,7 +193,7 @@ export default function DashboardOrdersPage() {
                         fill
                         className="object-cover opacity-5 scale-110 animate-slow-zoom"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/40 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40 z-10" />
                 </div>
                 
                 <div className="relative z-30 text-center space-y-8 px-6 max-w-4xl">
@@ -211,7 +211,7 @@ export default function DashboardOrdersPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-5xl md:text-9xl font-black tracking-tighter text-white italic leading-none uppercase"
+                            className="text-5xl md:text-9xl font-black tracking-tighter text-foreground dark:text-white italic leading-none uppercase"
                         >
                             Flux <span className="text-orange-500">Elite</span>
                         </motion.h1>
@@ -233,12 +233,12 @@ export default function DashboardOrdersPage() {
                     >
                         <div className="text-center group cursor-default">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-orange-500 transition-colors">Nouveaux</p>
-                            <p className="text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
+                            <p className="text-4xl md:text-6xl font-black text-foreground dark:text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
                         </div>
-                        <div className="w-px h-16 md:h-20 bg-white/10 self-center rotate-12" />
+                        <div className="w-px h-16 md:h-20 bg-foreground/10 dark:bg-white/10 self-center rotate-12" />
                         <div className="text-center group cursor-default">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-emerald-500 transition-colors">Cuisine</p>
-                            <p className="text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
+                            <p className="text-4xl md:text-6xl font-black text-foreground dark:text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
                         </div>
                     </motion.div>
                 </div>
@@ -255,10 +255,10 @@ export default function DashboardOrdersPage() {
                     <div className="space-y-10">
                         <div className="flex items-center gap-6">
                             <div className="h-10 w-1.5 bg-orange-500 rounded-full" />
-                            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
+                            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-foreground dark:text-white uppercase">
                                 Nouvelles <span className="text-orange-500 italic">Entrées</span>
                             </h2>
-                            <div className="h-px flex-1 bg-white/5" />
+                            <div className="h-px flex-1 bg-foreground/5" />
                         </div>
                         
                         <div className="space-y-8">
@@ -269,11 +269,11 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-20 md:p-32 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-[3rem] shadow-2xl"
+                                        className="relative group overflow-hidden glass p-20 md:p-32 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-foreground/10 rounded-[3rem] shadow-2xl"
                                     >
                                         <div className="relative mb-10">
                                             <div className="absolute inset-0 bg-orange-500/10 blur-[50px] rounded-full scale-150 animate-pulse" />
-                                            <div className="relative h-24 w-24 bg-white/5 border border-white/10 flex items-center justify-center rounded-[2rem] backdrop-blur-2xl">
+                                            <div className="relative h-24 w-24 bg-foreground/5 border border-foreground/10 flex items-center justify-center rounded-[2rem] backdrop-blur-2xl">
                                                 <UtensilsCrossed className="w-10 h-10 text-slate-600 group-hover:text-orange-500 transition-colors duration-500" />
                                             </div>
                                         </div>
@@ -291,10 +291,10 @@ export default function DashboardOrdersPage() {
                     <div className="space-y-10">
                         <div className="flex items-center gap-6">
                             <div className="h-10 w-1.5 bg-emerald-500 rounded-full" />
-                            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
+                            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-foreground dark:text-white uppercase">
                                 Atelier <span className="text-emerald-500 italic">Culinaire</span>
                             </h2>
-                            <div className="h-px flex-1 bg-white/5" />
+                            <div className="h-px flex-1 bg-foreground/5" />
                         </div>
 
                         <div className="space-y-8">
@@ -305,11 +305,11 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-20 md:p-32 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-[3rem] shadow-2xl"
+                                        className="relative group overflow-hidden glass p-20 md:p-32 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-foreground/10 rounded-[3rem] shadow-2xl"
                                     >
                                         <div className="relative mb-10">
                                             <div className="absolute inset-0 bg-emerald-500/10 blur-[50px] rounded-full scale-150" />
-                                            <div className="relative h-24 w-24 bg-white/5 border border-white/10 flex items-center justify-center rounded-[2rem] backdrop-blur-2xl">
+                                            <div className="relative h-24 w-24 bg-foreground/5 border border-foreground/10 flex items-center justify-center rounded-[2rem] backdrop-blur-2xl">
                                                 <ChefHat className="w-10 h-10 text-slate-600 group-hover:text-emerald-500 transition-colors duration-500" />
                                             </div>
                                         </div>
