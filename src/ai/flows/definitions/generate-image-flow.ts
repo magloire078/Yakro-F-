@@ -24,18 +24,18 @@ export const generateImageFlow = ai.defineFlow(
     let refinedPrompt = "";
 
     if (isRestaurant) {
-      refinedPrompt = `Hyper-premium cinematic architectural photography of the luxury establishment: ${prompt}. 
-        'Yakro Elite' signature style, Yamoussoukro ultra-luxury architecture. 
-        Warm golden hour lighting, dramatic deep shadows, sophisticated glass and stone textures. 
-        Natural evening atmosphere, 8k resolution, authentic textures, architectural masterpiece. 
-        No CGI look, purely realistic professional photography.`;
+      refinedPrompt = `Authentic street-level photography of a real restaurant in Côte d'Ivoire: ${prompt}. 
+        Natural daylight, real-world atmosphere, authentic storefront textures (wood, stone, glass). 
+        Warm and welcoming local vibe, shot on a high-end smartphone for a natural documentary look. 
+        Sharp focus on the signage and entrance, realistic urban environment. 
+        AVOID 3D renders, AVOID unrealistic luxury lighting, purely natural professional photography.`;
     } else {
-      refinedPrompt = `Authentic and hyper-realistic professional food photography of: ${prompt}. 
-        Close-up shot, natural organic textures, realistic steam, moisture on glass, imperfect natural edges. 
-        West African haute cuisine, Yamoussoukro luxury presentation. 
-        Warm cinematic lighting, deep contrast, dark charcoal background. 
-        Shot on Phase One XF, f/2.8, depth of field, natural food styling. 
-        AVOID plastic look, AVOID artificial shine, purely organic and appetizing masterpiece.`;
+      refinedPrompt = `Realistic and authentic food photography of: ${prompt}. 
+        Served in a simple ceramic plate on a wooden restaurant table. 
+        Natural window lighting, real textures (glistening oils, steam, charred edges). 
+        True West African colors, organic presentation, shallow depth of field. 
+        Shot in a real kitchen or restaurant setting, not a studio. 
+        AVOID plastic look, AVOID artificial saturation, AVOID perfection - make it look like a real delicious meal.`;
     }
 
     try {

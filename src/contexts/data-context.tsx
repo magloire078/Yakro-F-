@@ -63,12 +63,21 @@ function setupSubscription<T extends DocumentData>(
             const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as unknown as T[];
             callback(list);
         },
-        () => {
-            const permissionError = new FirestorePermissionError({
-                path: collectionPath,
-                operation: 'list',
-            });
-            errorEmitter.emit('permission-error', permissionError);
+        (error) => {
+            console.error(`Firestore error on ${collectionPath}:`, error);
+            
+            if (error.code === 'permission-denied') {
+                const permissionError = new FirestorePermissionError({
+                    path: collectionPath,
+                    operation: 'list',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            } else {
+                errorEmitter.emit('firestore-error', error, {
+                    path: collectionPath,
+                    operation: 'list'
+                });
+            }
         }
     );
 }

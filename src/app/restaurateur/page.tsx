@@ -17,6 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
 import { Order } from '@/lib/types';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, Cell } from 'recharts';
+import { DashboardPage } from '@/components/dashboard/dashboard-page';
+import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 
 export default function RestaurateurHomePage() {
     const { restaurants, orders, isLoading: isDataLoading } = useData();
@@ -145,50 +147,52 @@ export default function RestaurateurHomePage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-20">
-            {/* Header Section */}
-            <div className="relative h-[250px] md:h-[300px] overflow-hidden bg-slate-900 flex items-center">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070')] bg-cover bg-center opacity-30 scale-110 animate-slow-zoom" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50" />
-                
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-4"
-                    >
-                        <Activity className="h-3.5 w-3.5 text-orange-500 animate-pulse" />
-                        <span className="text-[10px] font-bold tracking-[0.2em] text-white uppercase">Tableau de Bord Elite</span>
-                    </motion.div>
-                    <motion.h1 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-7xl font-black tracking-tighter text-white italic mb-4"
-                    >
-                        Gestion <span className="text-orange-500">Premium</span>
-                    </motion.h1>
-                    <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-white/70 font-medium max-w-xl mx-auto text-sm md:text-lg"
-                    >
-                        Supervisez vos opérations avec l&apos;excellence Yakro Elite.
-                    </motion.p>
-                </div>
-            </div>
-
-            <div className="container mx-auto px-4 -mt-12 relative z-20 space-y-8">
+        <DashboardPage
+            heroProps={{
+                backgroundImage: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070",
+                badgeIcon: <Activity className="h-3.5 w-3.5" />,
+                badgeText: "Tableau de Bord Elite",
+                title: <>Gestion <span className="text-orange-500">Premium</span></>,
+                subtitle: "Supervisez vos opérations avec l'excellence Yakro Elite.",
+                children: (
+                    <DashboardStats 
+                        items={[
+                            { 
+                                label: 'Revenu du Jour', 
+                                value: stats.revenueToday, 
+                                unit: 'FCFA', 
+                                icon: DollarSign, 
+                                color: 'emerald',
+                                growth: 12 // Simulated for now
+                            },
+                            { 
+                                label: 'Commandes', 
+                                value: stats.ordersTodayCount, 
+                                unit: 'ITEMS', 
+                                icon: ShoppingCart, 
+                                color: 'orange' 
+                            },
+                            { 
+                                label: 'En Préparation', 
+                                value: stats.preparingCount, 
+                                unit: 'PLATS', 
+                                icon: ChefHat 
+                            }
+                        ]}
+                    />
+                )
+            }}
+        >
+            <div className="space-y-8">
                 {/* Action Bar */}
                 <div className="flex flex-wrap justify-center gap-4">
-                    <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-xl">
+                    <Button asChild className="bg-slate-900/80 hover:bg-slate-900 text-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-xl backdrop-blur-md border border-white/10">
                        <Link href="/dashboard/orders">
                             <ClipboardList className="mr-2 h-4 w-4 text-orange-500" />
                             Commandes
                         </Link>
                     </Button>
-                    <Button asChild variant="outline" className="bg-white/70 backdrop-blur-md border-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-lg hover:border-orange-500/30">
+                    <Button asChild variant="outline" className="bg-white/10 backdrop-blur-md border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-lg hover:border-orange-500/30 text-white">
                        <Link href="/dashboard/menu">
                             <BookOpenCheck className="mr-2 h-4 w-4 text-orange-500" />
                             Menu
@@ -196,38 +200,6 @@ export default function RestaurateurHomePage() {
                     </Button>
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[
-                        { label: 'Revenu du Jour', value: stats.revenueToday, sub: 'Commandes livrées', icon: DollarSign, unit: 'FCFA' },
-                        { label: 'Commandes Total', value: stats.ordersTodayCount, sub: 'Volume journalier', icon: ShoppingCart, unit: 'ITEMS' },
-                        { label: 'En Préparation', value: stats.preparingCount, sub: 'Commandes actives', icon: ChefHat, unit: 'PLATS' }
-                    ].map((item, idx) => (
-                        <motion.div 
-                            key={idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 + idx * 0.1 }}
-                            className="bg-white/70 backdrop-blur-xl border border-white p-8 relative overflow-hidden group hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500"
-                        >
-                            <div className="flex justify-between items-start mb-6">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-orange-500 transition-colors">{item.label}</span>
-                                <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-orange-50 transition-all">
-                                    <item.icon className="h-4 w-4 text-slate-400 group-hover:text-orange-500" />
-                                </div>
-                            </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-black tracking-tighter text-slate-900 group-hover:text-orange-500 transition-colors">
-                                    {item.value.toLocaleString('fr-FR')}
-                                </span>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                    {item.unit}
-                                </span>
-                            </div>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase mt-4 tracking-widest">{item.sub}</p>
-                        </motion.div>
-                    ))}
-                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Latest Orders & Performance */}
@@ -437,6 +409,8 @@ export default function RestaurateurHomePage() {
                     </motion.div>
                 </div>
             </div>
-        </div>
+        </DashboardPage>
     );
 }
+
+

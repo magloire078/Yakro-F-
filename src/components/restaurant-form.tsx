@@ -15,7 +15,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader, Upload, MapPin, ChefHat, Sparkles, Wand2 } from 'lucide-react';
+import { Loader, Upload, MapPin, ChefHat, Wand2 } from 'lucide-react';
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
 import { Label } from '@/components/ui/label';

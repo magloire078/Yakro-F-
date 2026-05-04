@@ -1,7 +1,9 @@
 import type { FirestorePermissionError } from './errors';
+import type { FirestoreError } from 'firebase/firestore';
 
 type AppEvents = {
   'permission-error': (error: FirestorePermissionError) => void;
+  'firestore-error': (error: FirestoreError, context: { path: string; operation: string }) => void;
 };
 
 // We can't use the native EventEmitter because it's not available in the browser
