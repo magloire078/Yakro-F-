@@ -24,13 +24,20 @@ let analytics: Analytics | undefined;
 
 /**
  * Initialize Firebase services safely for client-side use.
+ *
+ * Returns silently on the server (SSR/RSC) or when the API key is missing —
+ * the FirebaseProvider observes the resulting null services and renders the
+ * appropriate fallback UI rather than crashing the page render.
  */
 function initFirebase() {
+  if (typeof window === 'undefined') return;
+  if (!firebaseConfig.apiKey) {
+    console.error("Firebase initialization skipped: NEXT_PUBLIC_FIREBASE_API_KEY is missing.");
+    return;
+  }
+
   try {
     if (getApps().length === 0) {
-      if (!firebaseConfig.apiKey) {
-        throw new Error("NEXT_PUBLIC_FIREBASE_API_KEY is missing. Check your .env file.");
-      }
       app = initializeApp(firebaseConfig);
     } else {
       app = getApp();
@@ -42,11 +49,11 @@ function initFirebase() {
     if (!auth) {
         auth = getAuth(app);
     }
-    
+
     if (!db) {
         db = getFirestore(app);
     }
-    
+
     if (!storage) {
         storage = getStorage(app);
     }
@@ -60,7 +67,6 @@ function initFirebase() {
     }
   } catch (error) {
     console.error("Firebase initialization failed:", error);
-    throw error; // Rethrow to let the provider handle it
   }
 }
 

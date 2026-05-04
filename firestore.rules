@@ -157,6 +157,17 @@ service cloud.firestore {
       allow write: if isUser(livreurId);
     }
 
+    // Journal d'audit des actions administratives. Écriture réservée aux
+    // SuperAdmin (avec adminId == auth.uid pour empêcher l'usurpation),
+    // lecture réservée aux SuperAdmin, jamais d'update ni de delete pour
+    // préserver l'intégrité de la traçabilité.
+    match /audit_logs/{logId} {
+      allow read: if isSuperAdmin();
+      allow create: if isSuperAdmin()
+        && request.resource.data.adminId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     match /stocks/{stockId} {
       // Lecture per-doc — `list` est validée à partir de cette même règle,
       // ce qui force les clients à filtrer par `restaurateurId`.

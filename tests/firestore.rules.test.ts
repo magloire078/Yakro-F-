@@ -265,6 +265,65 @@ describe('firestore.rules — /utilisateurs', () => {
   });
 });
 
+describe('firestore.rules — /audit_logs', () => {
+  const SUPERADMIN_UID = 'super-1';
+
+  beforeEach(async () => {
+    await seed();
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'utilisateurs', SUPERADMIN_UID), {
+        role: 'client',
+        roleSysteme: 'SuperAdmin',
+      });
+    });
+  });
+
+  const sampleLog = (overrides: Record<string, unknown> = {}) => ({
+    adminId: SUPERADMIN_UID,
+    adminEmail: 'admin@yakro.io',
+    action: 'UPDATE_USER',
+    targetId: 'whoever',
+    details: 'test',
+    ...overrides,
+  });
+
+  it('lets a SuperAdmin write a log entry whose adminId matches their uid', async () => {
+    const db = env.authenticatedContext(SUPERADMIN_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'audit_logs', 'log-1'), sampleLog()));
+  });
+
+  it('rejects log entries with a forged adminId', async () => {
+    const db = env.authenticatedContext(SUPERADMIN_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'audit_logs', 'log-1'), sampleLog({ adminId: 'someone-else' })),
+    );
+  });
+
+  it('forbids non-admin users from writing logs', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'audit_logs', 'log-1'), sampleLog({ adminId: OTHER_USER_UID })),
+    );
+  });
+
+  it('forbids non-admin users from reading logs', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'audit_logs', 'log-1'), sampleLog());
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(getDoc(doc(db, 'audit_logs', 'log-1')));
+  });
+
+  it('forbids tampering with existing logs even for SuperAdmin', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'audit_logs', 'log-1'), sampleLog());
+    });
+    const db = env.authenticatedContext(SUPERADMIN_UID).firestore();
+    await assertFails(updateDoc(doc(db, 'audit_logs', 'log-1'), { details: 'hacked' }));
+    await assertFails(deleteDoc(doc(db, 'audit_logs', 'log-1')));
+  });
+});
+
 describe('firestore.rules — /livreurs_public', () => {
   beforeEach(seed);
 
