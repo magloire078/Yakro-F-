@@ -122,7 +122,7 @@ export default function NewRestaurantPage() {
             const result = await generateImageAction({ prompt });
             if (!result.success) throw new Error(result.error);
             
-            setGeneratedImageUrl(result.url);
+            setGeneratedImageUrl(result.data.imageDataUri);
             toast({ title: 'Visuel Généré', description: 'Le visuel premium a été matérialisé avec succès.' });
         } catch (e) {
             console.error(e);
