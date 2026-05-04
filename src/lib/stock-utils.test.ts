@@ -1,80 +1,38 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { Order } from './types';
+import { aggregateIngredientDeductions } from './stock-utils';
 
-const updateMock = vi.fn();
-const commitMock = vi.fn().mockResolvedValue(undefined);
-const writeBatchMock = vi.fn(() => ({ update: updateMock, commit: commitMock }));
-const incrementMock = vi.fn((n: number) => ({ __increment: n }));
-const docMock = vi.fn((_db: unknown, collection: string, id: string) => ({ collection, id }));
+const buildPlats = (overrides: Partial<Order['plats'][number]>[]) =>
+  overrides as unknown as Order['plats'];
 
-vi.mock('firebase/firestore', () => ({
-  doc: (db: unknown, collection: string, id: string) => docMock(db, collection, id),
-  writeBatch: () => writeBatchMock(),
-  increment: (n: number) => incrementMock(n),
-  getDoc: vi.fn(),
-}));
-
-import { decrementStockForOrder } from './stock-utils';
-
-const fakeDb = {} as never;
-
-const buildOrder = (overrides: Partial<Order> = {}): Order =>
-  ({
-    plats: [],
-    ...overrides,
-  }) as Order;
-
-describe('decrementStockForOrder', () => {
-  beforeEach(() => {
-    updateMock.mockClear();
-    commitMock.mockClear();
-    writeBatchMock.mockClear();
-    incrementMock.mockClear();
-    docMock.mockClear();
+describe('aggregateIngredientDeductions', () => {
+  it('returns an empty object when no plat carries ingredients', () => {
+    const plats = buildPlats([{ id: 'p1', nom: 'Plat', quantite: 2 }]);
+    expect(aggregateIngredientDeductions(plats)).toEqual({});
   });
 
-  it('does nothing when order has no ingredients', async () => {
-    const order = buildOrder({ plats: [{ id: 'p1', nom: 'Plat', quantite: 2 }] as Order['plats'] });
-    await decrementStockForOrder(fakeDb, order);
-    expect(writeBatchMock).not.toHaveBeenCalled();
-  });
+  it('aggregates the same ingredient across plats and multiplies by quantity', () => {
+    const plats = buildPlats([
+      {
+        id: 'p1',
+        nom: 'Plat A',
+        quantite: 2,
+        ingredients: [
+          { stockItemId: 's1', nom: 'Tomate', quantite: 3, unite: 'g' },
+          { stockItemId: 's2', nom: 'Sel', quantite: 1, unite: 'g' },
+        ],
+      },
+      {
+        id: 'p2',
+        nom: 'Plat B',
+        quantite: 1,
+        ingredients: [{ stockItemId: 's1', nom: 'Tomate', quantite: 4, unite: 'g' }],
+      },
+    ]);
 
-  it('aggregates the same ingredient across multiple plats and multiplies by quantity', async () => {
-    const order = buildOrder({
-      plats: [
-        {
-          id: 'p1',
-          nom: 'Plat A',
-          quantite: 2,
-          ingredients: [
-            { stockItemId: 's1', nom: 'Tomate', quantite: 3 },
-            { stockItemId: 's2', nom: 'Sel', quantite: 1 },
-          ],
-        },
-        {
-          id: 'p2',
-          nom: 'Plat B',
-          quantite: 1,
-          ingredients: [{ stockItemId: 's1', nom: 'Tomate', quantite: 4 }],
-        },
-      ] as Order['plats'],
+    expect(aggregateIngredientDeductions(plats)).toEqual({
+      s1: { nom: 'Tomate', quantite: 10 }, // 3*2 + 4*1
+      s2: { nom: 'Sel', quantite: 2 }, // 1*2
     });
-
-    await decrementStockForOrder(fakeDb, order);
-
-    expect(writeBatchMock).toHaveBeenCalledOnce();
-    expect(updateMock).toHaveBeenCalledTimes(2);
-
-    const calls = updateMock.mock.calls.map(([ref, payload]) => ({ id: ref.id, payload }));
-    const tomate = calls.find((c) => c.id === 's1');
-    const sel = calls.find((c) => c.id === 's2');
-
-    // Tomate: 3*2 + 4*1 = 10
-    expect(incrementMock).toHaveBeenCalledWith(-10);
-    // Sel: 1*2 = 2
-    expect(incrementMock).toHaveBeenCalledWith(-2);
-    expect(tomate?.payload.quantite).toEqual({ __increment: -10 });
-    expect(sel?.payload.quantite).toEqual({ __increment: -2 });
-    expect(commitMock).toHaveBeenCalledOnce();
   });
 });

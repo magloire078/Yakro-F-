@@ -265,6 +265,62 @@ describe('firestore.rules — /utilisateurs', () => {
   });
 });
 
+describe('firestore.rules — /notifications', () => {
+  beforeEach(async () => {
+    await seed();
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      // Simule la création server-side via Admin SDK.
+      await setDoc(doc(ctx.firestore(), 'notifications', 'n1'), {
+        userId: RESTAURATEUR_UID,
+        type: 'STOCK_LOW',
+        stockItemId: 's1',
+        stockItemNom: 'Tomate',
+        quantiteRestante: 1,
+        seuilAlerte: 2,
+        restaurantId: RESTAURANT_ID,
+        read: false,
+      });
+    });
+  });
+
+  it('lets the recipient read their own notification', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(getDoc(doc(db, 'notifications', 'n1')));
+  });
+
+  it('forbids reading another user’s notification', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(getDoc(doc(db, 'notifications', 'n1')));
+  });
+
+  it('forbids any client from creating a notification', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'notifications', 'n2'), {
+        userId: RESTAURATEUR_UID,
+        type: 'STOCK_LOW',
+      }),
+    );
+  });
+
+  it('lets the recipient mark their notification as read', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(updateDoc(doc(db, 'notifications', 'n1'), { read: true }));
+  });
+
+  it('forbids the recipient from re-routing a notification to someone else', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'notifications', 'n1'), { userId: 'someone-else' }),
+    );
+  });
+
+  it('forbids deletion even by the recipient', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(deleteDoc(doc(db, 'notifications', 'n1')));
+  });
+});
+
 describe('firestore.rules — /audit_logs', () => {
   const SUPERADMIN_UID = 'super-1';
 

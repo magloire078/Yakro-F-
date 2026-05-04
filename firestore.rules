@@ -168,6 +168,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Notifications applicatives (ex: alertes de stock bas). Lecture par le
+    // destinataire uniquement, qui peut marquer ses notifs comme lues.
+    // La création se fait exclusivement via le SDK Admin côté serveur, donc
+    // aucune écriture client n'est autorisée.
+    match /notifications/{notifId} {
+      allow read: if isUser(resource.data.userId);
+      allow update: if isUser(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId;
+      allow create, delete: if false;
+    }
+
     match /stocks/{stockId} {
       // Lecture per-doc — `list` est validée à partir de cette même règle,
       // ce qui force les clients à filtrer par `restaurateurId`.

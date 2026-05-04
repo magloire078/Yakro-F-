@@ -1,17 +1,18 @@
 // Client-side helpers for /commandes mutations.
 // Despite living under `app/actions/`, these run in the browser using the
 // Firebase client SDK and rely on Firestore security rules for enforcement.
+// The privileged stock-decrement path is delegated to the real server action
+// `processDeliveredOrderAction` in `stock-actions.ts`.
 
-import { updateDoc, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/client';
+import { updateDoc, doc } from 'firebase/firestore';
+import { db, auth } from '@/firebase/client';
 import type { Order } from '@/lib/types';
-import { decrementStockForOrder } from '@/lib/stock-utils';
+import { processDeliveredOrderAction } from '@/app/actions/stock-actions';
 
 export async function updateOrderStatusAction({
     orderId,
     status,
     delivererId,
-    orderData
 }: {
     orderId: string,
     status: Order['statut'],
@@ -28,17 +29,14 @@ export async function updateOrderStatusAction({
         await updateDoc(orderDocRef, updateData);
 
         if (status === 'Livrée') {
-            let fullOrder = orderData;
-
-            if (!fullOrder) {
-                const snap = await getDoc(orderDocRef);
-                if (snap.exists()) {
-                    fullOrder = { id: snap.id, ...snap.data() } as Order;
-                }
+            const idToken = await auth?.currentUser?.getIdToken();
+            if (!idToken) {
+                console.error('updateOrderStatusAction: missing ID token, skipping stock sync');
+                return;
             }
-
-            if (fullOrder) {
-                await decrementStockForOrder(db!, fullOrder);
+            const result = await processDeliveredOrderAction(orderId, idToken);
+            if (!result.success) {
+                console.error('processDeliveredOrderAction failed:', result.error);
             }
         }
     } catch (e: unknown) {
