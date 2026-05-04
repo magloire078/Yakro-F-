@@ -104,6 +104,46 @@ describe('firestore.rules — /commandes create', () => {
     await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), baseOrder()));
   });
 
+  it('accepts the exact payload produced by buildOrderFromCart', async () => {
+    // Re-import lazily so the rules file remains the single source of truth
+    // for what the rules expect, while the order builder is the single
+    // source of truth for what placeOrder writes.
+    const { buildOrderFromCart } = await import('../src/lib/order-builder');
+    const cartItem = {
+      id: 'p1',
+      nom: 'Attiéké',
+      description: 'Plat',
+      prix: 3000,
+      categorie: 'Plat',
+      indiceImage: 'plat-1',
+      restaurantId: RESTAURANT_ID,
+      quantite: 2,
+      image: 'https://res.cloudinary.com/demo/image/upload/plat.jpg',
+    };
+    const order = buildOrderFromCart({
+      user: { uid: OTHER_USER_UID },
+      userProfile: { adresseParDefaut: 'Belleville', telephone: '+225' },
+      cartItems: [cartItem],
+      restaurant: {
+        id: RESTAURANT_ID,
+        proprietaireId: RESTAURATEUR_UID,
+        nom: 'Chez Test',
+        cuisine: 'Locale',
+        note: 4.5,
+        tempsDeLivraison: 30,
+        fraisDeLivraison: 500,
+        image: 'r.jpg',
+        indiceImage: 'rest-1',
+      },
+      cartSubtotal: 6000,
+      cartDeliveryFee: 500,
+      cartTotal: 6500,
+      now: new Date('2026-05-04T12:00:00.000Z'),
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'commandes', 'placed'), order));
+  });
+
   it('rejects orders with statut != Placée', async () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertFails(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ statut: 'Livrée' })));

@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { CartItem, Order } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { buildOrderFromCart } from '@/lib/order-builder';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -28,8 +28,6 @@ const CartContext = React.createContext<CartContextType | undefined>(undefined);
 const getInitialCart = (): CartItem[] => {
   return []; // Start empty for SSR safety
 };
-
-const COMMISSION_RATE = 0.15; // 15% commission
 
 const getUserLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
   return new Promise((resolve) => {
@@ -166,53 +164,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user || !userProfile) {
       throw new Error("Vous devez être connecté pour passer une commande.");
     }
-    if (cartItems.length === 0) {
-      throw new Error("Votre panier est vide.");
-    }
-    if (!userProfile.adresseParDefaut) {
-      throw new Error("Veuillez définir une adresse de livraison par défaut dans votre profil.");
-    }
 
     const location = await getUserLocation();
-    const restaurantId = cartItems[0].restaurantId;
-    const restaurant = getRestaurant(restaurantId);
+    const restaurant = getRestaurant(cartItems[0]?.restaurantId ?? '');
 
-    const commissionAmount = cartSubtotal * COMMISSION_RATE;
-    const netRevenue = cartSubtotal - commissionAmount;
-
-    const itemsForOrder = cartItems.map(item => {
-      const placeholder = getPlaceholderImage(item.indiceImage);
-      const image = (item.image && !item.image.includes('picsum.photos')) ? item.image : placeholder.url;
-      return {
-        ...item,
-        image,
-      }
+    const newOrder: Omit<Order, 'id'> = buildOrderFromCart({
+      user,
+      userProfile,
+      cartItems,
+      restaurant,
+      cartSubtotal,
+      cartDeliveryFee,
+      cartTotal,
+      location,
     });
-
-    const newOrder: Omit<Order, 'id'> = {
-      userId: user.uid,
-      plats: itemsForOrder,
-      sousTotal: cartSubtotal,
-      fraisDeLivraison: cartDeliveryFee,
-      total: cartTotal,
-      tauxCommission: COMMISSION_RATE,
-      montantCommission: commissionAmount,
-      revenuNet: netRevenue,
-      date: new Date().toISOString(),
-      nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
-      restaurantId: restaurantId,
-      restaurateurId: restaurant?.proprietaireId || '',
-      statut: 'Placée',
-      adresseClient: userProfile.adresseParDefaut,
-      adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
-      telephoneClient: userProfile.telephone || 'Numéro non spécifié',
-      ...(location && {
-        latitudeClient: location.latitude,
-        longitudeClient: location.longitude,
-      }),
-      ...(restaurant?.latitude && { latitudeRestaurant: restaurant.latitude }),
-      ...(restaurant?.longitude && { longitudeRestaurant: restaurant.longitude }),
-    };
 
     const orderDocRef = doc(collection(db, "commandes"));
 
