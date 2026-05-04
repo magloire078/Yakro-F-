@@ -61,7 +61,7 @@ service cloud.firestore {
       allow create: if isAuth()
         && isUser(request.resource.data.proprietaireId)
         && userExists()
-        && getUserData().role == 'restaurateur';
+        && (getUserData().role == 'restaurateur' || isSuperAdmin());
       allow update: if isRestaurantOwner(restaurantId) || isSuperAdmin();
       allow delete: if isSuperAdmin();
     }

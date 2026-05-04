@@ -26,7 +26,7 @@ interface DashboardStatsProps {
  */
 export function DashboardStats({ items, className }: DashboardStatsProps) {
     return (
-        <div className={cn("flex justify-center items-center gap-6 md:gap-16 lg:gap-20 mt-4 md:mt-6 px-4 flex-wrap", className)}>
+        <div className={cn("flex justify-center items-center gap-4 md:gap-12 lg:gap-16 mt-2 md:mt-4 px-4 flex-wrap", className)}>
             {items.map((item, index) => (
                 <React.Fragment key={index}>
                     <div className="text-center group cursor-default min-w-[70px] md:min-w-[100px] flex-shrink-0">
@@ -39,7 +39,7 @@ export function DashboardStats({ items, className }: DashboardStatsProps) {
                                     "text-muted-foreground"
                                 )} />}
                                 <p className={cn(
-                                    "text-[7px] md:text-[9px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em]",
+                                    "text-[9px] md:text-[10px] font-black uppercase tracking-[0.05em] md:tracking-[0.15em]",
                                     item.color === 'orange' ? "text-orange-500/80" :
                                     item.color === 'emerald' ? "text-emerald-500/80" :
                                     "text-muted-foreground"
@@ -49,12 +49,12 @@ export function DashboardStats({ items, className }: DashboardStatsProps) {
                             </div>
                             <div className="flex items-center gap-1 relative">
                                 <p className={cn(
-                                    "text-2xl md:text-3xl lg:text-5xl font-black text-foreground tracking-tighter transition-all duration-500 group-hover:scale-110",
+                                    "text-xl md:text-3xl lg:text-5xl font-black text-foreground tracking-tighter transition-all duration-500 group-hover:scale-110",
                                     item.color === 'orange' && "group-hover:text-orange-500",
                                     item.color === 'emerald' && "group-hover:text-emerald-500 text-emerald-400"
                                 )}>
                                     {typeof item.value === 'number' ? item.value.toLocaleString('fr-FR') : item.value}
-                                    {item.unit && <span className="text-[8px] md:text-[10px] font-black ml-1 opacity-30 uppercase tracking-widest">{item.unit}</span>}
+                                    {item.unit && <span className="text-[9px] md:text-[10px] font-black ml-1 opacity-30 uppercase tracking-widest">{item.unit}</span>}
                                 </p>
                                 
                                 {item.growth !== undefined && (

@@ -199,9 +199,9 @@ export default function DashboardOrdersPage() {
                 )
             }}
         >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
                 {/* New Orders Section */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="flex items-center gap-6">
                         <div className="h-10 w-1.5 bg-orange-500 rounded-full" />
                         <h2 className="text-xl md:text-2xl font-black italic tracking-tighter text-foreground uppercase">
@@ -210,7 +210,7 @@ export default function DashboardOrdersPage() {
                         <div className="h-px flex-1 bg-foreground/5" />
                     </div>
                     
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                         <AnimatePresence mode="popLayout">
                             {newOrders.length > 0 ? (
                                 newOrders.map(order => <OrderCard key={order.id} order={order} />)
@@ -237,7 +237,7 @@ export default function DashboardOrdersPage() {
                 </div>
                 
                 {/* Preparing Section */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="flex items-center gap-6">
                         <div className="h-10 w-1.5 bg-emerald-500 rounded-full" />
                         <h2 className="text-xl md:text-2xl font-black italic tracking-tighter text-foreground uppercase">
@@ -246,7 +246,7 @@ export default function DashboardOrdersPage() {
                         <div className="h-px flex-1 bg-foreground/5" />
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                         <AnimatePresence mode="popLayout">
                             {preparingOrders.length > 0 ? (
                                 preparingOrders.map(order => <OrderCard key={order.id} order={order} />)

@@ -155,7 +155,7 @@ export default function DashboardMenuPage() {
                 children: <DashboardStats items={statsItems} />
             }}
         >
-            <div className="space-y-8 md:space-y-12">
+            <div className="space-y-6 md:space-y-8">
                 {/* Category Selector */}
                 <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 py-4 mb-4 flex overflow-x-auto gap-3 no-scrollbar scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
                     {categories.map((category, idx) => (
@@ -289,7 +289,7 @@ export default function DashboardMenuPage() {
                 </AnimatePresence>
 
                 {/* Add Button */}
-                <div className="mt-12 flex justify-center">
+                <div className="mt-8 flex justify-center">
                     <Button asChild className="h-16 px-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-orange-500/20 transition-all duration-500 hover:scale-105 group uppercase">
                         <Link href="/dashboard/new-menu-item" className="flex items-center gap-3">
                             <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-500" />

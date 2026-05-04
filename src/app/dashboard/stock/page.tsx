@@ -130,13 +130,13 @@ export default function StockPage() {
             label: 'Niveau Faible',
             value: stats.low,
             icon: AlertTriangle,
-            color: stats.low > 0 ? 'orange' : 'default'
+            color: stats.low > 0 ? ('orange' as const) : undefined
         },
         {
             label: 'Ruptures',
             value: stats.critical,
             icon: Package,
-            color: stats.critical > 0 ? 'orange' : 'default'
+            color: stats.critical > 0 ? ('orange' as const) : undefined
         }
     ], [stats]);
 

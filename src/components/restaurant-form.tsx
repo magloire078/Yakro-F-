@@ -15,7 +15,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader, Upload, MapPin, ChefHat } from 'lucide-react';
+import { Loader, Upload, MapPin, ChefHat, Sparkles, Wand2 } from 'lucide-react';
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
 import { Label } from '@/components/ui/label';
@@ -40,10 +40,13 @@ interface RestaurantFormProps {
     onSubmit: (data: RestaurantFormValues, imageFile: File | null) => Promise<void>;
     initialData?: Partial<RestaurantFormValues>;
     isLoading: boolean;
+    isGeneratingImage?: boolean;
+    onGenerateImage?: () => Promise<void>;
     submitButtonText: string;
+    generatedImage?: string | null;
 }
 
-export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonText }: RestaurantFormProps) {
+export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingImage, onGenerateImage, submitButtonText, generatedImage }: RestaurantFormProps) {
     const { toast } = useToast();
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
@@ -71,6 +74,19 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
             setImagePreview(imageSrc);
         }
     }, [initialData, form]);
+    
+    // Handle external image generation
+    React.useEffect(() => {
+        if (generatedImage) {
+            setImagePreview(generatedImage);
+            form.setValue('image', generatedImage);
+            // Also set a descriptive alt for the generated image if possible
+            const nom = form.getValues('nom');
+            if (nom) {
+                form.setValue('indiceImage', `${nom} restaurant premium cinematic`);
+            }
+        }
+    }, [generatedImage, form]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -126,12 +142,35 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, submitButtonT
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
                 {/* Image Upload Section */}
                 <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 block">
-                        Identité Visuelle
-                    </Label>
+                    <div className="flex items-center justify-between">
+                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                            Identité Visuelle
+                        </Label>
+                        {onGenerateImage && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={onGenerateImage}
+                                disabled={isGeneratingImage || isLoading}
+                                className="h-8 px-3 text-[9px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-600 hover:bg-orange-500/5 gap-2"
+                            >
+                                {isGeneratingImage ? <Loader className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                                {isGeneratingImage ? 'Matérialisation...' : 'Générer avec IA'}
+                            </Button>
+                        )}
+                    </div>
                     <Label htmlFor="image-upload" className="cursor-pointer group block">
                         <div className="relative w-full h-64 overflow-hidden bg-slate-50 border border-slate-200/60 rounded-2xl transition-all duration-500 group-hover:border-orange-500/50 flex items-center justify-center shadow-sm">
-                            {imagePreview ? (
+                            {isGeneratingImage ? (
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-orange-500/20 blur-2xl rounded-full animate-pulse" />
+                                        <Loader className="h-12 w-12 text-orange-500 animate-spin relative z-10" />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 animate-pulse">Consultation de la Matrice...</p>
+                                </div>
+                            ) : imagePreview ? (
                                 <>
                                     {imagePreview.includes('res.cloudinary.com') ? (
                                         <CldImage

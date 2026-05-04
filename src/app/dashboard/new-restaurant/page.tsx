@@ -9,11 +9,12 @@ import { useAuth } from '@/contexts/auth-context';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { RestaurantForm, type RestaurantFormValues } from '@/components/restaurant-form';
 import type { Restaurant } from '@/lib/types';
-import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { MobileBackButton } from '@/components/mobile-back-button';
 import { motion } from 'framer-motion';
+import { generateImageAction } from '@/app/actions/ai-actions';
 
 const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -47,6 +48,8 @@ export default function NewRestaurantPage() {
     const { user } = useAuth();
     const { db } = useFirebase();
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isGeneratingImage, setIsGeneratingImage] = React.useState(false);
+    const [generatedImageUrl, setGeneratedImageUrl] = React.useState<string | null>(null);
 
     const onSubmit = async (data: RestaurantFormValues, imageFile: File | null) => {
         if (!user) {
@@ -58,18 +61,24 @@ export default function NewRestaurantPage() {
         const restaurantRef = doc(collection(db, "restaurants"));
         const restaurantId = restaurantRef.id;
 
-        const restaurantData: Omit<Restaurant, 'id'> = {
-            ...data,
-            proprietaireId: user.uid,
-            note: 4.0, // Note par défaut
-            enVedette: false,
-            image: '',
-            indiceImage: data.indiceImage || `${data.cuisine} restaurant`,
-            latitude: data.latitude || 6.82,
-            longitude: data.longitude || -5.28,
-        };
-
         try {
+            let imageUrl = '';
+            if (imageFile) {
+                imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+            }
+
+            const restaurantData: Restaurant = {
+                ...data,
+                id: restaurantId,
+                proprietaireId: user.uid,
+                note: 4.0, // Note par défaut
+                enVedette: false,
+                image: imageUrl,
+                indiceImage: data.indiceImage || `${data.cuisine} restaurant`,
+                latitude: data.latitude || 6.82,
+                longitude: data.longitude || -5.28,
+            };
+
             // Write directly to Firestore via client SDK
             await setDoc(restaurantRef, restaurantData).catch(e => {
                 const permissionError = new FirestorePermissionError({
@@ -80,11 +89,6 @@ export default function NewRestaurantPage() {
                 errorEmitter.emit('permission-error', permissionError);
                 throw e;
             });
-
-            if (imageFile) {
-                const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
-                await updateDoc(restaurantRef, { image: imageUrl });
-            }
 
             toast({
                 title: 'Restaurant créé avec succès !',
@@ -102,6 +106,31 @@ export default function NewRestaurantPage() {
             setIsLoading(false);
         }
     }
+
+    const handleGenerateImage = async () => {
+        const nom = (document.querySelector('input[name="nom"]') as HTMLInputElement)?.value;
+        const cuisine = (document.querySelector('input[name="cuisine"]') as HTMLInputElement)?.value;
+        
+        if (!nom) {
+            toast({ variant: 'destructive', title: 'Données Insuffisantes', description: 'Veuillez saisir le nom du restaurant pour générer un visuel.' });
+            return;
+        }
+
+        setIsGeneratingImage(true);
+        try {
+            const prompt = `restaurant ${nom} ${cuisine || ''}`;
+            const result = await generateImageAction({ prompt });
+            if (!result.success) throw new Error(result.error);
+            
+            setGeneratedImageUrl(result.url);
+            toast({ title: 'Visuel Généré', description: 'Le visuel premium a été matérialisé avec succès.' });
+        } catch (e) {
+            console.error(e);
+            toast({ variant: 'destructive', title: 'Échec', description: 'Impossible de générer le visuel IA.' });
+        } finally {
+            setIsGeneratingImage(false);
+        }
+    };
 
     return (
         <div className="min-h-screen relative overflow-hidden bg-white pb-20">
@@ -159,7 +188,10 @@ export default function NewRestaurantPage() {
                             <RestaurantForm
                                 onSubmit={onSubmit}
                                 isLoading={isLoading}
-                                submitButtonText="Fonder mon Établissement"
+                                isGeneratingImage={isGeneratingImage}
+                                onGenerateImage={handleGenerateImage}
+                                generatedImage={generatedImageUrl}
+                                submitButtonText="Inaugurer l'Établissement"
                             />
                         </div>
 

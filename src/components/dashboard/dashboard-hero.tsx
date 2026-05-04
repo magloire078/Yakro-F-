@@ -34,7 +34,7 @@ export function DashboardHero({
     className
 }: DashboardHeroProps) {
     return (
-        <div className={cn("relative h-[16vh] md:h-[28vh] w-full overflow-hidden flex items-center justify-center", className)}>
+        <div className={cn("relative min-h-[30vh] md:min-h-[40vh] w-full overflow-hidden flex items-start justify-center pt-16 md:pt-20 pb-16 md:pb-24", className)}>
             {/* Background Image with Cinematic Effects */}
             <div className="absolute inset-0 z-0">
                 <Image
@@ -47,7 +47,7 @@ export function DashboardHero({
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/60 z-10" />
             </div>
             
-            <div className="relative z-30 text-center space-y-3 md:space-y-6 px-6 max-w-5xl pt-8 md:pt-0">
+            <div className="relative z-30 text-center space-y-2 md:space-y-4 px-6 max-w-5xl pt-4 md:pt-0">
                 {/* Mobile Back Button */}
                 <div className="md:hidden absolute -top-4 left-0 z-50">
                     <MobileBackButton label={backButtonLabel} href={backButtonHref} />

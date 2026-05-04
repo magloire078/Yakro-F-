@@ -105,7 +105,7 @@ export default function MyRestaurantsPage() {
             }}
         >
             {myRestaurants.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {myRestaurants.map((restaurant, index) => {
                         const placeholder = getPlaceholderImage(restaurant.indiceImage);
                         const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
@@ -171,7 +171,7 @@ export default function MyRestaurantsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-4 md:gap-6 mt-1 md:mt-2 mb-4 md:mb-6 p-2.5 md:p-4 bg-white/[0.02] border border-white/5 rounded-xl md:rounded-3xl">
+                                        <div className="flex items-center gap-4 md:gap-6 mt-1 md:mt-2 mb-2 md:mb-4 p-2.5 md:p-4 bg-white/[0.02] border border-white/5 rounded-xl md:rounded-3xl">
                                             <div className="flex flex-col">
                                                 <span className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.15em] text-slate-500 mb-0.5">Cuisine</span>
                                                 <span className="text-[9px] md:text-xs font-black text-white uppercase italic tracking-wider">{restaurant.cuisine}</span>
@@ -186,7 +186,7 @@ export default function MyRestaurantsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="mt-auto flex items-center gap-3 md:gap-4 pt-4 md:pt-6 border-t border-white/5">
+                                        <div className="mt-auto flex items-center gap-3 md:gap-4 pt-2 md:pt-4 border-t border-white/5">
                                             <Button 
                                                 variant="outline" 
                                                 asChild 
@@ -260,7 +260,7 @@ export default function MyRestaurantsPage() {
                     })}
                 </div>
             ) : (
-                <div className="max-w-2xl mx-auto glass-dark border border-white/5 p-12 md:p-16 text-center shadow-2xl relative overflow-hidden rounded-[2rem] md:rounded-[3rem] mt-8 md:mt-12">
+                <div className="max-w-2xl mx-auto glass-dark border border-white/5 p-12 md:p-16 text-center shadow-2xl relative overflow-hidden rounded-[2rem] md:rounded-[3rem] mt-4 md:mt-8">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
                     <div className="relative mb-6 md:mb-8">
                         <div className="absolute inset-0 bg-orange-500/10 blur-[50px] rounded-full scale-150" />
@@ -274,7 +274,7 @@ export default function MyRestaurantsPage() {
             )}
 
             {/* Desktop Action Button */}
-            <div className="hidden md:flex justify-center mt-12">
+            <div className="hidden md:flex justify-center mt-8">
                 <Button asChild className="h-14 px-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all duration-500 hover:scale-105 active:scale-95 group">
                     <Link href="/dashboard/new-restaurant" className="flex items-center gap-4">
                         <Plus className="h-6 w-6 group-hover:rotate-90 transition-transform duration-500" />

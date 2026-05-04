@@ -18,9 +18,25 @@ export const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async ({ prompt }) => {
-    // Culinary Guardrail: Refine the user's simple prompt into a professional photography prompt
-    const refinedPrompt = `Professional high-end studio food photography, close-up of a dish named: ${prompt}, 
-      appetizing lighting, artistic plating, culinary styling, soft bokeh background, 8k resolution, gastronomic style.`;
+    // Detect if the prompt is for a restaurant or a dish
+    const isRestaurant = /restaurant|établissement|façade|hôtel|boutique|enseigne/i.test(prompt);
+
+    let refinedPrompt = "";
+
+    if (isRestaurant) {
+      refinedPrompt = `Hyper-premium cinematic architectural photography of the luxury establishment: ${prompt}. 
+        'Yakro Elite' signature style, Yamoussoukro ultra-luxury architecture. 
+        Warm golden hour lighting, dramatic deep shadows, sophisticated glass and stone textures. 
+        Natural evening atmosphere, 8k resolution, authentic textures, architectural masterpiece. 
+        No CGI look, purely realistic professional photography.`;
+    } else {
+      refinedPrompt = `Authentic and hyper-realistic professional food photography of: ${prompt}. 
+        Close-up shot, natural organic textures, realistic steam, moisture on glass, imperfect natural edges. 
+        West African haute cuisine, Yamoussoukro luxury presentation. 
+        Warm cinematic lighting, deep contrast, dark charcoal background. 
+        Shot on Phase One XF, f/2.8, depth of field, natural food styling. 
+        AVOID plastic look, AVOID artificial shine, purely organic and appetizing masterpiece.`;
+    }
 
     try {
       const { media } = await ai.generate({
