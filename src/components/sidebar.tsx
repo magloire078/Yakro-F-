@@ -9,6 +9,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { ThemeToggle } from './theme-toggle';
+import { NotificationsBell } from './notifications-bell';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { cn } from '@/lib/utils';
 
@@ -85,7 +86,8 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                     <span className="font-headline text-2xl font-black text-orange-500 leading-none tracking-tighter italic uppercase ml-1">Fê</span>
                 </div>
             </Link>
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-1">
+                {activeRole === 'restaurateur' && <NotificationsBell />}
                 <ThemeToggle />
             </div>
         </div>

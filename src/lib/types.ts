@@ -133,3 +133,19 @@ export interface StockItem {
   derniereMiseAJour: string;
 }
 
+export type NotificationType = 'STOCK_LOW';
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  read: boolean;
+  date?: Timestamp | FieldValue;
+  // STOCK_LOW payload
+  stockItemId?: string;
+  stockItemNom?: string;
+  quantiteRestante?: number;
+  seuilAlerte?: number;
+  restaurantId?: string;
+}
+

@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { Sidebar } from './sidebar';
 import { Icons } from './icons';
 import { CartSheet } from './cart-sheet';
+import { NotificationsBell } from './notifications-bell';
 import { useCart } from '@/contexts/cart-context';
 import { useAuth } from '@/contexts/auth-context';
 import { ThemeToggle } from './theme-toggle';
@@ -38,6 +39,7 @@ export function MobileHeader() {
       </div>
       <div className="flex items-center gap-1">
         <ThemeToggle />
+        {activeRole === 'restaurateur' && <NotificationsBell />}
         {activeRole === 'client' && (
           <CartSheet>
                 <Button variant="ghost" size="icon" className="relative hover:bg-orange-500/10 hover:text-orange-500 rounded-xl transition-colors">

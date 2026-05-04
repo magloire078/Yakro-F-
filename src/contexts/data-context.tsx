@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Restaurant, MenuItem, Order, StockItem } from '@/lib/types';
+import type { Restaurant, MenuItem, Order, StockItem, AppNotification } from '@/lib/types';
 import { create } from 'zustand';
 import { collection, onSnapshot, query, Unsubscribe, DocumentData, where, Query, or, doc, deleteDoc, updateDoc, Firestore } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
@@ -14,11 +14,13 @@ interface DataState {
     menuItems: MenuItem[];
     orders: Order[];
     stocks: StockItem[];
+    notifications: AppNotification[];
     isLoading: boolean;
     setRestaurants: (restaurants: Restaurant[]) => void;
     setMenuItems: (menuItems: MenuItem[]) => void;
     setOrders: (orders: Order[]) => void;
     setStocks: (stocks: StockItem[]) => void;
+    setNotifications: (notifications: AppNotification[]) => void;
     setIsLoading: (isLoading: boolean) => void;
     getMenuItem: (id: string) => MenuItem | undefined;
     getRestaurant: (id: string) => Restaurant | undefined;
@@ -31,11 +33,13 @@ export const useData = create<DataState>((set, get) => ({
     menuItems: [],
     orders: [],
     stocks: [],
+    notifications: [],
     isLoading: true,
     setRestaurants: (restaurants) => set({ restaurants }),
     setMenuItems: (menuItems) => set({ menuItems }),
     setOrders: (orders) => set({ orders }),
     setStocks: (stocks) => set({ stocks }),
+    setNotifications: (notifications) => set({ notifications }),
     setIsLoading: (isLoading) => set({ isLoading }),
     getMenuItem: (id: string) => {
         return get().menuItems.find(i => i.id === id);
@@ -75,7 +79,7 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setStocks, setIsLoading, restaurants } = useData();
+    const { setRestaurants, setMenuItems, setOrders, setStocks, setNotifications, setIsLoading, restaurants } = useData();
 
     React.useEffect(() => {
         if (!db || authLoading) return;
@@ -109,6 +113,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         let unsubOrders: Unsubscribe | undefined;
         let unsubStocks: Unsubscribe | undefined;
+        let unsubNotifications: Unsubscribe | undefined;
         const collectionRef = (path: string) => collection(db, path);
 
         if (user && userProfile) {
@@ -163,9 +168,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setStocks([]);
             }
 
+            const notifQuery = query(collectionRef('notifications'), where('userId', '==', user.uid));
+            unsubNotifications = setupSubscription<AppNotification>(notifQuery, (fetched) => {
+                setNotifications(fetched);
+            }, 'notifications');
+
         } else {
             setOrders([]);
             setStocks([]);
+            setNotifications([]);
             setIsLoading(false);
         }
 
@@ -176,10 +187,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (unsubStocks) {
                 unsubStocks();
             }
+            if (unsubNotifications) {
+                unsubNotifications();
+            }
         };
-    }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setStocks, setIsLoading]);
+    }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setStocks, setNotifications, setIsLoading]);
 
     return <>{children}</>;
+};
+
+export const markNotificationRead = async (db: Firestore, notificationId: string) => {
+    try {
+        await updateDoc(doc(db, 'notifications', notificationId), { read: true });
+    } catch (e) {
+        const permissionError = new FirestorePermissionError({
+            path: `notifications/${notificationId}`,
+            operation: 'update',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw e;
+    }
 };
 
 export const deleteMenuItem = async (db: Firestore, itemId: string) => {
