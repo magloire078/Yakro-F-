@@ -1,4 +1,6 @@
-// Refactored for static export
+// Client-side helper to seed Firestore from /dev. Runs in the browser via the
+// Firebase client SDK; the caller must be signed in and the writes are subject
+// to security rules.
 
 import { collection, getDocs, writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/firebase/client';
@@ -47,7 +49,6 @@ export async function seedDatabaseAction(userId: string) {
             });
 
             await batch.commit();
-            // revalidatePath removed for static export
             return { success: true, message: 'Database seeded successfully.' };
 
         } else {

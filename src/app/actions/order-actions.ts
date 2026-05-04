@@ -1,28 +1,20 @@
-import { collection, updateDoc, doc, setDoc, getDoc } from 'firebase/firestore';
+// Client-side helpers for /commandes mutations.
+// Despite living under `app/actions/`, these run in the browser using the
+// Firebase client SDK and rely on Firestore security rules for enforcement.
+
+import { updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import type { Order } from '@/lib/types';
 import { decrementStockForOrder } from '@/lib/stock-utils';
 
-export async function addOrderAction(order: Omit<Order, 'id'>) {
-    const docRef = doc(collection(db!, "commandes"));
-
-    try {
-        await setDoc(docRef, order);
-        // revalidatePath removed for static export
-    } catch (e: unknown) {
-        console.error("Error adding order: ", e);
-        throw e;
-    }
-}
-
-export async function updateOrderStatusAction({ 
-    orderId, 
-    status, 
+export async function updateOrderStatusAction({
+    orderId,
+    status,
     delivererId,
-    orderData 
-}: { 
-    orderId: string, 
-    status: Order['statut'], 
+    orderData
+}: {
+    orderId: string,
+    status: Order['statut'],
     delivererId?: string,
     orderData?: Order
 }) {
@@ -35,11 +27,9 @@ export async function updateOrderStatusAction({
     try {
         await updateDoc(orderDocRef, updateData);
 
-        // Si la commande est livrée, on déclenche la déduction de stock
         if (status === 'Livrée') {
             let fullOrder = orderData;
-            
-            // Si on n'a pas les données de la commande, on les récupère
+
             if (!fullOrder) {
                 const snap = await getDoc(orderDocRef);
                 if (snap.exists()) {
