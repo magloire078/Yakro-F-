@@ -22,12 +22,11 @@ import {
     AlertDialog, 
     AlertDialogAction, 
     AlertDialogCancel, 
-    AlertDialogContent, 
-    AlertDialogDescription, 
-    AlertDialogFooter, 
-    AlertDialogHeader, 
-    AlertDialogTitle, 
-    AlertDialogTrigger 
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 
 import { SupervisionModule } from '@/components/supervision-module';

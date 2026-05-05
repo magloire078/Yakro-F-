@@ -32,13 +32,12 @@ import {
 import { 
     AlertDialog, 
     AlertDialogAction, 
-    AlertDialogCancel, 
-    AlertDialogContent, 
-    AlertDialogDescription, 
-    AlertDialogFooter, 
-    AlertDialogHeader, 
-    AlertDialogTitle, 
-    AlertDialogTrigger 
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { useData } from '@/contexts/data-context';
 import { Restaurant } from '@/lib/types';
