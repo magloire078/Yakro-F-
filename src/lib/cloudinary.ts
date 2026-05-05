@@ -85,7 +85,6 @@ export const deleteImage = async (publicId: string): Promise<boolean> => {
             return false;
         }
 
-        // console.log(`Cloudinary image deleted: ${publicId}`);
         return true;
     } catch (error) {
         console.error('Error in deleteImage:', error);

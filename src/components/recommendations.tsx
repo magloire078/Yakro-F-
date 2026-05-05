@@ -152,7 +152,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
         <div className="space-y-2">
             <div className="flex items-center gap-2 text-orange-500 font-bold uppercase tracking-[0.2em] text-[10px]">
                <BrainCircuit className="h-4 w-4" />
-               Personnalisé par Yakro-F AI
+               Personnalisé par Yakro-Fê AI
             </div>
             <h2 className="text-3xl md:text-4xl font-headline text-foreground">Rien que pour vous</h2>
         </div>
