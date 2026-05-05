@@ -18,6 +18,17 @@ import { useData } from '@/contexts/data-context';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle, 
+    AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 
 import { SupervisionModule } from '@/components/supervision-module';
 import { RestaurantManager } from '@/components/restaurant-manager';
@@ -45,6 +56,10 @@ export default function AdminPage() {
 
     const [editingUser, setEditingUser] = React.useState<UserProfile | null>(null);
     const [isAddUserDialogOpen, setIsAddUserDialogOpen] = React.useState(false);
+    const [userToDelete, setUserToDelete] = React.useState<UserProfile | null>(null);
+    const [isDeleting, setIsDeleting] = React.useState(false);
+    const [isPurgeDialogOpen, setIsPurgeDialogOpen] = React.useState(false);
+    const [isPurging, setIsPurging] = React.useState(false);
     
 
     const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
@@ -143,13 +158,13 @@ export default function AdminPage() {
         }
     };
     
-    const handleDeleteUser = async (userId: string, userEmail: string) => {
+    const handleDeleteUser = async (userId: string) => {
         if (!user || !userProfile) return;
         
-        if (!window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement l'utilisateur ${userEmail} ?`)) return;
-
+        setIsDeleting(true);
         try {
             const userRef = doc(db, 'utilisateurs', userId);
+            const userEmail = userToDelete?.email || 'inconnu';
             await deleteDoc(userRef);
             
             await logAdminAction(db, {
@@ -161,19 +176,21 @@ export default function AdminPage() {
             });
             
             toast({ title: "Utilisateur supprimé", description: "Le compte a été retiré du système." });
+            setUserToDelete(null);
         } catch {
             toast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer l'utilisateur." });
+        } finally {
+            setIsDeleting(false);
         }
     };
 
     const handlePurgeLogs = async () => {
         if (!user || !userProfile) return;
         
+        setIsPurging(true);
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         
-        if (!window.confirm(`Voulez-vous supprimer tous les journaux d'audit antérieurs au ${thirtyDaysAgo.toLocaleDateString()} ? Cette action est irréversible.`)) return;
-
         try {
             const q = query(collection(db, 'audit_logs'), where('timestamp', '<', Timestamp.fromDate(thirtyDaysAgo)));
             const snapshot = await getDocs(q);
@@ -204,9 +221,12 @@ export default function AdminPage() {
             });
             
             toast({ title: "Journal purgé", description: `${deletedCount} entrées ont été supprimées.` });
+            setIsPurgeDialogOpen(false);
         } catch (error) {
             console.error("Erreur lors de la purge:", error);
             toast({ variant: "destructive", title: "Erreur", description: "Impossible de purger les journaux." });
+        } finally {
+            setIsPurging(false);
         }
     };
 
@@ -437,7 +457,7 @@ export default function AdminPage() {
                                                     <span className="text-[9px] font-body font-bold tracking-widest text-orange-500">PROTOCOLE ACTIF</span>
                                                 </div>
                                                 <Button 
-                                                    onClick={handlePurgeLogs}
+                                                    onClick={() => setIsPurgeDialogOpen(true)}
                                                     variant="outline" 
                                                     className="h-12 px-6 border-red-500/20 hover:bg-red-500/10 text-red-500 rounded-2xl font-body font-bold text-[10px] tracking-widest transition-all"
                                                 >
@@ -563,7 +583,7 @@ export default function AdminPage() {
                                                                         <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} className="h-12 w-12 hover:bg-orange-500/10 hover:text-orange-500 rounded-2xl border border-transparent hover:border-orange-500/20 transition-all hover:scale-110">
                                                                             <Edit className="h-5 w-5" />
                                                                         </Button>
-                                                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(u.uid, u.email)} className="h-12 w-12 hover:bg-red-500/10 hover:text-red-500 rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110">
+                                                                        <Button variant="ghost" size="icon" onClick={() => setUserToDelete(u)} className="h-12 w-12 hover:bg-red-500/10 hover:text-red-500 rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110">
                                                                             <Trash2 className="h-5 w-5" />
                                                                         </Button>
                                                                     </div>
@@ -648,6 +668,54 @@ export default function AdminPage() {
 
             {editingUser && <EditUserDialog isOpen={!!editingUser} onClose={() => setEditingUser(null)} userProfile={editingUser} />}
             <AddUserDialog isOpen={isAddUserDialogOpen} onClose={() => setIsAddUserDialogOpen(false)} />
+
+            {/* Non-blocking Deletion Confirmation */}
+            <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+                <AlertDialogContent className="bg-card/95 backdrop-blur-3xl border-border rounded-3xl shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-headline font-bold tracking-tight">Suppression <span className="text-red-500 italic">Définitive</span></AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-500 font-body text-xs tracking-wide py-4 leading-relaxed">
+                            Êtes-vous absolument certain de vouloir révoquer tous les accès de <span className="font-bold text-foreground"> {userToDelete?.email}</span> ? 
+                            <br /><br />
+                            Cette action détruira définitivement le profil citoyen et est irréversible.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-3 mt-4">
+                        <AlertDialogCancel className="rounded-2xl h-12 border-border font-body font-bold text-[10px] tracking-widest px-8">ANNULER</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={() => userToDelete && handleDeleteUser(userToDelete.uid)}
+                            disabled={isDeleting}
+                            className="rounded-2xl h-12 bg-red-500 hover:bg-red-600 text-white font-body font-bold text-[10px] tracking-widest px-8 shadow-xl shadow-red-500/20"
+                        >
+                            {isDeleting ? <Loader className="h-4 w-4 animate-spin" /> : "CONFIRMER LA SUPPRESSION"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Purge Logs Confirmation */}
+            <AlertDialog open={isPurgeDialogOpen} onOpenChange={setIsPurgeDialogOpen}>
+                <AlertDialogContent className="bg-card/95 backdrop-blur-3xl border-border rounded-3xl shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-headline font-bold tracking-tight">Nettoyage des <span className="text-orange-500 italic">Registres</span></AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-500 font-body text-xs tracking-wide py-4 leading-relaxed">
+                            Cette opération va purger tous les journaux d&apos;audit de plus de <span className="font-bold text-foreground">30 jours</span>.
+                            <br /><br />
+                            Cette action est irréversible et libérera de l&apos;espace dans le bastion de données.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-3 mt-4">
+                        <AlertDialogCancel className="rounded-2xl h-12 border-border font-body font-bold text-[10px] tracking-widest px-8">ANNULER</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={handlePurgeLogs}
+                            disabled={isPurging}
+                            className="rounded-2xl h-12 bg-orange-500 hover:bg-orange-600 text-white font-body font-bold text-[10px] tracking-widest px-8 shadow-xl shadow-orange-500/20"
+                        >
+                            {isPurging ? <Loader className="h-4 w-4 animate-spin" /> : "CONFIRMER LA PURGE"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

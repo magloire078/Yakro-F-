@@ -10,7 +10,8 @@ import {
     TrendingUp,
     ShieldAlert,
     Filter,
-    Trash2
+    Trash2,
+    Loader
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,17 @@ import {
     DropdownMenuItem, 
     DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle, 
+    AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 import { useData } from '@/contexts/data-context';
 import { Restaurant } from '@/lib/types';
 import Image from 'next/image';
@@ -45,6 +57,8 @@ export function RestaurantManager() {
     const { db } = useFirebase();
     const { user } = useAuth();
     const { toast } = useToast();
+    const [restaurantToDelete, setRestaurantToDelete] = React.useState<Restaurant | null>(null);
+    const [isDeleting, setIsDeleting] = React.useState(false);
 
     const handleAction = async (restaurant: Restaurant, action: 'FEATURE_RESTAURANT' | 'UNFEATURE_RESTAURANT' | 'SUSPEND_RESTAURANT' | 'ACTIVATE_RESTAURANT' | 'DELETE_RESTAURANT') => {
         if (!user) return;
@@ -72,16 +86,15 @@ export function RestaurantManager() {
                     detailMessage = `Réactivation du restaurant ${restaurant.nom}`;
                     break;
                 case 'DELETE_RESTAURANT':
-                    if (window.confirm(`Êtes-vous absolument sûr de vouloir supprimer définitivement ${restaurant.nom} ? Cette action est irréversible.`)) {
-                        detailMessage = `SUPPRESSION DÉFINITIVE du restaurant ${restaurant.nom}`;
-                    } else {
-                        return;
-                    }
+                    detailMessage = `SUPPRESSION DÉFINITIVE du restaurant ${restaurant.nom}`;
                     break;
             }
 
             if (action === 'DELETE_RESTAURANT') {
+                setIsDeleting(true);
                 await deleteRestaurantAction(restaurant.id);
+                setIsDeleting(false);
+                setRestaurantToDelete(null);
             } else {
                 await updateDoc(restaurantRef, updateData);
             }
@@ -242,7 +255,7 @@ export function RestaurantManager() {
                                                     <div className="h-px bg-border/50 my-1" />
                                                     <DropdownMenuItem 
                                                         className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-red-700 focus:text-white cursor-pointer transition-colors text-red-600"
-                                                        onClick={() => handleAction(restaurant, 'DELETE_RESTAURANT')}
+                                                        onClick={() => setRestaurantToDelete(restaurant)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                         Suppression Définitive
@@ -265,6 +278,31 @@ export function RestaurantManager() {
                     <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">SUIVANT</Button>
                 </div>
             </div>
+
+            {/* Non-blocking Restaurant Deletion Confirmation */}
+            <AlertDialog open={!!restaurantToDelete} onOpenChange={(open) => !open && setRestaurantToDelete(null)}>
+                <AlertDialogContent className="bg-card/95 backdrop-blur-3xl border-border rounded-[2rem] shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Destruction du <span className="text-red-500 italic">Bastion</span></AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-500 font-black uppercase tracking-[0.2em] text-[9px] py-4 leading-relaxed">
+                            Êtes-vous certain de vouloir raser définitivement <span className="text-foreground"> {restaurantToDelete?.nom}</span> ? 
+                            <br /><br />
+                            Toutes les données associées seront purgées du réseau Yakro. Cette action est irréversible.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-3 mt-6">
+                        <AlertDialogCancel className="rounded-xl h-12 bg-card/50 border-border text-[9px] font-black uppercase tracking-widest px-8">ANNULER</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={() => restaurantToDelete && handleAction(restaurantToDelete, 'DELETE_RESTAURANT')}
+                            disabled={isDeleting}
+                            className="rounded-xl h-12 bg-red-600 hover:bg-red-700 text-white font-black italic uppercase tracking-tighter px-8 shadow-xl shadow-red-600/20"
+                        >
+                            {isDeleting ? <Loader className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                            CONFIRMER LA DESTRUCTION
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
