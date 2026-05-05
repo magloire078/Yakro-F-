@@ -105,10 +105,10 @@ export function MenuItemForm({
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8 max-h-[70vh] overflow-y-auto p-1 pr-4 custom-scrollbar">
                 {/* Elite Image Uploader */}
-                <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 block">Signature Visuelle</Label>
+                <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 block">Image du Plat</Label>
                     <Label htmlFor="image-upload-form" className="cursor-pointer block group">
-                        <div className="relative w-full h-64 rounded-2xl border border-slate-200/60 bg-slate-50 flex flex-col items-center justify-center text-slate-400 hover:border-orange-500/50 transition-all duration-500 overflow-hidden shadow-sm">
+                        <div className="relative w-full h-56 rounded-2xl border border-slate-200/60 bg-slate-50 flex flex-col items-center justify-center text-slate-400 hover:border-orange-500/50 transition-all duration-500 overflow-hidden shadow-sm">
                             {imageToDisplay ? (
                                 <>
                                     {imageToDisplay.includes('res.cloudinary.com') ? (
@@ -140,8 +140,8 @@ export function MenuItemForm({
                                         <Upload className="h-6 w-6 text-orange-500" />
                                     </div>
                                     <div>
-                                        <p className="text-slate-900 font-black italic uppercase tracking-tighter text-xl leading-none">Immortaliser le Plat</p>
-                                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mt-3">Format recommandé: 1:1 ou 4:3</p>
+                                        <p className="text-slate-900 font-black italic uppercase tracking-tighter text-xl leading-none">Ajouter une image</p>
+                                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mt-2">Format recommandé: 1:1 ou 4:3</p>
                                     </div>
                                 </div>
                             )}
@@ -155,8 +155,8 @@ export function MenuItemForm({
                         control={form.control}
                         name="nom"
                         render={({ field }) => (
-                            <FormItem className="space-y-2">
-                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Nom du Chef-d&apos;œuvre</FormLabel>
+                            <FormItem className="space-y-1.5">
+                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Nom du Plat</FormLabel>
                                 <FormControl>
                                     <Input 
                                         {...field} 
@@ -172,8 +172,8 @@ export function MenuItemForm({
                         control={form.control}
                         name="categorie"
                         render={({ field }) => (
-                            <FormItem className="space-y-2">
-                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Catégorie Gastronomique</FormLabel>
+                            <FormItem className="space-y-1.5">
+                                <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Catégorie</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus:ring-orange-500 text-slate-900 font-bold transition-all shadow-sm">
@@ -198,8 +198,8 @@ export function MenuItemForm({
                     control={form.control}
                     name="prix"
                     render={({ field }) => (
-                        <FormItem className="space-y-2">
-                            <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Valeur Prestige (FCFA)</FormLabel>
+                        <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Prix (FCFA)</FormLabel>
                             <FormControl>
                                 <Input 
                                     type="number" 
@@ -217,8 +217,8 @@ export function MenuItemForm({
                     control={form.control}
                     name="description"
                     render={({ field }) => (
-                        <FormItem className="space-y-2">
-                            <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Récit Gastronomique</FormLabel>
+                        <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Description</FormLabel>
                             <FormControl>
                                 <Textarea 
                                     {...field} 
@@ -233,9 +233,9 @@ export function MenuItemForm({
                 />
 
                 {/* Accompagnements */}
-                <div className="space-y-4 pt-6 border-t border-slate-100">
+                <div className="space-y-3 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between">
-                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Accompagnements Signature</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Accompagnements</Label>
                         <Button 
                             type="button" 
                             variant="ghost" 
@@ -275,9 +275,9 @@ export function MenuItemForm({
                 </div>
 
                 {/* Boissons */}
-                <div className="space-y-4 pt-6 border-t border-slate-100">
+                <div className="space-y-3 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between">
-                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Sélection de Boissons</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Boissons</Label>
                         <Button 
                             type="button" 
                             variant="ghost" 

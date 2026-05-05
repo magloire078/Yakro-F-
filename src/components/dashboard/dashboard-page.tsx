@@ -33,7 +33,7 @@ export function DashboardPage({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className={cn(
-                    "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 md:-mt-14 relative z-40 pt-2 md:pt-4",
+                    "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 md:-mt-8 relative z-40 pt-2 md:pt-4",
                     containerClassName
                 )}
             >

@@ -151,7 +151,7 @@ export default function DashboardMenuPage() {
                 badgeIcon: <ChefHat className="h-4 w-4" />,
                 badgeText: "Excellence Culinaire",
                 title: <>Votre <span className="text-orange-500 italic text-shadow-orange">Carte</span></>,
-                subtitle: "Gestion des saveurs et des expériences",
+                subtitle: "Gérez les articles de votre menu",
                 children: <DashboardStats items={statsItems} />
             }}
         >
@@ -293,7 +293,7 @@ export default function DashboardMenuPage() {
                     <Button asChild className="h-16 px-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-orange-500/20 transition-all duration-500 hover:scale-105 group uppercase">
                         <Link href="/dashboard/new-menu-item" className="flex items-center gap-3">
                             <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-500" />
-                            Ajouter un Chef-d&apos;œuvre
+                            Ajouter un Plat
                         </Link>
                     </Button>
                 </div>

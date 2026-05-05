@@ -8,7 +8,11 @@ export const uploadImage = async (fileOrDataUrl: File | string, path: string): P
     const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
     if (!cloudName || !uploadPreset || cloudName === "" || uploadPreset === "" || cloudName.includes('your_') || uploadPreset.includes('your_')) {
-        throw new Error("Configuration Cloudinary manquante ou non valide dans le fichier .env (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ou NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET)");
+        const missing = [];
+        if (!cloudName || cloudName.includes('your_')) missing.push('NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME');
+        if (!uploadPreset || uploadPreset.includes('your_')) missing.push('NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET');
+        
+        throw new Error(`Configuration Cloudinary manquante ou non valide dans le fichier .env. Veuillez renseigner : ${missing.join(', ')}`);
     }
 
     const formData = new FormData();

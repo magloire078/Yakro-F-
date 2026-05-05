@@ -14,7 +14,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuItem } from '@/lib/types';
-import { Loader, BookOpenCheck } from 'lucide-react';
 import { MenuItemForm, type MenuItemFormValues, menuItemFormSchema } from './menu-item-form';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -22,32 +21,9 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { logAdminAction } from '@/lib/audit-logs';
 import { useAuth } from '@/contexts/auth-context';
+import { uploadImage } from '@/lib/cloudinary';
+import { Loader, BookOpenCheck } from 'lucide-react';
 
-const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-  if (!cloudName || !uploadPreset) {
-    throw new Error("Cloudinary configuration missing.");
-  }
-
-  const formData = new FormData();
-  formData.append('file', fileOrDataUrl);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('public_id', path);
-
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: 'POST',
-    body: formData
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to upload image to Cloudinary');
-  }
-
-  const data = await response.json();
-  return data.secure_url;
-};
 
 
 interface EditMenuItemDialogProps {
@@ -147,14 +123,13 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
           <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
           <DialogHeader>
             <div className="inline-flex items-center gap-2 mb-4">
-              <BookOpenCheck className="h-4 w-4 text-orange-500" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Raffinement Culinaire</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Modification du Menu</span>
             </div>
             <DialogTitle className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">
-              Actualiser <span className="text-orange-500">&ldquo;{menuItem.nom}&rdquo;</span>
+              Modifier le plat
             </DialogTitle>
             <DialogDescription className="text-gray-500 font-medium text-sm mt-2">
-              Ajustez les paramètres de votre création pour maintenir l&apos;excellence Yakro Elite.
+              Mise à jour des informations de votre carte.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -173,19 +148,19 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
                 onClick={onClose}
                 className="h-14 px-8 bg-white/5 hover:bg-white/10 text-white rounded-none font-bold uppercase tracking-widest text-[10px] transition-all"
               >
-                Préserver l&apos;Actuel
+                Annuler
               </Button>
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white rounded-none font-black italic uppercase tracking-tighter transition-all duration-500 hover:scale-105 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
+                className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white rounded-none font-black italic uppercase tracking-tighter transition-all duration-500 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
               >
                 {isSubmitting ? (
                   <Loader className="h-5 w-5 animate-spin mr-2" />
                 ) : (
                   <BookOpenCheck className="h-5 w-5 mr-2" />
                 )}
-                Confirmer l&apos;Excellence
+                Enregistrer les modifications
               </Button>
             </DialogFooter>
           </MenuItemForm>

@@ -34,7 +34,7 @@ export function DashboardHero({
     className
 }: DashboardHeroProps) {
     return (
-        <div className={cn("relative min-h-[30vh] md:min-h-[40vh] w-full overflow-hidden flex items-start justify-center pt-16 md:pt-20 pb-16 md:pb-24", className)}>
+        <div className={cn("relative min-h-[20vh] md:min-h-[25vh] w-full overflow-hidden flex items-start justify-center pt-12 md:pt-16 pb-10 md:pb-12", className)}>
             {/* Background Image with Cinematic Effects */}
             <div className="absolute inset-0 z-0">
                 <Image

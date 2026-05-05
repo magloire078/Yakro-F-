@@ -51,6 +51,9 @@ export default function AdminPage() {
     const [logSearchQuery, setLogSearchQuery] = React.useState('');
     const [logDisplayLimit, setLogDisplayLimit] = React.useState(50);
     const [activeTab, setActiveTab] = React.useState('live');
+    const [isPending, startTransition] = React.useTransition();
+    const [userDisplayLimit, setUserDisplayLimit] = React.useState(20);
+    const [userSearchQuery, setUserSearchQuery] = React.useState('');
 
     // Persist tab state
     React.useEffect(() => {
@@ -61,7 +64,9 @@ export default function AdminPage() {
     }, []);
 
     const handleTabChange = (value: string) => {
-        setActiveTab(value);
+        startTransition(() => {
+            setActiveTab(value);
+        });
         localStorage.setItem('yakro-admin-active-tab', value);
     };
 
@@ -226,13 +231,30 @@ export default function AdminPage() {
     }, [filteredLogs, logDisplayLimit]);
 
     const latestUsers = React.useMemo(() => {
-        if (!allUsers) return [];
-        return [...allUsers].sort((a, b) => {
-            const dateA = (a.dateCreation && 'toDate' in a.dateCreation) ? a.dateCreation.toDate() : new Date(0);
-            const dateB = (b.dateCreation && 'toDate' in b.dateCreation) ? b.dateCreation.toDate() : new Date(0);
-            return dateB.getTime() - dateA.getTime();
-        }).slice(0, 5);
+        if (!allUsers || allUsers.length === 0) return [];
+        // Only sort a copy of the array
+        return [...allUsers]
+            .sort((a, b) => {
+                const dateA = (a.dateCreation && 'toDate' in a.dateCreation) ? a.dateCreation.toDate() : new Date(0);
+                const dateB = (b.dateCreation && 'toDate' in b.dateCreation) ? b.dateCreation.toDate() : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            })
+            .slice(0, 5);
     }, [allUsers]);
+
+    const filteredUsers = React.useMemo(() => {
+        if (!userSearchQuery) return allUsers;
+        const query = userSearchQuery.toLowerCase();
+        return allUsers.filter(u => 
+            (u.nom?.toLowerCase().includes(query)) || 
+            (u.email?.toLowerCase().includes(query)) ||
+            (u.roleSysteme?.toLowerCase().includes(query))
+        );
+    }, [allUsers, userSearchQuery]);
+
+    const displayedUsers = React.useMemo(() => {
+        return filteredUsers.slice(0, userDisplayLimit);
+    }, [filteredUsers, userDisplayLimit]);
 
     if (dataLoading || isPublicDataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return (
@@ -388,8 +410,9 @@ export default function AdminPage() {
 
                             <motion.div
                                 initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.5 }}
+                                animate={{ opacity: isPending ? 0.6 : 1 }}
+                                transition={{ duration: 0.3 }}
+                                className={isPending ? "pointer-events-none" : ""}
                             >
                                 <TabsContent value="live" className="m-0 outline-none animate-in fade-in duration-700"><SupervisionModule /></TabsContent>
                                 <TabsContent value="restaurants" className="m-0 outline-none animate-in fade-in duration-700"><RestaurantManager /></TabsContent>
@@ -482,15 +505,23 @@ export default function AdminPage() {
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                                         <div className="lg:col-span-2 bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                                             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
-                                            <div className="flex items-center justify-between mb-12 relative z-10">
+                                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 relative z-10 gap-6">
                                                 <div className="space-y-2">
                                                     <h2 className="text-3xl md:text-4xl font-headline font-bold tracking-tight text-foreground leading-none">Registre des <span className="text-orange-500 italic">Comptes</span></h2>
                                                     <p className="text-[11px] font-body font-medium text-slate-500/70 tracking-widest">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
                                                 </div>
-                                                <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-body font-bold tracking-tight transition-all hover:scale-105 shadow-xl">
-                                                    <UserPlus className="mr-2 h-4 w-4" />
-                                                    NOUVEAU
-                                                </Button>
+                                                <div className="flex items-center gap-4 w-full md:w-auto">
+                                                    <Input 
+                                                        value={userSearchQuery}
+                                                        onChange={(e) => setUserSearchQuery(e.target.value)}
+                                                        placeholder="Rechercher un citoyen..."
+                                                        className="h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-2xl text-[10px] font-body font-medium tracking-wide min-w-[200px] focus:ring-orange-500/50"
+                                                    />
+                                                    <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-body font-bold tracking-tight transition-all hover:scale-105 shadow-xl whitespace-nowrap">
+                                                        <UserPlus className="mr-2 h-4 w-4" />
+                                                        NOUVEAU
+                                                    </Button>
+                                                </div>
                                             </div>
                                             <div className="overflow-x-auto">
                                                 <Table>
@@ -502,7 +533,7 @@ export default function AdminPage() {
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
-                                                        {allUsers.map((u) => (
+                                                        {displayedUsers.map((u) => (
                                                             <TableRow key={u.uid} className="border-border dark:border-white/5 hover:bg-card/80 dark:hover:bg-white/5 transition-colors group">
                                                                 <TableCell className="py-6">
                                                                     <div className="flex items-center gap-4">
@@ -542,6 +573,18 @@ export default function AdminPage() {
                                                     </TableBody>
                                                 </Table>
                                             </div>
+
+                                            {filteredUsers.length > userDisplayLimit && (
+                                                <div className="mt-8 flex justify-center">
+                                                    <Button 
+                                                        onClick={() => setUserDisplayLimit(prev => prev + 20)}
+                                                        variant="outline"
+                                                        className="rounded-2xl border-white/10 hover:bg-orange-500 hover:text-white font-body font-bold text-[10px] h-12 px-8 transition-all hover:scale-105"
+                                                    >
+                                                        Charger plus d&apos;utilisateurs
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="lg:col-span-1 space-y-8">
                                             <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden group">
