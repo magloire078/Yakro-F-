@@ -5,3 +5,42 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+# Environment variables surfaced to the build (Next.js compile time) and/or
+# the runtime (server actions, SSR). Public values prefixed with NEXT_PUBLIC_
+# are inlined into the browser bundle and may be kept in clear here. Server
+# secrets must be stored in Google Secret Manager via:
+#   firebase apphosting:secrets:set <NAME> --project yakro-go
+# and referenced via the `secret:` field below.
+env:
+  # --- Firebase web client ---
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: REPLACE_WITH_FIREBASE_WEB_API_KEY
+    availability: [BUILD, RUNTIME]
+
+  # --- Google Maps (geocoding / map tiles) ---
+  - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    value: REPLACE_WITH_GOOGLE_MAPS_API_KEY
+    availability: [BUILD, RUNTIME]
+
+  # --- Cloudinary (image hosting) ---
+  - variable: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    value: REPLACE_WITH_CLOUDINARY_CLOUD_NAME
+    availability: [BUILD, RUNTIME]
+
+  - variable: NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    value: REPLACE_WITH_CLOUDINARY_UPLOAD_PRESET
+    availability: [BUILD, RUNTIME]
+
+  - variable: NEXT_PUBLIC_CLOUDINARY_API_KEY
+    value: REPLACE_WITH_CLOUDINARY_API_KEY
+    availability: [BUILD, RUNTIME]
+
+  - variable: CLOUDINARY_API_SECRET
+    secret: CLOUDINARY_API_SECRET
+    availability: [RUNTIME]
+
+  # --- Genkit / Gemini (AI flows) ---
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+    availability: [RUNTIME]
