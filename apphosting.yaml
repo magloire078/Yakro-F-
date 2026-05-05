@@ -15,25 +15,25 @@ runConfig:
 env:
   # --- Firebase web client ---
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: REPLACE_WITH_FIREBASE_WEB_API_KEY
+    value: AIzaSyBl9KMx5EuvhN71R81bNRqXuQhVdNKPGdc
     availability: [BUILD, RUNTIME]
 
   # --- Google Maps (geocoding / map tiles) ---
   - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    value: REPLACE_WITH_GOOGLE_MAPS_API_KEY
+    value: AIzaSyBl9KMx5EuvhN71R81bNRqXuQhVdNKPGdc
     availability: [BUILD, RUNTIME]
 
   # --- Cloudinary (image hosting) ---
   - variable: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-    value: REPLACE_WITH_CLOUDINARY_CLOUD_NAME
+    value: dmsrvtmy
     availability: [BUILD, RUNTIME]
 
   - variable: NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-    value: REPLACE_WITH_CLOUDINARY_UPLOAD_PRESET
+    value: "Yakro Go"
     availability: [BUILD, RUNTIME]
 
   - variable: NEXT_PUBLIC_CLOUDINARY_API_KEY
-    value: REPLACE_WITH_CLOUDINARY_API_KEY
+    value: "351289361997713"
     availability: [BUILD, RUNTIME]
 
   - variable: CLOUDINARY_API_SECRET
