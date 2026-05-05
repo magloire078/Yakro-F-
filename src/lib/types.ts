@@ -133,7 +133,7 @@ export interface StockItem {
   derniereMiseAJour: string;
 }
 
-export type NotificationType = 'STOCK_LOW';
+export type NotificationType = 'STOCK_LOW' | 'NEW_ORDER' | 'ORDER_OVERDUE';
 
 export interface AppNotification {
   id: string;
@@ -147,5 +147,9 @@ export interface AppNotification {
   quantiteRestante?: number;
   seuilAlerte?: number;
   restaurantId?: string;
+  // NEW_ORDER / ORDER_OVERDUE payload
+  orderId?: string;
+  total?: number;
+  ageMinutes?: number;
 }
 

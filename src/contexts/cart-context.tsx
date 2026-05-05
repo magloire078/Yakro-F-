@@ -9,6 +9,7 @@ import { collection, doc, setDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { notifyNewOrderAction } from '@/app/actions/notification-actions';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -185,6 +186,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await setDoc(orderDocRef, newOrder);
       clearCart();
       window.dispatchEvent(new CustomEvent('place-order'));
+      try {
+        const idToken = await user.getIdToken();
+        const result = await notifyNewOrderAction(orderDocRef.id, idToken);
+        if (!result.success) {
+          console.error('notifyNewOrderAction failed:', result.error);
+        }
+      } catch (err) {
+        console.error('notifyNewOrderAction threw:', err);
+      }
       return { success: true };
     } catch {
       const permissionError = new FirestorePermissionError({
