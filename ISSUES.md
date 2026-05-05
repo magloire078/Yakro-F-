@@ -1,15 +1,15 @@
-# Yakro-F Technical Debt & Issues Tracking
+# Yakro-Fê Technical Debt & Issues Tracking
 
-Ce document centralise les problèmes architecturaux, les bugs connus et les améliorations prioritaires pour stabiliser l'application Yakro-F.
+Ce document centralise les problèmes architecturaux, les bugs connus et les améliorations prioritaires pour stabiliser l'application Yakro-Fê.
 
 ## 🔴 Critiques (Bloquants)
 
-- [ ] **Erreurs de Mémoire (OOM)** : `npm run build` et `npm run lint` échouent souvent par manque de mémoire.
-    - *Piste* : Utiliser `NODE_OPTIONS=--max-old-space-size=4096`.
-- [ ] **Configuration ESLint Obsolète** : `eslint.config.mjs` semble incomplet pour Next.js 15+ et ESLint 9.
-    - *Impact* : Pas de validation automatique du code.
+- [x] **Erreurs de Mémoire (OOM)** : `npm run build` et `npm run lint` échouent souvent par manque de mémoire.
+    - *Fix* : Ajout de `cross-env NODE_OPTIONS=--max-old-space-size=4096` dans `package.json`.
+- [x] **Configuration ESLint Obsolète** : `eslint.config.mjs` mis à jour pour Next.js 15+ et ESLint 9.
+    - *Statut* : Fonctionnel avec `FlatCompat`.
 - [ ] **Index Firestore Absents** : `firestore.indexes.json` est vide.
-    - *Impact* : Les requêtes complexes (filtres + tris) échoueront silencieusement ou avec une erreur cryptique si elles ne sont pas gérées par notre nouveau système d'alerte.
+    - *Impact* : Les requêtes complexes (filtres + tris) pourraient échouer.
 
 ## 🟠 Prioritaires (Stabilité)
 
