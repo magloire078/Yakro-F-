@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import type { Order } from './types';
-import { getOverdueOrderAlerts, ORDER_OVERDUE_THRESHOLD_MIN } from './order-alerts';
+import {
+  getOverdueOrderAlerts,
+  ORDER_OVERDUE_THRESHOLD_MIN,
+  DEFAULT_OVERDUE_THRESHOLDS,
+} from './order-alerts';
 
 const buildOrder = (overrides: Partial<Order> = {}): Order =>
   ({
@@ -43,37 +47,87 @@ describe('getOverdueOrderAlerts', () => {
     expect(alerts[0].id).toBe('overdue-o1');
   });
 
-  it('ignores orders not in Placée status', () => {
-    const now = new Date('2026-05-04T13:00:00.000Z');
+  it('flags long-running En Préparation orders past their own threshold', () => {
+    const now = new Date('2026-05-04T12:30:00.000Z'); // 30 min, threshold is 25
     const alerts = getOverdueOrderAlerts(
       [buildOrder({ date: placedAt, statut: 'En Préparation' })],
       recipient,
       { now },
     );
-    expect(alerts).toEqual([]);
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0].ageMinutes).toBe(30);
   });
 
-  it('ignores orders for other restaurateurs', () => {
+  it('does not flag En Préparation orders before 25 minutes', () => {
+    const now = new Date('2026-05-04T12:20:00.000Z'); // 20 min
+    expect(
+      getOverdueOrderAlerts(
+        [buildOrder({ date: placedAt, statut: 'En Préparation' })],
+        recipient,
+        { now },
+      ),
+    ).toEqual([]);
+  });
+
+  it('ignores statuses without a threshold (En Route, Livrée, …)', () => {
+    const now = new Date('2026-05-04T20:00:00.000Z'); // 8h later
+    expect(
+      getOverdueOrderAlerts(
+        [buildOrder({ date: placedAt, statut: 'En Route', livreurId: 'l1' })],
+        recipient,
+        { now },
+      ),
+    ).toEqual([]);
+  });
+
+  it('ignores orders for other restaurateurs in scope=mine (default)', () => {
+    const now = new Date('2026-05-04T13:00:00.000Z');
+    expect(
+      getOverdueOrderAlerts(
+        [buildOrder({ date: placedAt, restaurateurId: 'someone-else' })],
+        recipient,
+        { now },
+      ),
+    ).toEqual([]);
+  });
+
+  it('returns alerts across all restaurateurs when scope=all (SuperAdmin)', () => {
     const now = new Date('2026-05-04T13:00:00.000Z');
     const alerts = getOverdueOrderAlerts(
-      [buildOrder({ date: placedAt, restaurateurId: 'someone-else' })],
-      recipient,
-      { now },
+      [
+        buildOrder({ id: 'o1', date: placedAt, restaurateurId: 'resto-1' }),
+        buildOrder({ id: 'o2', date: placedAt, restaurateurId: 'resto-2' }),
+      ],
+      'admin',
+      { now, scope: 'all' },
     );
-    expect(alerts).toEqual([]);
+    expect(alerts.map(a => a.orderId).sort()).toEqual(['o1', 'o2']);
   });
 
-  it('respects a custom threshold', () => {
+  it('respects a custom threshold override', () => {
     const now = new Date('2026-05-04T12:01:30.000Z'); // 1.5 min
     const alerts = getOverdueOrderAlerts(
       [buildOrder({ date: placedAt })],
       recipient,
-      { now, thresholdMinutes: 1 },
+      { now, thresholds: { 'Placée': 1 } },
     );
     expect(alerts).toHaveLength(1);
   });
 
-  it('exports a sane default threshold', () => {
-    expect(ORDER_OVERDUE_THRESHOLD_MIN).toBeGreaterThan(0);
+  it('lets a caller disable a threshold by setting it to undefined', () => {
+    const now = new Date('2026-05-04T20:00:00.000Z');
+    expect(
+      getOverdueOrderAlerts(
+        [buildOrder({ date: placedAt })],
+        recipient,
+        { now, thresholds: { 'Placée': undefined } },
+      ),
+    ).toEqual([]);
+  });
+
+  it('exports backwards-compatible threshold constants', () => {
+    expect(ORDER_OVERDUE_THRESHOLD_MIN).toBe(DEFAULT_OVERDUE_THRESHOLDS['Placée']);
+    expect(DEFAULT_OVERDUE_THRESHOLDS['Placée']).toBeGreaterThan(0);
+    expect(DEFAULT_OVERDUE_THRESHOLDS['En Préparation']).toBeGreaterThan(0);
   });
 });

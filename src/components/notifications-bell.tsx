@@ -12,6 +12,12 @@ import { cn } from '@/lib/utils';
 import type { AppNotification } from '@/lib/types';
 import { Timestamp } from 'firebase/firestore';
 import { getOverdueOrderAlerts } from '@/lib/order-alerts';
+import {
+    fireBrowserNotification,
+    getBrowserNotificationPermission,
+    isBrowserNotificationSupported,
+    requestBrowserNotificationPermission,
+} from '@/lib/browser-notifications';
 
 function formatDate(date: AppNotification['date']) {
     if (!date) return '';
@@ -83,6 +89,30 @@ export function NotificationsBell() {
 
     const unreadCount = React.useMemo(() => merged.filter(n => !n.read).length, [merged]);
 
+    const [permission, setPermission] = React.useState<NotificationPermission | null>(null);
+    React.useEffect(() => {
+        setPermission(getBrowserNotificationPermission());
+    }, []);
+
+    const handleEnableNotifications = async () => {
+        const next = await requestBrowserNotificationPermission();
+        setPermission(next);
+    };
+
+    // Mirror persisted (unread) notifications to OS notifications once the
+    // user has granted permission. Derived overdue alerts already get a
+    // dedicated dispatch from the AdminAlerts panel for SuperAdmins.
+    const dispatchedRef = React.useRef<Set<string>>(new Set());
+    React.useEffect(() => {
+        if (permission !== 'granted') return;
+        for (const notif of notifications) {
+            if (notif.read || dispatchedRef.current.has(notif.id)) continue;
+            const view = describe(notif);
+            fireBrowserNotification(`Yakro Fê — ${view.title}`, { body: view.body, icon: '/favicon.ico' });
+            dispatchedRef.current.add(notif.id);
+        }
+    }, [notifications, permission]);
+
     const handleClick = async (notif: AppNotification) => {
         // Derived alerts (overdue) have synthetic ids and aren't persisted.
         const isDerived = notif.id.startsWith('overdue-');
@@ -121,6 +151,19 @@ export function NotificationsBell() {
                             ? `${unreadCount} alerte${unreadCount > 1 ? 's' : ''} non lue${unreadCount > 1 ? 's' : ''}`
                             : 'Tout est à jour'}
                     </p>
+                    {isBrowserNotificationSupported() && permission !== 'granted' && (
+                        <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 mt-1 text-xs text-orange-500"
+                            onClick={handleEnableNotifications}
+                            disabled={permission === 'denied'}
+                        >
+                            {permission === 'denied'
+                                ? 'Notifications bloquées dans le navigateur'
+                                : 'Activer les notifications du navigateur'}
+                        </Button>
+                    )}
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                     {merged.length === 0 ? (

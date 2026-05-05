@@ -9,62 +9,54 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useData } from '@/contexts/data-context';
-import { differenceInMinutes } from 'date-fns';
+import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getOverdueOrderAlerts } from '@/lib/order-alerts';
+import { requestBrowserNotificationPermission, fireBrowserNotification } from '@/lib/browser-notifications';
 
 export function AdminAlerts() {
     const { orders } = useData();
-    
+    const { user } = useAuth();
+    const [now, setNow] = React.useState(() => new Date());
+
+    React.useEffect(() => {
+        const interval = setInterval(() => setNow(new Date()), 60_000);
+        return () => clearInterval(interval);
+    }, []);
+
     const alerts = React.useMemo(() => {
-        const now = new Date();
-        const activeAlerts: { id: string; type: 'warning' | 'danger' | 'info'; title: string; message: string; time: string; orderId?: string }[] = [];
-
-        orders.forEach(order => {
-            const orderDate = new Date(order.date);
-            const diff = differenceInMinutes(now, orderDate);
-
-            if (order.statut === 'Placée' && diff > 5) {
-                activeAlerts.push({
-                    id: `late-acc-${order.id}`,
-                    type: 'danger',
-                    title: 'RETARD D\'ACCEPTATION',
-                    message: `${order.nomRestaurant} n'a pas encore validé la commande #${order.id.slice(-5)}`,
-                    time: `${diff} MIN`,
-                    orderId: order.id
-                });
-            } else if (order.statut === 'En Préparation' && diff > 25) {
-                activeAlerts.push({
-                    id: `late-prep-${order.id}`,
-                    type: 'warning',
-                    title: 'PRÉPARATION CRITIQUE',
-                    message: `La commande #${order.id.slice(-5)} dépasse les délais de production standards.`,
-                    time: `${diff} MIN`,
-                    orderId: order.id
-                });
-            }
+        const recipient = user?.uid ?? 'admin';
+        const raw = getOverdueOrderAlerts(orders, recipient, { now, scope: 'all' });
+        return raw.map(n => {
+            const order = orders.find(o => o.id === n.orderId);
+            const isAcceptanceLate = order?.statut === 'Placée';
+            return {
+                id: n.id,
+                orderId: n.orderId!,
+                ageMinutes: n.ageMinutes ?? 0,
+                type: isAcceptanceLate ? 'danger' as const : 'warning' as const,
+                title: isAcceptanceLate ? "RETARD D'ACCEPTATION" : 'PRÉPARATION CRITIQUE',
+                message: isAcceptanceLate
+                    ? `${order?.nomRestaurant ?? 'Restaurant'} n'a pas encore validé la commande #${n.orderId!.slice(-5)}`
+                    : `La commande #${n.orderId!.slice(-5)} dépasse les délais de production standards.`,
+                time: `${n.ageMinutes} MIN`,
+            };
         });
+    }, [orders, user, now]);
 
-        return activeAlerts;
-    }, [orders]);
-    
     const notifiedAlertsRef = React.useRef<Set<string>>(new Set());
 
     React.useEffect(() => {
-        if (alerts.length > 0 && typeof window !== 'undefined' && 'Notification' in window) {
-            if (Notification.permission === 'granted') {
-                alerts.forEach(alert => {
-                    if (!notifiedAlertsRef.current.has(alert.id)) {
-                        new Notification(`⚠️ ${alert.title}`, {
-                            body: alert.message,
-                            icon: '/favicon.ico'
-                        });
-                        notifiedAlertsRef.current.add(alert.id);
-                    }
-                });
-            }
-        }
-        
+        alerts.forEach(alert => {
+            if (notifiedAlertsRef.current.has(alert.id)) return;
+            fireBrowserNotification(`⚠️ ${alert.title}`, {
+                body: alert.message,
+                icon: '/favicon.ico',
+            });
+            notifiedAlertsRef.current.add(alert.id);
+        });
+
         const currentAlertIds = new Set(alerts.map(a => a.id));
         notifiedAlertsRef.current.forEach(id => {
             if (!currentAlertIds.has(id)) {
@@ -72,6 +64,13 @@ export function AdminAlerts() {
             }
         });
     }, [alerts]);
+
+    React.useEffect(() => {
+        // Politely request the OS-level permission once on mount; ignored if
+        // already granted/denied. Without this the existing notification path
+        // was silently dead.
+        void requestBrowserNotificationPermission();
+    }, []);
 
     if (alerts.length === 0) {
         return (

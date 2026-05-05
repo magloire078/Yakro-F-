@@ -343,6 +343,22 @@ describe('firestore.rules — /notifications', () => {
     );
   });
 
+  it('forbids the placing client from forging a NEW_ORDER notification', async () => {
+    // The legitimate path goes through the `notifyNewOrderAction` server
+    // action (Admin SDK). A client trying to create the notification itself
+    // — even targeting the right restaurateur — must be refused.
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'notifications', 'forged'), {
+        userId: RESTAURATEUR_UID,
+        type: 'NEW_ORDER',
+        orderId: 'whatever',
+        total: 5000,
+        read: false,
+      }),
+    );
+  });
+
   it('lets the recipient mark their notification as read', async () => {
     const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
     await assertSucceeds(updateDoc(doc(db, 'notifications', 'n1'), { read: true }));
