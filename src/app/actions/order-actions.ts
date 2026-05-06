@@ -1,29 +1,23 @@
-import { collection, updateDoc, doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/client';
+// Client-side helper for /commandes mutations.
+// Despite living under `app/actions/`, this runs in the browser using the
+// Firebase client SDK, gated by the security rules. The privileged
+// stock-decrement + low-stock notification path is delegated to the real
+// server action `processDeliveredOrderAction` in `stock-actions.ts`.
+
+import { updateDoc, doc } from 'firebase/firestore';
+import { db, auth } from '@/firebase/client';
 import type { Order } from '@/lib/types';
-import { decrementStockForOrder } from '@/lib/stock-utils';
+import { processDeliveredOrderAction } from '@/app/actions/stock-actions';
 
-export async function addOrderAction(order: Omit<Order, 'id'>) {
-    const docRef = doc(collection(db!, "commandes"));
-
-    try {
-        await setDoc(docRef, order);
-        // revalidatePath removed for static export
-    } catch (e: unknown) {
-        console.error("Error adding order: ", e);
-        throw e;
-    }
-}
-
-export async function updateOrderStatusAction({ 
-    orderId, 
-    status, 
+export async function updateOrderStatusAction({
+    orderId,
+    status,
     delivererId,
-    orderData 
-}: { 
-    orderId: string, 
-    status: Order['statut'], 
+}: {
+    orderId: string,
+    status: Order['statut'],
     delivererId?: string,
+    /** kept for backwards compatibility with existing callers */
     orderData?: Order
 }) {
     const orderDocRef = doc(db!, 'commandes', orderId);
@@ -35,24 +29,19 @@ export async function updateOrderStatusAction({
     try {
         await updateDoc(orderDocRef, updateData);
 
-        // Si la commande est livrée, on déclenche la déduction de stock
         if (status === 'Livrée') {
-            let fullOrder = orderData;
-            
-            // Si on n'a pas les données de la commande, on les récupère
-            if (!fullOrder) {
-                const snap = await getDoc(orderDocRef);
-                if (snap.exists()) {
-                    fullOrder = { id: snap.id, ...snap.data() } as Order;
-                }
+            const idToken = await auth?.currentUser?.getIdToken();
+            if (!idToken) {
+                console.error('updateOrderStatusAction: missing ID token, skipping stock sync');
+                return;
             }
-
-            if (fullOrder) {
-                await decrementStockForOrder(db!, fullOrder);
+            const result = await processDeliveredOrderAction(orderId, idToken);
+            if (!result.success) {
+                console.error('processDeliveredOrderAction failed:', result.error);
             }
         }
     } catch (e: unknown) {
-        console.error("Error updating order status: ", e);
+        console.error('Error updating order status:', e);
         throw e;
     }
 }

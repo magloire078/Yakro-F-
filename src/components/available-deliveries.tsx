@@ -11,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { QrScannerDialog } from '@/components/qr-scanner-dialog';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
+import { publishLivreurPublic, unpublishLivreurPublic } from '@/lib/livreur-public';
+import { useFirebase } from '@/contexts/firebase-provider';
 
 
 interface AvailableDeliveriesProps {
@@ -31,12 +33,14 @@ export function AvailableDeliveries({
     userId
 }: AvailableDeliveriesProps) {
     const { toast } = useToast();
+    const { db } = useFirebase();
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
     const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
     const locationIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
     const [isScannerOpen, setIsScannerOpen] = React.useState(false);
 
     const isEnService = userProfile?.statutService === 'En service';
+    const livreurNom = userProfile?.nom;
     
     const availableDeliveries = React.useMemo(() => {
         if (!isEnService) return [];
@@ -60,12 +64,16 @@ export function AvailableDeliveries({
             (position) => {
                 const { latitude, longitude } = position.coords;
                 onUpdateUserProfile(userId, { latitude, longitude });
+                if (db) {
+                    publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
+                        .catch((err) => console.error('Public livreur sync failed:', err));
+                }
             },
             (error) => {
                 console.error("Loc error:", error.message);
             }
         );
-    }, [userId, onUpdateUserProfile]);
+    }, [userId, onUpdateUserProfile, db, livreurNom]);
 
 
     const handleStatusToggle = async (checked: boolean) => {
@@ -83,6 +91,10 @@ export function AvailableDeliveries({
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     onUpdateUserProfile(userId, { statutService: newStatus, latitude, longitude });
+                    if (db) {
+                        publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
+                            .catch((err) => console.error('Public livreur sync failed:', err));
+                    }
                     locationIntervalRef.current = setInterval(updateLocation, 10000);
                     toast({ title: `Vous êtes en ligne !` });
                     setIsUpdatingStatus(false);
@@ -102,6 +114,10 @@ export function AvailableDeliveries({
                 locationIntervalRef.current = null;
             }
             await onUpdateUserProfile(userId, { statutService: newStatus });
+            if (db) {
+                unpublishLivreurPublic(db, userId)
+                    .catch((err) => console.error('Public livreur cleanup failed:', err));
+            }
             toast({ title: `Déconnecté.` });
             setIsUpdatingStatus(false);
         }

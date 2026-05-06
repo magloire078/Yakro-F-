@@ -7,7 +7,8 @@ import { useData } from '@/contexts/data-context';
 import { useAuth } from '@/contexts/auth-context';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
-import type { Order, UserProfile, Restaurant } from '@/lib/types';
+import type { Order, Restaurant } from '@/lib/types';
+import type { LivreurPublicData } from '@/lib/livreur-public';
 import { Loader, MapPin, Bike, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ function TrackOrderContent() {
     const orderId = searchParams.get('id');
 
     const [liveOrder, setLiveOrder] = React.useState<Order | null>(null);
-    const [livreur, setLivreur] = React.useState<UserProfile | null>(null);
+    const [livreur, setLivreur] = React.useState<LivreurPublicData | null>(null);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
 
     React.useEffect(() => {
@@ -50,10 +51,10 @@ function TrackOrderContent() {
                 }
 
                 if (orderData.livreurId) {
-                    const livreurDocRef = doc(db, 'utilisateurs', orderData.livreurId);
+                    const livreurDocRef = doc(db, 'livreurs_public', orderData.livreurId);
                     const unsubscribeLivreur = onSnapshot(livreurDocRef, (livreurSnap) => {
                         if (livreurSnap.exists()) {
-                            setLivreur(livreurSnap.data() as UserProfile);
+                            setLivreur(livreurSnap.data() as LivreurPublicData);
                         }
                     });
                     return () => unsubscribeLivreur(); // Clean up livreur listener
