@@ -30,8 +30,7 @@ import {
     AlertDialogDescription, 
     AlertDialogFooter, 
     AlertDialogHeader, 
-    AlertDialogTitle, 
-    AlertDialogTrigger 
+    AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { EditMenuItemDialog } from '@/components/edit-menu-item-dialog';
@@ -46,6 +45,7 @@ export default function DashboardMenuPage() {
     const { restaurants, menuItems } = useData();
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
+    const [itemToDelete, setItemToDelete] = React.useState<MenuItem | null>(null);
     const [editingItem, setEditingItem] = React.useState<MenuItem | null>(null);
     const [selectedCategory, setSelectedCategory] = React.useState<string>('Tous');
 
@@ -92,7 +92,7 @@ export default function DashboardMenuPage() {
     }, [myMenuItems, selectedCategory]);
 
     const handleDeleteItem = async (itemId: string) => {
-        const itemToDelete = myMenuItems.find(item => item.id === itemId);
+        const itemToDeleteObj = myMenuItems.find(item => item.id === itemId);
         setIsDeleting(itemId);
         try {
             await deleteDoc(doc(db, 'plats', itemId));
@@ -104,10 +104,10 @@ export default function DashboardMenuPage() {
                     adminEmail: user.email || 'inconnu',
                     action: 'DELETE_MENU_ITEM',
                     targetId: itemId,
-                    details: `Suppression du plat: ${itemToDelete?.nom || itemId}`,
+                    details: `Suppression du plat: ${itemToDeleteObj?.nom || itemId}`,
                     metadata: {
-                        restaurantId: itemToDelete?.restaurantId,
-                        itemCategory: itemToDelete?.categorie
+                        restaurantId: itemToDeleteObj?.restaurantId,
+                        itemCategory: itemToDeleteObj?.categorie
                     }
                 });
             }
@@ -116,6 +116,7 @@ export default function DashboardMenuPage() {
                 title: 'Plat supprimé',
                 description: 'Le plat a été retiré de votre menu.',
             });
+            setItemToDelete(null); // Clear item to delete after success
         } catch (error) {
             console.error(error);
             toast({
@@ -235,37 +236,14 @@ export default function DashboardMenuPage() {
                                                     Modifier
                                                 </Button>
 
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button 
-                                                            variant="outline" 
-                                                            className="h-10 w-10 bg-card border-border hover:bg-red-500/10 hover:border-red-500/20 text-muted-foreground hover:text-red-500 rounded-xl transition-all duration-500 shadow-sm"
-                                                            disabled={isDeleting === item.id}
-                                                        >
-                                                            {isDeleting === item.id ? <Loader className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent className="bg-card/95 border border-border rounded-2xl shadow-2xl backdrop-blur-xl">
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle className="font-black italic tracking-tight text-xl text-foreground uppercase">Confirmation</AlertDialogTitle>
-                                                            <AlertDialogDescription className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">
-                                                                Voulez-vous vraiment retirer &quot;{item.nom}&quot; de votre carte ? Cette action est définitive.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter className="mt-8 gap-3">
-                                                            <AlertDialogCancel className="bg-muted border-border text-muted-foreground hover:bg-muted/80 rounded-xl font-black uppercase tracking-widest text-[9px]">
-                                                                Annuler
-                                                            </AlertDialogCancel>
-                                                            <AlertDialogAction 
-                                                                onClick={() => handleDeleteItem(item.id)} 
-                                                                disabled={!!isDeleting}
-                                                                className="bg-red-500 hover:bg-red-600 text-white rounded-xl font-black italic tracking-tight px-8 uppercase"
-                                                            >
-                                                                Supprimer
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                                <Button 
+                                                    variant="outline" 
+                                                    className="h-10 w-10 bg-card border-border hover:bg-red-500/10 hover:border-red-500/20 text-muted-foreground hover:text-red-500 rounded-xl transition-all duration-500 shadow-sm"
+                                                    disabled={isDeleting === item.id}
+                                                    onClick={() => setItemToDelete(item)}
+                                                >
+                                                    {isDeleting === item.id ? <Loader className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                                </Button>
                                             </div>
                                         </div>
                                         {/* Premium Accent */}
@@ -315,6 +293,29 @@ export default function DashboardMenuPage() {
                     menuItem={editingItem}
                 />
             )}
+
+            <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+                <AlertDialogContent className="bg-card/95 border border-border rounded-2xl shadow-2xl backdrop-blur-xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="font-black italic tracking-tight text-xl text-foreground uppercase">Confirmation</AlertDialogTitle>
+                        <AlertDialogDescription className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">
+                            Voulez-vous vraiment retirer &quot;{itemToDelete?.nom}&quot; de votre carte ? Cette action est définitive.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-8 gap-3">
+                        <AlertDialogCancel className="bg-muted border-border text-muted-foreground hover:bg-muted/80 rounded-xl font-black uppercase tracking-widest text-[9px]">
+                            Annuler
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={() => itemToDelete && handleDeleteItem(itemToDelete.id)} 
+                            disabled={!!isDeleting}
+                            className="bg-red-500 hover:bg-red-600 text-white rounded-xl font-black italic tracking-tight px-8 uppercase"
+                        >
+                            Supprimer
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
 
         </DashboardPage>

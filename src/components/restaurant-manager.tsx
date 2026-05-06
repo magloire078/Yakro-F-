@@ -42,6 +42,7 @@ import {
 import { useData } from '@/contexts/data-context';
 import { Restaurant } from '@/lib/types';
 import Image from 'next/image';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useAuth } from '@/contexts/auth-context';
@@ -232,9 +233,11 @@ export function RestaurantManager() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-64 bg-card/95 backdrop-blur-3xl border-border/50 rounded-2xl p-1 shadow-2xl text-foreground overflow-hidden">
-                                                    <DropdownMenuItem className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-orange-500 focus:text-white cursor-pointer transition-colors">
-                                                        <ExternalLink className="h-4 w-4" />
-                                                        Accéder à la Vitrine
+                                                    <DropdownMenuItem asChild className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-orange-500 focus:text-white cursor-pointer transition-colors">
+                                                        <Link href={`/restaurants?id=${restaurant.id}`}>
+                                                            <ExternalLink className="h-4 w-4" />
+                                                            Accéder à la Vitrine
+                                                        </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem 
                                                         className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-green-600 focus:text-white cursor-pointer transition-colors"
