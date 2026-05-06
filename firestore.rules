@@ -46,12 +46,44 @@ service cloud.firestore {
         && isUser(get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.proprietaireId);
     }
 
+    // Empêche un utilisateur d'auto-promouvoir son rôle ou son niveau
+    // système en se mettant à jour lui-même.
+    function userPrivilegesUnchanged() {
+      return request.resource.data.role == resource.data.role
+        && request.resource.data.get('roleSysteme', 'User')
+             == resource.data.get('roleSysteme', 'User');
+    }
+
+    // Empêche la mutation des champs sensibles d'une commande lors d'une
+    // transition d'état (le statut et livreurId sont gérés à part).
+    function orderCoreUnchanged() {
+      return request.resource.data.userId == resource.data.userId
+        && request.resource.data.restaurantId == resource.data.restaurantId
+        && request.resource.data.restaurateurId == resource.data.restaurateurId
+        && request.resource.data.total == resource.data.total
+        && request.resource.data.sousTotal == resource.data.sousTotal
+        && request.resource.data.fraisDeLivraison == resource.data.fraisDeLivraison
+        && request.resource.data.tauxCommission == resource.data.tauxCommission
+        && request.resource.data.montantCommission == resource.data.montantCommission
+        && request.resource.data.revenuNet == resource.data.revenuNet
+        && request.resource.data.plats == resource.data.plats
+        && request.resource.data.date == resource.data.date;
+    }
+
     // ── Utilisateurs ─────────────────────────────────────────────────────
     match /utilisateurs/{userId} {
-      allow get:    if isAuth() && (isUser(userId) || isSuperAdmin() || isRestaurateur());
-      allow list:   if isSuperAdmin() || isRestaurateur();
-      allow create: if isAuth() && isUser(userId);
-      allow update: if isAuth() && (isUser(userId) || isSuperAdmin());
+      allow get:    if isAuth() && (isUser(userId) || isSuperAdmin());
+      allow list:   if isSuperAdmin();
+      allow create: if isAuth()
+        && isUser(userId)
+        && request.resource.data.role in ['client', 'restaurateur', 'livreur']
+        && request.resource.data.get('roleSysteme', 'User') == 'User';
+      // Self-update OK mais role / roleSysteme verrouillés.
+      // SuperAdmin peut tout modifier.
+      allow update: if isAuth() && (
+        (isUser(userId) && userPrivilegesUnchanged()) ||
+        isSuperAdmin()
+      );
       allow delete: if isSuperAdmin();
     }
 
@@ -74,10 +106,11 @@ service cloud.firestore {
     }
 
     // ── Commandes ─────────────────────────────────────────────────────────
+    // `allow read` couvre `get` ET `list`. Le moteur valide qu'une query
+    // sur /commandes a des `where()` qui correspondent aux identités
+    // autorisées (userId, restaurateurId, livreurId), sinon elle échoue.
     match /commandes/{orderId} {
-      allow list: if isAuth();
-
-      allow get: if isAuth() && (
+      allow read: if isAuth() && (
         isSuperAdmin() ||
         resource.data.userId == request.auth.uid ||
         resource.data.restaurateurId == request.auth.uid ||
@@ -85,7 +118,14 @@ service cloud.firestore {
         (isLivreur() && resource.data.statut in ['En Préparation', 'Placée', 'Prête'])
       );
 
-      allow create: if isAuth() && isUser(request.resource.data.userId);
+      // Création : champs serveur verrouillés.
+      allow create: if isAuth()
+        && isUser(request.resource.data.userId)
+        && request.resource.data.statut == 'Placée'
+        && !('livreurId' in request.resource.data)
+        && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
+        && request.resource.data.restaurateurId ==
+             get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.proprietaireId;
 
       allow update: if isAuth() && (
         isSuperAdmin() ||
@@ -93,29 +133,37 @@ service cloud.firestore {
         // Restaurateur : accepte (Placée → En Préparation)
         ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId))
           && resource.data.statut == 'Placée'
-          && request.resource.data.statut == 'En Préparation') ||
+          && request.resource.data.statut == 'En Préparation'
+          && orderCoreUnchanged()) ||
 
         // Restaurateur : marque prête (En Préparation → Prête)
         ((resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId))
           && resource.data.statut == 'En Préparation'
-          && request.resource.data.statut == 'Prête') ||
+          && request.resource.data.statut == 'Prête'
+          && orderCoreUnchanged()) ||
 
         // Livreur : prend en charge (Placée/En Préparation/Prête → En Route)
         (isLivreur()
           && resource.data.statut in ['Placée', 'En Préparation', 'Prête']
           && request.resource.data.statut == 'En Route'
-          && request.resource.data.livreurId == request.auth.uid) ||
+          && request.resource.data.livreurId == request.auth.uid
+          && orderCoreUnchanged()) ||
 
         // Livreur : livre (En Route → Livrée)
         (resource.data.livreurId == request.auth.uid
           && resource.data.statut == 'En Route'
-          && request.resource.data.statut == 'Livrée') ||
+          && request.resource.data.statut == 'Livrée'
+          && orderCoreUnchanged()) ||
 
-        // Client : annule sa propre commande
+        // Client : annule sa propre commande tant qu'elle n'est pas prise
+        // en charge (et sans pouvoir modifier le contenu / les montants).
         (resource.data.userId == request.auth.uid
           && resource.data.statut == 'Placée'
-          && request.resource.data.statut == 'Annulée')
+          && request.resource.data.statut == 'Annulée'
+          && orderCoreUnchanged())
       );
+
+      allow delete: if isSuperAdmin();
     }
 
     // ── Stocks ────────────────────────────────────────────────────────────
@@ -143,12 +191,19 @@ service cloud.firestore {
     }
 
     // ── Notifications ─────────────────────────────────────────────────────
+    // Création réservée à l'Admin SDK côté serveur (server actions). Les
+    // clients ne peuvent que lire / mettre à jour (ex: marquer lu) /
+    // supprimer leurs propres notifications.
     match /notifications/{notifId} {
       allow list: if isAuth() && resource.data.destinataireId == request.auth.uid;
       allow get:  if isAuth() && resource.data.destinataireId == request.auth.uid;
-      allow create: if isAuth();
-      allow update: if isAuth() && resource.data.destinataireId == request.auth.uid;
-      allow delete: if isAuth() && (resource.data.destinataireId == request.auth.uid || isSuperAdmin());
+      allow create: if false;
+      allow update: if isAuth()
+        && resource.data.destinataireId == request.auth.uid
+        && request.resource.data.destinataireId == resource.data.destinataireId;
+      allow delete: if isAuth() && (
+        resource.data.destinataireId == request.auth.uid || isSuperAdmin()
+      );
     }
 
     // ── Boost / Promotions ────────────────────────────────────────────────
@@ -159,12 +214,27 @@ service cloud.firestore {
         resource.data.restaurateurId == request.auth.uid || isSuperAdmin()
       );
     }
-    
+
     // ── Audit Logs ────────────────────────────────────────────────────────
+    // Lecture/suppression: SuperAdmin uniquement (la purge automatique 30j
+    // se fait côté serveur via /api/cron/purge-logs avec l'Admin SDK).
+    // Création: SuperAdmin avec adminId == auth.uid pour empêcher les
+    // logs forgés sous l'identité d'un autre admin.
     match /audit_logs/{logId} {
-      allow read: if isSuperAdmin() || (resource != null && resource.data.timestamp < (request.time - duration.value(30, 'd')));
-      allow create: if isAuth(); // Permettre aux admins de créer des logs
-      allow delete: if isSuperAdmin() || (resource != null && resource.data.timestamp < (request.time - duration.value(30, 'd')));
+      allow read: if isSuperAdmin();
+      allow create: if isSuperAdmin()
+        && request.resource.data.adminId == request.auth.uid;
+      allow update: if false;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── Profil public livreur (suivi de commande) ─────────────────────────
+    // Projection minimale (nom + position) lue par tout utilisateur
+    // authentifié pour permettre le tracking client. Le livreur publie
+    // ses propres données via les hooks de service.
+    match /livreurs_public/{livreurId} {
+      allow read: if isAuth();
+      allow write: if isUser(livreurId);
     }
   }
 }
