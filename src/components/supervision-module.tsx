@@ -142,7 +142,7 @@ export function SupervisionModule() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Button variant="outline" size="icon" className="h-11 w-11 rounded-none bg-foreground/5 border-foreground/5 hover:bg-foreground/10 text-foreground dark:text-white">
+                    <Button variant="outline" size="icon" aria-label="Filtrer les commandes" className="h-11 w-11 rounded-none bg-foreground/5 border-foreground/5 hover:bg-foreground/10 text-foreground dark:text-white">
                         <Filter className="h-4 w-4" />
                     </Button>
                 </div>
@@ -290,16 +290,16 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-none hover:bg-orange-500/10 text-muted-foreground hover:text-orange-500 transition-all border border-transparent hover:border-orange-500/20">
+                    <Button variant="ghost" size="icon" aria-label="Agrandir la vue" className="h-10 w-10 rounded-none hover:bg-orange-500/10 text-muted-foreground hover:text-orange-500 transition-all border border-transparent hover:border-orange-500/20">
                         <Maximize2 className="h-5 w-5" />
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-none hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all">
+                            <Button variant="ghost" size="icon" aria-label="Options de la commande" className="h-10 w-10 rounded-none hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all">
                                 <MoreHorizontal className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-64 glass border-foreground/10 rounded-none p-1 text-foreground">
+                        <DropdownMenuContent align="end" aria-label="Menu des opérations" className="w-64 glass border-foreground/10 rounded-none p-1 text-foreground">
                             <DropdownMenuItem asChild className="rounded-none gap-3 font-headline font-bold uppercase tracking-wider text-xs py-2.5 focus:bg-orange-500 cursor-pointer">
                                 <Link href={`/orders/track?id=${order.id}`}>
                                     <Navigation2 className="h-4 w-4" />

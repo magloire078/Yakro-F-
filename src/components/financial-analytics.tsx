@@ -21,13 +21,13 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-card/90 backdrop-blur-3xl border border-border/50 p-5 shadow-3xl rounded-[1.5rem]">
-                <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[8px] mb-3">{label}</p>
+                <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px] mb-3">{label}</p>
                 <p className="text-orange-500 font-black text-lg italic tracking-tighter">
                     {`${payload[0].value.toLocaleString()} FCFA`}
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                    <span className="text-[7px] font-bold text-muted-foreground/60 uppercase tracking-widest">Flux Capturé</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Flux Capturé</span>
                 </div>
             </div>
         );
@@ -108,7 +108,7 @@ export function FinancialAnalytics() {
                     <CardHeader className="p-10 border-b border-border/50 relative">
                         <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
                         <CardTitle className="text-3xl font-black italic uppercase tracking-tighter text-foreground">Flux de <span className="text-orange-500">Trésorerie</span></CardTitle>
-                        <CardDescription className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px]">Analyse neuronale des transactions hebdomadaires</CardDescription>
+                        <CardDescription className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[11px]">Analyse neuronale des transactions hebdomadaires</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[450px] p-10 pt-16">
                         <ResponsiveContainer width="100%" height="100%">
@@ -152,7 +152,7 @@ export function FinancialAnalytics() {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-[100px] -mr-32 -mt-32 transition-all group-hover:bg-orange-500/10" />
                     <CardHeader className="p-10 border-b border-border/50 relative z-10">
                         <CardTitle className="text-2xl font-black italic uppercase tracking-tighter text-foreground">Bastions <span className="text-orange-500">Dominants</span></CardTitle>
-                        <CardDescription className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px]">Performances d&apos;élite par établissement</CardDescription>
+                        <CardDescription className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[11px]">Performances d&apos;élite par établissement</CardDescription>
                     </CardHeader>
                     <CardContent className="p-10 space-y-12 relative z-10">
                         {[
@@ -163,7 +163,7 @@ export function FinancialAnalytics() {
                             <div key={idx} className="space-y-4 group/item">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[12px] font-black uppercase italic tracking-tight text-foreground group-hover/item:text-orange-500 transition-colors">{item.name}</span>
-                                    <span className="text-[10px] text-orange-500 font-black tracking-widest">{item.value} FCFA</span>
+                                    <span className="text-[11px] text-orange-500 font-black tracking-widest">{item.value} FCFA</span>
                                 </div>
                                 <div className="h-1.5 bg-muted/20 rounded-full overflow-hidden border border-border/50">
                                     <motion.div 
@@ -181,7 +181,7 @@ export function FinancialAnalytics() {
                                 <Target className="h-8 w-8 text-orange-500" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-1">RENDEMENT GLOBAL</p>
+                                <p className="text-[11px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-1">RENDEMENT GLOBAL</p>
                                 <p className="text-3xl font-black italic text-foreground leading-none">+24.8% <span className="text-[10px] not-italic text-green-500 ml-2 tracking-widest font-black uppercase">M/M</span></p>
                             </div>
                         </div>
