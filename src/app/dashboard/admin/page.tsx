@@ -34,6 +34,7 @@ import { RestaurantManager } from '@/components/restaurant-manager';
 import { FinancialAnalytics } from '@/components/financial-analytics';
 import { AdminAlerts } from '@/components/admin-alerts';
 import { ReportCenter } from '@/components/report-center';
+import { LivreurManager } from '@/components/livreur-manager';
 
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
@@ -411,6 +412,7 @@ export default function AdminPage() {
                                 {[
                                     { id: 'live', icon: Navigation2, label: 'Supervision' },
                                     { id: 'restaurants', icon: Store, label: 'Établissements' },
+                                    { id: 'livreurs', icon: Bike, label: 'Livreurs' },
                                     { id: 'users', icon: Users, label: 'Utilisateurs' },
                                     { id: 'finances', icon: TrendingUp, label: 'Flux Financiers' },
                                     { id: 'security', icon: ShieldAlert, label: 'Sécurité' },
@@ -435,6 +437,7 @@ export default function AdminPage() {
                             >
                                 <TabsContent value="live" className="m-0 outline-none animate-in fade-in duration-700"><SupervisionModule /></TabsContent>
                                 <TabsContent value="restaurants" className="m-0 outline-none animate-in fade-in duration-700"><RestaurantManager /></TabsContent>
+                                <TabsContent value="livreurs" className="m-0 outline-none animate-in fade-in duration-700"><LivreurManager users={allUsers} orders={orders} /></TabsContent>
                                 <TabsContent value="finances" className="m-0 outline-none animate-in fade-in duration-700"><FinancialAnalytics /></TabsContent>
                                 <TabsContent value="security" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden group">
