@@ -13,6 +13,7 @@ import { QrScannerDialog } from '@/components/qr-scanner-dialog';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
 import { publishLivreurPublic, unpublishLivreurPublic } from '@/lib/livreur-public';
 import { useFirebase } from '@/contexts/firebase-provider';
+import { getCurrentLocation } from '@/lib/geolocation';
 
 
 interface AvailableDeliveriesProps {
@@ -58,21 +59,18 @@ export function AvailableDeliveries({
         }
     }
     
-    const updateLocation = React.useCallback(() => {
-        if (!userId || !navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                onUpdateUserProfile(userId, { latitude, longitude });
-                if (db) {
-                    publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
-                        .catch((err) => console.error('Public livreur sync failed:', err));
-                }
-            },
-            (error) => {
-                console.error("Loc error:", error.message);
+    const updateLocation = React.useCallback(async () => {
+        if (!userId) return;
+        try {
+            const { latitude, longitude } = await getCurrentLocation();
+            onUpdateUserProfile(userId, { latitude, longitude });
+            if (db) {
+                publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
+                    .catch((err) => console.error('Public livreur sync failed:', err));
             }
-        );
+        } catch (error: any) {
+            console.error("Loc update error:", error.message);
+        }
     }, [userId, onUpdateUserProfile, db, livreurNom]);
 
 
@@ -82,32 +80,25 @@ export function AvailableDeliveries({
         setIsUpdatingStatus(true);
 
         if (checked) {
-            if (!navigator.geolocation) {
-                toast({ variant: 'destructive', title: 'GPS non supporté' });
-                setIsUpdatingStatus(false);
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    onUpdateUserProfile(userId, { statutService: newStatus, latitude, longitude });
-                    if (db) {
-                        publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
-                            .catch((err) => console.error('Public livreur sync failed:', err));
-                    }
-                    locationIntervalRef.current = setInterval(updateLocation, 10000);
-                    toast({ title: `Vous êtes en ligne !` });
-                    setIsUpdatingStatus(false);
-                },
-                () => {
-                    toast({ 
-                        variant: 'destructive', 
-                        title: 'Position requise', 
-                        description: "Activez le GPS pour passer en service." 
-                    });
-                    setIsUpdatingStatus(false);
+            try {
+                const { latitude, longitude } = await getCurrentLocation();
+                onUpdateUserProfile(userId, { statutService: newStatus, latitude, longitude });
+                if (db) {
+                    publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
+                        .catch((err) => console.error('Public livreur sync failed:', err));
                 }
-            );
+                locationIntervalRef.current = setInterval(updateLocation, 10000);
+                toast({ title: `Vous êtes en ligne !` });
+            } catch (error: any) {
+                console.error('Status toggle loc error:', error);
+                toast({ 
+                    variant: 'destructive', 
+                    title: 'Position requise', 
+                    description: "Activez le GPS pour passer en service." 
+                });
+            } finally {
+                setIsUpdatingStatus(false);
+            }
         } else {
              if (locationIntervalRef.current) {
                 clearInterval(locationIntervalRef.current);

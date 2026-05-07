@@ -21,6 +21,7 @@ import { CldImage } from 'next-cloudinary';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { getCurrentLocation } from '@/lib/geolocation';
 
 const restaurantFormSchema = z.object({
     nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
@@ -100,37 +101,28 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
         }
     };
 
-    const handleGetLocation = () => {
-        if (!navigator.geolocation) {
+    const handleGetLocation = async () => {
+        setIsFetchingLocation(true);
+        try {
+            const { latitude, longitude } = await getCurrentLocation();
+            form.setValue('latitude', parseFloat(latitude.toFixed(6)));
+            form.setValue('longitude', parseFloat(longitude.toFixed(6)));
+            toast({
+                title: 'Position récupérée !',
+                description: 'Les coordonnées GPS ont été ajoutées au formulaire.',
+            });
+        } catch (error: any) {
+            console.error('Location error:', error);
             toast({
                 variant: 'destructive',
-                title: 'Géolocalisation non supportée',
-                description: "Votre navigateur ne permet pas de récupérer votre position.",
+                title: 'Erreur de géolocalisation',
+                description: error.message === 'Permission denied' 
+                    ? "L'accès à la position a été refusé. Veuillez vérifier les autorisations."
+                    : "Impossible de récupérer votre position. Vérifiez votre GPS et les autorisations.",
             });
-            return;
+        } finally {
+            setIsFetchingLocation(false);
         }
-
-        setIsFetchingLocation(true);
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                form.setValue('latitude', parseFloat(latitude.toFixed(6)));
-                form.setValue('longitude', parseFloat(longitude.toFixed(6)));
-                toast({
-                    title: 'Position récupérée !',
-                    description: 'Les coordonnées GPS ont été ajoutées au formulaire.',
-                });
-                setIsFetchingLocation(false);
-            },
-            () => {
-                toast({
-                    variant: 'destructive',
-                    title: 'Erreur de géolocalisation',
-                    description: "Impossible de récupérer votre position. Veuillez vérifier les autorisations de votre navigateur.",
-                });
-                setIsFetchingLocation(false);
-            }
-        );
     };
 
     const handleFormSubmit = (data: RestaurantFormValues) => {
