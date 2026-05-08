@@ -396,8 +396,8 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                         key={marker.id}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="absolute"
-                        style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                        className="absolute left-[var(--marker-left)] top-[var(--marker-top)]"
+                        style={{ '--marker-left': `${marker.x}%`, '--marker-top': `${marker.y}%` } as React.CSSProperties}
                     >
                         <div className="relative -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
                             {/* Ping Animation for new/critical orders */}
