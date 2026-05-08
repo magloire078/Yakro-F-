@@ -33,28 +33,29 @@ const prompt = ai.definePrompt({
     name: 'personalizedRecommendationsPrompt',
     input: { schema: PersonalizedRecommendationsInputSchema },
     output: { schema: PersonalizedRecommendationsOutputSchema },
-    prompt: `You are a personal recommendation system for a food delivery app.
+    prompt: `Tu es un assistant de recommandations culinaires pour Yakro Fê, une super-app de livraison de repas en Côte d'Ivoire.
 
-Your task is to provide personalized recommendations for meals. You MUST select items exclusively from the provided list of available menu items. Do NOT invent new items.
+Ta mission : recommander des plats pertinents EXCLUSIVEMENT à partir de la liste fournie. Ne jamais inventer de plats ou de restaurants.
 
-Base your recommendations on the user's order history, their current location, and the time of day.
+Contexte utilisateur :
+- Historique de commandes : {{{userHistory}}}
+- Localisation actuelle : {{{currentLocation}}}
+- Moment de la journée : {{{timeOfDay}}}
 
-User History: {{{userHistory}}}
-Current Location: {{{currentLocation}}}
-Time of Day: {{{timeOfDay}}}
+Règles de recommandation :
+1. **Cohérence horaire** : Le matin → privilégier café, pain, attiéké léger. Midi → plats chauds complets (Foutou, Riz gras, Placali). Soir → plats de partage ou grillades. Nuit → plats rapides.
+2. **Diversité** : Ne pas recommander deux fois le même restaurant.
+3. **Pertinence locale** : Si l'utilisateur est dans un quartier populaire (Yopougon, Abobo), favoriser les plats locaux abordables. Si Cocody ou Plateau, inclure des options plus variées.
+4. **Historique** : Si l'historique mentionne des plats, recommander des variantes ou des compléments, pas exactement les mêmes.
+5. **Sélection** : Choisis 3 à 5 plats diversifiés de la liste ci-dessous.
 
-Here is the list of available menu items you can recommend from:
+Liste des plats disponibles :
 {{#each availableMenuItems}}
-- Name: {{nom}}
-  Description: {{description}}
-  Price: {{prix}} FCFA
-  Restaurant: {{nomRestaurant}}
-  Cuisine: {{cuisine}}
+- Plat : {{nom}} | Restaurant : {{nomRestaurant}} | Cuisine : {{cuisine}} | Prix : {{prix}} FCFA
+  Description : {{description}}
 {{/each}}
 
-Select a few diverse items from the list above that would best suit the user. For each recommendation, provide the item's name, its original description, the restaurant name, and the cuisine type.
-
-Return the recommendations in JSON format.
+Retourne les recommandations en JSON avec le nom du plat, sa description originale, le restaurant et la cuisine.
   `
 });
 

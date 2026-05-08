@@ -24,18 +24,22 @@ export const generateImageFlow = ai.defineFlow(
     let refinedPrompt = "";
 
     if (isRestaurant) {
-      refinedPrompt = `Authentic street-level photography of a real restaurant in Côte d'Ivoire: ${prompt}. 
-        Natural daylight, real-world atmosphere, authentic storefront textures (wood, stone, glass). 
-        Warm and welcoming local vibe, shot on a high-end smartphone for a natural documentary look. 
-        Sharp focus on the signage and entrance, realistic urban environment. 
-        AVOID 3D renders, AVOID unrealistic luxury lighting, purely natural professional photography.`;
+      refinedPrompt = `Street-level documentary photograph of a real local restaurant in Abidjan, Côte d'Ivoire: ${prompt}.
+        Shot with a Sony A7 III, 35mm f/1.8 lens, midday diffused sunlight.
+        Authentic West African urban architecture: hand-painted signage, corrugated metal roof edges visible, worn concrete walls, colourful plastic chairs on the terrace.
+        Customers and motorbikes naturally in background, slight motion blur on passersby.
+        Imperfect real-world details: uneven paint, a handwritten menu board, water stains on lower walls.
+        NOT a staged photo shoot. NOT a luxury restaurant. NOT neon lights. NOT CGI or render.
+        Colour grading: warm, slightly desaturated, photojournalistic — NOT Instagram-filtered.`;
     } else {
-      refinedPrompt = `Realistic and authentic food photography of: ${prompt}. 
-        Served in a simple ceramic plate on a wooden restaurant table. 
-        Natural window lighting, real textures (glistening oils, steam, charred edges). 
-        True West African colors, organic presentation, shallow depth of field. 
-        Shot in a real kitchen or restaurant setting, not a studio. 
-        AVOID plastic look, AVOID artificial saturation, AVOID perfection - make it look like a real delicious meal.`;
+      refinedPrompt = `Authentic documentary food photograph of: ${prompt}.
+        Served on a rustic hand-painted clay bowl or chipped enamel plate, resting on a wood-grain formica table.
+        Shot with a Canon EOS R6, 50mm f/2.0 lens, natural window light from the left, slight lens flare.
+        True West African presentation: irregular portions, a shared communal serving, palm oil sheen or peanut sauce pooling, visible steam rising.
+        Background shows a real restaurant interior: plastic chairs, tiled wall, a plastic water jug on the next table.
+        Visible imperfections: a few oil drips on the side of the bowl, a lime wedge slightly off-center.
+        NOT styled food photography. NOT studio lighting. NOT perfect symmetry. NOT crisp white backgrounds.
+        Colour palette: rich ochres, deep browns, vibrant reds — earthy and appetising, NOT neon or oversaturated.`;
     }
 
     try {
