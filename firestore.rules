@@ -232,9 +232,20 @@ service cloud.firestore {
     // Projection minimale (nom + position) lue par tout utilisateur
     // authentifié pour permettre le tracking client. Le livreur publie
     // ses propres données via les hooks de service.
+    // Coordonnées GPS optionnelles : si présentes, doivent rester dans la
+    // bounding box ivoirienne (4..11°N, -9..-2°E). Évite les positions
+    // usurpées (ex: livreur écrivant la Tour Eiffel).
+    function livreurPublicCoordsValid() {
+      let lat = request.resource.data.get('latitude', null);
+      let lng = request.resource.data.get('longitude', null);
+      return (lat == null || (lat is number && lat >= 4.0 && lat <= 11.0))
+        && (lng == null || (lng is number && lng >= -9.0 && lng <= -2.0));
+    }
+
     match /livreurs_public/{livreurId} {
       allow read: if isAuth();
-      allow write: if isUser(livreurId);
+      allow create, update: if isUser(livreurId) && livreurPublicCoordsValid();
+      allow delete: if isUser(livreurId);
     }
   }
 }

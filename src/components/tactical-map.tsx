@@ -1,12 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { 
-    Bike, 
-    Store, 
-    Navigation2, 
-    Zap, 
-    Maximize2,
+import {
+    Bike,
+    Navigation2,
+    Zap,
     Crosshair,
     Activity,
     Info

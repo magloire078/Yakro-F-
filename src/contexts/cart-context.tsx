@@ -10,6 +10,8 @@ import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { notifyNewOrderAction } from '@/app/actions/notification-actions';
+import { getCurrentLocation } from '@/lib/geolocation';
+import { useToast } from '@/hooks/use-toast';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -33,23 +35,12 @@ const getInitialCart = (): CartItem[] => {
 const COMMISSION_RATE = 0.15; // 15% commission
 
 const getUserLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      resolve(null);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      },
-      () => {
-        resolve(null);
-      }
-    );
-  });
+  return getCurrentLocation()
+    .then((coords) => coords)
+    .catch((error) => {
+      console.warn('Geolocation unavailable for placeOrder:', error?.message ?? error);
+      return null;
+    });
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -57,6 +48,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { getRestaurant } = useData();
   const { user, userProfile } = useAuth();
   const { db } = useFirebase();
+  const { toast } = useToast();
 
   // Load from localStorage on mount
   React.useEffect(() => {
@@ -175,6 +167,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const location = await getUserLocation();
+    if (!location) {
+      // Geolocation refused, unsupported, or timed out. The order still
+      // goes through using the textual address, but the live tracking map
+      // will degrade to "restaurant only".
+      toast({
+        title: 'Position GPS indisponible',
+        description: "Votre commande passe sans suivi cartographique. Activez la géolocalisation pour le suivi temps réel.",
+      });
+    }
     const restaurantId = cartItems[0].restaurantId;
     const restaurant = getRestaurant(restaurantId);
 
@@ -242,7 +243,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       errorEmitter.emit('permission-error', permissionError);
       return { success: false, error: permissionError };
     }
-  }, [user, userProfile, cartItems, cartSubtotal, cartDeliveryFee, cartTotal, getRestaurant, clearCart, db]);
+  }, [user, userProfile, cartItems, cartSubtotal, cartDeliveryFee, cartTotal, getRestaurant, clearCart, db, toast]);
 
   const value = React.useMemo(() => ({
     cartItems,

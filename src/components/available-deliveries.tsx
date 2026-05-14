@@ -13,7 +13,7 @@ import { QrScannerDialog } from '@/components/qr-scanner-dialog';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
 import { publishLivreurPublic, unpublishLivreurPublic } from '@/lib/livreur-public';
 import { useFirebase } from '@/contexts/firebase-provider';
-import { getCurrentLocation } from '@/lib/geolocation';
+import { getCurrentLocation, watchLocation } from '@/lib/geolocation';
 
 
 interface AvailableDeliveriesProps {
@@ -37,12 +37,12 @@ export function AvailableDeliveries({
     const { db } = useFirebase();
     const [isAccepting, setIsAccepting] = React.useState<string | null>(null);
     const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
-    const locationIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+    const watchCleanupRef = React.useRef<(() => void) | null>(null);
     const [isScannerOpen, setIsScannerOpen] = React.useState(false);
 
     const isEnService = userProfile?.statutService === 'En service';
     const livreurNom = userProfile?.nom;
-    
+
     const availableDeliveries = React.useMemo(() => {
         if (!isEnService) return [];
         return orders.filter(o => o.statut === 'En Préparation');
@@ -58,21 +58,29 @@ export function AvailableDeliveries({
             setIsAccepting(null);
         }
     }
-    
-    const updateLocation = React.useCallback(async () => {
+
+    const startLocationWatch = React.useCallback(() => {
         if (!userId) return;
-        try {
-            const { latitude, longitude } = await getCurrentLocation();
-            onUpdateUserProfile(userId, { latitude, longitude });
-            if (db) {
-                publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
-                    .catch((err) => console.error('Public livreur sync failed:', err));
-            }
-        } catch (error: any) {
-            console.error("Loc update error:", error.message);
-        }
+        // Clean any previous watcher before starting a new one.
+        watchCleanupRef.current?.();
+        watchCleanupRef.current = watchLocation(
+            ({ latitude, longitude }) => {
+                onUpdateUserProfile(userId, { latitude, longitude });
+                if (db) {
+                    publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
+                        .catch((err) => console.error('Public livreur sync failed:', err));
+                }
+            },
+            (error) => {
+                console.error('watchLocation error:', error.message);
+            },
+        );
     }, [userId, onUpdateUserProfile, db, livreurNom]);
 
+    const stopLocationWatch = React.useCallback(() => {
+        watchCleanupRef.current?.();
+        watchCleanupRef.current = null;
+    }, []);
 
     const handleStatusToggle = async (checked: boolean) => {
         if (!userId) return;
@@ -87,23 +95,21 @@ export function AvailableDeliveries({
                     publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
                         .catch((err) => console.error('Public livreur sync failed:', err));
                 }
-                locationIntervalRef.current = setInterval(updateLocation, 10000);
+                startLocationWatch();
                 toast({ title: `Vous êtes en ligne !` });
-            } catch (error: any) {
-                console.error('Status toggle loc error:', error);
-                toast({ 
-                    variant: 'destructive', 
-                    title: 'Position requise', 
-                    description: "Activez le GPS pour passer en service." 
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                console.error('Status toggle loc error:', message);
+                toast({
+                    variant: 'destructive',
+                    title: 'Position requise',
+                    description: "Activez le GPS pour passer en service."
                 });
             } finally {
                 setIsUpdatingStatus(false);
             }
         } else {
-             if (locationIntervalRef.current) {
-                clearInterval(locationIntervalRef.current);
-                locationIntervalRef.current = null;
-            }
+            stopLocationWatch();
             await onUpdateUserProfile(userId, { statutService: newStatus });
             if (db) {
                 unpublishLivreurPublic(db, userId)
@@ -143,9 +149,10 @@ export function AvailableDeliveries({
     
     React.useEffect(() => {
         return () => {
-            if(locationIntervalRef.current) clearInterval(locationIntervalRef.current);
-        }
-    }, [])
+            watchCleanupRef.current?.();
+            watchCleanupRef.current = null;
+        };
+    }, []);
 
 
     return (

@@ -452,4 +452,33 @@ describe('firestore.rules — /livreurs_public', () => {
     const db = env.unauthenticatedContext().firestore();
     await assertFails(getDoc(doc(db, 'livreurs_public', LIVREUR_UID)));
   });
+
+  it('rejects coordinates outside the Côte d\'Ivoire bounding box (Paris)', async () => {
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    await assertFails(setDoc(doc(db, 'livreurs_public', LIVREUR_UID), {
+      nom: 'Yao', latitude: 48.85, longitude: 2.35,
+    }));
+  });
+
+  it('rejects coordinates outside the Côte d\'Ivoire bounding box (NYC)', async () => {
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    await assertFails(setDoc(doc(db, 'livreurs_public', LIVREUR_UID), {
+      nom: 'Yao', latitude: 40.71, longitude: -74.0,
+    }));
+  });
+
+  it('accepts a doc without coordinates (initial publish before GPS fix)', async () => {
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'livreurs_public', LIVREUR_UID), {
+      nom: 'Yao',
+    }));
+  });
+
+  it('lets the livreur delete their own public doc', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'livreurs_public', LIVREUR_UID), { nom: 'Yao' });
+    });
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    await assertSucceeds(deleteDoc(doc(db, 'livreurs_public', LIVREUR_UID)));
+  });
 });

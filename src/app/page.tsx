@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { getCurrentLocation } from '@/lib/geolocation';
 
 interface Category {
     name: string;
@@ -301,23 +302,19 @@ export default function CustomerHomePage() {
       return;
     }
 
-    if (!navigator.geolocation) {
-      toast({ variant: 'destructive', title: 'Géolocalisation non supportée' });
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
+    getCurrentLocation()
+      .then((coords) => {
+        setUserLocation(coords);
         setActiveFilter('distance');
-      },
-      () => {
-        toast({ variant: 'destructive', title: "L'accès à la localisation a été refusé." });
-      }
-    );
+      })
+      .catch((error) => {
+        console.warn('Distance filter geolocation error:', error?.message ?? error);
+        toast({
+          variant: 'destructive',
+          title: 'Position indisponible',
+          description: "Vérifiez les autorisations de localisation de votre navigateur.",
+        });
+      });
   };
   
   const handleCategorySelect = (categoryName: string) => {

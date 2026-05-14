@@ -111,12 +111,13 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                 title: 'Position récupérée !',
                 description: 'Les coordonnées GPS ont été ajoutées au formulaire.',
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Location error:', error);
+            const message = error instanceof Error ? error.message : String(error);
             toast({
                 variant: 'destructive',
                 title: 'Erreur de géolocalisation',
-                description: error.message === 'Permission denied' 
+                description: message === 'Permission denied'
                     ? "L'accès à la position a été refusé. Veuillez vérifier les autorisations."
                     : "Impossible de récupérer votre position. Vérifiez votre GPS et les autorisations.",
             });
