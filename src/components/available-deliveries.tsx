@@ -68,8 +68,9 @@ export function AvailableDeliveries({
                 publishLivreurPublic(db, userId, { nom: livreurNom, latitude, longitude })
                     .catch((err) => console.error('Public livreur sync failed:', err));
             }
-        } catch (error: any) {
-            console.error("Loc update error:", error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error("Loc update error:", message);
         }
     }, [userId, onUpdateUserProfile, db, livreurNom]);
 
@@ -89,12 +90,12 @@ export function AvailableDeliveries({
                 }
                 locationIntervalRef.current = setInterval(updateLocation, 10000);
                 toast({ title: `Vous êtes en ligne !` });
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Status toggle loc error:', error);
-                toast({ 
-                    variant: 'destructive', 
-                    title: 'Position requise', 
-                    description: "Activez le GPS pour passer en service." 
+                toast({
+                    variant: 'destructive',
+                    title: 'Position requise',
+                    description: "Activez le GPS pour passer en service."
                 });
             } finally {
                 setIsUpdatingStatus(false);

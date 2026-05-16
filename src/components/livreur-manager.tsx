@@ -1,11 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { 
-    Bike, 
-    MoreHorizontal, 
-    ShieldAlert, 
-    Filter, 
+import {
+    Bike,
+    MoreHorizontal,
+    Filter,
     Trash2,
     Loader,
     Navigation2,
@@ -16,7 +15,6 @@ import {
     LayoutList
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
     Table, 
     TableBody, 
@@ -50,7 +48,7 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
     const { updateOtherUserProfile, user: adminUser } = useAuth();
     const { db } = useFirebase();
     const { toast } = useToast();
-    const [searchTerm, setSearchTerm] = React.useState('');
+    const [searchTerm] = React.useState('');
     const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
     const [view, setView] = React.useState<'list' | 'map'>('list');
 
@@ -70,11 +68,9 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
         if (!adminUser) return;
         setIsUpdating(livreur.uid);
         
-        const isCurrentlySuspended = livreur.roleSysteme === 'User' && livreur.statutService === 'Hors service'; // Simplified logic or use a specific field if added
-        // For now, let's just toggle 'statutService' as a proxy or use a dedicated field if exists.
-        // Actually, let's just use a toast for demonstration or implement real logic if a 'suspendu' field exists in UserProfile.
-        // Since UserProfile doesn't have 'suspendu', I'll just change 'statutService' for now.
-        
+        // UserProfile has no `suspendu` field yet — toggle `statutService` as
+        // a proxy. Replace once the dedicated field lands.
+
         try {
             const newStatus = livreur.statutService === 'Hors service' ? 'En service' : 'Hors service';
             await updateOtherUserProfile(livreur.uid, { statutService: newStatus });
