@@ -120,7 +120,7 @@ export default function MyRestaurantsPage() {
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 className="group relative h-full"
                             >
-                                <div className="glass-dark border border-white/5 transition-all duration-500 group-hover:border-orange-500/50 overflow-hidden h-full flex flex-col shadow-2xl group-hover:shadow-orange-500/10 rounded-[1.25rem] md:rounded-[2rem]">
+                                <div className="glass-dark border border-white/5 transition-all duration-500 group-hover:border-orange-500/50 overflow-hidden h-full flex flex-col shadow-2xl group-hover:shadow-orange-500/10 rounded-2xl md:rounded-[2rem]">
                                     {/* Image Area */}
                                     <div className="relative h-24 md:h-40 w-full overflow-hidden">
                                         {imageSrc.includes('res.cloudinary.com') ? (

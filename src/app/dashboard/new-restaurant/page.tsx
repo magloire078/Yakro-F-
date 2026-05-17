@@ -176,7 +176,7 @@ export default function NewRestaurantPage() {
                             transition={{ delay: 0.2 }}
                             className="text-slate-500 font-medium max-w-md mx-auto text-sm md:text-base italic uppercase tracking-widest"
                         >
-                            Rejoignez le cercle exclusif des restaurateurs Yakro Go et redéfinissez la gastronomie locale.
+                            Rejoignez le cercle exclusif des restaurateurs Yakro Fê et redéfinissez la gastronomie locale.
                         </motion.p>
                     </div>
 

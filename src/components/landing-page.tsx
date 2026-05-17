@@ -118,7 +118,7 @@ export function LandingPage() {
                 </span>
               </h1>
               <p className="mx-auto max-w-2xl text-lg sm:text-xl text-slate-600 dark:text-slate-400 px-2 sm:px-4 leading-relaxed font-medium mb-8 sm:mb-10">
-                Yakro Go réinvente la livraison de repas avec une touche de luxe et d&apos;intelligence artificielle. Le meilleur de Yamoussoukro, à portée de clic.
+                Yakro Fê réinvente la livraison de repas avec une touche de luxe et d&apos;intelligence artificielle. Le meilleur de Yamoussoukro, à portée de clic.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 max-w-md mx-auto sm:max-w-none">
                 <Button size="lg" onClick={() => router.push('/login')} className="bg-slate-900 hover:bg-slate-800 text-white shadow-2xl shadow-slate-900/20 px-8 sm:px-10 h-14 sm:h-16 rounded-xl sm:rounded-2xl text-base sm:text-lg font-black group w-full sm:w-auto">
@@ -138,7 +138,7 @@ export function LandingPage() {
               initial={{ opacity: 0, rotateX: 10, y: 40 }}
               animate={{ opacity: 1, rotateX: 0, y: 0 }}
               transition={{ delay: 0.4, duration: 1 }}
-              className="relative rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-[0_30px_60px_rgba(255,140,0,0.1)] sm:shadow-[0_50px_100px_rgba(255,140,0,0.15)] bg-white aspect-[3/4] xs:aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9]"
+              className="relative rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-[0_30px_60px_rgba(249,115,22,0.1)] sm:shadow-[0_50px_100px_rgba(249,115,22,0.15)] bg-white aspect-[3/4] xs:aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9]"
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -254,7 +254,7 @@ export function LandingPage() {
                 <Badge className="bg-orange-500 hover:bg-orange-600 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs">Notre Mission</Badge>
                 <h2 className="text-3xl xs:text-4xl sm:text-5xl md:text-7xl font-black leading-[1] sm:leading-[0.95]">Digitaliser la <br className="hidden sm:block" /><span className="text-orange-500">capitale</span> avec passion.</h2>
                 <p className="text-base sm:text-xl text-slate-400 leading-relaxed font-light max-w-xl">
-                  Yakro Go n&apos;est pas qu&apos;une application de livraison. C&apos;est un écosystème conçu pour valoriser les artisans culinaires de Yamoussoukro tout en offrant aux habitants un service de classe mondiale.
+                  Yakro Fê n&apos;est pas qu&apos;une application de livraison. C&apos;est un écosystème conçu pour valoriser les artisans culinaires de Yamoussoukro tout en offrant aux habitants un service de classe mondiale.
                 </p>
                 <div className="grid grid-cols-2 gap-6 sm:gap-8 pt-4">
                   <div className="space-y-1 sm:space-y-2">
@@ -272,7 +272,7 @@ export function LandingPage() {
                 <div className="relative h-full w-full rounded-[2rem] sm:rounded-[3.5rem] border border-white/10 overflow-hidden shadow-2xl">
                     <Image 
                         src="/assets/marketing/hero-basilica.png" 
-                        alt="Vision Yakro Go" 
+                        alt="Vision Yakro Fê"
                         fill 
                         className="object-cover opacity-60 hover:opacity-80 transition-opacity duration-700"
                     />
@@ -295,7 +295,7 @@ export function LandingPage() {
                     Prêt à goûter <br /><span className="text-orange-500">au futur ?</span>
                 </h2>
                 <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
-                    Rejoignez les milliers d&apos;utilisateurs qui font déjà confiance à Yakro Go pour leurs repas quotidiens.
+                    Rejoignez les milliers d&apos;utilisateurs qui font déjà confiance à Yakro Fê pour leurs repas quotidiens.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 pt-4">
                     <Button size="lg" onClick={() => router.push('/login')} className="bg-orange-500 hover:bg-orange-600 text-white px-8 sm:px-16 h-16 sm:h-20 text-lg sm:text-xl font-black rounded-xl sm:rounded-[2rem] shadow-xl shadow-orange-500/30 group w-full sm:w-auto">
@@ -352,7 +352,7 @@ export function LandingPage() {
           </div>
         </div>
         <div className="container mt-12 pt-8 border-t border-orange-100 text-center">
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">© {new Date().getFullYear()} Yakro Go. Made with ❤️ in Yamoussoukro.</span>
+            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">© {new Date().getFullYear()} Yakro Fê. Made with ❤️ in Yamoussoukro.</span>
         </div>
       </footer>
     </div>

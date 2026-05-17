@@ -48,7 +48,7 @@ export default function LoginPage() {
                 <div className="relative z-20 mt-auto glass-dark p-10 rounded-[3rem] border-white/10 shadow-2xl animate-float">
                     <blockquote className="space-y-6">
                         <p className="text-3xl font-black italic leading-[1.1] tracking-tighter uppercase">
-                            &ldquo;L&apos;excellence n&apos;est pas un service, c&apos;est une promesse. Yakro Go redéfinit l&apos;art de vivre à Yamoussoukro.&rdquo;
+                            &ldquo;L&apos;excellence n&apos;est pas un service, c&apos;est une promesse. Yakro Fê redéfinit l&apos;art de vivre à Yamoussoukro.&rdquo;
                         </p>
                         <footer className="flex items-center gap-6">
                             <div className="h-0.5 w-16 bg-orange-500 rounded-full" />

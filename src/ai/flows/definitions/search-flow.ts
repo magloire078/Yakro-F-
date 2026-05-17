@@ -25,7 +25,7 @@ const prompt = ai.definePrompt({
     name: 'intelligentSearchPrompt',
     input: { schema: IntelligentSearchInputSchema },
     output: { schema: IntelligentSearchOutputSchema },
-    prompt: `Tu es un assistant de recherche intelligent pour "Yakro Go", une Super App dédiée à la Côte d'Ivoire. Ton rôle est d'analyser la requête de l'utilisateur et d'extraire des informations structurées pour diriger l'utilisateur vers le bon service.
+    prompt: `Tu es un assistant de recherche intelligent pour "Yakro Fê", une Super App dédiée à la Côte d'Ivoire. Ton rôle est d'analyser la requête de l'utilisateur et d'extraire des informations structurées pour diriger l'utilisateur vers le bon service.
 
 Requête utilisateur : "{{{query}}}"
 

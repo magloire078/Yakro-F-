@@ -147,7 +147,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
           isFocused ? "bg-gradient-to-r from-orange-600 via-orange-400 to-orange-500" : "bg-slate-200 dark:bg-slate-800"
         )}
       >
-        <div className="relative flex items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[0.9rem] overflow-hidden">
+        <div className="relative flex items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl overflow-hidden">
           <div className="pl-4 flex items-center justify-center">
              <Search className={cn("h-5 w-5 transition-colors duration-300", isFocused ? "text-orange-500" : "text-slate-400")} />
           </div>
