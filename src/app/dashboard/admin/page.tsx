@@ -444,7 +444,7 @@ export default function AdminPage() {
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
                                         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
                                             <div className="space-y-2">
-                                                <h2 className="text-3xl md:text-4xl font-headline font-bold tracking-tight text-foreground leading-none">Journal d&apos;Audit <span className="text-orange-500 italic">Sécurisé</span></h2>
+                                                <h2 className="text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Journal d&apos;Audit <span className="text-orange-500">Sécurisé</span></h2>
                                                 <p className="text-[11px] font-body font-medium text-slate-500/70 uppercase tracking-widest">TRAÇABILITÉ TOTALE DES OPÉRATIONS DE COMMANDEMENT</p>
                                             </div>
                                             <div className="flex items-center gap-4 w-full md:w-auto">
@@ -529,7 +529,7 @@ export default function AdminPage() {
                                             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
                                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 relative z-10 gap-6">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl md:text-4xl font-headline font-bold tracking-tight text-foreground leading-none">Registre des <span className="text-orange-500 italic">Comptes</span></h2>
+                                                    <h2 className="text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Registre des <span className="text-orange-500">Comptes</span></h2>
                                                     <p className="text-[11px] font-body font-medium text-slate-500/70 tracking-widest">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
                                                 </div>
                                                 <div className="flex items-center gap-4 w-full md:w-auto">
@@ -650,7 +650,7 @@ export default function AdminPage() {
                             <div className="absolute top-0 right-0 p-8 opacity-20 rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110">
                                 <ShieldAlert className="h-32 w-32 text-white" />
                             </div>
-                            <h3 className="text-2xl font-headline font-bold tracking-tight text-white mb-4 relative z-10">Support <span className="text-orange-200 italic">Elite</span></h3>
+                            <h3 className="text-2xl font-headline font-black italic uppercase tracking-tighter text-white mb-4 relative z-10">Support <span className="text-orange-200">Elite</span></h3>
                             <p className="text-[12px] font-medium text-orange-100 mb-10 leading-relaxed relative z-10 max-w-[80%]">
                                 Ligne directe avec l&apos;unité d&apos;intervention technique Yakro pour les opérations critiques.
                             </p>

@@ -69,7 +69,7 @@ export function LandingPage() {
   }, []);
 
   return (
-    <div className="bg-[#FAEBD7] dark:bg-slate-950 min-h-screen transition-colors duration-500 overflow-x-hidden selection:bg-orange-200">
+    <div className="bg-background dark:bg-slate-950 min-h-screen transition-colors duration-500 overflow-x-hidden selection:bg-orange-200">
       {/* Abstract Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[10%] left-[-5%] w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
@@ -113,7 +113,7 @@ export function LandingPage() {
                 <span className="text-orange-500 italic relative inline-block">
                   l&apos;instant.
                   <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full" viewBox="0 0 100 10" preserveAspectRatio="none">
-                    <path d="M0 5 Q 50 10 100 5" stroke="#FF8C00" strokeWidth="4" fill="transparent" strokeLinecap="round" />
+                    <path d="M0 5 Q 50 10 100 5" stroke="#F97316" strokeWidth="4" fill="transparent" strokeLinecap="round" />
                   </svg>
                 </span>
               </h1>

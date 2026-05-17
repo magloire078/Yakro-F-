@@ -16,7 +16,9 @@ export const dynamic = 'force-dynamic';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#FF8C00',
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#F97316',
 };
 
 export default function RootLayout({

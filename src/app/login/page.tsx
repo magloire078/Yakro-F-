@@ -23,9 +23,9 @@ export default function LoginPage() {
     
     if (authLoading || isRedirecting || (!authLoading && user)) {
         return (
-            <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-[#FAEBD7]">
+            <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
                 <Loader className="h-16 w-16 animate-spin text-orange-500" />
-                <p className="text-orange-600 font-bold animate-pulse">Yakro Go se prépare...</p>
+                <p className="text-orange-600 font-bold animate-pulse">Yakro Fê se prépare...</p>
             </div>
         )
     }
