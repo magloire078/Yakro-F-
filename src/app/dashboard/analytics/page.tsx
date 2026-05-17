@@ -279,9 +279,9 @@ export default function AnalyticsPage() {
                 {/* Charts and Data Sections */}
                         
                         {/* Detailed Analytics Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
                             {/* Revenue Trend Chart - Full Width */}
-                            <div className="lg:col-span-12 glass-dark p-6 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="md:col-span-12 glass-dark p-4 md:p-8 relative overflow-hidden rounded-3xl md:rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Évolution de l&apos;Empire</h2>
@@ -302,9 +302,9 @@ export default function AnalyticsPage() {
                                     </div>
                                 </div>
                                 
-                                <div className="h-[350px] w-full">
+                                <div className="h-[250px] md:h-[350px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={revenueTrend} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                        <BarChart data={revenueTrend} margin={{ top: 0, right: 10, left: -15, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
@@ -361,15 +361,15 @@ export default function AnalyticsPage() {
                                                       return null
                                                     }}
                                                 />
-                                            <Bar dataKey="previous" fill="url(#colorPrevious)" className="text-muted-foreground/20" radius={[4, 4, 0, 0]} barSize={20} />
-                                            <Bar dataKey="current" fill="url(#colorCurrent)" radius={[4, 4, 0, 0]} barSize={20} />
+                                            <Bar dataKey="previous" fill="url(#colorPrevious)" className="text-muted-foreground/20" radius={[4, 4, 0, 0]} barSize={12} />
+                                            <Bar dataKey="current" fill="url(#colorCurrent)" radius={[4, 4, 0, 0]} barSize={12} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
 
                             {/* Revenue by Restaurant */}
-                            <div className="lg:col-span-7 glass-dark p-6 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-border">
+                            <div className="md:col-span-12 lg:col-span-7 glass-dark p-4 md:p-8 relative overflow-hidden rounded-3xl md:rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-border">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Répartition Elite</h2>
@@ -380,10 +380,10 @@ export default function AnalyticsPage() {
                                     </div>
                                 </div>
                                 
-                                <div className="h-[350px] w-full">
+                                <div className="h-[250px] md:h-[350px] w-full">
                                     {revenueByRestaurant.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                            <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 10, left: -15, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.9}/>
@@ -416,16 +416,16 @@ export default function AnalyticsPage() {
                                                     content={({ active, payload }) => {
                                                       if (active && payload && payload.length) {
                                                         return (
-                                                          <div className="bg-background border border-border p-5 rounded-2xl shadow-2xl backdrop-blur-xl">
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2 block">{payload[0].payload.name}</p>
-                                                            <p className="text-3xl font-black italic tracking-tighter text-foreground">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
+                                                          <div className="bg-background border border-border p-4 md:p-5 rounded-2xl shadow-2xl backdrop-blur-xl max-w-[200px] md:max-w-none">
+                                                            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2 block truncate">{payload[0].payload.name}</p>
+                                                            <p className="text-xl md:text-3xl font-black italic tracking-tighter text-foreground">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
                                                           </div>
                                                         )
                                                       }
                                                       return null
                                                     }}
                                                 />
-                                                <Bar dataKey="revenue" radius={[12, 12, 0, 0]} barSize={50} animationDuration={1500}>
+                                                <Bar dataKey="revenue" radius={[8, 8, 0, 0]} animationDuration={1500}>
                                                     {revenueByRestaurant.map((entry, index) => (
                                                         <Cell 
                                                             key={`cell-${index}`} 
@@ -451,7 +451,7 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Top Sellers Table */}
-                            <div className="lg:col-span-5 glass-dark p-6 md:p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="md:col-span-12 lg:col-span-5 glass-dark p-4 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
                                         <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Palmarès de Signature</h2>
@@ -473,9 +473,9 @@ export default function AnalyticsPage() {
                                                         <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{item.count} Unités vendues</p>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="text-lg font-black italic tracking-tighter text-orange-500">{item.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40">F</span></p>
-                                                    <div className="h-1 w-24 bg-muted mt-3 rounded-full overflow-hidden">
+                                                <div className="text-right flex flex-col items-end">
+                                                    <p className="text-base md:text-lg font-black italic tracking-tighter text-orange-500 whitespace-nowrap">{item.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40">F</span></p>
+                                                    <div className="h-1 w-16 md:w-24 bg-muted mt-2 md:mt-3 rounded-full overflow-hidden">
                                                         <motion.div 
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${(item.revenue / (topSellingItems[0]?.revenue || 1)) * 100}%` }}

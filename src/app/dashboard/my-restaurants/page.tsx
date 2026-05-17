@@ -6,6 +6,7 @@ import { useData, deleteRestaurant } from '@/contexts/data-context';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { Restaurant } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { 
     UtensilsCrossed, 
@@ -15,7 +16,8 @@ import {
     AlertTriangle, 
     MapPin,
     Star,
-    ChefHat
+    ChefHat,
+    ExternalLink
 } from 'lucide-react';
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
@@ -31,7 +33,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DashboardPage } from '@/components/dashboard/dashboard-page';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
@@ -43,6 +44,7 @@ export default function MyRestaurantsPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
+    const [restaurantToDelete, setRestaurantToDelete] = React.useState<Restaurant | null>(null);
 
     React.useEffect(() => {
         if (user && activeRole !== 'restaurateur') {
@@ -198,57 +200,27 @@ export default function MyRestaurantsPage() {
                                                 </Link>
                                             </Button>
 
+                                            <Button 
+                                                variant="outline" 
+                                                asChild 
+                                                className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl border-white/10 bg-white/5 hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all duration-300 flex items-center justify-center"
+                                                title="Voir la vitrine publique"
+                                            >
+                                                <Link href={`/restaurants?id=${restaurant.id}`}>
+                                                    <ExternalLink className="h-4 w-4 md:h-5 md:w-5" />
+                                                </Link>
+                                            </Button>
+
                                             {(() => {
-                                                const hasPlats = menuItems.some(p => p.restaurantId === restaurant.id);
-                                                
                                                 return (
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button 
-                                                                variant="ghost" 
-                                                                className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl border border-white/5 text-slate-500 hover:text-red-500 hover:bg-red-500/10 transition-all duration-300"
-                                                                disabled={isDeleting === restaurant.id}
-                                                            >
-                                                                <Trash2 className="h-5 w-5" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent className="glass-dark border border-white/10 text-white rounded-[2rem] md:rounded-[2.5rem] max-w-md backdrop-blur-3xl shadow-2xl">
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle className="font-black italic uppercase tracking-tighter text-2xl md:text-3xl flex items-center gap-3 text-white">
-                                                                    <AlertTriangle className="h-7 w-7 md:h-8 md:w-8 text-orange-500" />
-                                                                    {hasPlats ? 'ALERTE CRITIQUE' : 'DISSOLUTION'}
-                                                                </AlertDialogTitle>
-                                                                <AlertDialogDescription className="text-slate-400 font-medium pt-3 md:pt-4 text-sm md:text-base leading-relaxed italic">
-                                                                    {hasPlats ? (
-                                                                        <>
-                                                                            Cet établissement contient encore des créations culinaires actives. 
-                                                                            <span className="block mt-3 md:mt-4 text-orange-500 font-bold uppercase tracking-widest text-[10px] md:text-xs">Veuillez purger le menu avant de pouvoir dissoudre cet établissement.</span>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            Cette action est irréversible. Vous êtes sur le point de dissoudre 
-                                                                            <strong className="text-white uppercase tracking-tighter"> {restaurant.nom}</strong> et d&apos;effacer son héritage numérique du registre Yakro.
-                                                                        </>
-                                                                    )}
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter className="mt-8 md:mt-10 gap-3 md:gap-4">
-                                                                <AlertDialogCancel className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white uppercase font-bold tracking-widest text-[9px] md:text-[10px] h-10 md:h-12">ANNULER</AlertDialogCancel>
-                                                                {hasPlats ? (
-                                                                    <AlertDialogAction asChild className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white uppercase font-black tracking-widest text-[9px] md:text-[10px] h-10 md:h-12">
-                                                                        <Link href="/dashboard/menu">GÉRER LE MENU</Link>
-                                                                    </AlertDialogAction>
-                                                                ) : (
-                                                                    <AlertDialogAction 
-                                                                        onClick={() => handleDelete(restaurant.id)}
-                                                                        className="rounded-xl bg-red-600 hover:bg-red-700 text-white uppercase font-black tracking-widest text-[9px] md:text-[10px] h-10 md:h-12"
-                                                                    >
-                                                                        CONFIRMER DISSOLUTION
-                                                                    </AlertDialogAction>
-                                                                )}
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl border border-white/5 text-slate-500 hover:text-red-500 hover:bg-red-500/10 transition-all duration-300"
+                                                    disabled={isDeleting === restaurant.id}
+                                                    onClick={() => setRestaurantToDelete(restaurant)}
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </Button>
                                                 );
                                             })()}
                                         </div>
@@ -291,6 +263,45 @@ export default function MyRestaurantsPage() {
                     </Link>
                 </Button>
             </div>
+
+            <AlertDialog open={!!restaurantToDelete} onOpenChange={(open) => !open && setRestaurantToDelete(null)}>
+                <AlertDialogContent className="glass-dark border border-white/10 text-white rounded-[2rem] md:rounded-[2.5rem] max-w-md backdrop-blur-3xl shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="font-black italic uppercase tracking-tighter text-2xl md:text-3xl flex items-center gap-3 text-white">
+                            <AlertTriangle className="h-7 w-7 md:h-8 md:w-8 text-orange-500" />
+                            {restaurantToDelete && menuItems.some(p => p.restaurantId === restaurantToDelete.id) ? 'ALERTE CRITIQUE' : 'DISSOLUTION'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400 font-medium pt-3 md:pt-4 text-sm md:text-base leading-relaxed italic">
+                            {restaurantToDelete && menuItems.some(p => p.restaurantId === restaurantToDelete.id) ? (
+                                <>
+                                    Cet établissement contient encore des créations culinaires actives. 
+                                    <span className="block mt-3 md:mt-4 text-orange-500 font-bold uppercase tracking-widest text-[10px] md:text-xs">Veuillez purger le menu avant de pouvoir dissoudre cet établissement.</span>
+                                </>
+                            ) : (
+                                <>
+                                    Cette action est irréversible. Vous êtes sur le point de dissoudre 
+                                    <strong className="text-white uppercase tracking-tighter"> {restaurantToDelete?.nom}</strong> et d&apos;effacer son héritage numérique du registre Yakro.
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-8 md:mt-10 gap-3 md:gap-4">
+                        <AlertDialogCancel className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white uppercase font-bold tracking-widest text-[9px] md:text-[10px] h-10 md:h-12">ANNULER</AlertDialogCancel>
+                        {restaurantToDelete && menuItems.some(p => p.restaurantId === restaurantToDelete.id) ? (
+                            <AlertDialogAction asChild className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white uppercase font-black tracking-widest text-[9px] md:text-[10px] h-10 md:h-12">
+                                <Link href="/dashboard/menu">GÉRER LE MENU</Link>
+                            </AlertDialogAction>
+                        ) : (
+                            <AlertDialogAction 
+                                onClick={() => restaurantToDelete && handleDelete(restaurantToDelete.id)}
+                                className="rounded-xl bg-red-600 hover:bg-red-700 text-white uppercase font-black tracking-widest text-[9px] md:text-[10px] h-10 md:h-12"
+                            >
+                                CONFIRMER DISSOLUTION
+                            </AlertDialogAction>
+                        )}
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </DashboardPage>
     );
 }
