@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, ShieldCheck, Edit, UserPlus, Users, Home, Store, TrendingUp, Bell, FileText, Activity, ShieldAlert, Cpu, Navigation2, Trash2 } from 'lucide-react';
+import { Loader, ShieldCheck, Edit, UserPlus, Users, Home, Store, TrendingUp, Bell, FileText, Activity, ShieldAlert, Cpu, Navigation2, Trash2, Bike } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, SystemRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -34,6 +34,7 @@ import { RestaurantManager } from '@/components/restaurant-manager';
 import { FinancialAnalytics } from '@/components/financial-analytics';
 import { AdminAlerts } from '@/components/admin-alerts';
 import { ReportCenter } from '@/components/report-center';
+import { LivreurManager } from '@/components/livreur-manager';
 
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
@@ -307,7 +308,7 @@ export default function AdminPage() {
                         className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-2 shadow-2xl"
                     >
                         <ShieldCheck className="h-4 w-4 text-orange-500" />
-                        <span className="text-[10px] font-body font-bold tracking-widest text-orange-500">Autorité Suprême Yakro</span>
+                        <span className="text-[11px] font-body font-bold tracking-widest text-orange-600">Autorité Suprême Yakro</span>
                     </motion.div>
                     
                     <div className="space-y-4">
@@ -337,7 +338,7 @@ export default function AdminPage() {
                     >
                         <Sheet>
                             <SheetTrigger asChild>
-                                <Button variant="outline" className="h-10 px-5 bg-card/50 border-border rounded-xl font-body font-bold tracking-tight hover:bg-orange-500/10 transition-all group text-xs">
+                                <Button variant="outline" aria-label="Voir les alertes système" className="h-10 px-5 bg-card/50 border-border rounded-xl font-body font-bold tracking-tight hover:bg-orange-500/10 transition-all group text-xs">
                                     <Bell className="mr-2 h-4 w-4 text-orange-500 group-hover:scale-110 transition-transform" />
                                     Alertes <span className="ml-2 px-2 py-0.5 bg-red-500 text-[9px] font-body text-white rounded-full animate-pulse">Live</span>
                                 </Button>
@@ -348,7 +349,7 @@ export default function AdminPage() {
                                         <Bell className="h-7 w-7 text-orange-500" />
                                         Alertes <span className="text-orange-500 italic">Système</span>
                                     </SheetTitle>
-                                    <SheetDescription className="text-slate-500 font-body text-[9px] tracking-widest opacity-70">ANOMALIES ET ÉVÉNEMENTS CRITIQUES</SheetDescription>
+                                    <SheetDescription className="text-slate-500 font-body text-[11px] tracking-widest opacity-80">ANOMALIES ET ÉVÉNEMENTS CRITIQUES</SheetDescription>
                                 </SheetHeader>
                                 <ScrollArea className="h-[calc(100vh-150px)] mt-6 pr-4">
                                     <AdminAlerts />
@@ -411,6 +412,7 @@ export default function AdminPage() {
                                 {[
                                     { id: 'live', icon: Navigation2, label: 'Supervision' },
                                     { id: 'restaurants', icon: Store, label: 'Établissements' },
+                                    { id: 'livreurs', icon: Bike, label: 'Livreurs' },
                                     { id: 'users', icon: Users, label: 'Utilisateurs' },
                                     { id: 'finances', icon: TrendingUp, label: 'Flux Financiers' },
                                     { id: 'security', icon: ShieldAlert, label: 'Sécurité' },
@@ -435,6 +437,7 @@ export default function AdminPage() {
                             >
                                 <TabsContent value="live" className="m-0 outline-none animate-in fade-in duration-700"><SupervisionModule /></TabsContent>
                                 <TabsContent value="restaurants" className="m-0 outline-none animate-in fade-in duration-700"><RestaurantManager /></TabsContent>
+                                <TabsContent value="livreurs" className="m-0 outline-none animate-in fade-in duration-700"><LivreurManager users={allUsers} orders={orders} /></TabsContent>
                                 <TabsContent value="finances" className="m-0 outline-none animate-in fade-in duration-700"><FinancialAnalytics /></TabsContent>
                                 <TabsContent value="security" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden group">
@@ -453,7 +456,7 @@ export default function AdminPage() {
                                                 />
                                                 <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full">
                                                     <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                                                    <span className="text-[9px] font-body font-bold tracking-widest text-orange-500">PROTOCOLE ACTIF</span>
+                                                    <span className="text-[10px] font-body font-bold tracking-widest text-orange-600">PROTOCOLE ACTIF</span>
                                                 </div>
                                                 <Button 
                                                     onClick={() => setIsPurgeDialogOpen(true)}
@@ -485,11 +488,11 @@ export default function AdminPage() {
                                                             <TableCell className="py-6">
                                                                 <div className="flex flex-col">
                                                                     <span className="font-body font-bold text-xs text-foreground">{log.adminEmail}</span>
-                                                                    <span className="text-[8px] font-body font-medium text-gray-600 tracking-wider">ID: {log.adminId.substring(0, 8)}...</span>
+                                                                    <span className="text-[10px] font-body font-medium text-gray-600 tracking-wider">ID: {log.adminId.substring(0, 8)}...</span>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-6">
-                                                                <Badge variant="outline" className="rounded-xl border-orange-500/30 text-orange-500 bg-orange-500/10 text-[9px] font-body font-bold tracking-widest py-1.5 px-3">
+                                                                <Badge variant="outline" className="rounded-xl border-orange-500/50 text-orange-600 bg-orange-500/10 text-[10px] font-body font-bold tracking-widest py-1.5 px-3">
                                                                     {log.action}
                                                                 </Badge>
                                                             </TableCell>
@@ -567,7 +570,7 @@ export default function AdminPage() {
                                                                 </TableCell>
                                                                 <TableCell className="py-6">
                                                                     <Select value={u.roleSysteme || 'User'} onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}>
-                                                                        <SelectTrigger className="w-[140px] h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 rounded-2xl text-[10px] font-body font-bold tracking-widest focus:ring-orange-500/50 transition-all hover:bg-card dark:hover:bg-white/10">
+                                                                        <SelectTrigger aria-label="Changer le rôle système" className="w-[140px] h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 rounded-2xl text-[10px] font-body font-bold tracking-widest focus:ring-orange-500/50 transition-all hover:bg-card dark:hover:bg-white/10">
                                                                             <SelectValue />
                                                                         </SelectTrigger>
                                                                         <SelectContent className="bg-popover/95 backdrop-blur-3xl border-border text-foreground rounded-2xl overflow-hidden shadow-2xl">
@@ -579,10 +582,10 @@ export default function AdminPage() {
                                                                 </TableCell>
                                                                 <TableCell className="text-right py-6">
                                                                     <div className="flex justify-end gap-2">
-                                                                        <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} className="h-12 w-12 hover:bg-orange-500/10 hover:text-orange-500 rounded-2xl border border-transparent hover:border-orange-500/20 transition-all hover:scale-110">
+                                                                        <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} aria-label="Modifier l'utilisateur" className="h-12 w-12 hover:bg-orange-500/10 hover:text-orange-500 rounded-2xl border border-transparent hover:border-orange-500/20 transition-all hover:scale-110">
                                                                             <Edit className="h-5 w-5" />
                                                                         </Button>
-                                                                        <Button variant="ghost" size="icon" onClick={() => setUserToDelete(u)} className="h-12 w-12 hover:bg-red-500/10 hover:text-red-500 rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110">
+                                                                        <Button variant="ghost" size="icon" onClick={() => setUserToDelete(u)} aria-label="Supprimer l'utilisateur" className="h-12 w-12 hover:bg-red-500/10 hover:text-red-500 rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110">
                                                                             <Trash2 className="h-5 w-5" />
                                                                         </Button>
                                                                     </div>
@@ -657,7 +660,7 @@ export default function AdminPage() {
                         </div>
                         
                         <div className="text-center opacity-10 py-10">
-                            <p className="text-[8px] font-body tracking-[0.3em] text-gray-500">
+                                <p className="text-[10px] font-body tracking-[0.3em] text-gray-500">
                                 Protocol Zero v9.2 &bull; Yakro Supreme Authority
                             </p>
                         </div>

@@ -2,6 +2,34 @@
 import { doc, getDoc, writeBatch, increment, Firestore } from 'firebase/firestore';
 import type { Order, StockItem } from './types';
 
+export interface IngredientDeduction {
+  nom: string;
+  quantite: number;
+}
+
+/**
+ * Pure aggregation helper: sums ingredient deductions across an order's
+ * plats. Returns a map keyed by `stockItemId`. Reused by the privileged
+ * delivery server action (`processDeliveredOrderAction`) to compute the
+ * per-stock deltas before issuing a batched Admin-SDK write.
+ */
+export function aggregateIngredientDeductions(
+  plats: Order['plats'],
+): Record<string, IngredientDeduction> {
+  const deductions: Record<string, IngredientDeduction> = {};
+  for (const plat of plats) {
+    if (!plat.ingredients) continue;
+    for (const ing of plat.ingredients) {
+      const total = ing.quantite * plat.quantite;
+      if (!deductions[ing.stockItemId]) {
+        deductions[ing.stockItemId] = { nom: ing.nom, quantite: 0 };
+      }
+      deductions[ing.stockItemId].quantite += total;
+    }
+  }
+  return deductions;
+}
+
 /**
  * Déduit les ingrédients du stock lorsqu'une commande est livrée.
  * @param db Instance Firestore

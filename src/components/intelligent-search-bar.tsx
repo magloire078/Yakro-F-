@@ -187,11 +187,12 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
              </AnimatePresence>
 
               {searchTerm && (
-                <button 
-                  onClick={clearSearch}
-                  className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-                  title="Effacer"
-                >
+                  <button 
+                    onClick={clearSearch}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                    title="Effacer"
+                    aria-label="Effacer la recherche"
+                  >
                   <X className="h-4 w-4 text-slate-500" />
                 </button>
               )}
@@ -203,6 +204,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
                   isListening ? "bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.5)]" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
                 )}
                 title={isListening ? "Arrêter l'écoute" : "Recherche vocale"}
+                aria-label={isListening ? "Arrêter l'écoute" : "Recherche vocale"}
               >
                 {isListening ? (
                   <>

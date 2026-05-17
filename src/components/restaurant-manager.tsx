@@ -29,11 +29,11 @@ import {
     DropdownMenuItem, 
     DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { 
-    AlertDialog, 
-    AlertDialogAction, 
-    AlertDialogCancel, 
-    AlertDialogContent, 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
@@ -42,6 +42,7 @@ import {
 import { useData } from '@/contexts/data-context';
 import { Restaurant } from '@/lib/types';
 import Image from 'next/image';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useAuth } from '@/contexts/auth-context';
@@ -145,7 +146,7 @@ export function RestaurantManager() {
                         <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">CAPACITÉ RÉSEAU</span>
                         <span className="text-xl font-black italic text-foreground">{restaurants.length} UNITÉS</span>
                     </div>
-                    <Button variant="outline" className="h-14 w-14 rounded-2xl bg-card/50 border-border/50 hover:bg-orange-500/10 hover:text-orange-500 text-foreground transition-all">
+                    <Button variant="outline" aria-label="Filtrer les bastions" className="h-14 w-14 rounded-2xl bg-card/50 border-border/50 hover:bg-orange-500/10 hover:text-orange-500 text-foreground transition-all">
                         <Filter className="h-5 w-5" />
                     </Button>
                 </div>
@@ -227,14 +228,21 @@ export function RestaurantManager() {
                                         <TableCell className="text-right py-6 px-4">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-orange-500/10 text-slate-500 hover:text-orange-500 border border-transparent hover:border-orange-500/20 transition-all hover:scale-110">
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            aria-label="Actions du restaurant"
+                            className="h-10 w-10 rounded-xl hover:bg-orange-500/10 text-slate-500 hover:text-orange-500 border border-transparent hover:border-orange-500/20 transition-all hover:scale-110"
+                        >
                                                         <MoreHorizontal className="h-5 w-5" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-64 bg-card/95 backdrop-blur-3xl border-border/50 rounded-2xl p-1 shadow-2xl text-foreground overflow-hidden">
-                                                    <DropdownMenuItem className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-orange-500 focus:text-white cursor-pointer transition-colors">
-                                                        <ExternalLink className="h-4 w-4" />
-                                                        Accéder à la Vitrine
+                                                <DropdownMenuContent align="end" aria-label="Menu d'actions" className="w-64 bg-card/95 backdrop-blur-3xl border-border/50 rounded-2xl p-1 shadow-2xl text-foreground overflow-hidden">
+                                                    <DropdownMenuItem asChild className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-orange-500 focus:text-white cursor-pointer transition-colors">
+                                                        <Link href={`/restaurants?id=${restaurant.id}`}>
+                                                            <ExternalLink className="h-4 w-4" />
+                                                            Accéder à la Vitrine
+                                                        </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem 
                                                         className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-green-600 focus:text-white cursor-pointer transition-colors"
