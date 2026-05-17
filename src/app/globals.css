@@ -10,21 +10,21 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 33 100% 50%; /* Vibrant Orange (#FF8C00) */
+    --primary: 25 95% 53%; /* Yakro Orange (#F97316) */
     --primary-foreground: 0 0% 100%;
     --secondary: 34 78% 91%; /* Light Peach/Analog of orange */
     --secondary-foreground: 222 47% 11%;
     --muted: 34 40% 92%;
     --muted-foreground: 25 10% 40%;
-    --accent: 54 77% 75%; /* Soft Yellow (#F0E68C) */
-    --accent-foreground: 222 47% 11%;
+    --accent: 25 95% 53%; /* Yakro Orange accent — aligned on primary */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --border: 34 30% 88%;
     --input: 34 30% 88%;
-    --ring: 33 100% 50%;
+    --ring: 25 95% 53%;
     --radius: 1.5rem;
-    --chart-1: 33 100% 50%;
+    --chart-1: 25 95% 53%;
     --chart-2: 215 25% 27%;
     --chart-3: 199 89% 48%;
     --chart-4: 47 95% 55%;

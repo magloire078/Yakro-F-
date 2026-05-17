@@ -9,7 +9,6 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { Order, UserProfile, Restaurant } from '@/lib/types';
 import { Loader, MapPin, Bike, Home } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -109,63 +108,76 @@ function TrackOrderContent() {
     const mapUrl = getMapUrl();
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <Button asChild variant="ghost" className="mb-4">
+        <div className="container mx-auto px-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <Button asChild variant="ghost" className="mb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-orange-500">
                 <Link href="/">
-                    &larr; Retour à l&apos;accueil
+                    ← Retour à l&apos;accueil
                 </Link>
             </Button>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Suivi de votre commande n°{liveOrder.id.slice(0, 6)}...</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2 relative h-96 md:h-[500px] rounded-lg overflow-hidden bg-muted">
-                        {mapUrl ? (
-                            <iframe
-                                className="w-full h-full border-0"
-                                title="Carte de suivi de la livraison de votre commande"
-                                loading="lazy"
-                                allowFullScreen
-                                src={mapUrl}
-                            />
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground">
-                                <p>La carte de suivi est indisponible.</p>
-                            </div>
-                        )}
-                    </div>
-                    <div className="md:col-span-1 space-y-6">
-                        <div className="flex items-start gap-4">
-                            <MapPin className="h-8 w-8 text-red-500 mt-1" />
-                            <div>
-                                <p className="font-bold">Restaurant</p>
-                                <p className="text-muted-foreground">{restaurant?.nom}</p>
-                                <p className="text-sm text-muted-foreground">{restaurant?.adresse}</p>
-                            </div>
+
+            <div className="space-y-3 mb-8">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/70">Suivi en direct</p>
+                <h1 className="text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">
+                    Commande <span className="text-orange-500">#{liveOrder.id.slice(0, 6)}</span>
+                </h1>
+            </div>
+
+            <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-[2rem] shadow-2xl p-6 md:p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="md:col-span-2 relative h-96 md:h-[500px] rounded-2xl overflow-hidden bg-muted/40 border border-border/50">
+                    {mapUrl ? (
+                        <iframe
+                            className="w-full h-full border-0"
+                            title="Carte de suivi de la livraison de votre commande"
+                            loading="lazy"
+                            allowFullScreen
+                            src={mapUrl}
+                        />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                            <MapPin className="h-8 w-8 opacity-40" />
+                            <p className="text-[11px] font-black uppercase tracking-widest">Carte indisponible</p>
                         </div>
-                        <div className="flex items-start gap-4">
-                            <Bike className="h-8 w-8 text-primary mt-1" />
-                            <div>
-                                <p className="font-bold">Livreur</p>
-                                <p className="text-muted-foreground">{livreur?.nom || "En attente d'assignation..."}</p>
-                                {livreur?.latitude ? (
-                                    <p className="text-sm text-primary animate-pulse">En mouvement...</p>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">En attente de localisation...</p>
-                                )}
-                            </div>
+                    )}
+                </div>
+
+                <div className="md:col-span-1 space-y-6">
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-background/40 border border-border/30">
+                        <div className="h-12 w-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                            <MapPin className="h-5 w-5 text-red-500" />
                         </div>
-                        <div className="flex items-start gap-4">
-                            <Home className="h-8 w-8 text-green-600 mt-1" />
-                            <div>
-                                <p className="font-bold">Votre Adresse</p>
-                                <p className="text-muted-foreground">{liveOrder.adresseClient}</p>
-                            </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Restaurant</p>
+                            <p className="font-bold text-foreground truncate">{restaurant?.nom}</p>
+                            <p className="text-xs text-muted-foreground/80 truncate">{restaurant?.adresse}</p>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-background/40 border border-border/30">
+                        <div className="h-12 w-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                            <Bike className="h-5 w-5 text-orange-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Livreur</p>
+                            <p className="font-bold text-foreground truncate">{livreur?.nom || "En attente d'assignation…"}</p>
+                            {livreur?.latitude ? (
+                                <p className="text-xs font-bold text-orange-500 animate-pulse">En mouvement…</p>
+                            ) : (
+                                <p className="text-xs text-muted-foreground/80">En attente de localisation…</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-background/40 border border-border/30">
+                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                            <Home className="h-5 w-5 text-emerald-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Votre adresse</p>
+                            <p className="font-bold text-foreground">{liveOrder.adresseClient}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
