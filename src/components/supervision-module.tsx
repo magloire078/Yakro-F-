@@ -35,6 +35,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 export function SupervisionModule() {
     const { orders } = useData();
@@ -141,7 +142,7 @@ export function SupervisionModule() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Button variant="outline" size="icon" className="h-11 w-11 rounded-none bg-foreground/5 border-foreground/5 hover:bg-foreground/10 text-foreground dark:text-white">
+                    <Button variant="outline" size="icon" aria-label="Filtrer les commandes" className="h-11 w-11 rounded-none bg-foreground/5 border-foreground/5 hover:bg-foreground/10 text-foreground dark:text-white">
                         <Filter className="h-4 w-4" />
                     </Button>
                 </div>
@@ -257,10 +258,13 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                              </Badge>
                         </div>
                         <div className="flex items-center gap-4 text-[11px] font-body font-medium uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
-                            <div className="flex items-center gap-2">
+                            <Link 
+                                href={`/restaurants?id=${order.restaurantId}`}
+                                className="flex items-center gap-2 hover:text-orange-500 transition-colors"
+                            >
                                 <Store className="h-3.5 w-3.5 text-orange-500/50" />
                                 <span>{order.nomRestaurant}</span>
-                            </div>
+                            </Link>
                             <span className="opacity-20">|</span>
                             <span className="text-orange-500 font-headline">{(order.total || 0).toLocaleString()} FCFA</span>
                         </div>
@@ -286,19 +290,21 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-none hover:bg-orange-500/10 text-muted-foreground hover:text-orange-500 transition-all border border-transparent hover:border-orange-500/20">
+                    <Button variant="ghost" size="icon" aria-label="Agrandir la vue" className="h-10 w-10 rounded-none hover:bg-orange-500/10 text-muted-foreground hover:text-orange-500 transition-all border border-transparent hover:border-orange-500/20">
                         <Maximize2 className="h-5 w-5" />
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-none hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all">
+                            <Button variant="ghost" size="icon" aria-label="Options de la commande" className="h-10 w-10 rounded-none hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all">
                                 <MoreHorizontal className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-64 glass border-foreground/10 rounded-none p-1 text-foreground">
-                            <DropdownMenuItem className="rounded-none gap-3 font-headline font-bold uppercase tracking-wider text-xs py-2.5 focus:bg-orange-500 cursor-pointer">
-                                <Navigation2 className="h-4 w-4" />
-                                Ouvrir Tracking
+                        <DropdownMenuContent align="end" aria-label="Menu des opérations" className="w-64 glass border-foreground/10 rounded-none p-1 text-foreground">
+                            <DropdownMenuItem asChild className="rounded-none gap-3 font-headline font-bold uppercase tracking-wider text-xs py-2.5 focus:bg-orange-500 cursor-pointer">
+                                <Link href={`/orders/track?id=${order.id}`}>
+                                    <Navigation2 className="h-4 w-4" />
+                                    Ouvrir Tracking
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem className="rounded-none gap-3 font-headline font-bold uppercase tracking-wider text-xs py-2.5 focus:bg-red-600 cursor-pointer">
                                 <AlertCircle className="h-4 w-4" />

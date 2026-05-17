@@ -24,8 +24,8 @@ jusqu'au lancement grand public.
 | [`onboarding-restaurant.md`](./onboarding-restaurant.md) | Check-list 90 min pour intégrer un nouveau resto sur la plateforme |
 
 **Cibles** :
-- *Cercle 1 — "Phares"* (5, sem. 1-2) : restos d'hôtels, grandes tables locales, cuisine internationale.
-- *Cercle 2 — "Volumes"* (10, sem. 2-3) : maquis chics, pizzerias, pâtisseries.
+- *Cercle 1 — "Phares"* (5, sem. 1-2) : restos d'hôtels (Président, Akwaba, Parlementaires), grandes tables locales, cuisine internationale tendance.
+- *Cercle 2 — "Volumes"* (10, sem. 2-3) : maquis chics, pizzerias / fast-food locaux, pâtisseries.
 - *Cercle 3 — "Fidèles"* (5, sem. 4) : petits restos de quartier sans présence digitale.
 
 **KPIs** :

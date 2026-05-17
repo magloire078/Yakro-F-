@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -84,74 +83,80 @@ export default function EditProfilePage() {
     }
 
   return (
-    <div className="container mx-auto">
-        <Button variant="ghost" asChild className="mb-8">
+    <div className="container mx-auto px-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <Button variant="ghost" asChild className="mb-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-orange-500">
             <Link href="/profile">
-                <ArrowLeft/>
+                <ArrowLeft className="mr-2 h-4 w-4"/>
                 Retour au profil
             </Link>
         </Button>
-        <div className="max-w-2xl mx-auto">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-4">
-                        <User className="h-8 w-8 text-primary"/>
-                        <div>
-                            <CardTitle className="text-2xl">Modifier votre profil</CardTitle>
-                            <CardDescription>Mettez à jour vos informations personnelles.</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                            <FormField
-                                control={form.control}
-                                name="nom"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nom complet</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ex: Aïcha Koné" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name="telephone"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Numéro de téléphone</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ex: 07 01 02 03 04" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="adresseParDefaut"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Adresse par défaut</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ex: Yamoussoukro, Quartier des Lacs, Villa 24" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Button type="submit" disabled={isSubmitting} className="w-full">
-                                {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                Enregistrer les modifications
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+
+        <div className="max-w-2xl mx-auto space-y-8">
+            <div className="flex items-center gap-4">
+                <div className="h-14 w-14 bg-orange-500/10 border border-orange-500/20 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/10">
+                    <User className="h-6 w-6 text-orange-500"/>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/70">Identité</p>
+                    <h1 className="text-3xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">
+                        Modifier votre <span className="text-orange-500">Profil</span>
+                    </h1>
+                </div>
+            </div>
+
+            <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-[2rem] shadow-2xl p-8 md:p-10">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <FormField
+                            control={form.control}
+                            name="nom"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nom complet</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Ex: Aïcha Koné" className="h-12 rounded-2xl border-border/50 bg-background/50 focus-visible:ring-orange-500/30 focus-visible:border-orange-500/50" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="telephone"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Numéro de téléphone</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Ex: 07 01 02 03 04" className="h-12 rounded-2xl border-border/50 bg-background/50 focus-visible:ring-orange-500/30 focus-visible:border-orange-500/50" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="adresseParDefaut"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Adresse par défaut</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Ex: Yamoussoukro, Quartier des Lacs, Villa 24" className="h-12 rounded-2xl border-border/50 bg-background/50 focus-visible:ring-orange-500/30 focus-visible:border-orange-500/50" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-black italic uppercase tracking-widest rounded-2xl shadow-2xl shadow-orange-500/20 transition-all"
+                        >
+                            {isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                            Enregistrer les modifications
+                        </Button>
+                    </form>
+                </Form>
+            </div>
         </div>
     </div>
   );

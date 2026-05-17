@@ -69,6 +69,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
               variant="ghost" 
               size="icon" 
               onClick={onNavigate} 
+              aria-label="Fermer le menu"
               className="rounded-xl hover:bg-orange-500/10 text-orange-500 border border-orange-500/10 active:scale-90 transition-all"
             >
                 <X className="h-5 w-5" />
@@ -130,11 +131,11 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-black truncate leading-tight text-foreground uppercase tracking-tight">{userProfile?.nom || user.email}</p>
-                            <p className="text-[10px] text-orange-500/70 capitalize font-bold italic tracking-widest">{activeRole}</p>
+                            <p className="text-[11px] text-orange-500 font-black capitalize italic tracking-widest">{activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 mb-4 p-2 bg-popover/95 backdrop-blur-xl border-border/50 rounded-2xl shadow-2xl" align="start">
+                <DropdownMenuContent aria-label="Menu utilisateur" className="w-64 mb-4 p-2 bg-popover/95 backdrop-blur-xl border-border/50 rounded-2xl shadow-2xl" align="start">
                     <DropdownMenuLabel className="px-3 py-2 text-xs font-black uppercase tracking-widest text-muted-foreground">Compte</DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-border/50" />
                      <DropdownMenuItem asChild onClick={onNavigate} className="rounded-xl focus:bg-orange-500/10 focus:text-orange-500 cursor-pointer h-10 mb-1">
