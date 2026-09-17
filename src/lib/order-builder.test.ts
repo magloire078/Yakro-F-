@@ -44,6 +44,7 @@ describe('buildOrderFromCart', () => {
     cartSubtotal: 6000,
     cartDeliveryFee: 500,
     cartTotal: 6500,
+    paymentMode: 'especes' as const,
     now: new Date('2026-05-04T12:00:00.000Z'),
   };
 
@@ -122,5 +123,15 @@ describe('buildOrderFromCart', () => {
     expect(order.nomRestaurant).toBe('Restaurant inconnu');
     expect(order.restaurateurId).toBe('');
     expect(order).not.toHaveProperty('latitudeRestaurant');
+  });
+
+  it('marks a cash order as due on delivery', () => {
+    const order = buildOrderFromCart({ ...baseInput, paymentMode: 'especes' });
+    expect(order.paiement).toEqual({ mode: 'especes', statut: 'a_la_livraison', montant: 6500 });
+  });
+
+  it('marks a Mobile Money order as pending confirmation', () => {
+    const order = buildOrderFromCart({ ...baseInput, paymentMode: 'orange_money' });
+    expect(order.paiement).toEqual({ mode: 'orange_money', statut: 'en_attente', montant: 6500 });
   });
 });

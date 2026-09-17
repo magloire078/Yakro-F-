@@ -40,6 +40,10 @@ service cloud.firestore {
 
     // Empêche la mutation des champs sensibles d'une commande lors d'une
     // transition d'état (le statut et livreurId sont gérés à part dans la règle).
+    // `paiement` est volontairement inclus : seul l'Admin SDK (webhook
+    // CinetPay, payment-actions), qui contourne les rules, peut faire
+    // avancer un paiement — jamais un restaurateur/livreur/client via une
+    // transition de statut classique.
     function orderCoreUnchanged() {
       return request.resource.data.userId == resource.data.userId
         && request.resource.data.restaurantId == resource.data.restaurantId
@@ -51,7 +55,26 @@ service cloud.firestore {
         && request.resource.data.montantCommission == resource.data.montantCommission
         && request.resource.data.revenuNet == resource.data.revenuNet
         && request.resource.data.plats == resource.data.plats
-        && request.resource.data.date == resource.data.date;
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.paiement == resource.data.paiement;
+    }
+
+    // Valide le sous-objet `paiement` à la création d'une commande.
+    // `especes` doit être immédiatement "à la livraison" ; tout opérateur
+    // Mobile Money démarre "en_attente" (la confirmation ne peut venir que
+    // du webhook CinetPay via l'Admin SDK). Les champs de suivi de
+    // transaction ne peuvent pas être pré-remplis par le client.
+    function orderPaymentValid() {
+      let p = request.resource.data.paiement;
+      return p.mode in ['especes', 'orange_money', 'mtn_money', 'moov_money']
+        && p.montant == request.resource.data.total
+        && !('transactionId' in p)
+        && !('paymentToken' in p)
+        && !('dateConfirmation' in p)
+        && (
+          (p.mode == 'especes' && p.statut == 'a_la_livraison') ||
+          (p.mode != 'especes' && p.statut == 'en_attente')
+        );
     }
 
     match /utilisateurs/{userId} {
@@ -117,6 +140,7 @@ service cloud.firestore {
         && isUser(request.resource.data.userId)
         && request.resource.data.statut == 'Placée'
         && !('livreurId' in request.resource.data)
+        && orderPaymentValid()
         && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
         && request.resource.data.restaurateurId ==
              get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.proprietaireId;

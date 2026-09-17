@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
 import { Button } from '@/components/ui/button';
@@ -15,26 +16,61 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
-import { type CartItem } from '@/lib/types';
+import { type CartItem, type PaymentMode } from '@/lib/types';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PaymentMethodSelector } from './payment-method-selector';
 
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
   const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder, clearCart } = useCart();
   const { getRestaurant } = useData();
   const { toast } = useToast();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [checkoutStep, setCheckoutStep] = React.useState<'cart' | 'payment'>('cart');
+  const [paymentMode, setPaymentMode] = React.useState<PaymentMode>('especes');
+  const [isPlacingOrder, setIsPlacingOrder] = React.useState(false);
+
+  const handleSheetOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setCheckoutStep('cart');
+    }
+  };
 
   const handlePlaceOrder = async () => {
+    setIsPlacingOrder(true);
     try {
-      await placeOrder();
-      toast({
-        title: 'Commande passée !',
-        description: 'Votre commande a été envoyée au restaurant.',
-      });
+      const result = await placeOrder(paymentMode);
+      if (!result.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: result.error?.message || 'Impossible de passer la commande pour le moment.',
+        });
+        return;
+      }
+      if (result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+        return;
+      }
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Commande passée, paiement à réessayer',
+          description: result.error.message || 'Le paiement Mobile Money n\'a pas pu être initié. Réessayez depuis le suivi de commande.',
+        });
+      } else {
+        toast({
+          title: 'Commande passée !',
+          description: 'Votre commande a été envoyée au restaurant.',
+        });
+      }
+      setIsOpen(false);
+      setCheckoutStep('cart');
     } catch (e: unknown) {
       const error = e as Error;
       toast({
@@ -42,6 +78,8 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
         title: 'Erreur',
         description: error.message || 'Impossible de passer la commande pour le moment.',
       });
+    } finally {
+      setIsPlacingOrder(false);
     }
   };
 
@@ -57,24 +95,38 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={handleSheetOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="flex flex-col w-full sm:max-w-md p-0 bg-slate-50 dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800">
         <SheetHeader className="p-6 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-               <div className="p-2 bg-orange-500/10 rounded-xl">
-                  <ShoppingBag className="h-6 w-6 text-orange-500" />
-               </div>
+               {checkoutStep === 'payment' ? (
+                 <button
+                   onClick={() => setCheckoutStep('cart')}
+                   className="p-2 bg-orange-500/10 rounded-xl text-orange-500 hover:bg-orange-500/20 transition-colors"
+                   aria-label="Retour au panier"
+                 >
+                   <ArrowLeft className="h-6 w-6" />
+                 </button>
+               ) : (
+                 <div className="p-2 bg-orange-500/10 rounded-xl">
+                    <ShoppingBag className="h-6 w-6 text-orange-500" />
+                 </div>
+               )}
                <div>
-                  <SheetTitle className="text-xl font-headline">Mon Panier</SheetTitle>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{cartCount} article{cartCount > 1 ? 's' : ''}</p>
+                  <SheetTitle className="text-xl font-headline">
+                    {checkoutStep === 'payment' ? 'Mode de paiement' : 'Mon Panier'}
+                  </SheetTitle>
+                  {checkoutStep === 'cart' && (
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{cartCount} article{cartCount > 1 ? 's' : ''}</p>
+                  )}
                </div>
             </div>
-            {cartItems.length > 0 && (
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
+            {checkoutStep === 'cart' && cartItems.length > 0 && (
+                <Button
+                    variant="ghost"
+                    size="sm"
                     className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-red-500"
                     onClick={() => clearCart()}
                 >
@@ -82,7 +134,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                 </Button>
             )}
           </div>
-          {restaurantName && (
+          {checkoutStep === 'cart' && restaurantName && (
              <div className="mt-4 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
                <p className="text-xs text-slate-500 dark:text-slate-400">Commande groupée chez <span className="font-bold text-slate-900 dark:text-white">{restaurantName}</span></p>
              </div>
@@ -90,7 +142,13 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
         </SheetHeader>
 
         <div className="flex-1 overflow-hidden">
-          {cartItems.length > 0 ? (
+          {checkoutStep === 'payment' ? (
+            <ScrollArea className="h-full px-6">
+              <div className="py-8">
+                <PaymentMethodSelector value={paymentMode} onChange={setPaymentMode} />
+              </div>
+            </ScrollArea>
+          ) : cartItems.length > 0 ? (
             <ScrollArea className="h-full px-6">
               <div className="flex flex-col gap-6 py-8">
                 <AnimatePresence mode="popLayout">
@@ -222,15 +280,28 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                         {cartTotal.toLocaleString('fr-FR')} <small className="text-sm font-bold">FCFA</small>
                     </p>
                   </div>
-                  <SheetClose asChild>
-                    <Button 
-                        size="lg" 
-                        className="rounded-2xl h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white font-bold group" 
-                        onClick={handlePlaceOrder}
+                  {checkoutStep === 'cart' ? (
+                    <Button
+                        size="lg"
+                        className="rounded-2xl h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white font-bold group"
+                        onClick={() => setCheckoutStep('payment')}
                     >
                         Valider <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
-                  </SheetClose>
+                  ) : (
+                    <Button
+                        size="lg"
+                        className="rounded-2xl h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white font-bold group"
+                        onClick={handlePlaceOrder}
+                        disabled={isPlacingOrder}
+                    >
+                        {isPlacingOrder ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>Confirmer <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" /></>
+                        )}
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

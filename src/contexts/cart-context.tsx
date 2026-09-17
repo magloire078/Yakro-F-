@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { CartItem, Order } from '@/lib/types';
+import type { CartItem, Order, PaymentMode } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { buildOrderFromCart } from '@/lib/order-builder';
@@ -10,6 +10,18 @@ import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { notifyNewOrderAction } from '@/app/actions/notification-actions';
+import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions';
+
+interface PlaceOrderResult {
+  success: boolean;
+  error?: FirestorePermissionError | Error;
+  /**
+   * Présent uniquement pour un paiement Mobile Money réussi : l'appelant
+   * doit rediriger le navigateur vers cette URL pour que le client
+   * complète le paiement sur la page hébergée CinetPay.
+   */
+  paymentUrl?: string;
+}
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -21,7 +33,7 @@ interface CartContextType {
   cartSubtotal: number;
   cartDeliveryFee: number;
   cartCount: number;
-  placeOrder: () => Promise<{ success: boolean; error?: FirestorePermissionError | Error }>;
+  placeOrder: (paymentMode: PaymentMode) => Promise<PlaceOrderResult>;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
@@ -161,7 +173,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return cartItems.reduce((count, item) => count + item.quantite, 0);
   }, [cartItems]);
 
-  const placeOrder = React.useCallback(async () => {
+  const placeOrder = React.useCallback(async (paymentMode: PaymentMode) => {
     if (!user || !userProfile) {
       throw new Error("Vous devez être connecté pour passer une commande.");
     }
@@ -177,6 +189,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       cartSubtotal,
       cartDeliveryFee,
       cartTotal,
+      paymentMode,
       location,
     });
 
@@ -186,8 +199,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await setDoc(orderDocRef, newOrder);
       clearCart();
       window.dispatchEvent(new CustomEvent('place-order'));
+
+      const idToken = await user.getIdToken();
+
+      // Fire-and-forget the NEW_ORDER notification — its failure should
+      // never block the order from being considered placed.
       try {
-        const idToken = await user.getIdToken();
         const result = await notifyNewOrderAction(orderDocRef.id, idToken);
         if (!result.success) {
           console.error('notifyNewOrderAction failed:', result.error);
@@ -195,7 +212,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {
         console.error('notifyNewOrderAction threw:', err);
       }
-      return { success: true };
+
+      if (paymentMode === 'especes') {
+        return { success: true };
+      }
+
+      // Mobile Money : la commande existe déjà (paiement.statut =
+      // 'en_attente'). On ouvre la session CinetPay et on renvoie l'URL
+      // de checkout à l'appelant pour rediriger le client. Un échec ici
+      // n'annule pas la commande — le client peut retenter le paiement
+      // depuis le suivi de commande.
+      try {
+        const paymentResult = await initiateMobileMoneyPaymentAction(orderDocRef.id, idToken);
+        if (!paymentResult.success) {
+          return { success: true, error: new Error(paymentResult.error) };
+        }
+        return { success: true, paymentUrl: paymentResult.paymentUrl };
+      } catch (err) {
+        console.error('initiateMobileMoneyPaymentAction threw:', err);
+        return { success: true, error: err instanceof Error ? err : new Error(String(err)) };
+      }
     } catch {
       const permissionError = new FirestorePermissionError({
         path: orderDocRef.path,

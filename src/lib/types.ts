@@ -49,6 +49,18 @@ export interface CartItem extends Omit<MenuItem, 'image'> {
   boissonSelectionnee?: MenuOption;
 }
 
+export type PaymentMode = 'especes' | 'orange_money' | 'mtn_money' | 'moov_money';
+export type PaymentStatus = 'a_la_livraison' | 'en_attente' | 'paye' | 'echoue';
+
+export interface OrderPayment {
+  mode: PaymentMode;
+  statut: PaymentStatus;
+  montant: number;
+  transactionId?: string;
+  paymentToken?: string;
+  dateConfirmation?: string;
+}
+
 export interface Order {
   id: string;
   userId: string;
@@ -65,6 +77,7 @@ export interface Order {
   restaurateurId: string;
   statut: 'Placée' | 'En Préparation' | 'Prête' | 'En Route' | 'Livrée' | 'Annulée';
   livreurId?: string;
+  paiement: OrderPayment;
   adresseClient: string;
   adresseRestaurant: string;
   telephoneClient: string;

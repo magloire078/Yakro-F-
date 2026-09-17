@@ -79,6 +79,7 @@ const baseOrder = (overrides: Record<string, unknown> = {}) => ({
   revenuNet: 4050,
   plats: [{ id: 'p1', quantite: 1 }],
   date: '2026-05-03T12:00:00.000Z',
+  paiement: { mode: 'especes', statut: 'a_la_livraison', montant: 5000 },
   ...overrides,
 });
 
@@ -138,6 +139,7 @@ describe('firestore.rules — /commandes create', () => {
       cartSubtotal: 6000,
       cartDeliveryFee: 500,
       cartTotal: 6500,
+      paymentMode: 'especes' as const,
       now: new Date('2026-05-04T12:00:00.000Z'),
     });
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
@@ -167,6 +169,60 @@ describe('firestore.rules — /commandes create', () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertFails(
       setDoc(doc(db, 'commandes', 'o1'), baseOrder({ userId: 'someone-else' })),
+    );
+  });
+
+  it('lets the client create a Mobile Money order pending confirmation', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
+        paiement: { mode: 'orange_money', statut: 'en_attente', montant: 5000 },
+      })),
+    );
+  });
+
+  it('rejects an unknown payment mode', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
+        paiement: { mode: 'bitcoin', statut: 'en_attente', montant: 5000 },
+      })),
+    );
+  });
+
+  it('rejects a cash order whose paiement.montant does not match the total', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
+        paiement: { mode: 'especes', statut: 'a_la_livraison', montant: 1 },
+      })),
+    );
+  });
+
+  it('rejects a cash order marked as already paid', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
+        paiement: { mode: 'especes', statut: 'paye', montant: 5000 },
+      })),
+    );
+  });
+
+  it('rejects a Mobile Money order that claims to already be paid', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
+        paiement: { mode: 'mtn_money', statut: 'paye', montant: 5000 },
+      })),
+    );
+  });
+
+  it('rejects an order that pre-sets a transactionId at creation', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
+        paiement: { mode: 'orange_money', statut: 'en_attente', montant: 5000, transactionId: 'forged' },
+      })),
     );
   });
 });

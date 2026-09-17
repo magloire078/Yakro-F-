@@ -1,4 +1,4 @@
-import type { CartItem, Order, Restaurant, UserProfile } from './types';
+import type { CartItem, Order, PaymentMode, Restaurant, UserProfile } from './types';
 import { getPlaceholderImage } from './placeholder-images';
 
 export const COMMISSION_RATE = 0.15;
@@ -11,6 +11,7 @@ interface BuildOrderInput {
   cartSubtotal: number;
   cartDeliveryFee: number;
   cartTotal: number;
+  paymentMode: PaymentMode;
   /** Optional GPS coordinates of the client at order time. */
   location?: { latitude: number; longitude: number } | null;
   /** Injectable for tests; defaults to current time. */
@@ -27,7 +28,7 @@ interface BuildOrderInput {
 export function buildOrderFromCart(input: BuildOrderInput): Omit<Order, 'id'> {
   const {
     user, userProfile, cartItems, restaurant,
-    cartSubtotal, cartDeliveryFee, cartTotal,
+    cartSubtotal, cartDeliveryFee, cartTotal, paymentMode,
     location, now = new Date(),
   } = input;
 
@@ -64,6 +65,11 @@ export function buildOrderFromCart(input: BuildOrderInput): Omit<Order, 'id'> {
     restaurantId,
     restaurateurId: restaurant?.proprietaireId || '',
     statut: 'Placée',
+    paiement: {
+      mode: paymentMode,
+      statut: paymentMode === 'especes' ? 'a_la_livraison' : 'en_attente',
+      montant: cartTotal,
+    },
     adresseClient: userProfile.adresseParDefaut,
     adresseRestaurant: restaurant?.adresse || 'Adresse du restaurant non spécifiée',
     telephoneClient: userProfile.telephone || 'Numéro non spécifié',
