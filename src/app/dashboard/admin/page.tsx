@@ -160,8 +160,8 @@ export default function AdminPage() {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-[#0A0A0B]">
                 <div className="relative">
-                    <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                    <Loader className="h-16 w-16 animate-spin text-orange-500 relative" />
+                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                    <Loader className="h-16 w-16 animate-spin text-primary relative" />
                 </div>
             </div>
         );
@@ -185,10 +185,10 @@ export default function AdminPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-2 shadow-2xl"
+                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl mb-2 shadow-2xl"
                     >
-                        <ShieldCheck className="h-4 w-4 text-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500">Autorité Suprême Yakro</span>
+                        <ShieldCheck className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Autorité Suprême Yakro</span>
                     </motion.div>
                     
                     <div className="space-y-4">
@@ -198,7 +198,7 @@ export default function AdminPage() {
                             transition={{ delay: 0.1 }}
                             className="text-6xl md:text-9xl font-black italic uppercase tracking-tighter text-white leading-none mb-4"
                         >
-                            Centre de <span className="text-orange-500 italic">Contrôle</span>
+                            Centre de <span className="text-primary italic">Contrôle</span>
                         </motion.h1>
                         <motion.p 
                             initial={{ opacity: 0, y: 20 }}
@@ -218,16 +218,16 @@ export default function AdminPage() {
                     >
                         <Sheet>
                             <SheetTrigger asChild>
-                                <Button variant="outline" className="h-14 px-8 bg-white/5 border-white/10 rounded-2xl font-black italic uppercase tracking-tighter hover:bg-orange-500/10 transition-all group">
-                                    <Bell className="mr-3 h-5 w-5 text-orange-500 group-hover:scale-110 transition-transform" />
+                                <Button variant="outline" className="h-14 px-8 bg-white/5 border-white/10 rounded-2xl font-black italic uppercase tracking-tighter hover:bg-primary/10 transition-all group">
+                                    <Bell className="mr-3 h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
                                     Alertes <span className="ml-2 px-2 py-0.5 bg-red-500 text-[10px] rounded-full animate-pulse">Live</span>
                                 </Button>
                             </SheetTrigger>
                             <SheetContent className="w-full sm:max-w-md bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/5 text-white shadow-2xl">
                                 <SheetHeader className="pb-10 border-b border-white/5">
                                     <SheetTitle className="text-3xl font-black italic uppercase tracking-tighter flex items-center gap-3">
-                                        <Bell className="h-8 w-8 text-orange-500" />
-                                        Alertes <span className="text-orange-500">Système</span>
+                                        <Bell className="h-8 w-8 text-primary" />
+                                        Alertes <span className="text-primary">Système</span>
                                     </SheetTitle>
                                     <SheetDescription className="text-slate-500 font-black uppercase tracking-[0.2em] text-[9px]">Anomalies et événements critiques</SheetDescription>
                                 </SheetHeader>
@@ -244,7 +244,7 @@ export default function AdminPage() {
                             </Link>
                         </Button>
                         
-                        <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic uppercase tracking-tighter shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all hover:scale-105">
+                        <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-14 px-8 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic uppercase tracking-tighter shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all hover:scale-105">
                             <UserPlus className="mr-3 h-5 w-5" />
                             Enrôler Citoyen
                         </Button>
@@ -267,15 +267,15 @@ export default function AdminPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.4 + (idx * 0.1), duration: 0.5, ease: "easeOut" }}
                             whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                            className={`bg-white/5 backdrop-blur-3xl border border-white/5 p-8 relative group overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-orange-500/50 hover:shadow-orange-500/10 animate-float`}
+                            className={`bg-white/5 backdrop-blur-3xl border border-white/5 p-8 relative group overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 animate-float`}
                             style={{ animationDelay: `${idx * 1.5}s` }}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
                             <div className="flex justify-between items-start mb-6 relative z-10">
-                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 group-hover:text-orange-500 transition-colors">{stat.title}</span>
-                                <div className={`p-2 rounded-xl ${stat.color === 'orange' ? 'bg-orange-500/10' : 'bg-white/5'}`}>
-                                    <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-orange-500' : 'text-slate-400'}`} />
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 group-hover:text-primary transition-colors">{stat.title}</span>
+                                <div className={`p-2 rounded-xl ${stat.color === 'orange' ? 'bg-primary/10' : 'bg-white/5'}`}>
+                                    <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-primary' : 'text-slate-400'}`} />
                                 </div>
                             </div>
                             <div className="text-4xl md:text-6xl font-black tracking-tighter italic text-white group-hover:scale-105 transition-transform duration-500 relative z-10">
@@ -300,7 +300,7 @@ export default function AdminPage() {
                                     <TabsTrigger 
                                         key={tab.id}
                                         value={tab.id} 
-                                        className="h-12 px-6 rounded-2xl data-[state=active]:bg-orange-500 data-[state=active]:text-white font-black italic uppercase tracking-tighter text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-white/5"
+                                        className="h-12 px-6 rounded-2xl data-[state=active]:bg-primary data-[state=active]:text-white font-black italic uppercase tracking-tighter text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-white/5"
                                     >
                                         <tab.icon className="h-4 w-4 mr-3" />
                                         {tab.label}
@@ -318,10 +318,10 @@ export default function AdminPage() {
                                 <TabsContent value="finances" className="m-0 outline-none animate-in fade-in duration-700"><FinancialAnalytics /></TabsContent>
                                 <TabsContent value="security" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
                                         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
                                             <div className="space-y-2">
-                                                <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Journal d&apos;Audit <span className="text-orange-500 italic">Sécurisé</span></h2>
+                                                <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Journal d&apos;Audit <span className="text-primary italic">Sécurisé</span></h2>
                                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">TRAÇABILITÉ TOTALE DES OPÉRATIONS DE COMMANDEMENT</p>
                                             </div>
                                             <div className="flex items-center gap-4 w-full md:w-auto">
@@ -329,11 +329,11 @@ export default function AdminPage() {
                                                     value={logSearchQuery}
                                                     onChange={(e) => setLogSearchQuery(e.target.value)}
                                                     placeholder="FILTRER LES ACTIONS..."
-                                                    className="h-12 bg-white/5 border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest min-w-[250px] focus:ring-orange-500/50"
+                                                    className="h-12 bg-white/5 border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest min-w-[250px] focus:ring-primary/50"
                                                 />
-                                                <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full">
-                                                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-orange-500">PROTOCOLE ACTIF</span>
+                                                <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
+                                                    <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-primary">PROTOCOLE ACTIF</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -361,7 +361,7 @@ export default function AdminPage() {
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-6">
-                                                                <Badge variant="outline" className="rounded-xl border-orange-500/30 text-orange-500 bg-orange-500/10 text-[9px] font-black uppercase tracking-widest py-1.5 px-3">
+                                                                <Badge variant="outline" className="rounded-xl border-primary/30 text-primary bg-primary/10 text-[9px] font-black uppercase tracking-widest py-1.5 px-3">
                                                                     {log.action}
                                                                 </Badge>
                                                             </TableCell>
@@ -382,7 +382,7 @@ export default function AdminPage() {
                                                 <Button 
                                                     onClick={() => setLogDisplayLimit(prev => prev + 50)}
                                                     variant="outline"
-                                                    className="rounded-2xl border-white/10 hover:bg-orange-500 hover:text-white font-black italic uppercase tracking-widest text-[10px] h-12 px-8 transition-all hover:scale-105"
+                                                    className="rounded-2xl border-white/10 hover:bg-primary hover:text-white font-black italic uppercase tracking-widest text-[10px] h-12 px-8 transition-all hover:scale-105"
                                                 >
                                                     Charger plus de journaux
                                                 </Button>
@@ -395,13 +395,13 @@ export default function AdminPage() {
                                 <TabsContent value="users" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                                         <div className="lg:col-span-2 bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+                                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
                                             <div className="flex items-center justify-between mb-12 relative z-10">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Registre des <span className="text-orange-500 italic">Comptes</span></h2>
+                                                    <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Registre des <span className="text-primary italic">Comptes</span></h2>
                                                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
                                                 </div>
-                                                <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:scale-105 shadow-xl">
+                                                <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:scale-105 shadow-xl">
                                                     <UserPlus className="mr-2 h-4 w-4" />
                                                     NOUVEAU
                                                 </Button>
@@ -420,8 +420,8 @@ export default function AdminPage() {
                                                             <TableRow key={u.uid} className="border-white/5 hover:bg-white/5 transition-colors group">
                                                                 <TableCell className="py-6">
                                                                     <div className="flex items-center gap-4">
-                                                                        <Avatar className="h-12 w-12 rounded-2xl border border-white/10 group-hover:border-orange-500/30 transition-all group-hover:scale-110 shadow-lg">
-                                                                            <AvatarFallback className="bg-white/10 text-xs font-black text-orange-500">{getInitials(u.nom || u.email)}</AvatarFallback>
+                                                                        <Avatar className="h-12 w-12 rounded-2xl border border-white/10 group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg">
+                                                                            <AvatarFallback className="bg-white/10 text-xs font-black text-primary">{getInitials(u.nom || u.email)}</AvatarFallback>
                                                                         </Avatar>
                                                                         <div className="flex flex-col">
                                                                             <span className="font-black text-sm text-white uppercase italic tracking-tight">{u.nom || 'UTILISATEUR ANONYME'}</span>
@@ -431,18 +431,18 @@ export default function AdminPage() {
                                                                 </TableCell>
                                                                 <TableCell className="py-6">
                                                                     <Select value={u.roleSysteme || 'User'} onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}>
-                                                                        <SelectTrigger className="w-[140px] h-12 bg-white/5 border-white/10 rounded-2xl text-[10px] font-black uppercase italic tracking-widest focus:ring-orange-500/50 transition-all hover:bg-white/10">
+                                                                        <SelectTrigger className="w-[140px] h-12 bg-white/5 border-white/10 rounded-2xl text-[10px] font-black uppercase italic tracking-widest focus:ring-primary/50 transition-all hover:bg-white/10">
                                                                             <SelectValue />
                                                                         </SelectTrigger>
                                                                         <SelectContent className="bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/10 text-white rounded-2xl overflow-hidden shadow-2xl">
-                                                                            <SelectItem value="SuperAdmin" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">SUPERADMIN</SelectItem>
-                                                                            <SelectItem value="Admin" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">ADMIN</SelectItem>
-                                                                            <SelectItem value="User" className="focus:bg-orange-500 focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">USER</SelectItem>
+                                                                            <SelectItem value="SuperAdmin" className="focus:bg-primary focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">SUPERADMIN</SelectItem>
+                                                                            <SelectItem value="Admin" className="focus:bg-primary focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">ADMIN</SelectItem>
+                                                                            <SelectItem value="User" className="focus:bg-primary focus:text-white text-[10px] font-black uppercase italic tracking-widest py-3 cursor-pointer">USER</SelectItem>
                                                                         </SelectContent>
                                                                     </Select>
                                                                 </TableCell>
                                                                 <TableCell className="text-right py-6">
-                                                                    <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} className="h-12 w-12 hover:bg-orange-500/10 hover:text-orange-500 rounded-2xl border border-transparent hover:border-orange-500/20 transition-all hover:scale-110">
+                                                                    <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} className="h-12 w-12 hover:bg-primary/10 hover:text-primary rounded-2xl border border-transparent hover:border-primary/20 transition-all hover:scale-110">
                                                                         <Edit className="h-5 w-5" />
                                                                     </Button>
                                                                 </TableCell>
@@ -455,7 +455,7 @@ export default function AdminPage() {
                                         <div className="lg:col-span-1 space-y-8">
                                             <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
                                                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                                                    <UserPlus className="h-12 w-12 text-orange-500" />
+                                                    <UserPlus className="h-12 w-12 text-primary" />
                                                 </div>
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-10 italic">FLUX D&apos;ENRÔLEMENT RÉCENT</h3>
                                                 <div className="space-y-8 relative z-10">
@@ -467,11 +467,11 @@ export default function AdminPage() {
                                                             transition={{ delay: 0.1 * i }}
                                                             className="flex items-center gap-5 group/item"
                                                         >
-                                                            <div className="h-12 w-12 bg-white/5 flex items-center justify-center rounded-2xl border border-white/10 group-hover/item:border-orange-500/30 transition-all group-hover/item:bg-orange-500/5">
-                                                                <span className="text-xs font-black text-orange-500">{getInitials(u.nom || u.email)}</span>
+                                                            <div className="h-12 w-12 bg-white/5 flex items-center justify-center rounded-2xl border border-white/10 group-hover/item:border-primary/30 transition-all group-hover/item:bg-primary/5">
+                                                                <span className="text-xs font-black text-primary">{getInitials(u.nom || u.email)}</span>
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-black text-white uppercase italic tracking-tight group-hover/item:text-orange-500 transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
+                                                                <span className="text-sm font-black text-white uppercase italic tracking-tight group-hover/item:text-primary transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
                                                                 <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">IDENTIFIÉ RÉCEMMENT</span>
                                                             </div>
                                                         </motion.div>
@@ -490,15 +490,15 @@ export default function AdminPage() {
                     <div className="lg:col-span-1 space-y-10">
                         <AdminAlerts />
                         
-                        <div className="bg-orange-500 p-10 rounded-[3rem] relative overflow-hidden group shadow-[0_30px_60px_rgba(249,115,22,0.3)] animate-float" style={{ animationDelay: '1s' }}>
+                        <div className="bg-primary p-10 rounded-[3rem] relative overflow-hidden group shadow-[0_30px_60px_rgba(249,115,22,0.3)] animate-float" style={{ animationDelay: '1s' }}>
                             <div className="absolute top-0 right-0 p-8 opacity-20 rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110">
                                 <ShieldAlert className="h-32 w-32 text-white" />
                             </div>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-4 relative z-10">Support <span className="text-orange-200">Elite</span></h3>
-                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-100 mb-10 leading-relaxed relative z-10 max-w-[80%]">
+                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-4 relative z-10">Support <span className="text-primary-foreground/80">Elite</span></h3>
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-primary-foreground/70 mb-10 leading-relaxed relative z-10 max-w-[80%]">
                                 Ligne directe avec l&apos;unité d&apos;intervention technique Yakro pour les opérations critiques.
                             </p>
-                            <Button variant="secondary" className="h-14 w-full bg-white text-orange-500 hover:bg-orange-50 rounded-[1.5rem] font-black italic uppercase tracking-tighter transition-all hover:scale-105 shadow-2xl relative z-10">
+                            <Button variant="secondary" className="h-14 w-full bg-white text-primary hover:bg-primary/10 rounded-[1.5rem] font-black italic uppercase tracking-tighter transition-all hover:scale-105 shadow-2xl relative z-10">
                                 SOLLICITER AIDE
                             </Button>
                         </div>

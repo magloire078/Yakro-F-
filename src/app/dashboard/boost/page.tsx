@@ -91,10 +91,10 @@ export default function BoostPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-2 shadow-2xl"
+                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl mb-2 shadow-2xl"
                     >
-                        <Zap className="h-4 w-4 text-orange-500 fill-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500">Accélérateur Elite</span>
+                        <Zap className="h-4 w-4 text-primary fill-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Accélérateur Elite</span>
                     </motion.div>
                     
                     <div className="space-y-4">
@@ -104,7 +104,7 @@ export default function BoostPage() {
                             transition={{ delay: 0.1 }}
                             className="text-6xl md:text-9xl font-black italic uppercase tracking-tighter text-white leading-none mb-4"
                         >
-                            Boost <span className="text-orange-500 italic">Vedette</span>
+                            Boost <span className="text-primary italic">Vedette</span>
                         </motion.h1>
                         <motion.p 
                             initial={{ opacity: 0, y: 20 }}
@@ -123,7 +123,7 @@ export default function BoostPage() {
                         className="flex justify-center gap-10 md:gap-20 mt-12"
                     >
                         <div className="text-center group cursor-default">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-orange-500 transition-colors">Portée</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-primary transition-colors">Portée</p>
                             <p className="text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">+40%</p>
                         </div>
                         <div className="w-px h-16 md:h-20 bg-white/10 self-center rotate-12" />
@@ -144,19 +144,19 @@ export default function BoostPage() {
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 + (idx * 0.1) }}
-                                className="bg-white/5 backdrop-blur-xl border border-white/10 relative group overflow-hidden shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:border-orange-500/30"
+                                className="bg-white/5 backdrop-blur-xl border border-white/10 relative group overflow-hidden shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:border-primary/30"
                             >
-                                <div className={`absolute top-0 left-0 w-[2px] h-full transition-all duration-1000 ${restaurant.enVedette ? 'bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)]' : 'bg-white/5'}`} />
+                                <div className={`absolute top-0 left-0 w-[2px] h-full transition-all duration-1000 ${restaurant.enVedette ? 'bg-primary shadow-[0_0_20px_rgba(249,115,22,0.8)]' : 'bg-white/5'}`} />
                                 
                                 <div className="p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                                     <div className="flex items-center gap-8">
-                                        <div className={`h-20 w-20 flex items-center justify-center border transition-all duration-700 rounded-2xl ${restaurant.enVedette ? 'bg-orange-500/10 border-orange-500/20 shadow-[0_10px_20px_rgba(249,115,22,0.1)]' : 'bg-white/5 border-white/10'}`}>
-                                            <Rocket className={`h-10 w-10 transition-all duration-700 ${restaurant.enVedette ? 'text-orange-500 scale-110' : 'text-slate-600'}`} />
+                                        <div className={`h-20 w-20 flex items-center justify-center border transition-all duration-700 rounded-2xl ${restaurant.enVedette ? 'bg-primary/10 border-primary/20 shadow-[0_10px_20px_rgba(249,115,22,0.1)]' : 'bg-white/5 border-white/10'}`}>
+                                            <Rocket className={`h-10 w-10 transition-all duration-700 ${restaurant.enVedette ? 'text-primary scale-110' : 'text-slate-600'}`} />
                                         </div>
                                         <div>
-                                            <h3 className="text-3xl font-black uppercase tracking-tighter italic text-white group-hover:text-orange-500 transition-colors duration-300">{restaurant.nom}</h3>
+                                            <h3 className="text-3xl font-black uppercase tracking-tighter italic text-white group-hover:text-primary transition-colors duration-300">{restaurant.nom}</h3>
                                             <div className="flex items-center gap-2 mt-2">
-                                                <Zap className={`h-3 w-3 ${restaurant.enVedette ? 'text-orange-500' : 'text-white/10'}`} />
+                                                <Zap className={`h-3 w-3 ${restaurant.enVedette ? 'text-primary' : 'text-white/10'}`} />
                                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{restaurant.cuisine}</p>
                                             </div>
                                         </div>
@@ -164,10 +164,10 @@ export default function BoostPage() {
 
                                     <div className="flex items-center justify-between md:justify-end gap-10 bg-white/5 md:bg-transparent p-6 md:p-0 border border-white/10 md:border-none relative overflow-hidden rounded-2xl">
                                         {restaurant.enVedette && (
-                                            <div className="absolute inset-0 bg-orange-500/5 md:hidden animate-pulse" />
+                                            <div className="absolute inset-0 bg-primary/5 md:hidden animate-pulse" />
                                         )}
                                         <div className="flex flex-col gap-1 relative z-10">
-                                            <Label htmlFor={`boost-${restaurant.id}`} className="text-[11px] font-black uppercase tracking-[0.2em] italic text-white cursor-pointer group-hover:text-orange-500 transition-colors">
+                                            <Label htmlFor={`boost-${restaurant.id}`} className="text-[11px] font-black uppercase tracking-[0.2em] italic text-white cursor-pointer group-hover:text-primary transition-colors">
                                                 Propulsion Vedette
                                             </Label>
                                             <span className="text-[9px] font-black text-slate-500 uppercase tracking-tight">Impact Algorithmique Max</span>
@@ -180,7 +180,7 @@ export default function BoostPage() {
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         exit={{ opacity: 0, scale: 0.5 }}
                                                     >
-                                                        <Loader className="h-5 w-5 animate-spin text-orange-500" />
+                                                        <Loader className="h-5 w-5 animate-spin text-primary" />
                                                     </motion.div>
                                                 )}
                                             </AnimatePresence>
@@ -189,7 +189,7 @@ export default function BoostPage() {
                                                 checked={restaurant.enVedette || false}
                                                 onCheckedChange={() => handleBoostToggle(restaurant)}
                                                 disabled={updatingId === restaurant.id}
-                                                className="data-[state=checked]:bg-orange-500 scale-125 border-white/10"
+                                                className="data-[state=checked]:bg-primary scale-125 border-white/10"
                                             />
                                         </div>
                                     </div>
@@ -205,7 +205,7 @@ export default function BoostPage() {
                                         animate={{ opacity: 1 }}
                                         className="absolute top-0 right-0 p-6"
                                     >
-                                        <Star className="h-6 w-6 text-orange-500 fill-orange-500 animate-float" />
+                                        <Star className="h-6 w-6 text-primary fill-primary animate-float" />
                                     </motion.div>
                                 )}
                             </motion.div>
@@ -214,13 +214,13 @@ export default function BoostPage() {
                     </div>
                 ) : (
                     <div className="max-w-2xl mx-auto bg-white/5 backdrop-blur-xl border border-white/10 p-16 text-center shadow-2xl relative overflow-hidden rounded-[3rem]">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
-                        <Rocket className="h-20 w-20 text-orange-500/20 mx-auto mb-8" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+                        <Rocket className="h-20 w-20 text-primary/20 mx-auto mb-8" />
                         <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-4">Escouade Vide</h2>
                         <p className="text-slate-400 font-medium mb-10 text-lg italic uppercase tracking-wider">
                             Enrôlez un établissement pour activer la propulsion.
                         </p>
-                        <Button asChild className="h-16 px-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all hover:scale-105">
+                        <Button asChild className="h-16 px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all hover:scale-105">
                             <Link href="/dashboard/new-restaurant">Créer mon premier Restaurant</Link>
                         </Button>
                     </div>
@@ -231,13 +231,13 @@ export default function BoostPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.6 }}
-                        className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 flex items-start gap-6 group hover:border-orange-500/30 transition-all duration-500 rounded-[2rem] shadow-2xl"
+                        className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 flex items-start gap-6 group hover:border-primary/30 transition-all duration-500 rounded-[2rem] shadow-2xl"
                     >
-                        <div className="h-12 w-12 bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform rounded-2xl">
-                            <PartyPopper className="h-6 w-6 text-orange-500" />
+                        <div className="h-12 w-12 bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform rounded-2xl">
+                            <PartyPopper className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 mb-3">Impact Algorithmique</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-3">Impact Algorithmique</h4>
                             <p className="text-[11px] text-slate-400 leading-relaxed italic uppercase tracking-tight">
                                 Les restaurants Vedettes bénéficient d&apos;un placement préférentiel, augmentant la conversion de 40% en moyenne grâce à une exposition ciblée.
                             </p>

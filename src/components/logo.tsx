@@ -29,12 +29,12 @@ export function Logo({ className, size = 'md', disableLink = false, compact = fa
 
   const content = (
     <div className={cn("flex items-center gap-2 font-black italic tracking-tighter", className)}>
-      <div className={cn("bg-orange-500 text-white rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-orange-500/20", iconSizes[size])}>
+      <div className={cn("bg-primary text-white rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-primary/20", iconSizes[size])}>
         <Sparkles className="h-2/3 w-2/3" />
       </div>
       {!compact && (
         <span className={cn("bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300", sizes[size])}>
-          Yakro<span className="text-orange-500">Go</span>
+          Yakro<span className="text-primary">Go</span>
         </span>
       )}
     </div>

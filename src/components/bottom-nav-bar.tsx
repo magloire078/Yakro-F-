@@ -53,7 +53,7 @@ export function BottomNavBar() {
     if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
 
     return (
-        <div className="fixed bottom-0 left-0 z-50 w-full h-20 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-t border-orange-100/50 dark:border-slate-800/50 md:hidden pb-safe">
+        <div className="fixed bottom-0 left-0 z-50 w-full h-20 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-t border-primary/10 dark:border-slate-800/50 md:hidden pb-safe">
             <div className={cn("grid h-full mx-auto font-medium", gridColsClass)}>
                 {links.map((link) => {
                      const isActive = pathname === link.href;
@@ -63,12 +63,12 @@ export function BottomNavBar() {
                             href={link.href} 
                             className={cn(
                                 "relative inline-flex flex-col items-center justify-center px-5 group transition-colors duration-300",
-                                isActive ? "text-orange-500" : "text-slate-400"
+                                isActive ? "text-primary" : "text-slate-400"
                             )}>
                             {isActive && (
                                 <motion.div 
                                     layoutId="nav-glow"
-                                    className="absolute inset-0 bg-orange-500/5 blur-xl rounded-full" 
+                                    className="absolute inset-0 bg-primary/5 blur-xl rounded-full" 
                                 />
                             )}
                             <link.icon className={cn("w-6 h-6 mb-1 transition-transform duration-300", isActive && "scale-110")} />
@@ -76,7 +76,7 @@ export function BottomNavBar() {
                             {isActive && (
                                 <motion.div 
                                     layoutId="nav-dot"
-                                    className="absolute bottom-2 w-1 h-1 bg-orange-500 rounded-full" 
+                                    className="absolute bottom-2 w-1 h-1 bg-primary rounded-full" 
                                 />
                             )}
                         </Link>
@@ -86,12 +86,12 @@ export function BottomNavBar() {
                     href="/profile" 
                     className={cn(
                         "relative inline-flex flex-col items-center justify-center px-5 group transition-colors duration-300",
-                        pathname === '/profile' ? "text-orange-500" : "text-slate-400"
+                        pathname === '/profile' ? "text-primary" : "text-slate-400"
                     )}>
                     {pathname === '/profile' && (
                         <motion.div 
                             layoutId="nav-glow"
-                            className="absolute inset-0 bg-orange-500/5 blur-xl rounded-full" 
+                            className="absolute inset-0 bg-primary/5 blur-xl rounded-full" 
                         />
                     )}
                     <svg className={cn("w-6 h-6 mb-1 transition-transform duration-300", pathname === '/profile' && "scale-110")} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -101,7 +101,7 @@ export function BottomNavBar() {
                     {pathname === '/profile' && (
                         <motion.div 
                             layoutId="nav-dot"
-                            className="absolute bottom-2 w-1 h-1 bg-orange-500 rounded-full" 
+                            className="absolute bottom-2 w-1 h-1 bg-primary rounded-full" 
                         />
                     )}
                 </Link>

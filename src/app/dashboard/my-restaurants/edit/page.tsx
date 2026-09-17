@@ -124,7 +124,7 @@ function EditRestaurantContent() {
                     {/* Back Navigation (Desktop) */}
                     <Link 
                         href="/dashboard/my-restaurants" 
-                        className="hidden md:inline-flex items-center gap-2 text-gray-500 hover:text-orange-500 transition-colors font-bold uppercase tracking-widest text-[10px] mb-8 group"
+                        className="hidden md:inline-flex items-center gap-2 text-gray-500 hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px] mb-8 group"
                     >
                         <span className="transition-transform group-hover:-translate-x-1">←</span>
                         Retour à la Flotte
@@ -135,10 +135,10 @@ function EditRestaurantContent() {
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-6"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-6"
                         >
-                            <ChefHat className="h-3.5 w-3.5 text-orange-500" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500">Optimisation d&apos;Établissement</span>
+                            <ChefHat className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Optimisation d&apos;Établissement</span>
                         </motion.div>
                         <motion.h1 
                             initial={{ opacity: 0, y: 20 }}
@@ -146,7 +146,7 @@ function EditRestaurantContent() {
                             transition={{ delay: 0.1 }}
                             className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-white mb-4 leading-none"
                         >
-                            Raffiner <span className="text-orange-500">{restaurant.nom}</span>
+                            Raffiner <span className="text-primary">{restaurant.nom}</span>
                         </motion.h1>
                         <motion.p 
                             initial={{ opacity: 0, y: 20 }}
@@ -160,7 +160,7 @@ function EditRestaurantContent() {
 
                     {/* Form Card */}
                     <div className="bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-8 md:p-12 shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
+                        <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
                         
                         <div className="relative z-10">
                             <RestaurantForm
@@ -172,7 +172,7 @@ function EditRestaurantContent() {
                         </div>
 
                         {/* Decorative Element */}
-                        <div className="absolute -top-20 -left-20 h-64 w-64 bg-orange-500/5 rounded-full blur-3xl" />
+                        <div className="absolute -top-20 -left-20 h-64 w-64 bg-primary/5 rounded-full blur-3xl" />
                     </div>
 
                     {/* Footer Info */}
@@ -191,7 +191,7 @@ export default function EditRestaurantPage() {
     return (
         <React.Suspense fallback={
             <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center">
-                <Loader className="h-16 w-16 animate-spin text-orange-500" />
+                <Loader className="h-16 w-16 animate-spin text-primary" />
             </div>
         }>
             <EditRestaurantContent />

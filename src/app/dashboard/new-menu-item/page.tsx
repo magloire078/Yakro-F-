@@ -183,7 +183,7 @@ export default function NewMenuItemPage() {
         return (
             <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-6">
                 <div className="max-w-lg w-full bg-[#121214] border border-white/5 p-12 text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-orange-500/20" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
                     <ChefHat className="h-20 w-20 mx-auto text-gray-800 mb-8" />
                     <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white mb-4">Infrastructure Requise</h2>
                     <p className="text-gray-500 font-medium mb-10 text-sm">
@@ -191,7 +191,7 @@ export default function NewMenuItemPage() {
                     </p>
                     <Button 
                         asChild
-                        className="h-16 w-full bg-orange-500 hover:bg-orange-600 text-white rounded-none font-black italic uppercase tracking-tighter transition-all"
+                        className="h-16 w-full bg-primary hover:bg-primary/90 text-white rounded-none font-black italic uppercase tracking-tighter transition-all"
                     >
                         <Link href="/dashboard/new-restaurant">Fonder mon Établissement</Link>
                     </Button>
@@ -221,13 +221,13 @@ export default function NewMenuItemPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/20 backdrop-blur-md border border-orange-500/30 mb-6"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 backdrop-blur-md border border-primary/30 mb-6"
                     >
-                        <Sparkles className="h-4 w-4 text-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">Moteur Neural Yakro AI</span>
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Moteur Neural Yakro AI</span>
                     </motion.div>
                     <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter mb-4">
-                        Créateur <span className="text-orange-500">Elite</span>
+                        Créateur <span className="text-primary">Elite</span>
                     </h1>
                     <p className="max-w-xl mx-auto text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-gray-500 italic">
                         Sublimez votre carte par l&apos;intelligence artificielle prédictive.
@@ -240,11 +240,11 @@ export default function NewMenuItemPage() {
                     {/* Step 1: Input Analysis */}
                     <div className="space-y-8">
                         <div className="bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-10 relative overflow-hidden h-full flex flex-col">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/20" />
+                            <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
                             
                             <div className="flex items-center gap-4 mb-10">
                                 <div className="h-12 w-12 bg-white/5 border border-white/5 flex items-center justify-center">
-                                    <span className="text-xl font-black italic text-orange-500">01</span>
+                                    <span className="text-xl font-black italic text-primary">01</span>
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-black uppercase tracking-tighter italic text-white">Analyse Conceptuelle</h2>
@@ -259,12 +259,12 @@ export default function NewMenuItemPage() {
                                         onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
                                         value={selectedRestaurant?.id || ''}
                                     >
-                                        <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none text-sm font-bold uppercase tracking-tight focus:ring-orange-500/50">
+                                        <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none text-sm font-bold uppercase tracking-tight focus:ring-primary/50">
                                             <SelectValue placeholder="SÉLECTIONNER L'ÉTABLISSEMENT" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-[#121214] border-white/10 text-white rounded-none">
                                             {myRestaurants.map(r => (
-                                                <SelectItem key={r.id} value={r.id} className="focus:bg-orange-500 focus:text-white uppercase font-bold text-xs tracking-widest py-3">
+                                                <SelectItem key={r.id} value={r.id} className="focus:bg-primary focus:text-white uppercase font-bold text-xs tracking-widest py-3">
                                                     {r.nom}
                                                 </SelectItem>
                                             ))}
@@ -277,7 +277,7 @@ export default function NewMenuItemPage() {
                                     <Textarea
                                         id="description"
                                         placeholder="EX: POULET BRAISÉ AUX ÉPICES RARES ET ATTIÉKÉ ROYAL..."
-                                        className="min-h-[150px] bg-white/5 border-white/10 rounded-none text-sm font-medium focus:ring-orange-500/50 resize-none p-5 uppercase tracking-tight placeholder:opacity-20"
+                                        className="min-h-[150px] bg-white/5 border-white/10 rounded-none text-sm font-medium focus:ring-primary/50 resize-none p-5 uppercase tracking-tight placeholder:opacity-20"
                                         value={description}
                                         onChange={e => setDescription(e.target.value)}
                                     />
@@ -287,7 +287,7 @@ export default function NewMenuItemPage() {
                             <Button
                                 onClick={handleGenerateItem}
                                 disabled={loading || !description}
-                                className="mt-10 h-16 w-full bg-orange-500 hover:bg-orange-600 text-white rounded-none font-black italic uppercase tracking-tighter text-lg transition-all group overflow-hidden relative"
+                                className="mt-10 h-16 w-full bg-primary hover:bg-primary/90 text-white rounded-none font-black italic uppercase tracking-tighter text-lg transition-all group overflow-hidden relative"
                             >
                                 <AnimatePresence mode="wait">
                                     {loading ? (
@@ -335,7 +335,7 @@ export default function NewMenuItemPage() {
 
                             <div className="flex items-center gap-4 mb-10">
                                 <div className="h-12 w-12 bg-white/5 border border-white/5 flex items-center justify-center">
-                                    <span className="text-xl font-black italic text-orange-500">02</span>
+                                    <span className="text-xl font-black italic text-primary">02</span>
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-black uppercase tracking-tighter italic text-white">Manifestation Elite</h2>
@@ -366,13 +366,13 @@ export default function NewMenuItemPage() {
                                                     type="button" 
                                                     onClick={handleGenerateImage} 
                                                     disabled={imageLoading || loading}
-                                                    className="h-14 flex-1 bg-white/5 border-white/10 hover:bg-orange-500/10 hover:border-orange-500/50 text-white rounded-none font-black italic uppercase tracking-tighter transition-all"
+                                                    className="h-14 flex-1 bg-white/5 border-white/10 hover:bg-primary/10 hover:border-primary/50 text-white rounded-none font-black italic uppercase tracking-tighter transition-all"
                                                 >
-                                                    {imageLoading ? <Loader className="animate-spin mr-3 h-5 w-5 text-orange-500" /> : <ImageIcon className="mr-3 h-5 w-5 text-orange-500" />}
+                                                    {imageLoading ? <Loader className="animate-spin mr-3 h-5 w-5 text-primary" /> : <ImageIcon className="mr-3 h-5 w-5 text-primary" />}
                                                     {imageLoading ? 'Visualisation...' : 'Générer Visuel IA'}
                                                 </Button>
                                                 
-                                                <Button type="submit" disabled={loading} className="h-14 flex-1 bg-orange-500 hover:bg-orange-600 text-white rounded-none font-black italic uppercase tracking-tighter shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+                                                <Button type="submit" disabled={loading} className="h-14 flex-1 bg-primary hover:bg-primary/90 text-white rounded-none font-black italic uppercase tracking-tighter shadow-[0_0_20px_rgba(249,115,22,0.2)]">
                                                     {loading ? <Loader className="animate-spin mr-3 h-5 w-5" /> : <Flame className="mr-3 h-5 w-5" />}
                                                     Inscrire au Menu
                                                 </Button>
@@ -395,7 +395,7 @@ export default function NewMenuItemPage() {
                                 ) : (
                                     <div className="text-center space-y-8 py-10 opacity-40">
                                         <div className="relative inline-block">
-                                            <div className="absolute inset-0 bg-orange-500/10 blur-3xl rounded-full scale-150 animate-pulse" />
+                                            <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full scale-150 animate-pulse" />
                                             <div className="h-24 w-24 bg-white/5 border border-dashed border-white/20 flex items-center justify-center relative">
                                                 <ImageIcon className="h-10 w-10 text-gray-600" />
                                             </div>

@@ -108,7 +108,7 @@ export function MenuItemForm({
                 <div className="space-y-4">
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 block">Signature Visuelle</Label>
                     <Label htmlFor="image-upload-form" className="cursor-pointer block group">
-                        <div className="relative w-full h-64 rounded-2xl border border-slate-200/60 bg-slate-50 flex flex-col items-center justify-center text-slate-400 hover:border-orange-500/50 transition-all duration-500 overflow-hidden shadow-sm">
+                        <div className="relative w-full h-64 rounded-2xl border border-slate-200/60 bg-slate-50 flex flex-col items-center justify-center text-slate-400 hover:border-primary/50 transition-all duration-500 overflow-hidden shadow-sm">
                             {imageToDisplay ? (
                                 <>
                                     {imageToDisplay.includes('res.cloudinary.com') ? (
@@ -137,7 +137,7 @@ export function MenuItemForm({
                             ) : (
                                 <div className="text-center space-y-4 p-8">
                                     <div className="p-4 bg-white border border-slate-100 rounded-full w-fit mx-auto group-hover:scale-110 transition-transform duration-500 shadow-sm">
-                                        <Upload className="h-6 w-6 text-orange-500" />
+                                        <Upload className="h-6 w-6 text-primary" />
                                     </div>
                                     <div>
                                         <p className="text-slate-900 font-black italic uppercase tracking-tighter text-xl leading-none">Immortaliser le Plat</p>
@@ -161,7 +161,7 @@ export function MenuItemForm({
                                     <Input 
                                         {...field} 
                                         placeholder="Ex: Le Yakro Royal"
-                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-slate-900 font-medium transition-all shadow-sm" 
+                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 font-medium transition-all shadow-sm" 
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -176,16 +176,16 @@ export function MenuItemForm({
                                 <FormLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Catégorie Gastronomique</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                                     <FormControl>
-                                        <SelectTrigger className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus:ring-orange-500 text-slate-900 font-bold transition-all shadow-sm">
+                                        <SelectTrigger className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus:ring-primary text-slate-900 font-bold transition-all shadow-sm">
                                             <SelectValue placeholder="SÉLECTIONNER" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl shadow-xl">
-                                        <SelectItem value="Entrées" className="focus:bg-orange-500 focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Entrées</SelectItem>
-                                        <SelectItem value="Plats" className="focus:bg-orange-500 focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Plats</SelectItem>
-                                        <SelectItem value="Desserts" className="focus:bg-orange-500 focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Desserts</SelectItem>
-                                        <SelectItem value="Boissons" className="focus:bg-orange-500 focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Boissons</SelectItem>
-                                        <SelectItem value="Autres" className="focus:bg-orange-500 focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Autres</SelectItem>
+                                        <SelectItem value="Entrées" className="focus:bg-primary focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Entrées</SelectItem>
+                                        <SelectItem value="Plats" className="focus:bg-primary focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Plats</SelectItem>
+                                        <SelectItem value="Desserts" className="focus:bg-primary focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Desserts</SelectItem>
+                                        <SelectItem value="Boissons" className="focus:bg-primary focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Boissons</SelectItem>
+                                        <SelectItem value="Autres" className="focus:bg-primary focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer">Autres</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -205,7 +205,7 @@ export function MenuItemForm({
                                     type="number" 
                                     {...field} 
                                     placeholder="0"
-                                    className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-orange-500 font-black italic text-xl transition-all shadow-sm" 
+                                    className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-primary font-black italic text-xl transition-all shadow-sm" 
                                 />
                             </FormControl>
                             <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -224,7 +224,7 @@ export function MenuItemForm({
                                     {...field} 
                                     rows={4} 
                                     placeholder="Décrivez l'expérience sensorielle de ce plat..."
-                                    className="bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-orange-500 focus-visible:border-orange-500 text-slate-900 font-medium placeholder:text-slate-400 transition-all resize-none shadow-sm" 
+                                    className="bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 font-medium placeholder:text-slate-400 transition-all resize-none shadow-sm" 
                                 />
                             </FormControl>
                             <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -241,7 +241,7 @@ export function MenuItemForm({
                             variant="ghost" 
                             size="sm" 
                             onClick={() => appendSide({ nom: '', prix: 0 })} 
-                            className="h-8 px-3 bg-slate-50 hover:bg-orange-500/10 text-orange-500 rounded-lg font-black italic uppercase tracking-tighter text-[9px] border border-slate-200/60 transition-all shadow-sm"
+                            className="h-8 px-3 bg-slate-50 hover:bg-primary/10 text-primary rounded-lg font-black italic uppercase tracking-tighter text-[9px] border border-slate-200/60 transition-all shadow-sm"
                         >
                             <Plus className="h-3 w-3 mr-2" /> Ajouter
                         </Button>
@@ -252,13 +252,13 @@ export function MenuItemForm({
                                 <Input 
                                     {...form.register(`accompagnementsDisponibles.${index}.nom`)} 
                                     placeholder="Libellé" 
-                                    className="h-12 bg-slate-50 border-slate-200/60 rounded-xl text-slate-900 font-bold text-sm focus-visible:ring-orange-500 shadow-sm" 
+                                    className="h-12 bg-slate-50 border-slate-200/60 rounded-xl text-slate-900 font-bold text-sm focus-visible:ring-primary shadow-sm" 
                                 />
                                 <Input 
                                     {...form.register(`accompagnementsDisponibles.${index}.prix`)} 
                                     type="number" 
                                     placeholder="Prix" 
-                                    className="h-12 w-32 bg-slate-50 border-slate-200/60 rounded-xl text-orange-500 font-black italic focus-visible:ring-orange-500 shadow-sm" 
+                                    className="h-12 w-32 bg-slate-50 border-slate-200/60 rounded-xl text-primary font-black italic focus-visible:ring-primary shadow-sm" 
                                 />
                                 <Button 
                                     type="button" 
@@ -283,7 +283,7 @@ export function MenuItemForm({
                             variant="ghost" 
                             size="sm" 
                             onClick={() => appendDrink({ nom: '', prix: 0 })} 
-                            className="h-8 px-3 bg-slate-50 hover:bg-orange-500/10 text-orange-500 rounded-lg font-black italic uppercase tracking-tighter text-[9px] border border-slate-200/60 transition-all shadow-sm"
+                            className="h-8 px-3 bg-slate-50 hover:bg-primary/10 text-primary rounded-lg font-black italic uppercase tracking-tighter text-[9px] border border-slate-200/60 transition-all shadow-sm"
                         >
                             <Plus className="h-3 w-3 mr-2" /> Ajouter
                         </Button>
@@ -294,13 +294,13 @@ export function MenuItemForm({
                                 <Input 
                                     {...form.register(`boissonsDisponibles.${index}.nom`)} 
                                     placeholder="Nom de la boisson" 
-                                    className="h-12 bg-slate-50 border-slate-200/60 rounded-xl text-slate-900 font-bold text-sm focus-visible:ring-orange-500 shadow-sm" 
+                                    className="h-12 bg-slate-50 border-slate-200/60 rounded-xl text-slate-900 font-bold text-sm focus-visible:ring-primary shadow-sm" 
                                 />
                                 <Input 
                                     {...form.register(`boissonsDisponibles.${index}.prix`)} 
                                     type="number" 
                                     placeholder="Prix" 
-                                    className="h-12 w-32 bg-slate-50 border-slate-200/60 rounded-xl text-orange-500 font-black italic focus-visible:ring-orange-500 shadow-sm" 
+                                    className="h-12 w-32 bg-slate-50 border-slate-200/60 rounded-xl text-primary font-black italic focus-visible:ring-primary shadow-sm" 
                                 />
                                 <Button 
                                     type="button" 
@@ -328,7 +328,7 @@ export function MenuItemForm({
                             variant="ghost" 
                             size="sm" 
                             onClick={() => appendIngredient({ stockItemId: '', nom: '', quantite: 0, unite: '' })} 
-                            className="h-8 px-3 bg-slate-50 hover:bg-orange-500/10 text-orange-500 rounded-lg font-black italic uppercase tracking-tighter text-[9px] border border-slate-200/60 transition-all shadow-sm"
+                            className="h-8 px-3 bg-slate-50 hover:bg-primary/10 text-primary rounded-lg font-black italic uppercase tracking-tighter text-[9px] border border-slate-200/60 transition-all shadow-sm"
                         >
                             <Plus className="h-3 w-3 mr-2" /> Lier Ingrédient
                         </Button>
@@ -353,7 +353,7 @@ export function MenuItemForm({
                                                 }} 
                                                 value={selectField.value}
                                             >
-                                                <SelectTrigger className="h-12 bg-white border-slate-100 focus:border-orange-500/50 rounded-xl text-slate-900 font-bold text-sm shadow-inner">
+                                                <SelectTrigger className="h-12 bg-white border-slate-100 focus:border-primary/50 rounded-xl text-slate-900 font-bold text-sm shadow-inner">
                                                     <SelectValue placeholder="Choisir un ingrédient" />
                                                 </SelectTrigger>
                                                 <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl shadow-xl">
@@ -361,7 +361,7 @@ export function MenuItemForm({
                                                         <SelectItem 
                                                             key={stock.id} 
                                                             value={stock.id}
-                                                            className="focus:bg-orange-500 focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer"
+                                                            className="focus:bg-primary focus:text-white uppercase font-bold text-[10px] tracking-widest py-3 cursor-pointer"
                                                         >
                                                             {stock.nom} ({stock.quantite} {stock.unite} restants)
                                                         </SelectItem>
@@ -378,7 +378,7 @@ export function MenuItemForm({
                                         type="number" 
                                         step="0.01"
                                         placeholder="0.00" 
-                                        className="h-12 bg-white border-slate-100 focus:border-orange-500/50 rounded-xl text-orange-500 font-black italic shadow-inner" 
+                                        className="h-12 bg-white border-slate-100 focus:border-primary/50 rounded-xl text-primary font-black italic shadow-inner" 
                                     />
                                 </div>
                                 <div className="md:col-span-2">

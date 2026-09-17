@@ -104,14 +104,14 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                {checkoutStep === 'payment' ? (
                  <button
                    onClick={() => setCheckoutStep('cart')}
-                   className="p-2 bg-orange-500/10 rounded-xl text-orange-500 hover:bg-orange-500/20 transition-colors"
+                   className="p-2 bg-primary/10 rounded-xl text-primary hover:bg-primary/20 transition-colors"
                    aria-label="Retour au panier"
                  >
                    <ArrowLeft className="h-6 w-6" />
                  </button>
                ) : (
-                 <div className="p-2 bg-orange-500/10 rounded-xl">
-                    <ShoppingBag className="h-6 w-6 text-orange-500" />
+                 <div className="p-2 bg-primary/10 rounded-xl">
+                    <ShoppingBag className="h-6 w-6 text-primary" />
                  </div>
                )}
                <div>
@@ -231,7 +231,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                                 <Plus className="h-3 w-3" />
                               </Button>
                             </div>
-                            <span className="font-bold text-orange-500 text-sm">
+                            <span className="font-bold text-primary text-sm">
                               {getCartItemPrice(item).toLocaleString('fr-FR')} <small className="font-normal text-[10px]">F</small>
                             </span>
                           </div>
@@ -252,7 +252,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                 On dirait bien que vous n&apos;avez pas encore succombé à la tentation !
               </p>
               <SheetClose asChild>
-                <Button className="mt-8 rounded-2xl px-8 bg-orange-500 hover:bg-orange-600">
+                <Button className="mt-8 rounded-2xl px-8 bg-primary hover:bg-primary/90">
                     Découvrir les menus
                 </Button>
               </SheetClose>
@@ -283,7 +283,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                   {checkoutStep === 'cart' ? (
                     <Button
                         size="lg"
-                        className="rounded-2xl h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white font-bold group"
+                        className="rounded-2xl h-14 px-8 bg-primary hover:bg-primary/90 text-white font-bold group"
                         onClick={() => setCheckoutStep('payment')}
                     >
                         Valider <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -291,7 +291,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                   ) : (
                     <Button
                         size="lg"
-                        className="rounded-2xl h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white font-bold group"
+                        className="rounded-2xl h-14 px-8 bg-primary hover:bg-primary/90 text-white font-bold group"
                         onClick={handlePlaceOrder}
                         disabled={isPlacingOrder}
                     >

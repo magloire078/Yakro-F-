@@ -70,7 +70,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
               variant="ghost" 
               size="icon" 
               onClick={onNavigate} 
-              className="rounded-xl hover:bg-orange-500/10 text-orange-500 border border-orange-500/10 active:scale-90 transition-all"
+              className="rounded-xl hover:bg-primary/10 text-primary border border-primary/10 active:scale-90 transition-all"
             >
                 <X className="h-5 w-5" />
             </Button>
@@ -78,12 +78,12 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
        <div className="flex justify-between items-center mb-10">
             <Link href={homeLink} onClick={onNavigate} className="flex items-center space-x-3 group">
-                <div className="bg-orange-500/10 p-2.5 rounded-xl group-hover:bg-orange-500/20 transition-all border border-orange-500/10">
-                    <Icons.logo className="h-8 w-8 text-orange-500" />
+                <div className="bg-primary/10 p-2.5 rounded-xl group-hover:bg-primary/20 transition-all border border-primary/10">
+                    <Icons.logo className="h-8 w-8 text-primary" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-headline text-2xl font-black text-orange-500 leading-none tracking-tighter italic uppercase">Yakro</span>
-                    <span className="font-headline text-2xl font-black text-orange-500 leading-none tracking-tighter italic uppercase ml-1">Fê</span>
+                    <span className="font-headline text-2xl font-black text-primary leading-none tracking-tighter italic uppercase">Yakro</span>
+                    <span className="font-headline text-2xl font-black text-primary leading-none tracking-tighter italic uppercase ml-1">Fê</span>
                 </div>
             </Link>
             <div className="hidden md:flex items-center gap-1">
@@ -103,18 +103,18 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                  className={cn(
                    "justify-start text-xs font-bold h-12 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest group",
                    isActive 
-                    ? "bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-lg shadow-orange-500/5" 
-                    : "text-slate-500 hover:text-orange-500 hover:bg-orange-500/5"
+                    ? "bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5" 
+                    : "text-slate-500 hover:text-primary hover:bg-primary/5"
                  )} 
                  asChild
                >
                     <Link href={item.href} className="flex items-center w-full">
                        <item.icon className={cn(
                          "mr-3 h-4 w-4 transition-transform group-hover:scale-110",
-                         isActive ? "text-orange-500" : "text-slate-400 group-hover:text-orange-500"
+                         isActive ? "text-primary" : "text-slate-400 group-hover:text-primary"
                        )} />
                        {item.label}
-                       {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />}
+                       {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
                     </Link>
                </Button>
              );
@@ -127,19 +127,19 @@ export function Sidebar({ onNavigate }: SidebarProps) {
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all group active:scale-95">
-                        <Avatar className="h-10 w-10 rounded-xl border border-orange-500/20 shadow-lg shadow-orange-500/10">
-                            <AvatarFallback className="bg-orange-500/10 text-orange-500 text-xs font-black italic">{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
+                        <Avatar className="h-10 w-10 rounded-xl border border-primary/20 shadow-lg shadow-primary/10">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-black italic">{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-black truncate leading-tight text-neutral-800 dark:text-white uppercase tracking-tight">{userProfile?.nom || user.email}</p>
-                            <p className="text-[10px] text-orange-500/70 capitalize font-bold italic tracking-widest">{activeRole}</p>
+                            <p className="text-[10px] text-primary/70 capitalize font-bold italic tracking-widest">{activeRole}</p>
                         </div>
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-64 mb-4 p-2 bg-white/95 dark:bg-[#0A0A0B]/95 backdrop-blur-xl border-slate-200/50 dark:border-white/10 rounded-2xl shadow-2xl" align="start">
                     <DropdownMenuLabel className="px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-500">Compte</DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-slate-100 dark:bg-white/5" />
-                     <DropdownMenuItem asChild onClick={onNavigate} className="rounded-xl focus:bg-orange-500/10 focus:text-orange-500 cursor-pointer h-10 mb-1">
+                     <DropdownMenuItem asChild onClick={onNavigate} className="rounded-xl focus:bg-primary/10 focus:text-primary cursor-pointer h-10 mb-1">
                         <Link href="/profile" className="flex items-center font-bold text-xs uppercase tracking-widest">
                           <User className="mr-3 h-4 w-4"/>
                           Mon Profil

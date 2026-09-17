@@ -24,8 +24,8 @@ export default function LoginPage() {
     if (authLoading || isRedirecting || (!authLoading && user)) {
         return (
             <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-[#FAEBD7]">
-                <Loader className="h-16 w-16 animate-spin text-orange-500" />
-                <p className="text-orange-600 font-bold animate-pulse">Yakro Go se prépare...</p>
+                <Loader className="h-16 w-16 animate-spin text-primary" />
+                <p className="text-primary font-bold animate-pulse">Yakro Go se prépare...</p>
             </div>
         )
     }
@@ -51,8 +51,8 @@ export default function LoginPage() {
                             &ldquo;L&apos;excellence n&apos;est pas un service, c&apos;est une promesse. Yakro Go redéfinit l&apos;art de vivre à Yamoussoukro.&rdquo;
                         </p>
                         <footer className="flex items-center gap-6">
-                            <div className="h-0.5 w-16 bg-orange-500 rounded-full" />
-                            <span className="text-xs font-black uppercase tracking-[0.3em] text-orange-400">Elite Concierge Service</span>
+                            <div className="h-0.5 w-16 bg-primary rounded-full" />
+                            <span className="text-xs font-black uppercase tracking-[0.3em] text-primary">Elite Concierge Service</span>
                         </footer>
                     </blockquote>
                 </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
                             <Logo size="lg" />
                         </div>
                         <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground lg:text-slate-900 uppercase italic">
-                            Bienvenue dans <span className="text-orange-500 drop-shadow-sm">l&apos;Elite</span>
+                            Bienvenue dans <span className="text-primary drop-shadow-sm">l&apos;Elite</span>
                         </h1>
                         <p className="text-sm sm:text-base text-slate-400 lg:text-slate-500 font-medium tracking-tight">
                             Connectez-vous pour transcender votre expérience.
@@ -86,9 +86,9 @@ export default function LoginPage() {
                     <UserAuthForm />
                     <p className="px-8 text-center text-[10px] sm:text-xs text-slate-400 font-black uppercase tracking-widest opacity-60">
                         En continuant, vous adhérez à nos{" "}
-                        <Link href="/terms" className="text-orange-500 hover:text-orange-600 underline-offset-4 font-black">Conditions</Link>{" "}
+                        <Link href="/terms" className="text-primary hover:text-primary underline-offset-4 font-black">Conditions</Link>{" "}
                         &{" "}
-                        <Link href="/privacy" className="text-orange-500 hover:text-orange-600 underline-offset-4 font-black">Confidentialité</Link>.
+                        <Link href="/privacy" className="text-primary hover:text-primary underline-offset-4 font-black">Confidentialité</Link>.
                     </p>
                  </div>
             </div>

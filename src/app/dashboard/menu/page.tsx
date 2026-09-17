@@ -116,7 +116,7 @@ export default function DashboardMenuPage() {
         <div className="min-h-screen bg-white pb-32 overflow-x-hidden relative">
             {/* Elite Background Elements */}
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(249,115,22,0.05),transparent_70%)]" />
-            <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-orange-500/[0.02] rounded-full blur-[140px] pointer-events-none" />
+            <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-primary/[0.02] rounded-full blur-[140px] pointer-events-none" />
 
             {/* Cinematic Hero Section */}
             <div className="relative h-[40vh] md:h-[50vh] overflow-hidden">
@@ -138,10 +138,10 @@ export default function DashboardMenuPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-none bg-orange-500/10 border border-orange-500/20 backdrop-blur-xl mb-4 shadow-xl"
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-none bg-primary/10 border border-primary/20 backdrop-blur-xl mb-4 shadow-xl"
                     >
-                        <ChefHat className="h-3.5 w-3.5 text-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">Excellence Culinaire</span>
+                        <ChefHat className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Excellence Culinaire</span>
                     </motion.div>
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
@@ -149,7 +149,7 @@ export default function DashboardMenuPage() {
                         transition={{ delay: 0.1 }}
                         className="text-5xl md:text-8xl font-black italic tracking-tighter text-slate-900 mb-2 leading-none uppercase"
                     >
-                        Votre <span className="text-orange-500">Carte</span>
+                        Votre <span className="text-primary">Carte</span>
                     </motion.h1>
                     <motion.p 
                         initial={{ opacity: 0, y: 20 }}
@@ -176,7 +176,7 @@ export default function DashboardMenuPage() {
                                 "flex-none snap-start px-6 md:px-8 py-3.5 md:py-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500 border",
                                 selectedCategory === category 
                                     ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/10" 
-                                    : "bg-slate-50/60 backdrop-blur-md border-slate-200/50 text-slate-500 hover:border-orange-500/30 hover:text-orange-500"
+                                    : "bg-slate-50/60 backdrop-blur-md border-slate-200/50 text-slate-500 hover:border-primary/30 hover:text-primary"
                             )}
                         >
                             {category}
@@ -200,7 +200,7 @@ export default function DashboardMenuPage() {
                                         initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className="group relative bg-white/70 backdrop-blur-xl border border-slate-200/60 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/10 flex flex-col h-full rounded-2xl"
+                                        className="group relative bg-white/70 backdrop-blur-xl border border-slate-200/60 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 flex flex-col h-full rounded-2xl"
                                     >
                                         <div className="aspect-[16/10] relative overflow-hidden">
                                             {item.image ? (
@@ -218,14 +218,14 @@ export default function DashboardMenuPage() {
                                             <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-80" />
                                             
                                             <div className="absolute bottom-4 left-4">
-                                                <div className="bg-orange-500 px-4 py-1.5 text-[11px] font-black italic uppercase text-white shadow-xl rounded-lg">
+                                                <div className="bg-primary px-4 py-1.5 text-[11px] font-black italic uppercase text-white shadow-xl rounded-lg">
                                                     {item.prix.toLocaleString('fr-FR')} FCFA
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="p-6 flex-grow flex flex-col">
-                                            <h3 className="text-xl md:text-2xl font-black italic tracking-tight text-slate-900 group-hover:text-orange-500 transition-colors mb-2 uppercase">
+                                            <h3 className="text-xl md:text-2xl font-black italic tracking-tight text-slate-900 group-hover:text-primary transition-colors mb-2 uppercase">
                                                 {item.nom}
                                             </h3>
                                             <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-6 leading-relaxed italic">
@@ -235,7 +235,7 @@ export default function DashboardMenuPage() {
                                             <div className="mt-auto flex items-center gap-3 pt-6 border-t border-slate-100">
                                                 <Button 
                                                     variant="outline" 
-                                                    className="flex-1 h-12 bg-white border-slate-200 hover:bg-orange-500 hover:border-orange-500 hover:text-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all duration-500 shadow-sm"
+                                                    className="flex-1 h-12 bg-white border-slate-200 hover:bg-primary hover:border-primary hover:text-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all duration-500 shadow-sm"
                                                     onClick={() => setEditingItem(item)}
                                                 >
                                                     <Edit className="h-3.5 w-3.5 mr-2" />
@@ -276,15 +276,15 @@ export default function DashboardMenuPage() {
                                             </div>
                                         </div>
                                         {/* Premium Accent */}
-                                        <div className="absolute top-0 left-0 w-full h-[2px] bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                        <div className="absolute top-0 left-0 w-full h-[2px] bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                     </motion.div>
                                 ))}
                             </div>
                         ) : (
                             <div className="max-w-2xl mx-auto bg-white/70 backdrop-blur-xl border border-slate-200/60 p-16 text-center shadow-2xl relative overflow-hidden rounded-3xl mt-12">
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
-                                <div className="bg-orange-500/10 w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-orange-500/20">
-                                    <BookOpenCheck className="h-10 w-10 text-orange-500" />
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent" />
+                                <div className="bg-primary/10 w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-primary/20">
+                                    <BookOpenCheck className="h-10 w-10 text-primary" />
                                 </div>
                                 <h2 className="text-4xl font-black italic tracking-tight text-slate-900 mb-4 uppercase">Carte Blanche</h2>
                                 <p className="text-slate-500 font-bold mb-10 text-xs uppercase tracking-[0.2em] italic">
@@ -297,7 +297,7 @@ export default function DashboardMenuPage() {
 
                 {/* Add Button */}
                 <div className="mt-16 flex justify-center">
-                    <Button asChild className="h-16 px-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-orange-500/20 transition-all duration-500 hover:scale-105 group uppercase">
+                    <Button asChild className="h-16 px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-105 group uppercase">
                         <Link href="/dashboard/new-menu-item" className="flex items-center gap-3">
                             <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-500" />
                             Ajouter un Chef-d&apos;œuvre
@@ -308,7 +308,7 @@ export default function DashboardMenuPage() {
 
             {/* Floating Action Button for Mobile */}
             <div className="fixed bottom-8 right-6 z-50 md:hidden">
-                <Button asChild className="h-16 w-16 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-2xl shadow-orange-500/20 p-0 hover:scale-110 transition-all">
+                <Button asChild className="h-16 w-16 bg-primary hover:bg-primary/90 text-white rounded-full shadow-2xl shadow-primary/20 p-0 hover:scale-110 transition-all">
                     <Link href="/dashboard/new-menu-item" className="flex items-center justify-center">
                         <Plus className="h-8 w-8" />
                     </Link>

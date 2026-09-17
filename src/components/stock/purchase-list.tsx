@@ -62,13 +62,13 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 px-2">
                 <div className="space-y-2">
                     <div className="inline-flex items-center gap-3">
-                        <div className="h-8 w-8 bg-orange-500/10 rounded-lg flex items-center justify-center border border-orange-500/20">
-                            <ShoppingCart className="h-4 w-4 text-orange-500" />
+                        <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/20">
+                            <ShoppingCart className="h-4 w-4 text-primary" />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">Logistique d&apos;Élite</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Logistique d&apos;Élite</span>
                     </div>
                     <h3 className="text-4xl font-black italic tracking-tighter text-white leading-none">
-                        Plan de <span className="text-orange-500">Ravitaillement</span>
+                        Plan de <span className="text-primary">Ravitaillement</span>
                     </h3>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Intelligence prédictive basée sur vos seuils de vigilance.</p>
                 </div>
@@ -79,7 +79,7 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                     {copied ? (
                         <Check className="mr-3 h-5 w-5 text-emerald-600 animate-in zoom-in" />
                     ) : (
-                        <Copy className="mr-3 h-5 w-5 text-orange-500 group-hover:rotate-12 transition-transform" />
+                        <Copy className="mr-3 h-5 w-5 text-primary group-hover:rotate-12 transition-transform" />
                     )}
                     {copied ? 'Liste Sécurisée' : 'Exporter le Plan'}
                 </Button>
@@ -94,20 +94,20 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.05 }}
                         >
-                            <div className="bg-[#121214]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] relative group overflow-hidden shadow-2xl hover:border-orange-500/20 transition-all">
-                                <div className={`absolute top-0 left-0 w-2 h-full transition-colors ${item.quantite === 0 ? 'bg-red-500' : 'bg-orange-500'}`} />
+                            <div className="bg-[#121214]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] relative group overflow-hidden shadow-2xl hover:border-primary/20 transition-all">
+                                <div className={`absolute top-0 left-0 w-2 h-full transition-colors ${item.quantite === 0 ? 'bg-red-500' : 'bg-primary'}`} />
                                 
                                 <div className="p-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
                                     <div className="flex items-center gap-8">
-                                        <div className={`h-20 w-20 border rounded-3xl flex items-center justify-center transition-all group-hover:scale-110 ${item.quantite === 0 ? 'bg-red-500/10 border-red-500/20' : 'bg-orange-500/10 border-orange-500/20'}`}>
-                                            <AlertCircle className={`h-10 w-10 ${item.quantite === 0 ? 'text-red-500 animate-pulse' : 'text-orange-500'}`} />
+                                        <div className={`h-20 w-20 border rounded-3xl flex items-center justify-center transition-all group-hover:scale-110 ${item.quantite === 0 ? 'bg-red-500/10 border-red-500/20' : 'bg-primary/10 border-primary/20'}`}>
+                                            <AlertCircle className={`h-10 w-10 ${item.quantite === 0 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="text-3xl font-black italic tracking-tighter text-white leading-none group-hover:text-orange-500 transition-colors">
+                                            <h4 className="text-3xl font-black italic tracking-tighter text-white leading-none group-hover:text-primary transition-colors">
                                                 {item.nom}
                                             </h4>
                                             <div className="flex items-center gap-2 text-white/30">
-                                                <MapPin className="h-3 w-3 text-orange-500" />
+                                                <MapPin className="h-3 w-3 text-primary" />
                                                 <p className="text-[10px] font-black uppercase tracking-widest">{item.restaurantName}</p>
                                             </div>
                                         </div>
@@ -116,14 +116,14 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                                     <div className="flex items-center gap-12 md:gap-20">
                                         <div className="text-right">
                                             <p className="text-[10px] uppercase font-black text-white/30 tracking-[0.2em] mb-2">État Actuel</p>
-                                            <p className={`text-4xl font-black italic tracking-tighter leading-none ${item.quantite === 0 ? 'text-red-500' : 'text-orange-500'}`}>
+                                            <p className={`text-4xl font-black italic tracking-tighter leading-none ${item.quantite === 0 ? 'text-red-500' : 'text-primary'}`}>
                                                 {item.quantite} <span className="text-xs uppercase tracking-normal font-bold opacity-40 ml-1">{item.unite}</span>
                                             </p>
                                         </div>
                                         <div className="h-16 w-px bg-white/5 hidden md:block" />
                                         <div className="text-right">
-                                            <p className="text-[10px] uppercase font-black text-orange-500 tracking-[0.2em] mb-2">Cible Recommandée</p>
-                                            <div className="inline-flex items-center h-10 px-6 bg-orange-500 text-white rounded-xl text-sm font-black italic shadow-lg shadow-orange-500/20">
+                                            <p className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mb-2">Cible Recommandée</p>
+                                            <div className="inline-flex items-center h-10 px-6 bg-primary text-white rounded-xl text-sm font-black italic shadow-lg shadow-primary/20">
                                                 + {item.suggestedQty} {item.unite}
                                             </div>
                                         </div>
@@ -131,7 +131,7 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                                 </div>
                                 
                                 {/* Decorative overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
                             </div>
                         </motion.div>
                     ))}
@@ -143,10 +143,10 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
                 
                 <div className="h-16 w-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                    <Sparkles className="h-8 w-8 text-orange-500 animate-pulse" />
+                    <Sparkles className="h-8 w-8 text-primary animate-pulse" />
                 </div>
                 <div className="space-y-3 relative z-10">
-                    <h4 className="text-xs font-black uppercase tracking-[0.4em] text-orange-500">Intelligence Logistique Yakro</h4>
+                    <h4 className="text-xs font-black uppercase tracking-[0.4em] text-primary">Intelligence Logistique Yakro</h4>
                     <p className="text-sm font-bold text-white/40 leading-relaxed italic uppercase tracking-wider">
                         &ldquo;Ce plan est calculé pour restaurer un stock de sécurité optimal correspondant à <span className="text-white italic">3 cycles opérationnels</span>. Exportez cette liste pour maintenir l&apos;excellence.&rdquo;
                     </p>

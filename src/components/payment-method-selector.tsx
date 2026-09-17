@@ -75,7 +75,7 @@ export function PaymentMethodSelector({ value, onChange }: PaymentMethodSelector
             className={cn(
               'flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all',
               isSelected
-                ? 'border-orange-500 bg-orange-500/5 ring-1 ring-orange-500'
+                ? 'border-primary bg-primary/5 ring-1 ring-primary'
                 : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
             )}
           >
@@ -84,7 +84,7 @@ export function PaymentMethodSelector({ value, onChange }: PaymentMethodSelector
               className={cn(
                 'p-2 rounded-xl shrink-0',
                 isSelected
-                  ? 'bg-orange-500/10 text-orange-500'
+                  ? 'bg-primary/10 text-primary'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
               )}
             >

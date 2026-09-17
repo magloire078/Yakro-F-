@@ -75,30 +75,30 @@ export default function DashboardOrdersPage() {
             layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="group relative glass-dark overflow-hidden transition-all duration-500 hover:border-orange-500/50 hover:shadow-2xl rounded-[2.5rem] shadow-xl"
+            className="group relative glass-dark overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-2xl rounded-[2.5rem] shadow-xl"
         >
             {/* Status Bar */}
             <div className={`absolute top-0 left-0 w-1.5 h-full transition-all duration-500 ${
-                order.statut === 'Placée' ? 'bg-orange-500' : 'bg-emerald-500'
+                order.statut === 'Placée' ? 'bg-primary' : 'bg-emerald-500'
             }`} />
             
             <div className="p-6 md:p-8">
                 <div className="flex justify-between items-start mb-8">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
-                            <div className="px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20">
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500">Elite Order</span>
+                            <div className="px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Elite Order</span>
                             </div>
                             <span className="text-[10px] font-bold text-slate-500">#{order.id.slice(-6).toUpperCase()}</span>
                         </div>
-                        <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-white group-hover:text-orange-500 transition-colors uppercase leading-none">
+                        <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-white group-hover:text-primary transition-colors uppercase leading-none">
                             {order.nomRestaurant}
                         </h3>
                     </div>
                     <div className="flex flex-col items-end gap-3">
                         <Badge variant="outline" className={`rounded-full px-4 py-1 font-black uppercase text-[9px] tracking-widest border-2 ${
                             order.statut === 'Placée' 
-                                ? 'border-orange-500/30 text-orange-500 bg-orange-500/10' 
+                                ? 'border-primary/30 text-primary bg-primary/10' 
                                 : 'border-emerald-500/30 text-emerald-500 bg-emerald-500/10'
                         }`}>
                             {order.statut === 'Placée' ? 'Nouveau' : 'En Cuisine'}
@@ -122,8 +122,8 @@ export default function DashboardOrdersPage() {
                                 <div key={idx} className="flex justify-between items-center group/item p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-6 w-6 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-                                                <span className="text-orange-500 font-black italic text-[10px]">{item.quantite}</span>
+                                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                                                <span className="text-primary font-black italic text-[10px]">{item.quantite}</span>
                                             </div>
                                             <span className="font-black text-xs md:text-sm tracking-tight text-white">{item.nom}</span>
                                         </div>
@@ -140,15 +140,15 @@ export default function DashboardOrdersPage() {
                             ))}
                             
                             <div className="pt-6 mt-2 border-t border-white/5">
-                                <div className="flex justify-between items-center bg-orange-500/5 p-6 rounded-3xl border border-orange-500/10 relative overflow-hidden group/revenue">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full" />
+                                <div className="flex justify-between items-center bg-primary/5 p-6 rounded-3xl border border-primary/10 relative overflow-hidden group/revenue">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
                                     <div className="space-y-1 relative z-10">
-                                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-500/60">Revenu Net Garanti</p>
+                                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/60">Revenu Net Garanti</p>
                                         <p className="text-3xl md:text-4xl font-black italic tracking-tighter text-white">
                                             {order.revenuNet.toLocaleString('fr-FR')} <span className="text-[12px] opacity-40 normal-case font-bold ml-1">FCFA</span>
                                         </p>
                                     </div>
-                                    <Receipt className="h-10 w-10 text-orange-500 opacity-20 group-hover/revenue:opacity-40 transition-opacity" />
+                                    <Receipt className="h-10 w-10 text-primary opacity-20 group-hover/revenue:opacity-40 transition-opacity" />
                                 </div>
                             </div>
                         </AccordionContent>
@@ -160,7 +160,7 @@ export default function DashboardOrdersPage() {
                         <Button
                             onClick={() => handleAcceptOrder(order)}
                             disabled={isUpdating === order.id}
-                            className="flex-1 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-[1.25rem] font-black italic uppercase tracking-[0.2em] transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl shadow-orange-500/20 text-[11px] border-none"
+                            className="flex-1 h-16 bg-primary hover:bg-primary/90 text-white rounded-[1.25rem] font-black italic uppercase tracking-[0.2em] transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl shadow-primary/20 text-[11px] border-none"
                         >
                             {isUpdating === order.id ? <Loader className="h-5 w-5 animate-spin" /> : <ChefHat className="mr-3 w-5 h-5" />}
                             Lancer la Préparation
@@ -169,7 +169,7 @@ export default function DashboardOrdersPage() {
                     {order.statut === 'En Préparation' && (
                         <QrCodeDialog orderId={order.id}>
                             <Button className="flex-1 h-16 bg-white hover:bg-gray-100 text-black rounded-[1.25rem] font-black italic uppercase tracking-[0.2em] transition-all duration-500 hover:scale-[1.02] active:scale-95 text-[11px] shadow-2xl">
-                               <QrCode className="mr-3 w-5 h-5 text-orange-500"/>
+                               <QrCode className="mr-3 w-5 h-5 text-primary"/>
                                Valider Livraison
                             </Button>
                         </QrCodeDialog>
@@ -178,7 +178,7 @@ export default function DashboardOrdersPage() {
             </div>
             
             {/* Background Decor */}
-            <div className="absolute -bottom-20 -right-20 h-64 w-64 bg-orange-500/5 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <div className="absolute -bottom-20 -right-20 h-64 w-64 bg-primary/5 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         </motion.div>
     );
 
@@ -201,10 +201,10 @@ export default function DashboardOrdersPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-2 shadow-2xl"
+                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl mb-2 shadow-2xl"
                     >
-                        <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                        <span className="text-[10px] font-black tracking-[0.4em] text-orange-500 uppercase">Live Operations Room</span>
+                        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                        <span className="text-[10px] font-black tracking-[0.4em] text-primary uppercase">Live Operations Room</span>
                     </motion.div>
                     
                     <div className="space-y-4">
@@ -214,7 +214,7 @@ export default function DashboardOrdersPage() {
                             transition={{ delay: 0.1 }}
                             className="text-5xl md:text-9xl font-black tracking-tighter text-white italic leading-none uppercase"
                         >
-                            Flux <span className="text-orange-500">Elite</span>
+                            Flux <span className="text-primary">Elite</span>
                         </motion.h1>
                         <motion.p 
                             initial={{ opacity: 0, y: 20 }}
@@ -233,7 +233,7 @@ export default function DashboardOrdersPage() {
                         className="flex justify-center gap-10 md:gap-20 mt-12"
                     >
                         <div className="text-center group cursor-default">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-orange-500 transition-colors">Nouveaux</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-primary transition-colors">Nouveaux</p>
                             <p className="text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
                         </div>
                         <div className="w-px h-16 md:h-20 bg-white/10 self-center rotate-12" />
@@ -255,9 +255,9 @@ export default function DashboardOrdersPage() {
                     {/* New Orders Section */}
                     <div className="space-y-10">
                         <div className="flex items-center gap-6">
-                            <div className="h-10 w-1.5 bg-orange-500 rounded-full" />
+                            <div className="h-10 w-1.5 bg-primary rounded-full" />
                             <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
-                                Nouvelles <span className="text-orange-500 italic">Entrées</span>
+                                Nouvelles <span className="text-primary italic">Entrées</span>
                             </h2>
                             <div className="h-px flex-1 bg-white/5" />
                         </div>
@@ -273,9 +273,9 @@ export default function DashboardOrdersPage() {
                                         className="relative group overflow-hidden glass-dark p-20 md:p-32 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-[3rem] shadow-2xl"
                                     >
                                         <div className="relative mb-10">
-                                            <div className="absolute inset-0 bg-orange-500/10 blur-[50px] rounded-full scale-150 animate-pulse" />
+                                            <div className="absolute inset-0 bg-primary/10 blur-[50px] rounded-full scale-150 animate-pulse" />
                                             <div className="relative h-24 w-24 bg-white/5 border border-white/10 flex items-center justify-center rounded-[2rem] backdrop-blur-2xl">
-                                                <UtensilsCrossed className="w-10 h-10 text-slate-600 group-hover:text-orange-500 transition-colors duration-500" />
+                                                <UtensilsCrossed className="w-10 h-10 text-slate-600 group-hover:text-primary transition-colors duration-500" />
                                             </div>
                                         </div>
                                         <div className="space-y-3">
@@ -328,7 +328,7 @@ export default function DashboardOrdersPage() {
                 {/* Branding Footer */}
                 <div className="mt-32 text-center opacity-30 group hover:opacity-100 transition-all duration-700 pb-16">
                     <div className="h-px w-32 bg-gradient-to-r from-transparent via-slate-800 to-transparent mx-auto mb-8" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-600 group-hover:text-orange-500 transition-colors">
+                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-600 group-hover:text-primary transition-colors">
                         Yakro Ops Elite Framework v4.2 &bull; Secure Flux
                     </p>
                 </div>

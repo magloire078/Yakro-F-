@@ -132,12 +132,12 @@ export function NotificationsBell() {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="relative hover:bg-orange-500/10 hover:text-orange-500 rounded-xl transition-colors"
+                    className="relative hover:bg-primary/10 hover:text-primary rounded-xl transition-colors"
                     aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} non lue${unreadCount > 1 ? 's' : ''})` : ''}`}
                 >
                     <Bell className="h-6 w-6" />
                     {unreadCount > 0 && (
-                        <span className="absolute top-1 right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white shadow-lg shadow-orange-500/20 animate-in zoom-in">
+                        <span className="absolute top-1 right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-lg shadow-primary/20 animate-in zoom-in">
                             {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
                     )}
@@ -155,7 +155,7 @@ export function NotificationsBell() {
                         <Button
                             variant="link"
                             size="sm"
-                            className="h-auto p-0 mt-1 text-xs text-orange-500"
+                            className="h-auto p-0 mt-1 text-xs text-primary"
                             onClick={handleEnableNotifications}
                             disabled={permission === 'denied'}
                         >
@@ -181,10 +181,10 @@ export function NotificationsBell() {
                                     onClick={() => handleClick(notif)}
                                     className={cn(
                                         'flex gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-muted/50 transition-colors',
-                                        !notif.read && 'bg-orange-50/60 dark:bg-orange-500/10'
+                                        !notif.read && 'bg-primary/10 dark:bg-orange-500/10'
                                     )}
                                 >
-                                    <Icon className="h-5 w-5 text-orange-500 mt-0.5 shrink-0" />
+                                    <Icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold">{view.title}</p>
                                         <p className="text-xs text-muted-foreground">{view.body}</p>

@@ -122,8 +122,8 @@ export default function StockPage() {
         return (
             <div className="flex h-[80vh] w-full items-center justify-center bg-white">
                 <div className="relative">
-                    <div className="h-20 w-20 border-2 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
-                    <Package className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-orange-500" />
+                    <div className="h-20 w-20 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <Package className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-primary" />
                 </div>
             </div>
         );
@@ -134,13 +134,13 @@ export default function StockPage() {
             <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
                 {/* Decorative background elements */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full bg-orange-500/10 blur-[120px]" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full bg-primary/10 blur-[120px]" />
                 </div>
 
                 <div className="relative mb-12 z-10">
                     <div className="h-32 w-32 bg-slate-100 border border-slate-200 rounded-[2.5rem] flex items-center justify-center backdrop-blur-xl shadow-2xl relative">
                         <Warehouse className="h-14 w-14 text-slate-400" />
-                        <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+                        <div className="absolute -bottom-2 -right-2 h-10 w-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
                             <Plus className="h-6 w-6 text-white" />
                         </div>
                     </div>
@@ -148,7 +148,7 @@ export default function StockPage() {
 
                 <div className="relative z-10 space-y-6 max-w-lg">
                     <h1 className="text-5xl font-black italic tracking-tighter text-slate-900 leading-[0.9]">
-                        Stockage <span className="text-orange-500">Non Configuré</span>
+                        Stockage <span className="text-primary">Non Configuré</span>
                     </h1>
                     <p className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] leading-relaxed">
                         Vous devez posséder un établissement actif pour commencer à gérer votre <span className="text-white font-black italic">Inventaire d&apos;Excellence</span>.
@@ -191,10 +191,10 @@ export default function StockPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-4"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-4"
                     >
-                        <Warehouse className="h-3 w-3 text-orange-500" />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-orange-500">Gestion de l&apos;Approvisionnement</span>
+                        <Warehouse className="h-3 w-3 text-primary" />
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary">Gestion de l&apos;Approvisionnement</span>
                     </motion.div>
                     
                     <motion.h1 
@@ -203,7 +203,7 @@ export default function StockPage() {
                         transition={{ delay: 0.1 }}
                         className="text-6xl md:text-8xl font-black italic tracking-tighter text-slate-900 leading-[0.8] mb-4"
                     >
-                        Contrôle <span className="text-orange-500">Inventaire</span>
+                        Contrôle <span className="text-primary">Inventaire</span>
                     </motion.h1>
                     
                     <motion.div 
@@ -236,17 +236,17 @@ export default function StockPage() {
                         <TabsList className="bg-white/5 h-14 md:h-16 p-1 w-full md:w-auto rounded-2xl">
                             <TabsTrigger 
                                 value="inventaire" 
-                                className="flex-1 md:flex-none h-full px-8 rounded-xl font-black italic text-xs md:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all"
+                                className="flex-1 md:flex-none h-full px-8 rounded-xl font-black italic text-xs md:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all"
                             >
                                 Vision Globale
                             </TabsTrigger>
                             <TabsTrigger 
                                 value="courses" 
-                                className="flex-1 md:flex-none h-full px-8 rounded-xl font-black italic text-xs md:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all flex items-center justify-center gap-3"
+                                className="flex-1 md:flex-none h-full px-8 rounded-xl font-black italic text-xs md:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center justify-center gap-3"
                             >
                                 Liste
                                 {stats.low + stats.critical > 0 && (
-                                    <span className="h-5 w-5 bg-white text-orange-500 text-[10px] flex items-center justify-center font-black rounded-full shadow-lg animate-pulse">
+                                    <span className="h-5 w-5 bg-white text-primary text-[10px] flex items-center justify-center font-black rounded-full shadow-lg animate-pulse">
                                         {stats.low + stats.critical}
                                     </span>
                                 )}
@@ -255,7 +255,7 @@ export default function StockPage() {
                         
                         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="w-full md:w-auto h-14 md:h-16 px-10 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic tracking-tight transition-all hover:scale-105 active:scale-95 shadow-xl shadow-orange-500/20">
+                                <Button className="w-full md:w-auto h-14 md:h-16 px-10 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic tracking-tight transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20">
                                     <Plus className="mr-3 h-5 w-5" />
                                     Nouvelle Acquisition
                                 </Button>
@@ -264,10 +264,10 @@ export default function StockPage() {
                                 <div className="relative p-10 border-b border-white/5 bg-white/5 backdrop-blur-xl">
                                     <DialogHeader>
                                         <div className="inline-flex items-center gap-2 mb-4">
-                                            <div className="p-2 bg-orange-500/20 rounded-xl">
-                                                <Warehouse className="h-5 w-5 text-orange-500" />
+                                            <div className="p-2 bg-primary/20 rounded-xl">
+                                                <Warehouse className="h-5 w-5 text-primary" />
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Logistique Culinaire</span>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Logistique Culinaire</span>
                                         </div>
                                         <DialogTitle className="text-4xl font-black italic tracking-tighter text-white leading-none">Ajouter au Stock</DialogTitle>
                                         <DialogDescription className="text-white/40 font-medium text-lg">Référencez un nouvel intrant dans votre chaîne logistique.</DialogDescription>
@@ -277,12 +277,12 @@ export default function StockPage() {
                                     <div className="space-y-3">
                                         <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1">Établissement Cible</Label>
                                         <Select value={newItem.restaurantId} onValueChange={(v) => setNewItem({...newItem, restaurantId: v})}>
-                                            <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-2xl text-white focus:ring-orange-500 font-bold italic">
+                                            <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-2xl text-white focus:ring-primary font-bold italic">
                                                 <SelectValue placeholder="Séléctionnez un lieu" />
                                             </SelectTrigger>
                                             <SelectContent className="bg-[#0A0A0B] border-white/10 text-white rounded-2xl">
                                                 {myRestaurants.map(r => (
-                                                    <SelectItem key={r.id} value={r.id} className="focus:bg-orange-500/20 rounded-xl font-bold italic">{r.nom}</SelectItem>
+                                                    <SelectItem key={r.id} value={r.id} className="focus:bg-primary/20 rounded-xl font-bold italic">{r.nom}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
@@ -291,7 +291,7 @@ export default function StockPage() {
                                         <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1">Désignation</Label>
                                         <Input 
                                             placeholder="Ex: Riz Parfumé, Huile d'Olive..." 
-                                            className="h-16 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-white/20 font-bold italic text-lg focus:border-orange-500/50"
+                                            className="h-16 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-white/20 font-bold italic text-lg focus:border-primary/50"
                                             value={newItem.nom}
                                             onChange={(e) => setNewItem({...newItem, nom: e.target.value})}
                                         />
@@ -314,7 +314,7 @@ export default function StockPage() {
                                                 </SelectTrigger>
                                                 <SelectContent className="bg-[#0A0A0B] border-white/10 text-white rounded-2xl">
                                                     {['unités', 'kg', 'g', 'l', 'ml', 'caisses', 'sacs'].map(u => (
-                                                        <SelectItem key={u} value={u} className="focus:bg-orange-500/20 rounded-xl uppercase text-[10px] font-black">{u}</SelectItem>
+                                                        <SelectItem key={u} value={u} className="focus:bg-primary/20 rounded-xl uppercase text-[10px] font-black">{u}</SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
@@ -332,7 +332,7 @@ export default function StockPage() {
                                 </div>
                                 <DialogFooter className="p-10 pt-0 gap-4">
                                     <Button variant="ghost" onClick={() => setIsAddDialogOpen(false)} className="h-16 px-10 rounded-2xl font-black italic text-white/40 hover:bg-white/5 hover:text-white transition-all">Annuler</Button>
-                                    <Button onClick={handleAddStock} disabled={isSubmitting} className="h-16 px-12 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-orange-500/20">
+                                    <Button onClick={handleAddStock} disabled={isSubmitting} className="h-16 px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-primary/20">
                                         {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirmer l&apos;Ajout'}
                                     </Button>
                                 </DialogFooter>
@@ -344,24 +344,24 @@ export default function StockPage() {
                         {/* Filters & Search */}
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                             <div className="md:col-span-8 relative group">
-                                <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-6 w-6 text-white/20 group-hover:text-orange-500 transition-colors" />
+                                <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-6 w-6 text-white/20 group-hover:text-primary transition-colors" />
                                 <Input 
                                     placeholder="Rechercher une référence..." 
-                                    className="pl-16 h-20 bg-white/5 backdrop-blur-xl border-white/10 rounded-3xl text-white font-bold italic text-lg placeholder:text-white/20 focus:ring-orange-500/20 shadow-2xl" 
+                                    className="pl-16 h-20 bg-white/5 backdrop-blur-xl border-white/10 rounded-3xl text-white font-bold italic text-lg placeholder:text-white/20 focus:ring-primary/20 shadow-2xl" 
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
                             <div className="md:col-span-4 relative group">
-                                <Filter className="absolute left-8 top-1/2 -translate-y-1/2 h-6 w-6 text-white/20 group-hover:text-orange-500 transition-colors" />
+                                <Filter className="absolute left-8 top-1/2 -translate-y-1/2 h-6 w-6 text-white/20 group-hover:text-primary transition-colors" />
                                 <Select value={selectedRestaurant} onValueChange={setSelectedRestaurant}>
                                     <SelectTrigger className="pl-16 h-20 bg-white/5 backdrop-blur-xl border-white/10 rounded-3xl text-white font-bold italic shadow-2xl">
                                         <SelectValue placeholder="Filtrer par lieu" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-[#0A0A0B] border-white/10 text-white rounded-2xl">
-                                        <SelectItem value="all" className="focus:bg-orange-500/20 rounded-xl font-bold italic">Tous les établissements</SelectItem>
+                                        <SelectItem value="all" className="focus:bg-primary/20 rounded-xl font-bold italic">Tous les établissements</SelectItem>
                                         {myRestaurants.map(r => (
-                                            <SelectItem key={r.id} value={r.id} className="focus:bg-orange-500/20 rounded-xl font-bold italic">{r.nom}</SelectItem>
+                                            <SelectItem key={r.id} value={r.id} className="focus:bg-primary/20 rounded-xl font-bold italic">{r.nom}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -401,9 +401,9 @@ export default function StockPage() {
                                                         >
                                                             <TableCell className="py-10 px-8">
                                                                 <div className="flex flex-col">
-                                                                    <span className="font-black text-2xl italic tracking-tighter text-slate-900 group-hover:text-orange-500 transition-colors">{item.nom}</span>
+                                                                    <span className="font-black text-2xl italic tracking-tighter text-slate-900 group-hover:text-primary transition-colors">{item.nom}</span>
                                                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2 flex items-center gap-2">
-                                                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-sm shadow-orange-500/20" /> {restaurantName}
+                                                                        <div className="h-1.5 w-1.5 rounded-full bg-primary shadow-sm shadow-primary/20" /> {restaurantName}
                                                                     </span>
                                                                 </div>
                                                             </TableCell>
@@ -463,7 +463,7 @@ export default function StockPage() {
                                                     <TableCell colSpan={5} className="h-[50vh] text-center border-none">
                                                         <div className="flex flex-col items-center justify-center space-y-8">
                                                             <div className="relative">
-                                                                <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                                                                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
                                                                 <div className="bg-white/5 p-10 rounded-full border border-white/10 backdrop-blur-xl relative">
                                                                     <Package className="h-20 w-20 text-white/10" />
                                                                 </div>
@@ -508,7 +508,7 @@ export default function StockPage() {
                                                     <div>
                                                         <h3 className="font-black text-xl italic tracking-tighter text-slate-900 leading-tight">{item.nom}</h3>
                                                         <div className="flex items-center gap-2 mt-2">
-                                                            <MapPin className="h-3 w-3 text-orange-500" />
+                                                            <MapPin className="h-3 w-3 text-primary" />
                                                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{restaurantName}</span>
                                                         </div>
                                                     </div>
@@ -581,15 +581,15 @@ export default function StockPage() {
                             exit={{ opacity: 0, y: 30 }}
                             className="p-10 bg-white/70 backdrop-blur-2xl border border-slate-200/60 rounded-[3rem] relative overflow-hidden group shadow-lg"
                         >
-                            <div className="absolute top-0 left-0 w-2 h-full bg-orange-500" />
+                            <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
                             <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
-                                <div className="h-20 w-20 bg-orange-500/10 border border-orange-500/20 rounded-3xl flex items-center justify-center shadow-inner">
-                                    <AlertTriangle className="h-10 w-10 text-orange-500 animate-pulse" />
+                                <div className="h-20 w-20 bg-primary/10 border border-primary/20 rounded-3xl flex items-center justify-center shadow-inner">
+                                    <AlertTriangle className="h-10 w-10 text-primary animate-pulse" />
                                 </div>
                                 <div className="flex-1 text-center md:text-left space-y-3">
                                     <h4 className="text-3xl font-black italic tracking-tighter text-slate-900 leading-none">Vigilance Approvisionnement</h4>
                                     <p className="text-sm font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
-                                        Plusieurs références ont franchi le seuil critique de sécurité. <span className="text-orange-500 font-black italic">Urgence Logistique</span> détectée.
+                                        Plusieurs références ont franchi le seuil critique de sécurité. <span className="text-primary font-black italic">Urgence Logistique</span> détectée.
                                     </p>
                                 </div>
                                 <Button 
@@ -601,7 +601,7 @@ export default function StockPage() {
                             </div>
                             
                             {/* Decorative background scanline */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
                         </motion.div>
                     )}
                 </AnimatePresence>

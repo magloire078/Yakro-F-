@@ -244,7 +244,7 @@ function RestaurantPageContent() {
                         className="flex flex-wrap items-center gap-5 text-white/90"
                     >
                         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg border border-white/5">
-                            <Clock className="w-4 h-4 text-orange-400" />
+                            <Clock className="w-4 h-4 text-primary" />
                             <span className="font-bold text-sm">{restaurant.tempsDeLivraison} MIN</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg border border-white/5">
@@ -265,20 +265,20 @@ function RestaurantPageContent() {
                         <TabsList className="bg-transparent h-auto p-0 gap-8 flex-nowrap">
                             <TabsTrigger 
                                 value="menu" 
-                                className="bg-transparent data-[state=active]:bg-transparent border-b-[3px] border-transparent data-[state=active]:border-orange-500 rounded-none px-0 py-4 text-sm font-black uppercase tracking-widest transition-all data-[state=active]:text-orange-500"
+                                className="bg-transparent data-[state=active]:bg-transparent border-b-[3px] border-transparent data-[state=active]:border-primary rounded-none px-0 py-4 text-sm font-black uppercase tracking-widest transition-all data-[state=active]:text-primary"
                             >
                                 <ShoppingBag className="mr-2 h-4 w-4" /> Menu
                             </TabsTrigger>
                             <TabsTrigger 
                                 value="reviews" 
-                                className="bg-transparent data-[state=active]:bg-transparent border-b-[3px] border-transparent data-[state=active]:border-orange-500 rounded-none px-0 py-4 text-sm font-black uppercase tracking-widest transition-all data-[state=active]:text-orange-500"
+                                className="bg-transparent data-[state=active]:bg-transparent border-b-[3px] border-transparent data-[state=active]:border-primary rounded-none px-0 py-4 text-sm font-black uppercase tracking-widest transition-all data-[state=active]:text-primary"
                             >
                                 <Users className="mr-2 h-4 w-4" /> Avis
                             </TabsTrigger>
                         </TabsList>
                         
                         <div className="hidden md:flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                            <Sparkles className="h-4 w-4 text-orange-500 animate-pulse" />
+                            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
                             Expérience Elite
                         </div>
                     </div>
@@ -286,7 +286,7 @@ function RestaurantPageContent() {
                     <TabsContent value="menu" className="mt-0 outline-none">
                         <section>
                             <div className="flex items-center gap-4 mb-8">
-                                <div className="h-8 w-1 bg-orange-500 rounded-full" />
+                                <div className="h-8 w-1 bg-primary rounded-full" />
                                 <h2 className="text-2xl font-headline">Nos Incontournables</h2>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -313,7 +313,7 @@ function RestaurantPageContent() {
                             <div className="lg:col-span-2 space-y-12">
                                 {/* AI Experience Generator */}
                                 <section className="relative overflow-hidden p-8 glass-dark rounded-[2.5rem] text-white border-white/5">
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[100px]" />
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px]" />
                                     <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
                                         <div className="flex-1 space-y-5 text-center md:text-left">
                                             <div className="inline-flex items-center gap-2 px-4 py-1.5 glass-orange rounded-full text-white text-[10px] font-black uppercase tracking-[0.2em]">
@@ -327,7 +327,7 @@ function RestaurantPageContent() {
                                                 <Button 
                                                     onClick={handleGenerateReviews} 
                                                     disabled={loadingAiReviews}
-                                                    className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl h-14 px-8 font-black uppercase tracking-widest text-xs shadow-[0_10px_30px_rgba(249,115,22,0.3)]"
+                                                    className="bg-primary hover:bg-primary/90 text-white rounded-2xl h-14 px-8 font-black uppercase tracking-widest text-xs shadow-[0_10px_30px_rgba(249,115,22,0.3)]"
                                                 >
                                                     {loadingAiReviews ? <Loader className="animate-spin mr-2 h-4 w-4" /> : <Wand2 className="mr-2 h-4 w-4" />}
                                                     Simuler l&apos;ambiance
@@ -344,7 +344,7 @@ function RestaurantPageContent() {
                                             </div>
                                         </div>
                                         <div className="w-40 h-40 shrink-0 flex items-center justify-center glass rounded-full border-white/10 shadow-2xl animate-float">
-                                            <Wand2 className={cn("w-14 h-14 text-orange-500", loadingAiReviews && "animate-pulse")} />
+                                            <Wand2 className={cn("w-14 h-14 text-primary", loadingAiReviews && "animate-pulse")} />
                                         </div>
                                     </div>
                                     
@@ -416,7 +416,7 @@ export default function RestaurantPage() {
         <React.Suspense fallback={
             <div className="flex h-[80vh] w-full items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                  <Loader className="h-12 w-12 animate-spin text-orange-500" />
+                  <Loader className="h-12 w-12 animate-spin text-primary" />
                   <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Chargement des saveurs...</p>
                 </div>
             </div>

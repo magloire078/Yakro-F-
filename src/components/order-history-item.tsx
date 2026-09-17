@@ -43,25 +43,25 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   }
 
   return (
-    <Card className="glass overflow-hidden border-white/5 transition-all duration-500 hover:border-orange-500/20 hover:shadow-2xl hover:shadow-orange-500/10 rounded-[2rem]">
+    <Card className="glass overflow-hidden border-white/5 transition-all duration-500 hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/10 rounded-[2rem]">
       <Accordion type="single" collapsible>
         <AccordionItem value={order.id} className="border-b-0">
           <AccordionTrigger className="p-6 md:p-8 hover:no-underline group">
             <div className="flex justify-between items-center w-full">
               <div className="text-left space-y-1">
-                <p className="font-black text-xl uppercase tracking-tighter group-hover:text-orange-500 transition-colors duration-300">{order.nomRestaurant}</p>
+                <p className="font-black text-xl uppercase tracking-tighter group-hover:text-primary transition-colors duration-300">{order.nomRestaurant}</p>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">
                   {new Date(order.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })}
                 </p>
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <p className="font-black text-xl text-orange-500 tracking-tighter">{order.total.toLocaleString('fr-FR')} <span className="text-[10px] opacity-60">FCFA</span></p>
+                  <p className="font-black text-xl text-primary tracking-tighter">{order.total.toLocaleString('fr-FR')} <span className="text-[10px] opacity-60">FCFA</span></p>
                 </div>
                 <Badge variant="outline" className={`rounded-full px-4 py-1 font-black uppercase text-[10px] tracking-widest border-2 ${
                   order.statut === 'Livrée' 
                     ? 'border-green-500/20 text-green-500 bg-green-500/5' 
-                    : 'border-orange-500/20 text-orange-500 bg-orange-500/5'
+                    : 'border-primary/20 text-primary bg-primary/5'
                 }`}>
                   {order.statut}
                 </Badge>
@@ -131,7 +131,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
               </div>
               <div className="flex justify-between font-black text-lg text-foreground tracking-tighter pt-2">
                 <span className="text-sm opacity-100 uppercase">Total de la commande</span>
-                <span className="text-orange-500">{order.total.toLocaleString('fr-FR')} FCFA</span>
+                <span className="text-primary">{order.total.toLocaleString('fr-FR')} FCFA</span>
               </div>
             </div>
             
@@ -139,7 +139,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
               <div className="mt-8 flex justify-end">
                 <Button 
                   onClick={handleReorder} 
-                  className="rounded-2xl glass-orange text-white font-black uppercase tracking-widest px-8 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-orange-500/20"
+                  className="rounded-2xl glass-orange text-white font-black uppercase tracking-widest px-8 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
                 >
                   Commander à nouveau
                 </Button>

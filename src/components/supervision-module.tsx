@@ -83,17 +83,17 @@ export function SupervisionModule() {
 
     return (
         <Card className="border-none shadow-[0_20px_60px_rgba(0,0,0,0.6)] bg-[#121214]/90 backdrop-blur-3xl rounded-none overflow-hidden border-t border-white/5">
-            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 z-50" />
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary z-50" />
             
             <CardHeader className="p-10 border-b border-white/5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div className="space-y-3">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                                <Navigation2 className="h-5 w-5 text-orange-500 fill-orange-500/20" />
+                            <div className="h-10 w-10 bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                <Navigation2 className="h-5 w-5 text-primary fill-primary/20" />
                             </div>
                             <CardTitle className="text-3xl font-black italic uppercase tracking-tighter text-white">
-                                Radar <span className="text-orange-500">Opérationnel</span>
+                                Radar <span className="text-primary">Opérationnel</span>
                             </CardTitle>
                         </div>
                         <CardDescription className="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px]">
@@ -108,7 +108,7 @@ export function SupervisionModule() {
                             onClick={() => setView('list')}
                             className={cn(
                                 "h-12 px-6 rounded-none font-black italic uppercase tracking-tighter text-[11px] transition-all",
-                                view === 'list' ? "bg-orange-500 text-white" : "text-gray-500 hover:text-white"
+                                view === 'list' ? "bg-primary text-white" : "text-gray-500 hover:text-white"
                             )}
                         >
                             <LayoutList className="h-4 w-4 mr-2" />
@@ -120,7 +120,7 @@ export function SupervisionModule() {
                             onClick={() => setView('map')}
                             className={cn(
                                 "h-12 px-6 rounded-none font-black italic uppercase tracking-tighter text-[11px] transition-all",
-                                view === 'map' ? "bg-orange-500 text-white" : "text-gray-500 hover:text-white"
+                                view === 'map' ? "bg-primary text-white" : "text-gray-500 hover:text-white"
                             )}
                         >
                             <MapIcon className="h-4 w-4 mr-2" />
@@ -133,10 +133,10 @@ export function SupervisionModule() {
             <CardContent className="p-0">
                 <div className="p-6 bg-black/20 border-b border-white/5 flex gap-4">
                     <div className="relative flex-1">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
                         <Input 
                             placeholder="INTERCEPTER UNITÉ OU BASTION..." 
-                            className="h-14 pl-14 bg-white/5 border-white/5 rounded-none font-black uppercase tracking-widest text-xs placeholder:text-gray-700 text-white focus:ring-orange-500/30"
+                            className="h-14 pl-14 bg-white/5 border-white/5 rounded-none font-black uppercase tracking-widest text-xs placeholder:text-gray-700 text-white focus:ring-primary/30"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -180,7 +180,7 @@ export function SupervisionModule() {
                                 </div>
                                 <div className="w-80 border-l border-white/5 bg-[#121214]/60 backdrop-blur-md overflow-hidden flex flex-col">
                                     <div className="p-6 border-b border-white/5">
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 italic">Flux d&apos;Événements Live</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Flux d&apos;Événements Live</h3>
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
                                         <AnimatePresence initial={false}>
@@ -190,10 +190,10 @@ export function SupervisionModule() {
                                                     initial={{ opacity: 0, x: 20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     exit={{ opacity: 0, scale: 0.95 }}
-                                                    className="p-4 bg-white/5 border border-white/5 rounded-none group hover:border-orange-500/30 transition-colors"
+                                                    className="p-4 bg-white/5 border border-white/5 rounded-none group hover:border-primary/30 transition-colors"
                                                 >
                                                     <div className="flex justify-between items-start mb-2">
-                                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                                                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                                                         <span className="text-[8px] font-bold text-gray-600 tabular-nums">{event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                                     </div>
                                                     <p className="text-[10px] font-black uppercase tracking-tight text-gray-400 group-hover:text-white transition-colors leading-relaxed">
@@ -213,7 +213,7 @@ export function SupervisionModule() {
             <div className="p-6 bg-black/40 flex justify-between items-center border-t border-white/5">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-orange-500 animate-ping" />
+                        <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
                         <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">TRANSMISSION TEMPS RÉEL ACTIVE</span>
                     </div>
                 </div>
@@ -226,7 +226,7 @@ export function SupervisionModule() {
 function OrderListItem({ order, index }: { order: Order, index: number }) {
     const statusInfo = {
         'Placée': { color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20', icon: Clock, label: 'ATTENTE' },
-        'En Préparation': { color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/20', icon: Utensils, label: 'CUISINE' },
+        'En Préparation': { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20', icon: Utensils, label: 'CUISINE' },
         'Prête': { color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', icon: Package, label: 'PRÊTE' },
         'En Route': { color: 'text-purple-500', bg: 'bg-purple-500/10', border: 'border-purple-500/20', icon: Bike, label: 'TRANSIT' },
     };
@@ -241,7 +241,7 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
             transition={{ delay: index * 0.03 }}
             className="p-8 hover:bg-white/5 transition-all group relative overflow-hidden"
         >
-            <div className="absolute top-0 left-0 h-full w-1 bg-white/5 group-hover:bg-orange-500 transition-colors" />
+            <div className="absolute top-0 left-0 h-full w-1 bg-white/5 group-hover:bg-primary transition-colors" />
             
             <div className="flex items-center justify-between gap-10">
                 <div className="flex items-center gap-8 flex-1">
@@ -258,18 +258,18 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                         </div>
                         <div className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-300 transition-colors">
                             <div className="flex items-center gap-2">
-                                <Store className="h-3.5 w-3.5 text-orange-500/50" />
+                                <Store className="h-3.5 w-3.5 text-primary/50" />
                                 <span>{order.nomRestaurant}</span>
                             </div>
                             <span className="opacity-20">|</span>
-                            <span className="text-orange-500">{(order.total || 0).toLocaleString()} FCFA</span>
+                            <span className="text-primary">{(order.total || 0).toLocaleString()} FCFA</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="hidden lg:flex flex-col items-end gap-3 min-w-[200px]">
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-600">
-                        <Clock className="h-3 w-3 text-orange-500/50" />
+                        <Clock className="h-3 w-3 text-primary/50" />
                          DÉLAI: {formatDistanceToNow(new Date(order.date), { locale: fr, addSuffix: true })}
                     </div>
                     <div className="h-1.5 w-full bg-white/5 overflow-hidden border border-white/5">
@@ -286,7 +286,7 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-12 w-12 rounded-none hover:bg-orange-500/10 text-gray-600 hover:text-orange-500 transition-all border border-transparent hover:border-orange-500/20">
+                    <Button variant="ghost" size="icon" className="h-12 w-12 rounded-none hover:bg-primary/10 text-gray-600 hover:text-primary transition-all border border-transparent hover:border-primary/20">
                         <Maximize2 className="h-5 w-5" />
                     </Button>
                     <DropdownMenu>
@@ -296,7 +296,7 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-64 bg-[#121214] border-white/10 rounded-none p-1 text-white">
-                            <DropdownMenuItem className="rounded-none gap-3 font-black uppercase italic tracking-tighter text-xs py-4 focus:bg-orange-500 cursor-pointer">
+                            <DropdownMenuItem className="rounded-none gap-3 font-black uppercase italic tracking-tighter text-xs py-4 focus:bg-primary cursor-pointer">
                                 <Navigation2 className="h-4 w-4" />
                                 Ouvrir Tracking
                             </DropdownMenuItem>
@@ -348,15 +348,15 @@ function MapSimulation({ orders }: { orders: Order[] }) {
             
             <div className="relative w-full h-full p-20">
                 <svg viewBox="0 0 800 600" className="w-full h-full fill-none stroke-white/5">
-                    <circle cx="400" cy="300" r="100" className="stroke-orange-500/10" strokeDasharray="10 10" />
-                    <circle cx="400" cy="300" r="200" className="stroke-orange-500/5" strokeDasharray="5 5" />
+                    <circle cx="400" cy="300" r="100" className="stroke-primary/10" strokeDasharray="10 10" />
+                    <circle cx="400" cy="300" r="200" className="stroke-primary/5" strokeDasharray="5 5" />
                     <circle cx="400" cy="300" r="300" className="stroke-white/[0.02]" />
                     <line x1="400" y1="0" x2="400" y2="600" className="stroke-white/[0.02]" />
                     <line x1="0" y1="300" x2="800" y2="300" className="stroke-white/[0.02]" />
                     
                     <motion.circle 
                         cx="400" cy="300" r="150" 
-                        className="stroke-orange-500/20" 
+                        className="stroke-primary/20" 
                         strokeWidth="1"
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
@@ -403,7 +403,7 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                             {/* Ping Animation for new/critical orders */}
                             {marker.isNew && (
                                 <motion.div 
-                                    className="absolute inset-0 bg-orange-500/40 rounded-none rotate-45"
+                                    className="absolute inset-0 bg-primary/40 rounded-none rotate-45"
                                     initial={{ scale: 1, opacity: 0.5 }}
                                     animate={{ scale: 2.5, opacity: 0 }}
                                     transition={{ duration: 1.5, repeat: Infinity }}
@@ -412,7 +412,7 @@ function MapSimulation({ orders }: { orders: Order[] }) {
 
                             <div className={cn(
                                 "h-5 w-5 rounded-none border border-white flex items-center justify-center rotate-45 group-hover:scale-125 transition-transform relative z-10",
-                                marker.status === 'En Route' ? 'bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : 'bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.5)]'
+                                marker.status === 'En Route' ? 'bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : 'bg-primary shadow-[0_0_20px_rgba(249,115,22,0.5)]'
                             )}>
                                 {marker.status === 'En Route' ? <Bike className="h-3 w-3 -rotate-45 text-white" /> : <Store className="h-3 w-3 -rotate-45 text-white" />}
                             </div>
@@ -420,13 +420,13 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
                                 <div className="bg-[#121214] text-white p-4 border border-white/10 rounded-none shadow-3xl min-w-[180px] backdrop-blur-xl">
                                     <div className="flex items-center justify-between mb-2">
-                                        <div className="text-[10px] font-black uppercase italic tracking-tighter text-orange-500">UNITÉ ACTIVÉE</div>
-                                        {marker.isNew && <span className="text-[8px] font-black bg-orange-500 px-1 text-white animate-pulse">NEW</span>}
+                                        <div className="text-[10px] font-black uppercase italic tracking-tighter text-primary">UNITÉ ACTIVÉE</div>
+                                        {marker.isNew && <span className="text-[8px] font-black bg-primary px-1 text-white animate-pulse">NEW</span>}
                                     </div>
                                     <div className="text-sm font-black italic tracking-tighter uppercase mb-2">#{marker.id.slice(-6)}</div>
                                     <div className="h-px bg-white/5 mb-2" />
                                     <div className="flex items-center gap-2">
-                                        <div className={cn("h-1.5 w-1.5 rounded-full", marker.status === 'En Route' ? 'bg-purple-500' : 'bg-orange-500')} />
+                                        <div className={cn("h-1.5 w-1.5 rounded-full", marker.status === 'En Route' ? 'bg-purple-500' : 'bg-primary')} />
                                         <div className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{marker.status}</div>
                                     </div>
                                     {marker.status === 'En Route' && (
@@ -444,7 +444,7 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                 <div className="absolute top-10 left-10 flex flex-col gap-4">
                     <div className="bg-black/80 backdrop-blur-md p-6 border border-white/5 space-y-4">
                         <div className="flex items-center gap-3">
-                            <Zap className="h-4 w-4 text-orange-500" />
+                            <Zap className="h-4 w-4 text-primary" />
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">YAM-NET ALPHA</span>
                         </div>
                         <div className="space-y-2">
@@ -462,7 +462,7 @@ function MapSimulation({ orders }: { orders: Order[] }) {
 
                 <div className="absolute bottom-10 right-10 flex gap-6 bg-black/80 backdrop-blur-md p-6 border border-white/5">
                     <div className="flex items-center gap-3">
-                        <div className="h-2 w-2 bg-orange-500 rotate-45 shadow-[0_0_10px_rgba(249,115,22,1)]" />
+                        <div className="h-2 w-2 bg-primary rotate-45 shadow-[0_0_10px_rgba(249,115,22,1)]" />
                         <span className="text-[9px] font-black text-white uppercase tracking-widest">BASTION</span>
                     </div>
                     <div className="flex items-center gap-3">

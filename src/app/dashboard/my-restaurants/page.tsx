@@ -106,10 +106,10 @@ export default function MyRestaurantsPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-2 shadow-2xl"
+                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl mb-2 shadow-2xl"
                     >
-                        <ChefHat className="h-4 w-4 text-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500">Elite Management</span>
+                        <ChefHat className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Elite Management</span>
                     </motion.div>
                     
                     <div className="space-y-4">
@@ -119,7 +119,7 @@ export default function MyRestaurantsPage() {
                             transition={{ delay: 0.1 }}
                             className="text-5xl md:text-9xl font-black italic uppercase tracking-tighter text-white mb-2 leading-none"
                         >
-                            Mes <span className="text-orange-500 italic">Établissements</span>
+                            Mes <span className="text-primary italic">Établissements</span>
                         </motion.h1>
                         <motion.p 
                             initial={{ opacity: 0, y: 20 }}
@@ -138,7 +138,7 @@ export default function MyRestaurantsPage() {
                         className="flex justify-center gap-10 md:gap-20 mt-12"
                     >
                         <div className="text-center group cursor-default">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-orange-500 transition-colors">Actifs</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-primary transition-colors">Actifs</p>
                             <p className="text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{myRestaurants.length}</p>
                         </div>
                         <div className="w-px h-16 md:h-20 bg-white/10 self-center rotate-12" />
@@ -167,7 +167,7 @@ export default function MyRestaurantsPage() {
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                     className="group relative h-full"
                                 >
-                                    <div className="glass-dark border border-white/5 transition-all duration-500 group-hover:border-orange-500/50 overflow-hidden h-full flex flex-col shadow-2xl group-hover:shadow-orange-500/10 rounded-[2.5rem]">
+                                    <div className="glass-dark border border-white/5 transition-all duration-500 group-hover:border-primary/50 overflow-hidden h-full flex flex-col shadow-2xl group-hover:shadow-primary/10 rounded-[2.5rem]">
                                         {/* Image Area */}
                                         <div className="relative h-64 w-full overflow-hidden">
                                             {imageSrc.includes('res.cloudinary.com') ? (
@@ -199,7 +199,7 @@ export default function MyRestaurantsPage() {
 
                                             {restaurant.enVedette && (
                                                 <div className="absolute top-6 right-6">
-                                                    <div className="h-10 w-10 bg-orange-500 flex items-center justify-center rounded-2xl shadow-[0_0_20px_rgba(249,115,22,0.6)]">
+                                                    <div className="h-10 w-10 bg-primary flex items-center justify-center rounded-2xl shadow-[0_0_20px_rgba(249,115,22,0.6)]">
                                                         <Star className="h-5 w-5 text-white fill-white" />
                                                     </div>
                                                 </div>
@@ -209,11 +209,11 @@ export default function MyRestaurantsPage() {
                                         {/* Info Area */}
                                         <div className="p-8 flex-grow flex flex-col">
                                             <div className="mb-6">
-                                                <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white leading-tight group-hover:text-orange-500 transition-colors duration-300">
+                                                <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white leading-tight group-hover:text-primary transition-colors duration-300">
                                                     {restaurant.nom}
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                    <MapPin className="h-3 w-3 text-orange-500" />
+                                                    <MapPin className="h-3 w-3 text-primary" />
                                                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{restaurant.adresse || 'Emplacement non défini'}</p>
                                                 </div>
                                             </div>
@@ -228,7 +228,7 @@ export default function MyRestaurantsPage() {
                                                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Expertise</span>
                                                     <div className="flex items-center gap-1.5">
                                                         <span className="text-sm font-black text-white">{restaurant.note || '0.0'}</span>
-                                                        <Star className="h-3 w-3 text-orange-500 fill-orange-500" />
+                                                        <Star className="h-3 w-3 text-primary fill-primary" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -237,7 +237,7 @@ export default function MyRestaurantsPage() {
                                                 <Button 
                                                     variant="outline" 
                                                     asChild 
-                                                    className="flex-1 rounded-2xl border-white/10 bg-white/5 hover:bg-orange-500 hover:border-orange-500 hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[11px] h-14"
+                                                    className="flex-1 rounded-2xl border-white/10 bg-white/5 hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[11px] h-14"
                                                 >
                                                     <Link href={`/dashboard/my-restaurants/edit?id=${restaurant.id}`}>
                                                         <Edit className="h-4 w-4 mr-2" />
@@ -262,14 +262,14 @@ export default function MyRestaurantsPage() {
                                                             <AlertDialogContent className="glass-dark border border-white/10 text-white rounded-[2.5rem] max-w-md backdrop-blur-3xl shadow-2xl">
                                                                 <AlertDialogHeader>
                                                                     <AlertDialogTitle className="font-black italic uppercase tracking-tighter text-3xl flex items-center gap-3 text-white">
-                                                                        <AlertTriangle className="h-8 w-8 text-orange-500" />
+                                                                        <AlertTriangle className="h-8 w-8 text-primary" />
                                                                         {hasPlats ? 'ALERTE CRITIQUE' : 'DISSOLUTION'}
                                                                     </AlertDialogTitle>
                                                                     <AlertDialogDescription className="text-slate-400 font-medium pt-4 text-base leading-relaxed italic">
                                                                         {hasPlats ? (
                                                                             <>
                                                                                 Cet établissement contient encore des créations culinaires actives. 
-                                                                                <span className="block mt-4 text-orange-500 font-bold uppercase tracking-widest text-xs">Veuillez purger le menu avant de pouvoir dissoudre cet établissement.</span>
+                                                                                <span className="block mt-4 text-primary font-bold uppercase tracking-widest text-xs">Veuillez purger le menu avant de pouvoir dissoudre cet établissement.</span>
                                                                             </>
                                                                         ) : (
                                                                             <>
@@ -282,7 +282,7 @@ export default function MyRestaurantsPage() {
                                                                 <AlertDialogFooter className="mt-10 gap-4">
                                                                     <AlertDialogCancel className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white uppercase font-bold tracking-widest text-[10px] h-12">ANNULER</AlertDialogCancel>
                                                                     {hasPlats ? (
-                                                                        <AlertDialogAction asChild className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white uppercase font-black tracking-widest text-[10px] h-12">
+                                                                        <AlertDialogAction asChild className="rounded-xl bg-primary hover:bg-primary/90 text-white uppercase font-black tracking-widest text-[10px] h-12">
                                                                             <Link href="/dashboard/menu">GÉRER LE MENU</Link>
                                                                         </AlertDialogAction>
                                                                     ) : (
@@ -300,7 +300,7 @@ export default function MyRestaurantsPage() {
                                                 })()}
                                             </div>
                                         </div>
-                                        <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-orange-500 group-hover:w-full transition-all duration-1000 shadow-[0_0_15px_rgba(249,115,22,0.8)]" />
+                                        <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-primary group-hover:w-full transition-all duration-1000 shadow-[0_0_15px_rgba(249,115,22,0.8)]" />
                                     </div>
                                 </motion.div>
 
@@ -309,10 +309,10 @@ export default function MyRestaurantsPage() {
                     </div>
                 ) : (
                     <div className="max-w-2xl mx-auto glass-dark border border-white/5 p-16 text-center shadow-2xl relative overflow-hidden rounded-[3rem] mt-12">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
                         <div className="relative mb-8">
-                            <div className="absolute inset-0 bg-orange-500/10 blur-[50px] rounded-full scale-150" />
-                            <UtensilsCrossed className="h-20 w-20 text-orange-500/40 mx-auto relative z-10" />
+                            <div className="absolute inset-0 bg-primary/10 blur-[50px] rounded-full scale-150" />
+                            <UtensilsCrossed className="h-20 w-20 text-primary/40 mx-auto relative z-10" />
                         </div>
                         <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-4">Empire Vierge</h2>
                         <p className="text-slate-500 font-medium mb-10 text-lg italic">
@@ -323,7 +323,7 @@ export default function MyRestaurantsPage() {
 
                 {/* Desktop Action Button */}
                 <div className="hidden md:flex justify-center mt-12">
-                    <Button asChild className="h-20 px-16 bg-orange-500 hover:bg-orange-600 text-white rounded-[2rem] font-black italic uppercase tracking-tighter text-xl shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all duration-500 hover:scale-105 active:scale-95 group">
+                    <Button asChild className="h-20 px-16 bg-primary hover:bg-primary/90 text-white rounded-[2rem] font-black italic uppercase tracking-tighter text-xl shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all duration-500 hover:scale-105 active:scale-95 group">
                         <Link href="/dashboard/new-restaurant" className="flex items-center gap-4">
                             <Plus className="h-8 w-8 group-hover:rotate-90 transition-transform duration-500" />
                             Établir un Restaurant
@@ -334,7 +334,7 @@ export default function MyRestaurantsPage() {
 
             {/* Persistent FAB for Mobile */}
             <div className="fixed bottom-8 right-6 z-50 md:hidden">
-                <Button asChild className="h-20 w-20 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-[0_20px_40px_rgba(249,115,22,0.4)] p-0 border-4 border-[#0A0A0B]">
+                <Button asChild className="h-20 w-20 bg-primary hover:bg-primary/90 text-white rounded-full shadow-[0_20px_40px_rgba(249,115,22,0.4)] p-0 border-4 border-[#0A0A0B]">
                     <Link href="/dashboard/new-restaurant" className="flex items-center justify-center">
                         <Plus className="h-10 w-10" />
                     </Link>

@@ -144,14 +144,14 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
       <DialogContent className="sm:max-w-2xl bg-[#0A0A0B] border border-white/10 rounded-none p-0 overflow-hidden shadow-2xl">
         {/* Header Section */}
         <div className="relative p-8 border-b border-white/5 bg-[#121214]">
-          <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
           <DialogHeader>
             <div className="inline-flex items-center gap-2 mb-4">
-              <BookOpenCheck className="h-4 w-4 text-orange-500" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Raffinement Culinaire</span>
+              <BookOpenCheck className="h-4 w-4 text-primary" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Raffinement Culinaire</span>
             </div>
             <DialogTitle className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">
-              Actualiser <span className="text-orange-500">&ldquo;{menuItem.nom}&rdquo;</span>
+              Actualiser <span className="text-primary">&ldquo;{menuItem.nom}&rdquo;</span>
             </DialogTitle>
             <DialogDescription className="text-gray-500 font-medium text-sm mt-2">
               Ajustez les paramètres de votre création pour maintenir l&apos;excellence Yakro Elite.
@@ -178,7 +178,7 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white rounded-none font-black italic uppercase tracking-tighter transition-all duration-500 hover:scale-105 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
+                className="h-14 px-8 bg-primary hover:bg-primary/90 text-white rounded-none font-black italic uppercase tracking-tighter transition-all duration-500 hover:scale-105 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
               >
                 {isSubmitting ? (
                   <Loader className="h-5 w-5 animate-spin mr-2" />

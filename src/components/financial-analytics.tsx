@@ -21,11 +21,11 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         return (
             <div className="bg-[#0A0A0B]/90 backdrop-blur-3xl border border-white/10 p-5 shadow-3xl rounded-[1.5rem]">
                 <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[8px] mb-3">{label}</p>
-                <p className="text-orange-500 font-black text-lg italic tracking-tighter">
+                <p className="text-primary font-black text-lg italic tracking-tighter">
                     {`${payload[0].value.toLocaleString()} FCFA`}
                 </p>
                 <div className="mt-2 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                     <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Flux Capturé</span>
                 </div>
             </div>
@@ -67,7 +67,7 @@ export function FinancialAnalytics() {
                     unit="FCFA"
                     change="+18.5%" 
                     isUp={true} 
-                    icon={<BarChart3 className="text-orange-500" />} 
+                    icon={<BarChart3 className="text-primary" />} 
                     delay={0}
                 />
                 <StatCard 
@@ -76,7 +76,7 @@ export function FinancialAnalytics() {
                     unit="FCFA"
                     change="+12.3%" 
                     isUp={true} 
-                    icon={<Wallet className="text-orange-500" />} 
+                    icon={<Wallet className="text-primary" />} 
                     delay={0.1}
                 />
                 <StatCard 
@@ -85,7 +85,7 @@ export function FinancialAnalytics() {
                     unit="FCFA"
                     change="-2.1%" 
                     isUp={false} 
-                    icon={<CreditCard className="text-orange-500" />} 
+                    icon={<CreditCard className="text-primary" />} 
                     delay={0.2}
                 />
                 <StatCard 
@@ -94,7 +94,7 @@ export function FinancialAnalytics() {
                     unit="%"
                     change="STABLE" 
                     isUp={true} 
-                    icon={<Activity className="text-orange-500" />} 
+                    icon={<Activity className="text-primary" />} 
                     delay={0.3}
                 />
             </div>
@@ -103,8 +103,8 @@ export function FinancialAnalytics() {
                 {/* Main Chart */}
                 <Card className="lg:col-span-2 border border-white/5 shadow-3xl bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group">
                     <CardHeader className="p-10 border-b border-white/5 relative">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
-                        <CardTitle className="text-3xl font-black italic uppercase tracking-tighter text-white">Flux de <span className="text-orange-500">Trésorerie</span></CardTitle>
+                        <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
+                        <CardTitle className="text-3xl font-black italic uppercase tracking-tighter text-white">Flux de <span className="text-primary">Trésorerie</span></CardTitle>
                         <CardDescription className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Analyse neuronale des transactions hebdomadaires</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[450px] p-10 pt-16">
@@ -146,9 +146,9 @@ export function FinancialAnalytics() {
 
                 {/* Performance Sidebar */}
                 <Card className="lg:col-span-1 border border-white/5 shadow-3xl bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden relative group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-[100px] -mr-32 -mt-32 transition-all group-hover:bg-orange-500/10" />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32 transition-all group-hover:bg-primary/10" />
                     <CardHeader className="p-10 border-b border-white/5 relative z-10">
-                        <CardTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">Bastions <span className="text-orange-500">Dominants</span></CardTitle>
+                        <CardTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">Bastions <span className="text-primary">Dominants</span></CardTitle>
                         <CardDescription className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Performances d&apos;élite par établissement</CardDescription>
                     </CardHeader>
                     <CardContent className="p-10 space-y-12 relative z-10">
@@ -159,23 +159,23 @@ export function FinancialAnalytics() {
                         ].map((item, idx) => (
                             <div key={idx} className="space-y-4 group/item">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[12px] font-black uppercase italic tracking-tight text-white group-hover/item:text-orange-500 transition-colors">{item.name}</span>
-                                    <span className="text-[10px] text-orange-500 font-black tracking-widest">{item.value} FCFA</span>
+                                    <span className="text-[12px] font-black uppercase italic tracking-tight text-white group-hover/item:text-primary transition-colors">{item.name}</span>
+                                    <span className="text-[10px] text-primary font-black tracking-widest">{item.value} FCFA</span>
                                 </div>
                                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                     <motion.div 
                                         initial={{ width: 0 }}
                                         animate={{ width: `${item.pct}%` }}
                                         transition={{ duration: 1.5, delay: 0.5 + (idx * 0.2), ease: "circOut" }}
-                                        className="h-full bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.6)] rounded-full" 
+                                        className="h-full bg-primary shadow-[0_0_15px_rgba(249,115,22,0.6)] rounded-full" 
                                     />
                                 </div>
                             </div>
                         ))}
                         
                         <div className="pt-10 mt-10 border-t border-white/5 flex items-center gap-6">
-                            <div className="p-5 bg-orange-500/10 border border-orange-500/20 rounded-2xl group-hover:scale-110 transition-transform">
-                                <Target className="h-8 w-8 text-orange-500" />
+                            <div className="p-5 bg-primary/10 border border-primary/20 rounded-2xl group-hover:scale-110 transition-transform">
+                                <Target className="h-8 w-8 text-primary" />
                             </div>
                             <div>
                                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-1">RENDEMENT GLOBAL</p>
@@ -197,11 +197,11 @@ function StatCard({ title, value, unit, change, isUp, icon, delay }: { title: st
             transition={{ duration: 0.5, delay }}
             whileHover={{ y: -5 }} 
         >
-            <Card className="border border-white/5 shadow-2xl bg-white/5 backdrop-blur-3xl rounded-[2rem] p-8 relative overflow-hidden group transition-all duration-500 hover:border-orange-500/30">
-                <div className="absolute top-0 left-0 w-1.5 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
+            <Card className="border border-white/5 shadow-2xl bg-white/5 backdrop-blur-3xl rounded-[2rem] p-8 relative overflow-hidden group transition-all duration-500 hover:border-primary/30">
+                <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
                 <div className="flex items-start justify-between mb-10">
-                    <div className="p-4 bg-white/5 border border-white/10 rounded-2xl group-hover:bg-orange-500/10 group-hover:border-orange-500/30 transition-all group-hover:scale-110">
-                        {React.cloneElement(icon as React.ReactElement, { className: 'h-6 w-6 text-orange-500' })}
+                    <div className="p-4 bg-white/5 border border-white/10 rounded-2xl group-hover:bg-primary/10 group-hover:border-primary/30 transition-all group-hover:scale-110">
+                        {React.cloneElement(icon as React.ReactElement, { className: 'h-6 w-6 text-primary' })}
                     </div>
                     <div className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black tracking-widest",
@@ -215,7 +215,7 @@ function StatCard({ title, value, unit, change, isUp, icon, delay }: { title: st
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic mb-1">{title}</p>
                     <div className="flex items-baseline gap-2">
                         <p className="text-4xl font-black italic tracking-tighter text-white">{value}</p>
-                        <span className="text-xs font-black text-orange-500 uppercase tracking-widest">{unit}</span>
+                        <span className="text-xs font-black text-primary uppercase tracking-widest">{unit}</span>
                     </div>
                 </div>
             </Card>

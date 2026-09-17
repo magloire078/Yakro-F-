@@ -41,9 +41,9 @@ export default function OrdersPage() {
                 </div>
                 <div className="relative z-30 text-center space-y-2 px-6">
                     <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white italic drop-shadow-2xl">
-                        Historique <span className="text-orange-500">Commandes</span>
+                        Historique <span className="text-primary">Commandes</span>
                     </h1>
-                    <p className="text-xs md:text-sm font-bold uppercase tracking-[0.4em] text-orange-200/80">
+                    <p className="text-xs md:text-sm font-bold uppercase tracking-[0.4em] text-primary/80">
                         Elite Dining Tracking
                     </p>
                 </div>
@@ -57,14 +57,14 @@ export default function OrdersPage() {
                         ))
                     ) : (
                         <div className="text-center py-24 glass rounded-[3rem] border-white/5 flex flex-col items-center gap-8 animate-in fade-in slide-in-from-bottom-10 duration-700">
-                            <div className="p-8 rounded-full bg-orange-500/10 border border-orange-500/20">
-                                <History className="w-16 h-16 text-orange-500 animate-pulse"/>
+                            <div className="p-8 rounded-full bg-primary/10 border border-primary/20">
+                                <History className="w-16 h-16 text-primary animate-pulse"/>
                             </div>
                             <div className="space-y-2">
                                 <p className="text-2xl font-black uppercase tracking-tighter">Silence Gastronomique</p>
                                 <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest opacity-60">Votre table est encore vide</p>
                             </div>
-                            <Button asChild className="rounded-2xl glass-orange text-white font-black uppercase tracking-widest px-10 h-14 hover:scale-110 active:scale-95 transition-all shadow-2xl shadow-orange-500/20">
+                            <Button asChild className="rounded-2xl glass-orange text-white font-black uppercase tracking-widest px-10 h-14 hover:scale-110 active:scale-95 transition-all shadow-2xl shadow-primary/20">
                                 <Link href="/">Explorer la Carte</Link>
                             </Button>
                         </div>

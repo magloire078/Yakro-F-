@@ -84,7 +84,7 @@ export function RestaurantManager() {
             toast({
                 title: "ORDRE EXÉCUTÉ",
                 description: `Action tracée dans les registres d'audit Yakro.`,
-                className: "bg-[#121214] border-orange-500 text-white font-black uppercase italic tracking-tighter"
+                className: "bg-[#121214] border-primary text-white font-black uppercase italic tracking-tighter"
             });
         } catch (error) {
             console.error(error);
@@ -99,15 +99,15 @@ export function RestaurantManager() {
 
     return (
         <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
                 <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                            <Store className="h-5 w-5 text-orange-500" />
+                        <div className="p-2 bg-primary/10 border border-primary/20 rounded-xl">
+                            <Store className="h-5 w-5 text-primary" />
                         </div>
                         <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">
-                            Gestion des <span className="text-orange-500 italic">Bastions</span>
+                            Gestion des <span className="text-primary italic">Bastions</span>
                         </h2>
                     </div>
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
@@ -120,7 +120,7 @@ export function RestaurantManager() {
                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">CAPACITÉ RÉSEAU</span>
                         <span className="text-xl font-black italic text-white">{restaurants.length} UNITÉS</span>
                     </div>
-                    <Button variant="outline" className="h-14 w-14 rounded-2xl bg-white/5 border-white/10 hover:bg-orange-500/10 hover:text-orange-500 text-white transition-all">
+                    <Button variant="outline" className="h-14 w-14 rounded-2xl bg-white/5 border-white/10 hover:bg-primary/10 hover:text-primary text-white transition-all">
                         <Filter className="h-5 w-5" />
                     </Button>
                 </div>
@@ -150,7 +150,7 @@ export function RestaurantManager() {
                                     >
                                         <TableCell className="py-6 px-4">
                                             <div className="flex items-center gap-4">
-                                                <div className="relative h-12 w-12 rounded-2xl border border-white/10 group-hover:border-orange-500/30 transition-all group-hover:scale-110 shadow-lg overflow-hidden">
+                                                <div className="relative h-12 w-12 rounded-2xl border border-white/10 group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg overflow-hidden">
                                                     <Image 
                                                         src={restaurant.image || `/assets/marketing/hero-food.png`}
                                                         alt={restaurant.nom}
@@ -159,13 +159,13 @@ export function RestaurantManager() {
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-1 min-w-0">
-                                                    <span className="font-black text-sm text-white uppercase italic tracking-tight group-hover:text-orange-500 transition-colors">{restaurant.nom}</span>
+                                                    <span className="font-black text-sm text-white uppercase italic tracking-tight group-hover:text-primary transition-colors">{restaurant.nom}</span>
                                                     <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest truncate">{restaurant.adresse || 'ZONE YAKRO CENTRALE'}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-6">
-                                            <Badge variant="outline" className="rounded-xl border-orange-500/30 text-orange-500 bg-orange-500/5 text-[9px] font-black uppercase tracking-widest py-1.5 px-3">
+                                            <Badge variant="outline" className="rounded-xl border-primary/30 text-primary bg-primary/5 text-[9px] font-black uppercase tracking-widest py-1.5 px-3">
                                                 {restaurant.cuisine}
                                             </Badge>
                                         </TableCell>
@@ -174,7 +174,7 @@ export function RestaurantManager() {
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex gap-0.5">
                                                         {[1, 2, 3, 4, 5].map((s) => (
-                                                            <Star key={s} className={cn("h-3 w-3", s <= Math.round(restaurant.note) ? "fill-orange-500 text-orange-500" : "fill-white/5 text-white/10")} />
+                                                            <Star key={s} className={cn("h-3 w-3", s <= Math.round(restaurant.note) ? "fill-primary text-primary" : "fill-white/5 text-white/10")} />
                                                         ))}
                                                     </div>
                                                     <span className="text-[10px] font-black text-white italic">{restaurant.note.toFixed(1)}</span>
@@ -202,12 +202,12 @@ export function RestaurantManager() {
                                         <TableCell className="text-right py-6 px-4">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-orange-500/10 text-slate-500 hover:text-orange-500 border border-transparent hover:border-orange-500/20 transition-all hover:scale-110">
+                                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 text-slate-500 hover:text-primary border border-transparent hover:border-primary/20 transition-all hover:scale-110">
                                                         <MoreHorizontal className="h-5 w-5" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-64 bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/10 rounded-2xl p-1 shadow-2xl text-white overflow-hidden">
-                                                    <DropdownMenuItem className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-orange-500 focus:text-white cursor-pointer transition-colors">
+                                                    <DropdownMenuItem className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-primary focus:text-white cursor-pointer transition-colors">
                                                         <ExternalLink className="h-4 w-4" />
                                                         Accéder à la Vitrine
                                                     </DropdownMenuItem>

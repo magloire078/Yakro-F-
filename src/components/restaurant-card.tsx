@@ -32,8 +32,8 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
     >
       <Link href={`/restaurants?id=${restaurant.id}`} className="block h-full">
         <Card className={cn(
-          "overflow-hidden bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-2xl hover:border-orange-500/30 transition-all duration-500 cursor-pointer group h-full flex flex-col rounded-[2rem]",
-          featured && "border-orange-500/20 bg-orange-500/[0.02]"
+          "overflow-hidden bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-2xl hover:border-primary/30 transition-all duration-500 cursor-pointer group h-full flex flex-col rounded-[2rem]",
+          featured && "border-primary/20 bg-primary/[0.02]"
         )}>
           <CardHeader className="p-0 relative h-52 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
@@ -63,7 +63,7 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
             
             <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                 {featured && (
-                    <Badge className="bg-orange-500 hover:bg-orange-600 border-none px-3 py-1 shadow-lg shadow-orange-500/20">
+                    <Badge className="bg-primary hover:bg-primary/90 border-none px-3 py-1 shadow-lg shadow-primary/20">
                         <Star className="w-3 h-3 mr-1 fill-white" /> En vedette
                     </Badge>
                 )}
@@ -75,7 +75,7 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
 
             {distance !== undefined && (
               <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-xs font-semibold border border-white/10">
-                <MapPin className="w-3 h-3 text-orange-400" />
+                <MapPin className="w-3 h-3 text-primary" />
                 <span>{distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}</span>
               </div>
             )}
@@ -84,8 +84,8 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
           <CardContent className="p-6 flex-grow flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex justify-between items-start gap-4">
-                <h3 className="text-xl font-bold font-headline group-hover:text-orange-500 transition-colors duration-300">{restaurant.nom}</h3>
-                <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-orange-500 group-hover:translate-x-1 transition-all duration-300" />
+                <h3 className="text-xl font-bold font-headline group-hover:text-primary transition-colors duration-300">{restaurant.nom}</h3>
+                <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary group-hover:translate-x-1 transition-all duration-300" />
               </div>
               
               <div className="flex flex-wrap gap-2">
@@ -93,7 +93,7 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
                     {restaurant.cuisine}
                 </Badge>
                 {matchReason && (
-                   <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 text-[10px] font-bold uppercase tracking-wider border border-orange-100 dark:border-orange-900/50">
+                   <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 dark:bg-orange-950/30 text-primary dark:text-orange-400 text-[10px] font-bold uppercase tracking-wider border border-primary/10 dark:border-orange-900/50">
                      ✨ {matchReason}
                    </div>
                 )}
@@ -105,7 +105,7 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
                 <div className="flex flex-col">
                   <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Temps</span>
                   <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
-                    <Clock className="w-3.5 h-3.5 text-orange-500" />
+                    <Clock className="w-3.5 h-3.5 text-primary" />
                     <span>{restaurant.tempsDeLivraison} min</span>
                   </div>
                 </div>

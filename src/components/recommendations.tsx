@@ -80,7 +80,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
         transition={{ delay: index * 0.1 }}
         className="h-full"
       >
-        <Card className="group relative overflow-hidden bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 hover:border-orange-500/40 transition-all duration-500 h-full flex flex-col rounded-[2.5rem] shadow-sm hover:shadow-2xl">
+        <Card className="group relative overflow-hidden bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 hover:border-primary/40 transition-all duration-500 h-full flex flex-col rounded-[2.5rem] shadow-sm hover:shadow-2xl">
           <CardHeader className="p-0 relative h-48 overflow-hidden">
              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-10" />
             {isCloudinary ? (
@@ -103,7 +103,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
                 data-ai-hint={`${rec.cuisine} food`}
               />
             )}
-            <Badge className="absolute top-4 right-4 z-20 bg-orange-500/90 backdrop-blur-md border-none shadow-lg">
+            <Badge className="absolute top-4 right-4 z-20 bg-primary/90 backdrop-blur-md border-none shadow-lg">
                 <Sparkles className="w-3 h-3 mr-1 fill-white" /> Recommandé
             </Badge>
             <div className="absolute bottom-4 left-4 z-20">
@@ -113,7 +113,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
           <CardContent className="p-6 flex flex-col flex-grow relative">
             <div className="space-y-4 flex-grow">
                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-orange-500 uppercase tracking-widest">{rec.cuisine}</span>
+                  <span className="text-xs font-bold text-primary uppercase tracking-widest">{rec.cuisine}</span>
                   <div className="flex items-center gap-1 text-sm font-bold">
                     <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
                     <span>{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') : '---'} <small className="text-[10px] font-normal">FCFA</small></span>
@@ -135,7 +135,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
             </div>
 
             <Button 
-                className="w-full mt-6 rounded-2xl bg-slate-900 dark:bg-orange-500 hover:bg-orange-600 dark:hover:bg-orange-400 text-white font-bold h-12 gap-2 shadow-lg shadow-orange-500/10"
+                className="w-full mt-6 rounded-2xl bg-slate-900 dark:bg-orange-500 hover:bg-primary/90 dark:hover:bg-orange-400 text-white font-bold h-12 gap-2 shadow-lg shadow-primary/10"
                 onClick={() => handleAddToCart(rec.item)}
             >
                 <ShoppingBag className="w-4 h-4" /> Commander
@@ -150,7 +150,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
     <section className="w-full py-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div className="space-y-2">
-            <div className="flex items-center gap-2 text-orange-500 font-bold uppercase tracking-[0.2em] text-[10px]">
+            <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-[0.2em] text-[10px]">
                <BrainCircuit className="h-4 w-4" />
                Personnalisé par Yakro-F AI
             </div>

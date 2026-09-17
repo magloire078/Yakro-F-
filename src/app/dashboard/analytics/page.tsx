@@ -243,10 +243,10 @@ export default function AnalyticsPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-4"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-4"
                     >
-                        <Activity className="h-3 w-3 text-orange-500 animate-pulse" />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-orange-500">Intelligence Stratégique</span>
+                        <Activity className="h-3 w-3 text-primary animate-pulse" />
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
                     </motion.div>
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
@@ -254,7 +254,7 @@ export default function AnalyticsPage() {
                         transition={{ delay: 0.1 }}
                         className="text-4xl md:text-8xl font-black italic uppercase tracking-tighter text-white leading-none"
                     >
-                        Analyse <span className="text-orange-500">Elite</span>
+                        Analyse <span className="text-primary">Elite</span>
                     </motion.h1>
                     <motion.p 
                         initial={{ opacity: 0, y: 20 }}
@@ -280,7 +280,7 @@ export default function AnalyticsPage() {
                             className={cn(
                                 "flex-none snap-start px-5 py-3 md:px-6 md:py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
                                 selectedRange === range.id 
-                                    ? "bg-orange-500 text-white shadow-xl shadow-orange-500/20" 
+                                    ? "bg-primary text-white shadow-xl shadow-primary/20" 
                                     : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5"
                             )}
                         >
@@ -307,12 +307,12 @@ export default function AnalyticsPage() {
                             ].map((item, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="group glass-dark p-8 relative overflow-hidden transition-all duration-500 hover:border-orange-500/50 hover:shadow-orange-500/10 shadow-xl rounded-[2.5rem]"
+                                    className="group glass-dark p-8 relative overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 shadow-xl rounded-[2.5rem]"
                                 >
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="space-y-1">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-orange-500 transition-colors">{item.label}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">{item.label}</span>
                                             {selectedRange !== 'all' && (
                                                 <div className={cn(
                                                     "flex items-center gap-1 text-[10px] font-bold",
@@ -324,12 +324,12 @@ export default function AnalyticsPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-3 bg-slate-100 rounded-2xl border border-slate-200 group-hover:border-orange-500/20 group-hover:bg-orange-500/10 transition-all">
-                                            <item.icon className={`h-5 w-5 ${item.color === 'orange' ? 'text-orange-500' : 'text-slate-400 group-hover:text-orange-500'}`} />
+                                        <div className="p-3 bg-slate-100 rounded-2xl border border-slate-200 group-hover:border-primary/20 group-hover:bg-primary/10 transition-all">
+                                            <item.icon className={`h-5 w-5 ${item.color === 'orange' ? 'text-primary' : 'text-slate-400 group-hover:text-primary'}`} />
                                         </div>
                                     </div>
                                     <div className="flex items-baseline gap-2">
-                                        <span className={`text-4xl md:text-6xl font-black italic tracking-tighter ${item.color === 'orange' ? 'text-orange-500' : 'text-white'}`}>
+                                        <span className={`text-4xl md:text-6xl font-black italic tracking-tighter ${item.color === 'orange' ? 'text-primary' : 'text-white'}`}>
                                             {item.value.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                                         </span>
                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
@@ -337,7 +337,7 @@ export default function AnalyticsPage() {
                                         </span>
                                     </div>
                                     <p className="text-[9px] font-bold text-slate-400 uppercase mt-4 tracking-[0.15em]">{item.sub}</p>
-                                    <div className="absolute -bottom-6 -right-6 h-24 w-24 bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/10 transition-all" />
+                                    <div className="absolute -bottom-6 -right-6 h-24 w-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all" />
                                 </div>
                             ))}
                         </div>
@@ -353,7 +353,7 @@ export default function AnalyticsPage() {
                                     </div>
                                     <div className="flex items-center gap-6">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                            <div className="w-2 h-2 rounded-full bg-primary" />
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Actuel</span>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -361,7 +361,7 @@ export default function AnalyticsPage() {
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Précédent</span>
                                         </div>
                                         <div className="p-3 bg-slate-100 rounded-2xl">
-                                            <Activity className="h-6 w-6 text-orange-500" />
+                                            <Activity className="h-6 w-6 text-primary" />
                                         </div>
                                     </div>
                                 </div>
@@ -406,7 +406,7 @@ export default function AnalyticsPage() {
 
                                                         return (
                                                           <div className="bg-[#0A0A0B] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-xl space-y-3">
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">{payload[0].payload.name}</p>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-primary">{payload[0].payload.name}</p>
                                                             <div className="space-y-1">
                                                                 <p className="text-2xl font-black italic tracking-tighter text-white">{curr.toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
                                                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Précédent: {prev.toLocaleString('fr-FR')} F</p>
@@ -440,7 +440,7 @@ export default function AnalyticsPage() {
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Revenu net par établissement</p>
                                     </div>
                                     <div className="p-3 bg-slate-100 rounded-2xl">
-                                        <BarChart3 className="h-6 w-6 text-orange-500" />
+                                        <BarChart3 className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
                                 
@@ -481,7 +481,7 @@ export default function AnalyticsPage() {
                                                       if (active && payload && payload.length) {
                                                         return (
                                                           <div className="bg-[#0A0A0B] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-xl">
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2 block">{payload[0].payload.name}</p>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 block">{payload[0].payload.name}</p>
                                                             <p className="text-3xl font-black italic tracking-tighter text-white">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
                                                           </div>
                                                         )
@@ -519,7 +519,7 @@ export default function AnalyticsPage() {
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Les 5 créations les plus dominantes</p>
                                     </div>
                                     <div className="p-3 bg-slate-100 rounded-2xl">
-                                        <PieChart className="h-6 w-6 text-orange-500" />
+                                        <PieChart className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
                                 
@@ -528,20 +528,20 @@ export default function AnalyticsPage() {
                                         topSellingItems.map((item, index) => (
                                             <div key={item.name} className="group relative flex items-center justify-between py-2">
                                                 <div className="flex items-center gap-5">
-                                                    <span className="text-lg font-black italic text-slate-200 group-hover:text-orange-500 transition-colors w-6">0{index + 1}</span>
+                                                    <span className="text-lg font-black italic text-slate-200 group-hover:text-primary transition-colors w-6">0{index + 1}</span>
                                                     <div>
-                                                        <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-orange-500 transition-colors">{item.name}</p>
+                                                        <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{item.name}</p>
                                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.count} Unités vendues</p>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-lg font-black italic tracking-tighter text-orange-500">{item.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40">F</span></p>
+                                                    <p className="text-lg font-black italic tracking-tighter text-primary">{item.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40">F</span></p>
                                                     <div className="h-1 w-24 bg-slate-100 mt-3 rounded-full overflow-hidden">
                                                         <motion.div 
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${(item.revenue / (topSellingItems[0]?.revenue || 1)) * 100}%` }}
                                                             transition={{ duration: 1.5, ease: "circOut" }}
-                                                            className="h-full bg-gradient-to-r from-orange-500/50 to-orange-500" 
+                                                            className="h-full bg-gradient-to-r from-primary/50 to-primary" 
                                                         />
                                                     </div>
                                                 </div>
@@ -558,8 +558,8 @@ export default function AnalyticsPage() {
                                 </div>
                                 
                                 <div className="mt-12 p-8 bg-white/5 border border-white/5 rounded-[2rem] relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700" />
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 mb-3">Vision Stratégique</h4>
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700" />
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-3">Vision Stratégique</h4>
                                     <p className="text-xs font-bold text-slate-500 leading-relaxed italic relative z-10">
                                         &ldquo;Votre plat signature génère {stats.totalRevenue > 0 ? ((topSellingItems[0]?.revenue / stats.totalRevenue) * 100).toFixed(1) : 0}% de votre revenu net. Une optimisation de marge sur ce produit impacterait drastiquement votre rentabilité globale.&rdquo;
                                     </p>
@@ -572,7 +572,7 @@ export default function AnalyticsPage() {
                 {/* Bottom Branding */}
                 <div className="text-center py-10 opacity-20 group hover:opacity-100 transition-all duration-500">
                     <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-300 to-transparent mx-auto mb-6" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 group-hover:text-orange-500 transition-colors">
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 group-hover:text-primary transition-colors">
                         Propulsé par Yakro Intelligence Engine v2.0
                     </p>
                 </div>

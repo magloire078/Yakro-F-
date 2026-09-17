@@ -16,7 +16,7 @@ const featureCategories = [
   {
     title: "Gastronomie Locale",
     icon: Utensils,
-    color: "bg-orange-500/10 text-orange-600",
+    color: "bg-primary/10 text-primary",
     features: ["Le meilleur de Yakro", "Produits frais & locaux", "Recettes traditionnelles", "Restaurants vérifiés"]
   },
   {
@@ -28,7 +28,7 @@ const featureCategories = [
   {
     title: "IA Intelligente",
     icon: Sparkles,
-    color: "bg-orange-500/10 text-orange-600",
+    color: "bg-primary/10 text-primary",
     features: ["Recherche naturelle", "Recommandations personnalisées", "Assistant vocal (bientôt)", "Analyse des goûts"]
   },
   {
@@ -69,25 +69,25 @@ export function LandingPage() {
   }, []);
 
   return (
-    <div className="bg-[#FAEBD7] dark:bg-slate-950 min-h-screen transition-colors duration-500 overflow-x-hidden selection:bg-orange-200">
+    <div className="bg-[#FAEBD7] dark:bg-slate-950 min-h-screen transition-colors duration-500 overflow-x-hidden selection:bg-primary/20">
       {/* Abstract Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[10%] left-[-5%] w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-[20%] right-[-5%] w-96 h-96 bg-orange-400/10 rounded-full blur-3xl" />
+        <div className="absolute top-[10%] left-[-5%] w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[20%] right-[-5%] w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-orange-200/50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl supports-[backdrop-filter]:bg-white/40 dark:supports-[backdrop-filter]:bg-slate-900/40">
+      <header className="sticky top-0 z-50 w-full border-b border-primary/20 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl supports-[backdrop-filter]:bg-white/40 dark:supports-[backdrop-filter]:bg-slate-900/40">
         <div className="container flex h-16 sm:h-20 items-center justify-between px-4 sm:px-8">
           <Logo size="md" />
           <div className="flex items-center gap-4">
             <nav className="hidden md:flex items-center gap-6 mr-6">
-              <Link href="#features" className="text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-orange-500 transition-colors">Fonctionnalités</Link>
-              <Link href="#about" className="text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-orange-500 transition-colors">À propos</Link>
+              <Link href="#features" className="text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">Fonctionnalités</Link>
+              <Link href="#about" className="text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">À propos</Link>
             </nav>
             <Button
               onClick={() => router.push('/login')}
-              className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 px-6 sm:px-8 rounded-xl sm:rounded-2xl h-10 sm:h-11 font-bold text-sm sm:text-base"
+              className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 px-6 sm:px-8 rounded-xl sm:rounded-2xl h-10 sm:h-11 font-bold text-sm sm:text-base"
             >
               Connexion
             </Button>
@@ -104,13 +104,13 @@ export function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <Badge variant="outline" className="mb-6 px-4 py-1.5 text-orange-600 border-orange-500/30 bg-orange-500/5 backdrop-blur-sm rounded-full font-bold uppercase tracking-wider text-[9px] sm:text-[10px]">
+              <Badge variant="outline" className="mb-6 px-4 py-1.5 text-primary border-primary/30 bg-primary/5 backdrop-blur-sm rounded-full font-bold uppercase tracking-wider text-[9px] sm:text-[10px]">
                 <Sparkles className="w-3 h-3 mr-2" />
                 L&apos;expérience food-tech ultime à Yakro
               </Badge>
               <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-slate-900 dark:text-white leading-[0.9] mb-6 sm:mb-8">
                 Savourez <br className="hidden xs:block" />
-                <span className="text-orange-500 italic relative inline-block">
+                <span className="text-primary italic relative inline-block">
                   l&apos;instant.
                   <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full" viewBox="0 0 100 10" preserveAspectRatio="none">
                     <path d="M0 5 Q 50 10 100 5" stroke="#FF8C00" strokeWidth="4" fill="transparent" strokeLinecap="round" />
@@ -125,7 +125,7 @@ export function LandingPage() {
                   Démarrer l&apos;aventure
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                <Button size="lg" variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-500/10 px-8 sm:px-10 h-14 sm:h-16 rounded-xl sm:rounded-2xl text-base sm:text-lg font-black backdrop-blur-sm bg-white/30 w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 px-8 sm:px-10 h-14 sm:h-16 rounded-xl sm:rounded-2xl text-base sm:text-lg font-black backdrop-blur-sm bg-white/30 w-full sm:w-auto">
                   <PlayCircle className="mr-2 h-5 w-5" />
                   Voir la démo
                 </Button>
@@ -187,7 +187,7 @@ export function LandingPage() {
                     onClick={() => setCurrentHero(i)}
                     className={cn(
                       "h-1.5 xs:h-2 sm:h-3 rounded-full transition-all duration-500",
-                      currentHero === i ? "w-6 xs:w-8 sm:w-12 bg-orange-500 shadow-lg shadow-orange-500/50" : "w-1.5 xs:w-2 sm:w-3 bg-white/50 hover:bg-white"
+                      currentHero === i ? "w-6 xs:w-8 sm:w-12 bg-primary shadow-lg shadow-primary/50" : "w-1.5 xs:w-2 sm:w-3 bg-white/50 hover:bg-white"
                     )}
                     aria-label={`Aller à l'image ${i + 1}`}
                   />
@@ -202,9 +202,9 @@ export function LandingPage() {
           <div className="container">
             <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center mb-12 sm:mb-16">
               <h2 className="text-3xl xs:text-4xl font-black tracking-tight sm:text-6xl text-slate-900 dark:text-white leading-tight">
-                Une technologie <br /><span className="text-orange-500">au service du goût</span>
+                Une technologie <br /><span className="text-primary">au service du goût</span>
               </h2>
-              <div className="w-16 sm:w-24 h-1.5 sm:h-2 bg-orange-500 rounded-full" />
+              <div className="w-16 sm:w-24 h-1.5 sm:h-2 bg-primary rounded-full" />
               <p className="max-w-[95%] sm:max-w-[85%] leading-relaxed text-slate-600 dark:text-slate-400 text-lg sm:text-xl font-medium mt-4 sm:mt-6">
                 Nous fusionnons le meilleur de la gastronomie ivoirienne avec une expérience numérique sans couture.
               </p>
@@ -219,7 +219,7 @@ export function LandingPage() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="flex flex-col h-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-orange-100 dark:border-orange-500/20 hover:border-orange-300 hover:scale-[1.02] sm:hover:scale-[1.03] transition-all duration-500 rounded-[2rem] sm:rounded-[2.5rem] p-4 group">
+                  <Card className="flex flex-col h-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-primary/10 dark:border-orange-500/20 hover:border-primary/30 hover:scale-[1.02] sm:hover:scale-[1.03] transition-all duration-500 rounded-[2rem] sm:rounded-[2.5rem] p-4 group">
                     <CardHeader className="flex-col items-start gap-3 sm:gap-4">
                       <div className={cn("p-4 sm:p-5 rounded-2xl sm:rounded-3xl transition-transform group-hover:rotate-6 duration-300 shadow-sm", category.color)}>
                         <category.icon className="h-6 w-6 sm:h-8 sm:w-8" />
@@ -232,7 +232,7 @@ export function LandingPage() {
                       <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base text-slate-600 dark:text-slate-400 font-medium">
                         {category.features.map((feature) => (
                           <li key={feature} className="flex items-center group/item">
-                            <div className="mr-3 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-orange-500/30 group-hover/item:scale-150 group-hover/item:bg-orange-500 transition-all" />
+                            <div className="mr-3 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary/30 group-hover/item:scale-150 group-hover/item:bg-primary transition-all" />
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -251,24 +251,24 @@ export function LandingPage() {
           <div className="container relative z-10 px-6 sm:px-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 items-center">
               <div className="text-left space-y-6 sm:space-y-8">
-                <Badge className="bg-orange-500 hover:bg-orange-600 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs">Notre Mission</Badge>
-                <h2 className="text-3xl xs:text-4xl sm:text-5xl md:text-7xl font-black leading-[1] sm:leading-[0.95]">Digitaliser la <br className="hidden sm:block" /><span className="text-orange-500">capitale</span> avec passion.</h2>
+                <Badge className="bg-primary hover:bg-primary/90 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs">Notre Mission</Badge>
+                <h2 className="text-3xl xs:text-4xl sm:text-5xl md:text-7xl font-black leading-[1] sm:leading-[0.95]">Digitaliser la <br className="hidden sm:block" /><span className="text-primary">capitale</span> avec passion.</h2>
                 <p className="text-base sm:text-xl text-slate-400 leading-relaxed font-light max-w-xl">
                   Yakro Go n&apos;est pas qu&apos;une application de livraison. C&apos;est un écosystème conçu pour valoriser les artisans culinaires de Yamoussoukro tout en offrant aux habitants un service de classe mondiale.
                 </p>
                 <div className="grid grid-cols-2 gap-6 sm:gap-8 pt-4">
                   <div className="space-y-1 sm:space-y-2">
-                    <p className="text-4xl sm:text-5xl font-black text-orange-500">50+</p>
+                    <p className="text-4xl sm:text-5xl font-black text-primary">50+</p>
                     <p className="text-slate-400 font-bold uppercase tracking-tighter text-[10px] sm:text-sm">Partenaires</p>
                   </div>
                   <div className="space-y-1 sm:space-y-2">
-                    <p className="text-4xl sm:text-5xl font-black text-orange-500">15min</p>
+                    <p className="text-4xl sm:text-5xl font-black text-primary">15min</p>
                     <p className="text-slate-400 font-bold uppercase tracking-tighter text-[10px] sm:text-sm">Moyenne Livraison</p>
                   </div>
                 </div>
               </div>
               <div className="relative aspect-square sm:aspect-video lg:aspect-square mt-8 lg:mt-0">
-                <div className="absolute inset-0 bg-orange-500/20 rounded-[2rem] sm:rounded-[4rem] blur-2xl sm:blur-3xl" />
+                <div className="absolute inset-0 bg-primary/20 rounded-[2rem] sm:rounded-[4rem] blur-2xl sm:blur-3xl" />
                 <div className="relative h-full w-full rounded-[2rem] sm:rounded-[3.5rem] border border-white/10 overflow-hidden shadow-2xl">
                     <Image 
                         src="/assets/marketing/hero-basilica.png" 
@@ -278,7 +278,7 @@ export function LandingPage() {
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="bg-white/10 backdrop-blur-md p-6 sm:p-10 rounded-full border border-white/20">
-                            <Sparkles className="h-12 w-12 sm:h-20 sm:w-20 text-orange-500 animate-pulse" />
+                            <Sparkles className="h-12 w-12 sm:h-20 sm:w-20 text-primary animate-pulse" />
                         </div>
                     </div>
                 </div>
@@ -290,19 +290,19 @@ export function LandingPage() {
         {/* Final CTA Section */}
         <section className="py-16 sm:py-24 text-center px-4">
           <div className="container">
-            <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12 bg-white dark:bg-slate-900/50 rounded-[2.5rem] sm:rounded-[3.5rem] p-8 xs:p-12 sm:p-24 shadow-2xl shadow-orange-500/5 border border-orange-50/50 dark:border-orange-500/10">
+            <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12 bg-white dark:bg-slate-900/50 rounded-[2.5rem] sm:rounded-[3.5rem] p-8 xs:p-12 sm:p-24 shadow-2xl shadow-primary/5 border border-primary/5 dark:border-orange-500/10">
                 <h2 className="text-3xl xs:text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 dark:text-white leading-tight">
-                    Prêt à goûter <br /><span className="text-orange-500">au futur ?</span>
+                    Prêt à goûter <br /><span className="text-primary">au futur ?</span>
                 </h2>
                 <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
                     Rejoignez les milliers d&apos;utilisateurs qui font déjà confiance à Yakro Go pour leurs repas quotidiens.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 pt-4">
-                    <Button size="lg" onClick={() => router.push('/login')} className="bg-orange-500 hover:bg-orange-600 text-white px-8 sm:px-16 h-16 sm:h-20 text-lg sm:text-xl font-black rounded-xl sm:rounded-[2rem] shadow-xl shadow-orange-500/30 group w-full sm:w-auto">
+                    <Button size="lg" onClick={() => router.push('/login')} className="bg-primary hover:bg-primary/90 text-white px-8 sm:px-16 h-16 sm:h-20 text-lg sm:text-xl font-black rounded-xl sm:rounded-[2rem] shadow-xl shadow-primary/30 group w-full sm:w-auto">
                         Commander maintenant
                         <Zap className="ml-2 h-6 w-6 fill-white" />
                     </Button>
-                    <Button size="lg" variant="ghost" className="text-slate-900 dark:text-white h-16 sm:h-20 px-8 sm:px-10 text-lg sm:text-xl font-black hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-xl sm:rounded-[2rem] w-full sm:w-auto">
+                    <Button size="lg" variant="ghost" className="text-slate-900 dark:text-white h-16 sm:h-20 px-8 sm:px-10 text-lg sm:text-xl font-black hover:bg-primary/10 dark:hover:bg-orange-500/10 rounded-xl sm:rounded-[2rem] w-full sm:w-auto">
                         En savoir plus
                     </Button>
                 </div>
@@ -312,7 +312,7 @@ export function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-orange-200/30 py-12 bg-white/40 dark:bg-slate-900/40 px-4">
+      <footer className="border-t border-primary/20 py-12 bg-white/40 dark:bg-slate-900/40 px-4">
         <div className="container flex flex-col items-center justify-between gap-12 md:flex-row">
           <div className="flex flex-col items-center md:items-start gap-6">
             <Logo size="md" />
@@ -320,38 +320,38 @@ export function LandingPage() {
               La première plateforme de livraison intelligente dédiée à la capitale de la Côte d&apos;Ivoire.
             </p>
             <div className="flex gap-4">
-                <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-600 hover:bg-orange-500 hover:text-white transition-colors cursor-pointer"><Shield size={18} /></div>
-                <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-600 hover:bg-orange-500 hover:text-white transition-colors cursor-pointer"><MapPin size={18} /></div>
-                <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-600 hover:bg-orange-500 hover:text-white transition-colors cursor-pointer"><Clock size={18} /></div>
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"><Shield size={18} /></div>
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"><MapPin size={18} /></div>
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"><Clock size={18} /></div>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-12 w-full md:w-auto">
             <div className="space-y-4">
                 <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] sm:text-xs">Produit</h4>
                 <nav className="flex flex-col gap-2 sm:gap-3">
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">Restaurants</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">Livreurs</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">Partenaires</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Restaurants</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Livreurs</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Partenaires</Link>
                 </nav>
             </div>
             <div className="space-y-4">
                 <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] sm:text-xs">Compagnie</h4>
                 <nav className="flex flex-col gap-2 sm:gap-3">
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">À propos</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">Contact</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">Blog</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">À propos</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Contact</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Blog</Link>
                 </nav>
             </div>
             <div className="space-y-4">
                 <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] sm:text-xs">Légal</h4>
                 <nav className="flex flex-col gap-2 sm:gap-3">
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">Mentions</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-orange-500">Confidentialité</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Mentions</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Confidentialité</Link>
                 </nav>
             </div>
           </div>
         </div>
-        <div className="container mt-12 pt-8 border-t border-orange-100 text-center">
+        <div className="container mt-12 pt-8 border-t border-primary/10 text-center">
             <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">© {new Date().getFullYear()} Yakro Go. Made with ❤️ in Yamoussoukro.</span>
         </div>
       </footer>

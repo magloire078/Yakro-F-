@@ -144,12 +144,12 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
         }}
         className={cn(
           "relative overflow-hidden transition-all duration-500 rounded-2xl p-[1.5px]",
-          isFocused ? "bg-gradient-to-r from-orange-600 via-orange-400 to-orange-500" : "bg-slate-200 dark:bg-slate-800"
+          isFocused ? "bg-gradient-to-r from-primary via-primary to-primary" : "bg-slate-200 dark:bg-slate-800"
         )}
       >
         <div className="relative flex items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[0.9rem] overflow-hidden">
           <div className="pl-4 flex items-center justify-center">
-             <Search className={cn("h-5 w-5 transition-colors duration-300", isFocused ? "text-orange-500" : "text-slate-400")} />
+             <Search className={cn("h-5 w-5 transition-colors duration-300", isFocused ? "text-primary" : "text-slate-400")} />
           </div>
           
           <Input
@@ -172,7 +172,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   >
-                    <Loader className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+                    <Loader className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -181,7 +181,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
                     animate={{ opacity: 1, scale: 1 }}
                     whileHover={{ scale: 1.2, rotate: 10 }}
                   >
-                    <Sparkles className={cn("h-4 w-4 sm:h-5 sm:w-5 transition-colors", searchTerm ? "text-orange-500 fill-orange-500/20" : "text-slate-300")} />
+                    <Sparkles className={cn("h-4 w-4 sm:h-5 sm:w-5 transition-colors", searchTerm ? "text-primary fill-primary/20" : "text-slate-300")} />
                   </motion.div>
                 )}
              </AnimatePresence>
@@ -200,14 +200,14 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
                 onClick={toggleListening}
                 className={cn(
                   "p-2 rounded-full transition-all duration-300 relative",
-                  isListening ? "bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.5)]" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
+                  isListening ? "bg-primary text-white shadow-[0_0_15px_rgba(249,115,22,0.5)]" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
                 )}
                 title={isListening ? "Arrêter l'écoute" : "Recherche vocale"}
               >
                 {isListening ? (
                   <>
                     <Mic className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
-                    <span className="absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-20" />
+                    <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
                   </>
                 ) : (
                   <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -223,15 +223,15 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute top-full left-0 right-0 mt-2 p-3 sm:p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-orange-500/20 rounded-2xl shadow-2xl z-50 flex flex-col gap-2 sm:gap-3"
+            className="absolute top-full left-0 right-0 mt-2 p-3 sm:p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-primary/20 rounded-2xl shadow-2xl z-50 flex flex-col gap-2 sm:gap-3"
           >
             <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">
-               <Zap className="h-3 w-3 text-orange-500 fill-orange-500 animate-pulse" />
+               <Zap className="h-3 w-3 text-primary fill-primary animate-pulse" />
                Assistant Yakro-IA
             </div>
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {interpretedResult.intent && (
-                    <Badge variant="outline" className="bg-orange-500/5 text-orange-600 border-orange-200/50 italic px-2 sm:px-3 text-[10px] sm:text-xs py-0.5 sm:py-1">
+                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 italic px-2 sm:px-3 text-[10px] sm:text-xs py-0.5 sm:py-1">
                         {interpretedResult.intent}
                     </Badge>
                 )}

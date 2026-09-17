@@ -366,11 +366,11 @@ export default function CustomerHomePage() {
                 transition={{ duration: 0.8, ease: "easeOut" }}
             >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-orange text-white text-[10px] font-black uppercase tracking-[0.2em] mb-8 animate-float">
-                    <SparklesIcon className="h-4 w-4 text-orange-400" />
+                    <SparklesIcon className="h-4 w-4 text-primary" />
                     Propulsé par Yakro Intelligence
                 </div>
                 <h1 className="text-4xl md:text-7xl font-black text-white leading-[1.1] tracking-tighter uppercase italic">
-                    L&apos;Élite de <span className="text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">Yakro</span><br />
+                    L&apos;Élite de <span className="text-primary drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">Yakro</span><br />
                     À votre porte.
                 </h1>
                 <p className="mt-6 text-base md:text-xl text-slate-200 max-w-xl mx-auto font-medium leading-relaxed opacity-80">
@@ -400,8 +400,8 @@ export default function CustomerHomePage() {
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-orange-500/20 transition-all active:scale-95",
-                        activeFilter === filter.id && "bg-orange-600/80 border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-primary/20 transition-all active:scale-95",
+                        activeFilter === filter.id && "bg-primary/80 border-primary/60 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
                     )}
                     onClick={() => setActiveFilter(activeFilter === filter.id ? null : filter.id as SortFilter)}
                   >
@@ -412,8 +412,8 @@ export default function CustomerHomePage() {
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-orange-500/20 transition-all active:scale-95",
-                        activeFilter === 'distance' && "bg-orange-600/80 border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-primary/20 transition-all active:scale-95",
+                        activeFilter === 'distance' && "bg-primary/80 border-primary/60 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
                     )}
                     onClick={handleLocationFilter}
                 >
@@ -473,7 +473,7 @@ export default function CustomerHomePage() {
 
       <section>
         <div className="flex items-center gap-4 mb-8">
-            <div className="h-8 w-1 bg-orange-500 rounded-full" />
+            <div className="h-8 w-1 bg-primary rounded-full" />
             <h2 className="text-2xl md:text-3xl font-headline text-foreground">Explorer par catégories</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -487,17 +487,17 @@ export default function CustomerHomePage() {
             >
                 <Card 
                     className={cn("group flex flex-col items-center justify-center p-6 md:p-8 glass transition-all duration-500 cursor-pointer rounded-[2rem] border-white/5 dark:border-white/5",
-                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-orange-500 text-white shadow-[0_20px_40px_rgba(249,115,22,0.3)] scale-105 border-orange-400" : "hover:bg-white/10 dark:hover:bg-white/5"
+                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-primary text-white shadow-[0_20px_40px_rgba(249,115,22,0.3)] scale-105 border-primary/60" : "hover:bg-white/10 dark:hover:bg-white/5"
                     )}
                     onClick={() => handleCategorySelect(category.name)}
                 >
                   <div className={cn(
                     "p-4 rounded-2xl transition-all duration-500 mb-4 shadow-inner",
-                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-orange-500"
+                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-primary"
                   )}>
                     <category.icon className={cn(
                       "w-8 h-8 transition-colors duration-500",
-                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-orange-500 group-hover:text-white"
+                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-primary group-hover:text-white"
                     )}/>
                   </div>
                   <p className="font-black uppercase tracking-tighter text-sm md:text-base">{category.name}</p>

@@ -128,10 +128,10 @@ export default function NewRestaurantPage() {
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mb-6"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-6"
                         >
-                            <ChefHat className="h-3.5 w-3.5 text-orange-500" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500">Partenariat d&apos;Élite</span>
+                            <ChefHat className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Partenariat d&apos;Élite</span>
                         </motion.div>
                         <motion.h1 
                             initial={{ opacity: 0, y: 20 }}
@@ -139,7 +139,7 @@ export default function NewRestaurantPage() {
                             transition={{ delay: 0.1 }}
                             className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-slate-900 mb-4 leading-none"
                         >
-                            Érigez votre <span className="text-orange-500">Empire</span>
+                            Érigez votre <span className="text-primary">Empire</span>
                         </motion.h1>
                         <motion.p 
                             initial={{ opacity: 0, y: 20 }}
@@ -153,7 +153,7 @@ export default function NewRestaurantPage() {
 
                     {/* Form Card */}
                     <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 p-8 md:p-12 shadow-2xl relative overflow-hidden rounded-3xl">
-                        <div className="absolute top-0 left-0 w-[2px] h-full bg-orange-500" />
+                        <div className="absolute top-0 left-0 w-[2px] h-full bg-primary" />
                         
                         <div className="relative z-10">
                             <RestaurantForm
@@ -164,7 +164,7 @@ export default function NewRestaurantPage() {
                         </div>
 
                         {/* Decorative Element */}
-                        <div className="absolute -bottom-20 -right-20 h-64 w-64 bg-orange-500/5 rounded-full blur-3xl" />
+                        <div className="absolute -bottom-20 -right-20 h-64 w-64 bg-primary/5 rounded-full blur-3xl" />
                     </div>
 
                     {/* Footer Info */}

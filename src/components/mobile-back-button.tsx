@@ -29,12 +29,12 @@ export function MobileBackButton({ className, label = "Retour", href }: MobileBa
       onClick={handleBack}
       className={cn(
         "md:hidden flex items-center gap-2 -ml-2 mb-6 group transition-all duration-300",
-        "text-orange-500/80 hover:text-orange-500 hover:bg-orange-500/10 rounded-xl px-3 h-10",
+        "text-primary/80 hover:text-primary hover:bg-primary/10 rounded-xl px-3 h-10",
         "animate-in fade-in slide-in-from-left-4 duration-500",
         className
       )}
     >
-      <div className="p-1.5 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors border border-orange-500/20">
+      <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors border border-primary/20">
         <ChevronLeft className="h-4 w-4" />
       </div>
       <span className="text-[10px] font-black uppercase tracking-[0.2em] italic">{label}</span>
