@@ -96,6 +96,12 @@ export interface Order {
     code: string;
     montantReduction: number;
   };
+  /**
+   * Vrai si le client était Premium au moment de la commande — signale au
+   * restaurateur et au livreur de la traiter en priorité. N'a aucun impact
+   * financier (le livreur perçoit les mêmes fraisDeLivraison).
+   */
+  prioritaire?: boolean;
 }
 
 export type CouponType = 'pourcentage' | 'montant_fixe';
@@ -189,6 +195,22 @@ export interface UserProfile {
    * jamais créditer deux fois. Modifiable uniquement par le SDK Admin.
    */
   filleulRecompenseVersee?: boolean;
+
+  /**
+   * Date jusqu'à laquelle le compte est Premium (priorité de commande).
+   * Crédité uniquement par le webhook CinetPay via le SDK Admin, après
+   * un paiement d'abonnement vérifié — jamais modifiable par le client.
+   */
+  premiumJusquau?: Timestamp;
+}
+
+export interface PremiumSubscription {
+  id: string;
+  userId: string;
+  montant: number;
+  dureeJours: number;
+  paiement: OrderPayment;
+  dateCreation: string;
 }
 
 export interface StockItem {

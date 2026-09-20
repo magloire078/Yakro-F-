@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { Timestamp } from 'firebase/firestore';
 import { buildOrderFromCart, COMMISSION_RATE } from './order-builder';
 import type { CartItem, Restaurant, UserProfile } from './types';
 
@@ -15,7 +16,7 @@ const buildCartItem = (overrides: Partial<CartItem> = {}): CartItem => ({
   ...overrides,
 });
 
-const userProfile: Pick<UserProfile, 'adresseParDefaut' | 'telephone'> = {
+const userProfile: Pick<UserProfile, 'adresseParDefaut' | 'telephone' | 'premiumJusquau'> = {
   adresseParDefaut: 'Quartier Belleville',
   telephone: '+225 0000 0000',
 };
@@ -160,5 +161,32 @@ describe('buildOrderFromCart', () => {
     expect(order.codePromo?.montantReduction).toBe(6000);
     expect(order.total).toBe(500); // only the delivery fee remains
     expect(order.revenuNet).toBeCloseTo(-900); // commission is still owed even if the restaurant discounts 100%
+  });
+
+  it('flags the order as prioritaire when the customer is currently Premium', () => {
+    const order = buildOrderFromCart({
+      ...baseInput,
+      userProfile: {
+        ...userProfile,
+        premiumJusquau: Timestamp.fromDate(new Date('2026-06-01T00:00:00.000Z')),
+      },
+    });
+    expect(order.prioritaire).toBe(true);
+  });
+
+  it('omits prioritaire when the customer has no active Premium subscription', () => {
+    const order = buildOrderFromCart(baseInput);
+    expect(order).not.toHaveProperty('prioritaire');
+  });
+
+  it('omits prioritaire when a past Premium subscription has expired', () => {
+    const order = buildOrderFromCart({
+      ...baseInput,
+      userProfile: {
+        ...userProfile,
+        premiumJusquau: Timestamp.fromDate(new Date('2026-05-01T00:00:00.000Z')),
+      },
+    });
+    expect(order).not.toHaveProperty('prioritaire');
   });
 });

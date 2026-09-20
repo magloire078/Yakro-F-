@@ -319,6 +319,118 @@ describe('firestore.rules — /commandes create with a coupon', () => {
   });
 });
 
+describe('firestore.rules — /commandes create with a priority flag', () => {
+  beforeEach(seed);
+
+  async function setPremiumExpiry(expiry: Date) {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await updateDoc(doc(ctx.firestore(), 'utilisateurs', OTHER_USER_UID), {
+        premiumJusquau: Timestamp.fromDate(expiry),
+      });
+    });
+  }
+
+  it('lets a Premium client flag their order as prioritaire', async () => {
+    await setPremiumExpiry(new Date(Date.now() + 86400_000));
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: true })));
+  });
+
+  it('rejects prioritaire from a client with no Premium subscription', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: true })));
+  });
+
+  it('rejects prioritaire from a client whose Premium subscription has expired', async () => {
+    await setPremiumExpiry(new Date(Date.now() - 86400_000));
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: true })));
+  });
+
+  it('lets any client explicitly set prioritaire to false', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: false })));
+  });
+});
+
+describe('firestore.rules — /abonnements', () => {
+  beforeEach(seed);
+
+  const baseSubscription = (overrides: Record<string, unknown> = {}) => ({
+    userId: OTHER_USER_UID,
+    montant: 2000,
+    dureeJours: 30,
+    paiement: { mode: 'orange_money', statut: 'en_attente', montant: 2000 },
+    dateCreation: '2026-06-01T00:00:00.000Z',
+    ...overrides,
+  });
+
+  it('lets a client create their own pending Premium subscription', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'abonnements', 'sub1'), baseSubscription()));
+  });
+
+  it('rejects a subscription created for someone else', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'abonnements', 'sub1'), baseSubscription({ userId: RESTAURATEUR_UID })),
+    );
+  });
+
+  it('rejects cash as a payment mode for a subscription', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'abonnements', 'sub1'), baseSubscription({
+        paiement: { mode: 'especes', statut: 'en_attente', montant: 2000 },
+      })),
+    );
+  });
+
+  it('rejects a subscription pre-marked as already paid', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'abonnements', 'sub1'), baseSubscription({
+        paiement: { mode: 'orange_money', statut: 'paye', montant: 2000 },
+      })),
+    );
+  });
+
+  it('rejects a subscription that pre-sets a transactionId at creation', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'abonnements', 'sub1'), baseSubscription({
+        paiement: { mode: 'orange_money', statut: 'en_attente', montant: 2000, transactionId: 'forged' },
+      })),
+    );
+  });
+
+  it('lets the subscriber read their own subscription', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'abonnements', 'sub1'), baseSubscription());
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(getDoc(doc(db, 'abonnements', 'sub1')));
+  });
+
+  it('forbids reading someone else\'s subscription', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'abonnements', 'sub1'), baseSubscription());
+    });
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(getDoc(doc(db, 'abonnements', 'sub1')));
+  });
+
+  it('forbids the client from updating their own subscription', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'abonnements', 'sub1'), baseSubscription());
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'abonnements', 'sub1'), { 'paiement.statut': 'paye' }),
+    );
+  });
+});
+
 describe('firestore.rules — /coupons', () => {
   const COUPON_CODE = 'YAKRO10';
 
@@ -466,6 +578,13 @@ describe('firestore.rules — /commandes update', () => {
       updateDoc(doc(db, 'commandes', 'o1'), { statut: 'En Préparation', livraisonTraitee: true }),
     );
   });
+
+  it('forbids a restaurateur from adding prioritaire while accepting an order', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'commandes', 'o1'), { statut: 'En Préparation', prioritaire: true }),
+    );
+  });
 });
 
 describe('firestore.rules — /utilisateurs', () => {
@@ -607,6 +726,15 @@ describe('firestore.rules — /utilisateurs', () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertFails(
       updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), { filleulRecompenseVersee: true }),
+    );
+  });
+
+  it('forbids a client from granting themselves Premium via update', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), {
+        premiumJusquau: Timestamp.fromDate(new Date(Date.now() + 30 * 86400_000)),
+      }),
     );
   });
 });

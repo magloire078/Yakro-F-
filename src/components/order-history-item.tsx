@@ -5,7 +5,7 @@ import * as React from 'react';
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
 import { doc, getDoc } from 'firebase/firestore';
-import { Star } from 'lucide-react';
+import { Star, Crown } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -68,7 +68,14 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
           <AccordionTrigger className="p-6 md:p-8 hover:no-underline group">
             <div className="flex justify-between items-center w-full">
               <div className="text-left space-y-1">
-                <p className="font-black text-xl uppercase tracking-tighter group-hover:text-primary transition-colors duration-300">{order.nomRestaurant}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-black text-xl uppercase tracking-tighter group-hover:text-primary transition-colors duration-300">{order.nomRestaurant}</p>
+                  {order.prioritaire && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-black uppercase tracking-widest">
+                      <Crown className="h-3 w-3" /> Prioritaire
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">
                   {new Date(order.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })}
                 </p>

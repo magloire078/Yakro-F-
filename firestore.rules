@@ -43,7 +43,9 @@ service cloud.firestore {
         && request.resource.data.get('pointsFidelite', 0) == resource.data.get('pointsFidelite', 0)
         && request.resource.data.get('parrainId', '') == resource.data.get('parrainId', '')
         && request.resource.data.get('filleulRecompenseVersee', false)
-             == resource.data.get('filleulRecompenseVersee', false);
+             == resource.data.get('filleulRecompenseVersee', false)
+        && request.resource.data.get('premiumJusquau', null)
+             == resource.data.get('premiumJusquau', null);
     }
 
     // Empêche la mutation des champs sensibles d'une commande lors d'une
@@ -66,7 +68,9 @@ service cloud.firestore {
         && request.resource.data.date == resource.data.date
         && request.resource.data.paiement == resource.data.paiement
         && request.resource.data.get('livraisonTraitee', false)
-             == resource.data.get('livraisonTraitee', false);
+             == resource.data.get('livraisonTraitee', false)
+        && request.resource.data.get('prioritaire', false)
+             == resource.data.get('prioritaire', false);
     }
 
     // Valide le sous-objet `paiement` à la création d'une commande.
@@ -108,6 +112,17 @@ service cloud.firestore {
         && (
           (coupon.type == 'montant_fixe' && reduction <= coupon.valeur) ||
           (coupon.type == 'pourcentage' && reduction <= (sousTotal * coupon.valeur) / 100)
+        );
+    }
+
+    // Un client ne peut se marquer "prioritaire" à la commande que si son
+    // compte est réellement Premium à cet instant (empêche l'auto-triche).
+    function orderPriorityValid() {
+      return !('prioritaire' in request.resource.data)
+        || request.resource.data.prioritaire == false
+        || (
+          userExists()
+          && request.time < getUserData().get('premiumJusquau', request.time)
         );
     }
 
@@ -190,6 +205,7 @@ service cloud.firestore {
         && !('livraisonTraitee' in request.resource.data)
         && orderPaymentValid()
         && orderCouponValid()
+        && orderPriorityValid()
         && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
         && request.resource.data.restaurateurId ==
              get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.proprietaireId;
@@ -277,6 +293,26 @@ service cloud.firestore {
 
       allow delete: if isUserAuthenticated()
         && (resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin());
+    }
+
+    // Abonnement Premium : achat ponctuel (pas de vrai prélèvement
+    // récurrent en Mobile Money) qui prolonge `premiumJusquau` sur le
+    // profil. Espèces exclues — aucun livreur n'intervient pour un
+    // abonnement, donc pas de collecte physique possible. Seul le webhook
+    // CinetPay (Admin SDK) peut faire avancer `paiement` après création.
+    match /abonnements/{subscriptionId} {
+      allow read: if isUserAuthenticated() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+
+      allow create: if isUserAuthenticated()
+        && isUser(request.resource.data.userId)
+        && request.resource.data.paiement.mode in ['orange_money', 'mtn_money', 'moov_money']
+        && request.resource.data.paiement.statut == 'en_attente'
+        && request.resource.data.paiement.montant == request.resource.data.montant
+        && !('transactionId' in request.resource.data.paiement)
+        && !('paymentToken' in request.resource.data.paiement)
+        && !('dateConfirmation' in request.resource.data.paiement);
+
+      allow update, delete: if false;
     }
 
     // Profil public d'un livreur (nom + position) consultable par tout

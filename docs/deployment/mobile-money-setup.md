@@ -55,7 +55,21 @@ de sécurité de CinetPay.
    redirection CinetPay → webhook → `paiement.statut = 'paye'` en base),
    basculer `NEXT_PUBLIC_PAYMENTS_MOBILE_MONEY_ENABLED=true` en production.
 
-## 5. Limitation connue
+## 5. Abonnement Premium
+
+L'abonnement Premium (priorité de commande) réutilise le même compte
+marchand et le même client CinetPay, mais avec son propre webhook :
+
+```
+https://<votre-domaine>/api/webhooks/cinetpay/premium
+```
+
+Rien à configurer dans le tableau de bord CinetPay pour celui-ci : le
+`notify_url` est transmis par transaction à l'initialisation du paiement
+(pas un réglage global du compte), donc les paiements de commandes et
+d'abonnements sont automatiquement routés vers leur webhook respectif.
+
+## 6. Limitation connue
 
 L'intégration utilise actuellement `channels: 'MOBILE_MONEY'` (valeur
 générique) plutôt qu'un code opérateur précis (`ORANGE_MONEY_CI`, etc.),

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Order, UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader, Bike, ScanLine } from 'lucide-react';
+import { Loader, Bike, ScanLine, Crown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,7 +45,9 @@ export function AvailableDeliveries({
     
     const availableDeliveries = React.useMemo(() => {
         if (!isEnService) return [];
-        return orders.filter(o => canTransitionOrder(o.statut, 'En Route', 'livreur'));
+        return orders
+            .filter(o => canTransitionOrder(o.statut, 'En Route', 'livreur'))
+            .sort((a, b) => Number(!!b.prioritaire) - Number(!!a.prioritaire));
     }, [orders, isEnService]);
 
     const handleAccept = async (delivery: Order) => {
@@ -193,7 +195,14 @@ export function AvailableDeliveries({
                         <CardContent className="p-4 space-y-4">
                            <div className="flex justify-between items-start">
                                 <div className="space-y-1">
-                                    <p className="font-bold text-lg leading-tight">{delivery.nomRestaurant}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-lg leading-tight">{delivery.nomRestaurant}</p>
+                                        {delivery.prioritaire && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-black uppercase tracking-widest">
+                                                <Crown className="h-3 w-3" /> Prioritaire
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-muted-foreground flex items-center gap-1 italic">
                                         Commande n°{delivery.id.slice(0,5)}
                                     </p>

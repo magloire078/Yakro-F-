@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader, QrCode, UtensilsCrossed, Clock, Receipt, ChefHat } from 'lucide-react';
+import { Loader, QrCode, UtensilsCrossed, Clock, Receipt, ChefHat, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/contexts/data-context';
@@ -89,6 +89,12 @@ export default function DashboardOrdersPage() {
                             <div className="px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Elite Order</span>
                             </div>
+                            {order.prioritaire && (
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                                    <Crown className="h-3 w-3 text-amber-500" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-500">Prioritaire</span>
+                                </div>
+                            )}
                             <span className="text-[10px] font-bold text-slate-500">#{order.id.slice(-6).toUpperCase()}</span>
                         </div>
                         <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-white group-hover:text-primary transition-colors uppercase leading-none">

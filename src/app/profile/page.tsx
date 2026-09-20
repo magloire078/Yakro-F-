@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, Gift, Copy, Award } from 'lucide-react';
+import { Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, Gift, Copy, Award, Crown, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,19 +13,52 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useToast } from '@/hooks/use-toast';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { initiatePremiumSubscriptionPaymentAction } from '@/app/actions/premium-actions';
+import { isPremiumActive, PREMIUM_PRICE_FCFA, PREMIUM_DURATION_DAYS } from '@/lib/premium';
 
+const MOBILE_MONEY_ENABLED = process.env.NEXT_PUBLIC_PAYMENTS_MOBILE_MONEY_ENABLED === 'true';
 
 export default function ProfilePage() {
   const { user, userProfile, activeRole } = useAuth();
   const { orders, restaurants } = useData();
-  const { auth } = useFirebase();
+  const { auth, db } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
+  const [isSubscribing, setIsSubscribing] = React.useState(false);
 
   const handleSignOut = async () => {
     await auth.signOut();
     router.push('/login');
   }
+
+  const handleSubscribePremium = async () => {
+    if (!user) return;
+    setIsSubscribing(true);
+    try {
+      const subscriptionRef = doc(collection(db, 'abonnements'));
+      await setDoc(subscriptionRef, {
+        userId: user.uid,
+        montant: PREMIUM_PRICE_FCFA,
+        dureeJours: PREMIUM_DURATION_DAYS,
+        paiement: { mode: 'orange_money', statut: 'en_attente', montant: PREMIUM_PRICE_FCFA },
+        dateCreation: new Date().toISOString(),
+      });
+
+      const idToken = await user.getIdToken();
+      const result = await initiatePremiumSubscriptionPaymentAction(subscriptionRef.id, idToken);
+      if (!result.success) {
+        toast({ variant: 'destructive', title: 'Erreur', description: result.error });
+        return;
+      }
+      window.location.href = result.paymentUrl;
+    } catch (error) {
+      console.error('handleSubscribePremium: échec', error);
+      toast({ variant: 'destructive', title: 'Erreur', description: "Impossible de démarrer l'abonnement pour le moment." });
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   const handleCopyReferralLink = () => {
     if (!user || typeof window === 'undefined') return;
@@ -197,6 +230,43 @@ export default function ProfilePage() {
                                 Copier mon lien de parrainage
                             </Button>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Crown className="h-5 w-5 text-amber-500" />
+                            Yakro Premium
+                        </CardTitle>
+                        <CardDescription>
+                            {isPremiumActive(userProfile.premiumJusquau)
+                                ? `Vos commandes passent en priorité chez le restaurateur et le livreur.`
+                                : `Vos commandes traitées en priorité, pour ${PREMIUM_PRICE_FCFA.toLocaleString('fr-FR')} FCFA / ${PREMIUM_DURATION_DAYS} jours.`}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isPremiumActive(userProfile.premiumJusquau) ? (
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-amber-500/10 rounded-lg">
+                                    <Crown className="h-6 w-6 text-amber-500" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-sm">Actif jusqu&apos;au</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {userProfile.premiumJusquau?.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : MOBILE_MONEY_ENABLED ? (
+                            <Button className="w-full bg-amber-500 hover:bg-amber-600" onClick={handleSubscribePremium} disabled={isSubscribing}>
+                                {isSubscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Devenir Premium'}
+                            </Button>
+                        ) : (
+                            <p className="text-xs text-muted-foreground italic">
+                                Bientôt disponible, dès l&apos;activation du paiement Mobile Money.
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

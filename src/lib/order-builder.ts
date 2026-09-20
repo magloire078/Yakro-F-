@@ -1,5 +1,6 @@
 import type { CartItem, Order, PaymentMode, Restaurant, UserProfile } from './types';
 import { getPlaceholderImage } from './placeholder-images';
+import { isPremiumActive } from './premium';
 
 export const COMMISSION_RATE = 0.15;
 
@@ -10,7 +11,7 @@ interface AppliedCoupon {
 
 interface BuildOrderInput {
   user: { uid: string };
-  userProfile: Pick<UserProfile, 'adresseParDefaut' | 'telephone'>;
+  userProfile: Pick<UserProfile, 'adresseParDefaut' | 'telephone' | 'premiumJusquau'>;
   cartItems: CartItem[];
   restaurant: Restaurant | null | undefined;
   cartSubtotal: number;
@@ -92,6 +93,7 @@ export function buildOrderFromCart(input: BuildOrderInput): Omit<Order, 'id'> {
     ...(discount > 0 && coupon && {
       codePromo: { code: coupon.code, montantReduction: discount },
     }),
+    ...(isPremiumActive(userProfile.premiumJusquau, now) && { prioritaire: true }),
     ...(location && {
       latitudeClient: location.latitude,
       longitudeClient: location.longitude,
