@@ -3,7 +3,8 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { DollarSign, ShoppingCart, TrendingUp, BarChart3, PieChart, Activity } from 'lucide-react';
+import { DollarSign, ShoppingCart, TrendingUp, BarChart3, PieChart, Activity, Sparkles, Store } from 'lucide-react';
+import { linearForecast } from '@/lib/forecast';
 import { 
     startOfMonth, 
     startOfYear, 
@@ -208,7 +209,45 @@ export default function AnalyticsPage() {
 
         return data;
     }, [selectedRange, analyticsData]);
-    
+
+    // Estimation d'ordre de grandeur pour la prochaine période, basée sur la
+    // tendance des périodes déjà affichées dans revenueTrend — jamais un
+    // engagement de revenu, seulement un indicateur directionnel.
+    const revenueForecast = React.useMemo(() => {
+        return linearForecast(revenueTrend.map(d => d.current));
+    }, [revenueTrend]);
+
+    const nextPeriodLabel = React.useMemo(() => {
+        switch (selectedRange) {
+            case 'today': return 'demain';
+            case 'week': return 'la semaine prochaine';
+            case 'month': return 'le mois prochain';
+            default: return 'la prochaine période';
+        }
+    }, [selectedRange]);
+
+    // Comparaison entre les établissements d'un même propriétaire — n'a de
+    // sens que si le restaurateur possède plus d'un restaurant.
+    const restaurantComparison = React.useMemo(() => {
+        return restaurants
+            .filter(r => myRestaurantIds.includes(r.id))
+            .map(restaurant => {
+                const currentOrders = analyticsData.current.filter(o => o.restaurantId === restaurant.id);
+                const previousOrders = analyticsData.previous.filter(o => o.restaurantId === restaurant.id);
+                const revenue = currentOrders.reduce((sum, o) => sum + o.revenuNet, 0);
+                const previousRevenue = previousOrders.reduce((sum, o) => sum + o.revenuNet, 0);
+                const orderCount = currentOrders.length;
+                const avgBasket = orderCount > 0
+                    ? currentOrders.reduce((sum, o) => sum + o.total, 0) / orderCount
+                    : 0;
+                const growth = previousRevenue === 0
+                    ? (revenue > 0 ? 100 : 0)
+                    : ((revenue - previousRevenue) / previousRevenue) * 100;
+                return { id: restaurant.id, nom: restaurant.nom, revenue, orderCount, avgBasket, growth };
+            })
+            .sort((a, b) => b.revenue - a.revenue);
+    }, [restaurants, myRestaurantIds, analyticsData]);
+
     const ranges: { id: TimeRange; label: string }[] = [
         { id: 'today', label: "Aujourd'hui" },
         { id: 'week', label: "Cette Semaine" },
@@ -371,8 +410,8 @@ export default function AnalyticsPage() {
                                         <BarChart data={revenueTrend} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
-                                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.1}/>
+                                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
                                                 </linearGradient>
                                                 <linearGradient id="colorPrevious" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#1e293b" stopOpacity={0.8}/>
@@ -432,6 +471,30 @@ export default function AnalyticsPage() {
                                 </div>
                             </div>
 
+                            {/* Prévision de demande */}
+                            <div className="lg:col-span-12 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl border border-primary/10">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                    <div className="flex items-center gap-5">
+                                        <div className="p-4 bg-primary/10 rounded-2xl shrink-0">
+                                            <Sparkles className="h-7 w-7 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter text-white">Prévision de demande</h2>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">
+                                                Estimation pour {nextPeriodLabel}, basée sur la tendance récente — pas une garantie
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className="text-4xl md:text-5xl font-black italic tracking-tighter text-primary">
+                                            {revenueForecast.toLocaleString('fr-FR')}
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-300 ml-2">FCFA</span>
+                                        </p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">Revenu net projeté</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Revenue by Restaurant */}
                             <div className="lg:col-span-7 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
                                 <div className="flex items-center justify-between mb-10">
@@ -450,8 +513,8 @@ export default function AnalyticsPage() {
                                             <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.9}/>
-                                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.3}/>
+                                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.9}/>
+                                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
                                                 </linearGradient>
                                                 <linearGradient id="colorEmpty" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#1e293b" stopOpacity={0.8}/>
@@ -566,6 +629,57 @@ export default function AnalyticsPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Comparaison entre mes établissements */}
+                        {restaurantComparison.length > 1 && (
+                            <div className="glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                                <div className="flex items-center justify-between mb-10">
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Comparaison de mes Établissements</h2>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Performance de chaque restaurant sur la période</p>
+                                    </div>
+                                    <div className="p-3 bg-slate-100 rounded-2xl">
+                                        <Store className="h-6 w-6 text-primary" />
+                                    </div>
+                                </div>
+
+                                <div className="overflow-x-auto -mx-2">
+                                    <table className="w-full min-w-[600px] border-collapse">
+                                        <thead>
+                                            <tr className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 border-b border-white/5">
+                                                <th className="text-left px-2 pb-4">Établissement</th>
+                                                <th className="text-right px-2 pb-4">Revenu net</th>
+                                                <th className="text-right px-2 pb-4">Commandes</th>
+                                                <th className="text-right px-2 pb-4">Panier moyen</th>
+                                                <th className="text-right px-2 pb-4">Croissance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {restaurantComparison.map((r) => (
+                                                <tr key={r.id} className="border-b border-white/5 last:border-0 group hover:bg-white/[0.03] transition-colors">
+                                                    <td className="text-left px-2 py-4 font-black uppercase text-sm text-white group-hover:text-primary transition-colors">{r.nom}</td>
+                                                    <td className="text-right px-2 py-4 font-black italic tracking-tighter text-primary">{r.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40 not-italic">F</span></td>
+                                                    <td className="text-right px-2 py-4 font-bold text-slate-300">{r.orderCount}</td>
+                                                    <td className="text-right px-2 py-4 font-bold text-slate-300">{r.avgBasket.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} F</td>
+                                                    <td className="text-right px-2 py-4">
+                                                        {selectedRange !== 'all' ? (
+                                                            <span className={cn(
+                                                                "inline-flex items-center gap-1 text-[10px] font-black",
+                                                                r.growth >= 0 ? "text-emerald-500" : "text-rose-500"
+                                                            )}>
+                                                                {r.growth >= 0 ? '▲' : '▼'} {Math.abs(r.growth).toFixed(1)}%
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-slate-500 text-[10px]">—</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
                 </AnimatePresence>
 
