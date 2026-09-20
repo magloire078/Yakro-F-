@@ -5,12 +5,13 @@ import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
 import { useCart } from '@/contexts/cart-context';
 import { useToast } from '@/hooks/use-toast';
+import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
 import { assistantChatAction } from '@/app/actions/ai-actions';
 import { buildAssistantCatalog } from '@/lib/assistant';
 import type { AssistantSuggestion, ConversationTurn } from '@/ai/flows/assistant-flow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Send, Loader2, ShoppingBag, Clock } from 'lucide-react';
+import { Sparkles, Send, Loader2, ShoppingBag, Clock, Mic, MicOff } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,8 +42,8 @@ export default function AssistantPage() {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
-    const trimmed = input.trim();
+  const sendMessage = async (text: string) => {
+    const trimmed = text.trim();
     if (!trimmed || isSending) return;
 
     const conversationHistory: ConversationTurn[] = messages.map(({ role, content }) => ({ role, content }));
@@ -82,6 +83,15 @@ export default function AssistantPage() {
       setIsSending(false);
     }
   };
+
+  const handleSend = () => sendMessage(input);
+
+  const { isSupported: isSpeechSupported, isListening, startListening, stopListening } = useSpeechRecognition(
+    (transcript) => {
+      setInput(transcript);
+      sendMessage(transcript);
+    }
+  );
 
   const handleAddSuggestion = (suggestion: AssistantSuggestion) => {
     const menuItem = getMenuItem(suggestion.menuItemId);
@@ -189,10 +199,34 @@ export default function AssistantPage() {
             <Loader2 className="h-4 w-4 animate-spin" /> L&apos;assistant réfléchit...
           </div>
         )}
+        {isListening && (
+          <div className="flex items-center gap-2 text-primary text-xs font-bold">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            </span>
+            Je vous écoute...
+          </div>
+        )}
         <div ref={scrollRef} />
       </div>
 
       <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex gap-2">
+        {isSpeechSupported && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => (isListening ? stopListening() : startListening())}
+            disabled={isSending}
+            className={cn(
+              'rounded-2xl shrink-0',
+              isListening && 'bg-primary/10 border-primary text-primary'
+            )}
+            aria-label={isListening ? 'Arrêter le micro' : 'Parler à l\'assistant'}
+          >
+            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
+        )}
         <Input
           placeholder="Ex: J'ai 2500 FCFA et je suis à Dioulakro"
           value={input}
