@@ -225,6 +225,13 @@ describe('firestore.rules — /commandes create', () => {
       })),
     );
   });
+
+  it('rejects an order that pre-sets livraisonTraitee at creation', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ livraisonTraitee: true })),
+    );
+  });
 });
 
 describe('firestore.rules — /commandes list', () => {
@@ -290,6 +297,13 @@ describe('firestore.rules — /commandes update', () => {
   it('forbids deleting an order when not SuperAdmin', async () => {
     const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
     await assertFails(deleteDoc(doc(db, 'commandes', 'o1')));
+  });
+
+  it('forbids a restaurateur from also setting livraisonTraitee while accepting an order', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'commandes', 'o1'), { statut: 'En Préparation', livraisonTraitee: true }),
+    );
   });
 });
 
@@ -358,6 +372,167 @@ describe('firestore.rules — /utilisateurs', () => {
   it('forbids deleting a user profile when not SuperAdmin', async () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertFails(deleteDoc(doc(db, 'utilisateurs', OTHER_USER_UID)));
+  });
+
+  it('lets a user create their profile with a valid parrainId', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'client',
+        roleSysteme: 'User',
+        parrainId: OTHER_USER_UID,
+      }),
+    );
+  });
+
+  it('rejects a parrainId pointing to a non-existent user', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertFails(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'client',
+        roleSysteme: 'User',
+        parrainId: 'ghost',
+      }),
+    );
+  });
+
+  it('rejects self-referral (parrainId == own uid)', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertFails(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'client',
+        roleSysteme: 'User',
+        parrainId: 'newbie',
+      }),
+    );
+  });
+
+  it('rejects a profile that pre-sets pointsFidelite at creation', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertFails(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'client',
+        roleSysteme: 'User',
+        pointsFidelite: 1000,
+      }),
+    );
+  });
+
+  it('forbids a client from self-crediting pointsFidelite via update', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), { pointsFidelite: 9999 }),
+    );
+  });
+
+  it('forbids a client from changing parrainId after profile creation', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'utilisateurs', 'has-parrain'), {
+        role: 'client',
+        parrainId: RESTAURATEUR_UID,
+      });
+    });
+    const db = env.authenticatedContext('has-parrain').firestore();
+    await assertFails(
+      updateDoc(doc(db, 'utilisateurs', 'has-parrain'), { parrainId: LIVREUR_UID }),
+    );
+  });
+
+  it('forbids a client from marking their own referral reward as paid', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), { filleulRecompenseVersee: true }),
+    );
+  });
+});
+
+describe('firestore.rules — /avis', () => {
+  const DELIVERED_ORDER_ID = 'order-delivered';
+  const PLACED_ORDER_ID = 'order-placed';
+
+  beforeEach(async () => {
+    await seed();
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await setDoc(doc(db, 'commandes', DELIVERED_ORDER_ID), baseOrder({ statut: 'Livrée' }));
+      await setDoc(doc(db, 'commandes', PLACED_ORDER_ID), baseOrder({ statut: 'Placée' }));
+    });
+  });
+
+  const baseAvis = (overrides: Record<string, unknown> = {}) => ({
+    restaurantId: RESTAURANT_ID,
+    userId: OTHER_USER_UID,
+    orderId: DELIVERED_ORDER_ID,
+    nomUtilisateur: 'Client Test',
+    note: 5,
+    commentaire: 'Excellent, livré rapidement !',
+    date: '2026-05-05T12:00:00.000Z',
+    ...overrides,
+  });
+
+  it('lets the client review a delivered order (doc id == orderId)', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'avis', DELIVERED_ORDER_ID), baseAvis()));
+  });
+
+  it('rejects a review whose document id does not match orderId', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'avis', 'mismatched-id'), baseAvis()));
+  });
+
+  it('rejects a review for an order that is not yet delivered', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'avis', PLACED_ORDER_ID), baseAvis({ orderId: PLACED_ORDER_ID })),
+    );
+  });
+
+  it('rejects a review posted by someone other than the order owner', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'avis', DELIVERED_ORDER_ID), baseAvis({ userId: RESTAURATEUR_UID })),
+    );
+  });
+
+  it('rejects a review whose restaurantId does not match the order', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'avis', DELIVERED_ORDER_ID), baseAvis({ restaurantId: 'other-restaurant' })),
+    );
+  });
+
+  it('rejects a note outside the 1-5 range', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'avis', DELIVERED_ORDER_ID), baseAvis({ note: 0 })));
+    await assertFails(setDoc(doc(db, 'avis', DELIVERED_ORDER_ID), baseAvis({ note: 6 })));
+  });
+
+  it('lets anyone read reviews without authentication', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'avis', DELIVERED_ORDER_ID), baseAvis());
+    });
+    const db = env.unauthenticatedContext().firestore();
+    await assertSucceeds(getDoc(doc(db, 'avis', DELIVERED_ORDER_ID)));
+  });
+
+  it('forbids editing a review once posted', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'avis', DELIVERED_ORDER_ID), baseAvis());
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(updateDoc(doc(db, 'avis', DELIVERED_ORDER_ID), { note: 1 }));
+  });
+
+  it('forbids deleting a review once posted', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'avis', DELIVERED_ORDER_ID), baseAvis());
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(deleteDoc(doc(db, 'avis', DELIVERED_ORDER_ID)));
   });
 });
 

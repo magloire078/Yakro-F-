@@ -1,17 +1,22 @@
 
 'use client';
 
+import * as React from 'react';
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
+import { doc, getDoc } from 'firebase/firestore';
+import { Star } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import type { Order } from '@/lib/types';
+import type { Order, Review } from '@/lib/types';
 import { useCart } from '@/contexts/cart-context';
 import { Card } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { OrderReviewDialog } from './order-review-dialog';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -21,6 +26,20 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   const { getMenuItem } = useData();
+  const { db } = useFirebase();
+  const [existingReview, setExistingReview] = React.useState<Review | null | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (order.statut !== 'Livrée') return;
+    let cancelled = false;
+    getDoc(doc(db, 'avis', order.id)).then((snap) => {
+      if (cancelled) return;
+      setExistingReview(snap.exists() ? (snap.data() as Review) : null);
+    }).catch(() => {
+      if (!cancelled) setExistingReview(null);
+    });
+    return () => { cancelled = true; };
+  }, [db, order.id, order.statut]);
 
   const handleReorder = () => {
     order.plats.forEach(item => {
@@ -136,9 +155,24 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
             </div>
             
             {order.statut === 'Livrée' && (
-              <div className="mt-8 flex justify-end">
-                <Button 
-                  onClick={handleReorder} 
+              <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
+                {existingReview ? (
+                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    Avis envoyé ({existingReview.note}/5)
+                  </div>
+                ) : existingReview === null ? (
+                  <OrderReviewDialog order={order} onSubmitted={() => setExistingReview(undefined)}>
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl font-black uppercase tracking-widest px-6 border-primary/30 text-primary hover:bg-primary/5"
+                    >
+                      Laisser un avis
+                    </Button>
+                  </OrderReviewDialog>
+                ) : null}
+                <Button
+                  onClick={handleReorder}
                   className="rounded-2xl glass-orange text-white font-black uppercase tracking-widest px-8 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
                 >
                   Commander à nouveau

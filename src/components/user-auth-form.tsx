@@ -4,11 +4,13 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useSearchParams } from 'next/navigation';
 import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  getAdditionalUserInfo,
 } from 'firebase/auth';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useToast } from '@/hooks/use-toast';
@@ -33,18 +35,23 @@ const signupSchema = z.object({
   password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
   telephone: z.string().optional(),
   role: z.enum(['client', 'restaurateur', 'livreur']),
+  codeParrainage: z.string().optional(),
 });
 
 
 type AuthFormValues = z.infer<typeof signupSchema> & z.infer<typeof loginSchema>;
 
-export function UserAuthForm() {
+function UserAuthFormContent() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const [isLoginView, setIsLoginView] = React.useState(true);
   const { auth, db } = useFirebase();
   const { toast } = useToast();
-  
+  const searchParams = useSearchParams();
+  // Un lien de parrainage (`?ref=<uid-du-parrain>`) pré-remplit le champ ;
+  // l'utilisateur peut aussi saisir/coller le code manuellement.
+  const referralFromLink = searchParams.get('ref') || '';
+
   const form = useForm<AuthFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(isLoginView ? loginSchema : signupSchema) as any,
@@ -54,9 +61,10 @@ export function UserAuthForm() {
         password: '',
         telephone: '',
         role: 'client' as AppRole,
+        codeParrainage: referralFromLink,
     }
   });
-  
+
   React.useEffect(() => {
     form.reset({
         nom: '',
@@ -64,8 +72,9 @@ export function UserAuthForm() {
         password: '',
         telephone: '',
         role: 'client' as AppRole,
+        codeParrainage: referralFromLink,
     });
-  }, [isLoginView, form]);
+  }, [isLoginView, form, referralFromLink]);
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
@@ -73,7 +82,8 @@ export function UserAuthForm() {
     try {
       const result = await signInWithPopup(auth, provider);
       const userDocRef = doc(db, 'utilisateurs', result.user.uid);
-      
+      const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
+
       const profileData = {
           uid: result.user.uid,
           email: result.user.email!,
@@ -81,6 +91,12 @@ export function UserAuthForm() {
           dateCreation: serverTimestamp(),
           role: 'client',
           roleSysteme: 'User',
+          // parrainId n'est capturable qu'à la toute première connexion —
+          // sur les connexions suivantes le champ est verrouillé par les
+          // rules (immuable), donc on ne le renvoie jamais sur un merge.
+          ...(isNewUser && referralFromLink && referralFromLink !== result.user.uid
+            ? { parrainId: referralFromLink }
+            : {}),
       };
 
       setDoc(userDocRef, profileData, { merge: true })
@@ -119,6 +135,7 @@ export function UserAuthForm() {
         const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
         const userDocRef = doc(db, 'utilisateurs', userCredential.user.uid);
         
+        const parrainId = data.codeParrainage?.trim();
         const profileData = {
             uid: userCredential.user.uid,
             email: userCredential.user.email!,
@@ -127,6 +144,7 @@ export function UserAuthForm() {
             dateCreation: serverTimestamp(),
             role: data.role,
             roleSysteme: 'User',
+            ...(parrainId && parrainId !== userCredential.user.uid ? { parrainId } : {}),
         };
 
         setDoc(userDocRef, profileData)
@@ -243,6 +261,17 @@ export function UserAuthForm() {
                 {form.formState.errors.telephone && <p className="text-sm text-destructive">{String(form.formState.errors.telephone.message)}</p>}
             </div>
           )}
+          {!isLoginView && (
+            <div className="grid gap-2">
+                <Label htmlFor="codeParrainage">Code de parrainage (optionnel)</Label>
+                <Input
+                id="codeParrainage"
+                placeholder="Collé depuis un lien d'invitation"
+                disabled={isLoading || isGoogleLoading}
+                {...form.register('codeParrainage')}
+                />
+            </div>
+          )}
           <Button disabled={isLoading || isGoogleLoading} type="submit">
             {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             {isLoginView ? 'Se connecter' : 'Créer un compte'}
@@ -276,5 +305,13 @@ export function UserAuthForm() {
         </button>
       </p>
     </div>
+  );
+}
+
+export function UserAuthForm() {
+  return (
+    <React.Suspense fallback={<Loader className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />}>
+      <UserAuthFormContent />
+    </React.Suspense>
   );
 }

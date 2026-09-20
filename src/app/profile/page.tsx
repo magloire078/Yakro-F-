@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useData } from '@/contexts/data-context';
-import { Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut } from 'lucide-react';
+import { Mail, Phone, MapPin, Edit, ShoppingBag, BarChart, Heart, LogOut, Gift, Copy, Award } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirebase } from '@/contexts/firebase-provider';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function ProfilePage() {
@@ -19,10 +20,19 @@ export default function ProfilePage() {
   const { orders, restaurants } = useData();
   const { auth } = useFirebase();
   const router = useRouter();
-  
+  const { toast } = useToast();
+
   const handleSignOut = async () => {
     await auth.signOut();
     router.push('/login');
+  }
+
+  const handleCopyReferralLink = () => {
+    if (!user || typeof window === 'undefined') return;
+    const link = `${window.location.origin}/login?ref=${user.uid}`;
+    navigator.clipboard.writeText(link)
+      .then(() => toast({ title: 'Lien copié !', description: 'Partagez-le avec vos proches.' }))
+      .catch(() => toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de copier le lien.' }));
   }
 
   const userDeliveredOrders = React.useMemo(() => {
@@ -121,7 +131,7 @@ export default function ProfilePage() {
 
         {/* Right Column: Stats (only for clients) */}
         {activeRole === 'client' && (
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>Statistiques Client</CardTitle>
@@ -154,6 +164,38 @@ export default function ProfilePage() {
                                 <p className="font-bold text-lg">{stats.favoriteRestaurant?.nom || 'Indéfini'}</p>
                                 <p className="text-sm text-muted-foreground">Restaurant favori</p>
                             </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Fidélité &amp; Parrainage</CardTitle>
+                        <CardDescription>1000 FCFA commandés = 10 points.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-amber-500/10 rounded-lg">
+                                <Award className="h-6 w-6 text-amber-600"/>
+                            </div>
+                            <div>
+                                <p className="font-bold text-2xl">{userProfile?.pointsFidelite ?? 0}</p>
+                                <p className="text-sm text-muted-foreground">Points de fidélité</p>
+                            </div>
+                        </div>
+                        <Separator />
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                                <Gift className="h-4 w-4 text-primary" />
+                                Invitez vos proches
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Vous gagnez 50 points dès leur première commande livrée.
+                            </p>
+                            <Button variant="outline" size="sm" className="w-full" onClick={handleCopyReferralLink}>
+                                <Copy className="mr-2 h-3.5 w-3.5" />
+                                Copier mon lien de parrainage
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>

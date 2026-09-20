@@ -85,14 +85,26 @@ export interface Order {
   longitudeClient?: number;
   latitudeRestaurant?: number;
   longitudeRestaurant?: number;
+  /**
+   * Verrou d'idempotence posé par processDeliveredOrderAction (décompte de
+   * stock + crédit de points de fidélité/parrainage) : empêche un double
+   * traitement si l'action est rappelée pour la même commande.
+   */
+  livraisonTraitee?: boolean;
 }
 
 export interface Review {
   id: string;
   restaurantId: string;
+  /** Client auteur de l'avis — doit correspondre à orderId.userId. */
+  userId: string;
+  /** Commande livrée qui autorise cet avis ; sert aussi d'id du document
+   * (un seul avis par commande, imposé par les règles Firestore). */
+  orderId: string;
   nomUtilisateur: string;
   note: number;
   commentaire: string;
+  date: string;
 }
 
 /**
@@ -133,6 +145,26 @@ export interface UserProfile {
   // Position actuelle du livreur
   latitude?: number;
   longitude?: number;
+
+  /**
+   * Points de fidélité (1000 FCFA commandés = 10 points). Crédités
+   * uniquement par le SDK Admin (processDeliveredOrderAction) à la
+   * livraison confirmée — jamais modifiables par le client lui-même.
+   */
+  pointsFidelite?: number;
+
+  /**
+   * uid du parrain, capturé une seule fois à la création du profil (lien
+   * ou code de parrainage = l'uid du parrain). Immuable après création.
+   */
+  parrainId?: string;
+
+  /**
+   * Passe à true dès que le parrain a été crédité de son bonus de
+   * parrainage (à la première commande livrée du filleul), pour ne
+   * jamais créditer deux fois. Modifiable uniquement par le SDK Admin.
+   */
+  filleulRecompenseVersee?: boolean;
 }
 
 export interface StockItem {

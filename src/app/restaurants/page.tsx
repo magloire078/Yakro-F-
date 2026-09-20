@@ -10,11 +10,12 @@ import { CldImage } from 'next-cloudinary';
 import { useSearchParams, useRouter } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
 import { ReviewCard } from '@/components/review-card';
-import { ReviewForm } from '@/components/review-form';
 import { RatingsChart } from '@/components/ratings-chart';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import type { Review } from '@/lib/types';
 import { generateReviewsAction, generateAudioReviewAction } from '@/app/actions/ai-actions';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/contexts/firebase-provider';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
@@ -27,6 +28,7 @@ function RestaurantPageContent() {
     const id = searchParams.get('id');
     const { getRestaurant, menuItems, isLoading } = useData();
     const restaurant = getRestaurant(id as string);
+    const { db } = useFirebase();
 
     const [userReviews, setUserReviews] = React.useState<Review[]>([]);
     const [aiReviews, setAiReviews] = React.useState<Review[]>([]);
@@ -34,6 +36,19 @@ function RestaurantPageContent() {
     const [audioUrl, setAudioUrl] = React.useState<string | null>(null);
     const [isGeneratingAudio, setIsGeneratingAudio] = React.useState(false);
     const { toast } = useToast();
+
+    // Avis vérifiés : chargés depuis Firestore (un avis ne peut exister que
+    // pour une commande livrée de ce restaurant — voir firestore.rules).
+    React.useEffect(() => {
+        if (!id) return;
+        getDocs(query(collection(db, 'avis'), where('restaurantId', '==', id)))
+            .then((snap) => {
+                const reviews = snap.docs.map((d) => d.data() as Review)
+                    .sort((a, b) => (a.date < b.date ? 1 : -1));
+                setUserReviews(reviews);
+            })
+            .catch((error) => console.error('Échec du chargement des avis:', error));
+    }, [db, id]);
 
     const allReviews = React.useMemo(() => [...userReviews, ...aiReviews], [userReviews, aiReviews]);
 
@@ -57,10 +72,15 @@ function RestaurantPageContent() {
                 throw new Error(result.error);
             }
 
-            const newReviews = result.data.reviews.map((review, index) => ({
+            const newReviews: Review[] = result.data.reviews.map((review, index) => ({
                 ...review,
                 id: `${restaurant.id}-aireview-${index}-${Date.now()}`,
                 restaurantId: restaurant.id,
+                // Avis simulés par l'IA à titre de démonstration — jamais
+                // persistés, donc pas de vraie commande/utilisateur associé.
+                userId: 'ai-demo',
+                orderId: `ai-demo-${index}-${Date.now()}`,
+                date: new Date().toISOString(),
             }));
             setAiReviews(newReviews);
         } catch (error) {
@@ -101,20 +121,6 @@ function RestaurantPageContent() {
             setIsGeneratingAudio(false);
         }
     }, [aiReviews, toast]);
-
-    const handleAddReview = (newReview: Omit<Review, 'id' | 'restaurantId'>) => {
-        if (!restaurant) return;
-        const fullReview: Review = {
-            ...newReview,
-            id: `user-review-${Date.now()}`,
-            restaurantId: restaurant.id,
-        };
-        setUserReviews(prev => [fullReview, ...prev]);
-        toast({
-            title: 'Merci !',
-            description: 'Votre avis a été publié avec succès.',
-        });
-    };
 
     const { averageRating, ratingsDistribution } = React.useMemo(() => {
         const reviewsToAnalyze = userReviews.length > 0 ? userReviews : allReviews;
@@ -391,10 +397,13 @@ function RestaurantPageContent() {
 
                             <div className="lg:col-span-1 space-y-12">
                                 <div className="p-8 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm">
-                                    <h3 className="text-xl font-headline mb-6">Évaluez votre plat</h3>
-                                    <ReviewForm onSubmit={handleAddReview} />
+                                    <h3 className="text-xl font-headline mb-2">Avis vérifiés</h3>
+                                    <p className="text-sm text-slate-400">
+                                        Seuls les clients livrés peuvent laisser un avis, depuis leur{' '}
+                                        <a href="/orders" className="text-primary font-bold hover:underline">historique de commandes</a>.
+                                    </p>
                                 </div>
-                                
+
                                 {allReviews.length > 0 && (
                                     <div className="p-8 bg-slate-50 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800">
                                         <h3 className="text-xl font-headline mb-2">Analyse des Notes</h3>

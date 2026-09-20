@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useForm } from 'react-hook-form';
@@ -20,15 +20,18 @@ import type { AppRole } from '@/lib/types';
 const profileSchema = z.object({
   nom: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères.' }),
   role: z.enum(['client', 'restaurateur', 'livreur']),
+  codeParrainage: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-export default function CompleteProfilePage() {
+function CompleteProfileContent() {
   const { user, userProfile, loading: authLoading } = useAuth();
   const { db } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const referralFromLink = searchParams.get('ref') || '';
   const [isSaving, setIsSaving] = React.useState(false);
 
   const form = useForm<ProfileFormValues>({
@@ -36,6 +39,7 @@ export default function CompleteProfilePage() {
     defaultValues: {
       nom: user?.displayName || '',
       role: 'client',
+      codeParrainage: referralFromLink,
     },
   });
 
@@ -54,6 +58,7 @@ export default function CompleteProfilePage() {
 
     try {
       const userDocRef = doc(db, 'utilisateurs', user.uid);
+      const parrainId = data.codeParrainage?.trim();
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
@@ -61,6 +66,7 @@ export default function CompleteProfilePage() {
         role: data.role,
         roleSysteme: 'User',
         dateCreation: serverTimestamp(),
+        ...(parrainId && parrainId !== user.uid ? { parrainId } : {}),
       });
 
       toast({
@@ -138,6 +144,15 @@ export default function CompleteProfilePage() {
                 <p className="text-sm text-destructive">{form.formState.errors.role.message}</p>
               )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="codeParrainage">Code de parrainage (optionnel)</Label>
+              <Input
+                id="codeParrainage"
+                placeholder="Collé depuis un lien d'invitation"
+                {...form.register('codeParrainage')}
+                disabled={isSaving}
+              />
+            </div>
           </CardContent>
           <CardFooter>
             <Button className="w-full text-lg font-semibold" type="submit" disabled={isSaving}>
@@ -155,5 +170,17 @@ export default function CompleteProfilePage() {
       </Card>
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
     </div>
+  );
+}
+
+export default function CompleteProfilePage() {
+  return (
+    <React.Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    }>
+      <CompleteProfileContent />
+    </React.Suspense>
   );
 }

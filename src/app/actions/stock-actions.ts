@@ -2,19 +2,26 @@
 
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminAuth, getAdminDb } from '@/firebase/admin';
-import type { Order, StockItem } from '@/lib/types';
+import type { Order, StockItem, UserProfile } from '@/lib/types';
 import { aggregateIngredientDeductions } from '@/lib/stock-utils';
+import { computeLoyaltyPoints, REFERRAL_BONUS_POINTS } from '@/lib/loyalty';
 
 export type ProcessDeliveredOrderResult =
-  | { success: true; lowStockAlerts: number }
+  | { success: true; lowStockAlerts: number; pointsAwarded: number }
   | { success: false; error: string };
 
 /**
  * Server-side, privileged completion path triggered after a livreur marks an
  * order delivered. The Firestore rules forbid the livreur from writing to
- * `/stocks` or to the restaurateur's `/notifications`, so we re-verify the
- * livreur's identity via their Firebase ID token and run the stock decrement
- * + low-stock alerting through the Admin SDK.
+ * `/stocks`, `/notifications` or a customer's `pointsFidelite`, so we
+ * re-verify the livreur's identity via their Firebase ID token and run the
+ * stock decrement, low-stock alerting and loyalty/referral crediting through
+ * the Admin SDK.
+ *
+ * `order.livraisonTraitee` guards against a double call (e.g. a client
+ * retry) double-crediting stock or points — it is set inside the same batch
+ * that performs everything else, so a re-entrant call always sees either
+ * "not yet processed" or "fully processed", never a partial state.
  */
 export async function processDeliveredOrderAction(
   orderId: string,
@@ -53,16 +60,22 @@ export async function processDeliveredOrderAction(
     return { success: false, error: 'Accès refusé.' };
   }
 
-  const deductions = aggregateIngredientDeductions(order.plats);
-  const stockItemIds = Object.keys(deductions);
-  if (stockItemIds.length === 0) {
-    return { success: true, lowStockAlerts: 0 };
+  if (order.livraisonTraitee) {
+    return { success: true, lowStockAlerts: 0, pointsAwarded: 0 };
   }
 
-  // Read current state to detect threshold crossings.
-  const stockSnaps = await db.getAll(
-    ...stockItemIds.map((id) => db.collection('stocks').doc(id)),
-  );
+  const deductions = aggregateIngredientDeductions(order.plats);
+  const stockItemIds = Object.keys(deductions);
+
+  // Read current state to detect threshold crossings (only when the order
+  // actually has stock-trackable ingredients).
+  const stockSnaps = stockItemIds.length > 0
+    ? await db.getAll(...stockItemIds.map((id) => db.collection('stocks').doc(id)))
+    : [];
+
+  const customerRef = db.collection('utilisateurs').doc(order.userId);
+  const customerSnap = await customerRef.get();
+  const customer = customerSnap.exists ? (customerSnap.data() as UserProfile) : null;
 
   const batch = db.batch();
   const now = new Date().toISOString();
@@ -98,6 +111,23 @@ export async function processDeliveredOrderAction(
     }
   }
 
+  // Fidélité : le client gagne des points sur le montant total de la
+  // commande, crédités uniquement ici (jamais côté client).
+  const pointsAwarded = computeLoyaltyPoints(order.total);
+  if (pointsAwarded > 0) {
+    batch.update(customerRef, { pointsFidelite: FieldValue.increment(pointsAwarded) });
+  }
+
+  // Parrainage : à la première commande livrée d'un filleul, son parrain
+  // reçoit un bonus. `filleulRecompenseVersee` empêche tout second crédit.
+  if (customer?.parrainId && !customer.filleulRecompenseVersee) {
+    const parrainRef = db.collection('utilisateurs').doc(customer.parrainId);
+    batch.update(parrainRef, { pointsFidelite: FieldValue.increment(REFERRAL_BONUS_POINTS) });
+    batch.update(customerRef, { filleulRecompenseVersee: true });
+  }
+
+  batch.update(orderRef, { livraisonTraitee: true });
+
   await batch.commit();
-  return { success: true, lowStockAlerts };
+  return { success: true, lowStockAlerts, pointsAwarded };
 }

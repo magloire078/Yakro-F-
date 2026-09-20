@@ -30,12 +30,20 @@ service cloud.firestore {
     }
 
     // Empêche un utilisateur d'auto-promouvoir son rôle ou son niveau système
-    // en se mettant à jour lui-même.
+    // en se mettant à jour lui-même. `pointsFidelite` et
+    // `filleulRecompenseVersee` sont volontairement verrouillés : seul le
+    // SDK Admin (processDeliveredOrderAction), qui contourne les rules,
+    // peut les faire avancer. `parrainId` est fixé une seule fois à la
+    // création du profil et ne peut plus changer ensuite.
     function userPrivilegesUnchanged() {
       return request.resource.data.role == resource.data.role
         && request.resource.data.get('roleSysteme', 'User')
              == resource.data.get('roleSysteme', 'User')
-        && request.resource.data.get('uid', '') == resource.data.get('uid', '');
+        && request.resource.data.get('uid', '') == resource.data.get('uid', '')
+        && request.resource.data.get('pointsFidelite', 0) == resource.data.get('pointsFidelite', 0)
+        && request.resource.data.get('parrainId', '') == resource.data.get('parrainId', '')
+        && request.resource.data.get('filleulRecompenseVersee', false)
+             == resource.data.get('filleulRecompenseVersee', false);
     }
 
     // Empêche la mutation des champs sensibles d'une commande lors d'une
@@ -56,7 +64,9 @@ service cloud.firestore {
         && request.resource.data.revenuNet == resource.data.revenuNet
         && request.resource.data.plats == resource.data.plats
         && request.resource.data.date == resource.data.date
-        && request.resource.data.paiement == resource.data.paiement;
+        && request.resource.data.paiement == resource.data.paiement
+        && request.resource.data.get('livraisonTraitee', false)
+             == resource.data.get('livraisonTraitee', false);
     }
 
     // Valide le sous-objet `paiement` à la création d'une commande.
@@ -82,11 +92,24 @@ service cloud.firestore {
 
       // Création : seul l'utilisateur lui-même peut créer son profil, avec un
       // rôle valide et roleSysteme verrouillé à 'User' (l'élévation est
-      // réservée aux SuperAdmin via update).
+      // réservée aux SuperAdmin via update). `parrainId`, s'il est fourni
+      // (lien/code de parrainage saisi à l'inscription), doit désigner un
+      // utilisateur existant autre que soi-même ; `pointsFidelite` et
+      // `filleulRecompenseVersee` ne peuvent jamais être pré-remplis par
+      // le client à la création.
       allow create: if isUserAuthenticated()
         && isUser(userId)
         && request.resource.data.role in ['client', 'restaurateur', 'livreur']
-        && request.resource.data.get('roleSysteme', 'User') == 'User';
+        && request.resource.data.get('roleSysteme', 'User') == 'User'
+        && !('pointsFidelite' in request.resource.data)
+        && !('filleulRecompenseVersee' in request.resource.data)
+        && (
+          !('parrainId' in request.resource.data) ||
+          (
+            request.resource.data.parrainId != userId &&
+            exists(/databases/$(database)/documents/utilisateurs/$(request.resource.data.parrainId))
+          )
+        );
 
       // Update : l'utilisateur peut modifier son profil mais ni son rôle
       // applicatif ni son niveau système (ni son uid). SuperAdmin peut tout.
@@ -140,6 +163,7 @@ service cloud.firestore {
         && isUser(request.resource.data.userId)
         && request.resource.data.statut == 'Placée'
         && !('livreurId' in request.resource.data)
+        && !('livraisonTraitee' in request.resource.data)
         && orderPaymentValid()
         && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
         && request.resource.data.restaurateurId ==
@@ -171,6 +195,34 @@ service cloud.firestore {
       );
 
       allow delete: if isSuperAdmin();
+    }
+
+    // Avis vérifiés : un avis n'existe que pour une commande LIVRÉE,
+    // appartenant à son auteur, sur le même restaurant. L'id du document
+    // DOIT être l'orderId : cela garantit mécaniquement un avis unique par
+    // commande (une seconde tentative sur le même orderId devient une
+    // "update", refusée ci-dessous) sans avoir besoin d'une requête de
+    // vérification d'unicité.
+    function orderAllowsReview(orderId, restaurantId) {
+      let order = get(/databases/$(database)/documents/commandes/$(orderId)).data;
+      return order.userId == request.auth.uid
+        && order.restaurantId == restaurantId
+        && order.statut == 'Livrée';
+    }
+
+    match /avis/{avisId} {
+      allow read, list: if true;
+
+      allow create: if isUserAuthenticated()
+        && isUser(request.resource.data.userId)
+        && avisId == request.resource.data.orderId
+        && request.resource.data.note >= 1
+        && request.resource.data.note <= 5
+        && orderAllowsReview(request.resource.data.orderId, request.resource.data.restaurantId);
+
+      // Immuable une fois posté : un avis "vérifié" ne peut pas être
+      // retouché après coup.
+      allow update, delete: if false;
     }
 
     // Profil public d'un livreur (nom + position) consultable par tout
