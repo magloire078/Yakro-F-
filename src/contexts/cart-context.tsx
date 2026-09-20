@@ -1,11 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import type { CartItem, Order, PaymentMode } from '@/lib/types';
+import type { CartItem, Coupon, Order, PaymentMode } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
 import { buildOrderFromCart } from '@/lib/order-builder';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -23,6 +23,16 @@ interface PlaceOrderResult {
   paymentUrl?: string;
 }
 
+interface AppliedCoupon {
+  code: string;
+  montantReduction: number;
+}
+
+interface ApplyCouponResult {
+  success: boolean;
+  error?: string;
+}
+
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: Omit<CartItem, 'image'>) => void;
@@ -33,6 +43,10 @@ interface CartContextType {
   cartSubtotal: number;
   cartDeliveryFee: number;
   cartCount: number;
+  appliedCoupon: AppliedCoupon | null;
+  cartDiscount: number;
+  applyCoupon: (code: string) => Promise<ApplyCouponResult>;
+  removeCoupon: () => void;
   placeOrder: (paymentMode: PaymentMode) => Promise<PlaceOrderResult>;
 }
 
@@ -64,6 +78,7 @@ const getUserLocation = (): Promise<{ latitude: number; longitude: number } | nu
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = React.useState<CartItem[]>(getInitialCart);
+  const [appliedCoupon, setAppliedCoupon] = React.useState<AppliedCoupon | null>(null);
   const { getRestaurant } = useData();
   const { user, userProfile } = useAuth();
   const { db } = useFirebase();
@@ -101,6 +116,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (cartItems.length > 0 && cartItems[0].restaurantId !== item.restaurantId) {
       if (confirm("Votre panier contient déjà des plats d'un autre restaurant. Voulez-vous le vider pour commander ici ?")) {
         setCartItems([{ ...item, quantite: 1 }]);
+        setAppliedCoupon(null);
       }
       return;
     }
@@ -147,6 +163,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = React.useCallback(() => {
     setCartItems([]);
+    setAppliedCoupon(null);
   }, []);
 
   const cartSubtotal = React.useMemo(() => {
@@ -173,6 +190,69 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return cartItems.reduce((count, item) => count + item.quantite, 0);
   }, [cartItems]);
 
+  const cartDiscount = appliedCoupon?.montantReduction ?? 0;
+
+  /**
+   * Vérifie un code promo auprès de Firestore et, s'il est valide pour le
+   * restaurant du panier en cours, calcule la réduction et la mémorise
+   * localement. La validation finale et non contournable reste faite par
+   * firestore.rules à la création de la commande — cette étape ne sert
+   * qu'à donner un retour immédiat au client.
+   */
+  const applyCoupon = React.useCallback(async (rawCode: string): Promise<ApplyCouponResult> => {
+    const code = rawCode.trim().toUpperCase();
+    if (!code) {
+      return { success: false, error: 'Entrez un code promo.' };
+    }
+    if (cartItems.length === 0) {
+      return { success: false, error: 'Votre panier est vide.' };
+    }
+
+    const restaurantId = cartItems[0].restaurantId;
+
+    try {
+      const snap = await getDoc(doc(db, 'coupons', code));
+      if (!snap.exists()) {
+        return { success: false, error: 'Code promo introuvable.' };
+      }
+      const coupon = snap.data() as Coupon;
+
+      if (coupon.restaurantId !== restaurantId) {
+        return { success: false, error: "Ce code n'est pas valable pour ce restaurant." };
+      }
+      if (!coupon.actif) {
+        return { success: false, error: "Ce code promo n'est plus actif." };
+      }
+      const expiration = coupon.dateExpiration instanceof Timestamp
+        ? coupon.dateExpiration.toDate()
+        : new Date(coupon.dateExpiration as unknown as string);
+      if (expiration.getTime() < Date.now()) {
+        return { success: false, error: 'Ce code promo a expiré.' };
+      }
+      if (coupon.montantMinimum && cartSubtotal < coupon.montantMinimum) {
+        return {
+          success: false,
+          error: `Commande minimum de ${coupon.montantMinimum.toLocaleString('fr-FR')} FCFA requise pour ce code.`,
+        };
+      }
+
+      const rawDiscount = coupon.type === 'montant_fixe'
+        ? coupon.valeur
+        : (cartSubtotal * coupon.valeur) / 100;
+      const montantReduction = Math.min(Math.round(rawDiscount), cartSubtotal);
+
+      setAppliedCoupon({ code, montantReduction });
+      return { success: true };
+    } catch (err) {
+      console.error('applyCoupon: échec de la validation', err);
+      return { success: false, error: 'Impossible de vérifier ce code pour le moment.' };
+    }
+  }, [cartItems, cartSubtotal, db]);
+
+  const removeCoupon = React.useCallback(() => {
+    setAppliedCoupon(null);
+  }, []);
+
   const placeOrder = React.useCallback(async (paymentMode: PaymentMode) => {
     if (!user || !userProfile) {
       throw new Error("Vous devez être connecté pour passer une commande.");
@@ -190,6 +270,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       cartDeliveryFee,
       cartTotal,
       paymentMode,
+      coupon: appliedCoupon,
       location,
     });
 
@@ -241,7 +322,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       errorEmitter.emit('permission-error', permissionError);
       return { success: false, error: permissionError };
     }
-  }, [user, userProfile, cartItems, cartSubtotal, cartDeliveryFee, cartTotal, getRestaurant, clearCart, db]);
+  }, [user, userProfile, cartItems, cartSubtotal, cartDeliveryFee, cartTotal, appliedCoupon, getRestaurant, clearCart, db]);
 
   const value = React.useMemo(() => ({
     cartItems,
@@ -253,8 +334,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     cartDeliveryFee,
     cartTotal,
     cartCount,
+    appliedCoupon,
+    cartDiscount,
+    applyCoupon,
+    removeCoupon,
     placeOrder
-  }), [cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder]);
+  }), [cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, appliedCoupon, cartDiscount, applyCoupon, removeCoupon, placeOrder]);
 
   return (
     <CartContext.Provider value={value}>

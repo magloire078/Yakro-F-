@@ -91,6 +91,30 @@ export interface Order {
    * traitement si l'action est rappelée pour la même commande.
    */
   livraisonTraitee?: boolean;
+  /** Code promo appliqué par le client au moment de la commande. */
+  codePromo?: {
+    code: string;
+    montantReduction: number;
+  };
+}
+
+export type CouponType = 'pourcentage' | 'montant_fixe';
+
+export interface Coupon {
+  /** L'id du document = le code lui-même (majuscules), ex. "YAKRO10". */
+  id: string;
+  code: string;
+  restaurantId: string;
+  restaurateurId: string;
+  type: CouponType;
+  /** Pourcentage (0-100) ou montant fixe en FCFA, selon `type`. */
+  valeur: number;
+  /** Sous-total minimum de la commande pour que le code soit éligible. */
+  montantMinimum?: number;
+  dateExpiration: Timestamp;
+  /** Interrupteur manuel — pas de compteur d'utilisations pour ce MVP,
+   * le restaurateur active/désactive lui-même le code. */
+  actif: boolean;
 }
 
 export interface Review {

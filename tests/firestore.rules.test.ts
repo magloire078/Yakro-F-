@@ -16,6 +16,7 @@ import {
   getDocs,
   query,
   where,
+  Timestamp,
 } from 'firebase/firestore';
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 
@@ -231,6 +232,166 @@ describe('firestore.rules — /commandes create', () => {
     await assertFails(
       setDoc(doc(db, 'commandes', 'o1'), baseOrder({ livraisonTraitee: true })),
     );
+  });
+});
+
+describe('firestore.rules — /commandes create with a coupon', () => {
+  const COUPON_CODE = 'YAKRO10';
+
+  beforeEach(seed);
+
+  async function seedCoupon(overrides: Record<string, unknown> = {}) {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), {
+        code: COUPON_CODE,
+        restaurantId: RESTAURANT_ID,
+        restaurateurId: RESTAURATEUR_UID,
+        type: 'montant_fixe',
+        valeur: 1000,
+        dateExpiration: Timestamp.fromDate(new Date(Date.now() + 86400_000)),
+        actif: true,
+        ...overrides,
+      });
+    });
+  }
+
+  // baseOrder(): sousTotal 4500, fraisDeLivraison 500 -> 5000 without a
+  // coupon. A 1000 FCFA discount brings the total to 4000.
+  const discountedOrder = (montantReduction: number, total: number, overrides: Record<string, unknown> = {}) =>
+    baseOrder({
+      total,
+      paiement: { mode: 'especes', statut: 'a_la_livraison', montant: total },
+      codePromo: { code: COUPON_CODE, montantReduction },
+      ...overrides,
+    });
+
+  it('lets the client apply a valid, active coupon', async () => {
+    await seedCoupon();
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
+  });
+
+  it('rejects a coupon code that does not exist', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
+  });
+
+  it('rejects a coupon that belongs to a different restaurant', async () => {
+    await seedCoupon({ restaurantId: 'other-restaurant' });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
+  });
+
+  it('rejects an inactive coupon', async () => {
+    await seedCoupon({ actif: false });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
+  });
+
+  it('rejects an expired coupon', async () => {
+    await seedCoupon({ dateExpiration: Timestamp.fromDate(new Date(Date.now() - 86400_000)) });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
+  });
+
+  it('rejects a discount that exceeds a fixed-amount coupon\'s value', async () => {
+    await seedCoupon(); // valeur: 1000
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(2000, 3000)));
+  });
+
+  it('rejects a discount that exceeds a percentage coupon\'s cap', async () => {
+    await seedCoupon({ type: 'pourcentage', valeur: 10 }); // 10% of 4500 = 450 max
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
+  });
+
+  it('accepts a discount within a percentage coupon\'s cap', async () => {
+    await seedCoupon({ type: 'pourcentage', valeur: 10 }); // 10% of 4500 = 450 max
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(400, 4600)));
+  });
+
+  it('rejects a coupon when the order is below its minimum amount', async () => {
+    await seedCoupon({ montantMinimum: 10000 });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
+  });
+});
+
+describe('firestore.rules — /coupons', () => {
+  const COUPON_CODE = 'YAKRO10';
+
+  beforeEach(seed);
+
+  const baseCoupon = (overrides: Record<string, unknown> = {}) => ({
+    code: COUPON_CODE,
+    restaurantId: RESTAURANT_ID,
+    restaurateurId: RESTAURATEUR_UID,
+    type: 'montant_fixe',
+    valeur: 1000,
+    dateExpiration: Timestamp.fromDate(new Date(Date.now() + 86400_000)),
+    actif: true,
+    ...overrides,
+  });
+
+  it('lets the restaurant owner create a coupon for their own restaurant', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'coupons', COUPON_CODE), baseCoupon()));
+  });
+
+  it('rejects a coupon created by someone other than the restaurant owner', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'coupons', COUPON_CODE), baseCoupon()));
+  });
+
+  it('rejects a document id that does not match the code', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(setDoc(doc(db, 'coupons', 'MISMATCH'), baseCoupon()));
+  });
+
+  it('rejects a malformed code', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(setDoc(doc(db, 'coupons', 'ab'), baseCoupon({ code: 'ab' })));
+  });
+
+  it('rejects a percentage coupon above 100%', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'coupons', COUPON_CODE), baseCoupon({ type: 'pourcentage', valeur: 150 })),
+    );
+  });
+
+  it('lets the owner toggle actif and nothing else', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), baseCoupon());
+    });
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(updateDoc(doc(db, 'coupons', COUPON_CODE), { actif: false }));
+  });
+
+  it('forbids changing the discount value through an update', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), baseCoupon());
+    });
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(updateDoc(doc(db, 'coupons', COUPON_CODE), { valeur: 5000 }));
+  });
+
+  it('lets the owner delete their own coupon', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), baseCoupon());
+    });
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(deleteDoc(doc(db, 'coupons', COUPON_CODE)));
+  });
+
+  it('lets any authenticated user read a coupon by its code', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), baseCoupon());
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(getDoc(doc(db, 'coupons', COUPON_CODE)));
   });
 });
 

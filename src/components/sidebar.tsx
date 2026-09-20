@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Icons } from './icons';
-import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, ChefHat, LogOut, Package, X } from 'lucide-react';
+import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, ChefHat, LogOut, Package, X, Ticket } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -55,6 +55,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
     { href: '/dashboard/orders', label: 'Commandes', icon: ClipboardList, roles: ['restaurateur'] },
     { href: '/dashboard/analytics', label: 'Statistiques', icon: BarChart, roles: ['restaurateur'] },
     { href: '/dashboard/boost', label: 'Visibilité', icon: Rocket, roles: ['restaurateur'] },
+    { href: '/dashboard/coupons', label: 'Promotions', icon: Ticket, roles: ['restaurateur'] },
     { href: '/dashboard/stock', label: 'Stocks', icon: Package, roles: ['restaurateur'] },
   ];
 

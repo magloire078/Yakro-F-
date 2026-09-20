@@ -16,23 +16,45 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/cart-context';
 import { ScrollArea } from './ui/scroll-area';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ArrowLeft, Loader2, Tag, X } from 'lucide-react';
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { type CartItem, type PaymentMode } from '@/lib/types';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentMethodSelector } from './payment-method-selector';
+import { Input } from './ui/input';
 
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
-  const { cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount, placeOrder, clearCart } = useCart();
+  const {
+    cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount,
+    appliedCoupon, cartDiscount, applyCoupon, removeCoupon, placeOrder, clearCart,
+  } = useCart();
   const { getRestaurant } = useData();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = React.useState(false);
   const [checkoutStep, setCheckoutStep] = React.useState<'cart' | 'payment'>('cart');
   const [paymentMode, setPaymentMode] = React.useState<PaymentMode>('especes');
   const [isPlacingOrder, setIsPlacingOrder] = React.useState(false);
+  const [couponInput, setCouponInput] = React.useState('');
+  const [isApplyingCoupon, setIsApplyingCoupon] = React.useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setIsApplyingCoupon(true);
+    try {
+      const result = await applyCoupon(couponInput);
+      if (!result.success) {
+        toast({ variant: 'destructive', title: 'Code promo', description: result.error });
+        return;
+      }
+      setCouponInput('');
+      toast({ title: 'Code promo appliqué !' });
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
 
   const handleSheetOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -144,8 +166,44 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
         <div className="flex-1 overflow-hidden">
           {checkoutStep === 'payment' ? (
             <ScrollArea className="h-full px-6">
-              <div className="py-8">
+              <div className="py-8 space-y-8">
                 <PaymentMethodSelector value={paymentMode} onChange={setPaymentMode} />
+
+                <div className="space-y-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Code promo</p>
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 rounded-2xl bg-primary/5 border border-primary/20">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                        <Tag className="h-4 w-4" />
+                        {appliedCoupon.code}
+                      </div>
+                      <button
+                        onClick={removeCoupon}
+                        className="text-slate-400 hover:text-red-500 transition-colors"
+                        aria-label="Retirer le code promo"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Ex: YAKRO10"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
+                        className="rounded-xl"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleApplyCoupon}
+                        disabled={isApplyingCoupon || !couponInput.trim()}
+                        className="rounded-xl shrink-0"
+                      >
+                        {isApplyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Appliquer'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </ScrollArea>
           ) : cartItems.length > 0 ? (
@@ -272,12 +330,18 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                   <span className="text-slate-500">Livraison</span>
                   <span className="font-bold text-emerald-500">{cartDeliveryFee === 0 ? 'Gratuit' : `${cartDeliveryFee.toLocaleString('fr-FR')} FCFA`}</span>
                 </div>
+                {cartDiscount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Réduction ({appliedCoupon?.code})</span>
+                    <span className="font-bold text-primary">-{cartDiscount.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                )}
                 <Separator className="bg-slate-100 dark:bg-slate-800" />
                 <div className="flex justify-between items-end">
                   <div>
                     <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">Total à payer</span>
                     <p className="text-3xl font-headline text-slate-900 dark:text-white">
-                        {cartTotal.toLocaleString('fr-FR')} <small className="text-sm font-bold">FCFA</small>
+                        {(cartTotal - cartDiscount).toLocaleString('fr-FR')} <small className="text-sm font-bold">FCFA</small>
                     </p>
                   </div>
                   {checkoutStep === 'cart' ? (

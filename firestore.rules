@@ -87,6 +87,30 @@ service cloud.firestore {
         );
     }
 
+    // Valide le code promo optionnel appliqué à la création d'une commande.
+    // Le montant de la réduction n'est jamais vérifié à l'exact — un
+    // pourcentage recalculé en float serait fragile à comparer — mais il
+    // ne peut jamais dépasser ce que le coupon autorise réellement.
+    function orderCouponValid() {
+      return !('codePromo' in request.resource.data) || couponMatchesOrder();
+    }
+
+    function couponMatchesOrder() {
+      let coupon = get(/databases/$(database)/documents/coupons/$(request.resource.data.codePromo.code)).data;
+      let sousTotal = request.resource.data.sousTotal;
+      let reduction = request.resource.data.codePromo.montantReduction;
+      return coupon.restaurantId == request.resource.data.restaurantId
+        && coupon.actif == true
+        && request.time < coupon.dateExpiration
+        && sousTotal >= coupon.get('montantMinimum', 0)
+        && reduction > 0
+        && reduction <= sousTotal
+        && (
+          (coupon.type == 'montant_fixe' && reduction <= coupon.valeur) ||
+          (coupon.type == 'pourcentage' && reduction <= (sousTotal * coupon.valeur) / 100)
+        );
+    }
+
     match /utilisateurs/{userId} {
       allow read: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
 
@@ -165,6 +189,7 @@ service cloud.firestore {
         && !('livreurId' in request.resource.data)
         && !('livraisonTraitee' in request.resource.data)
         && orderPaymentValid()
+        && orderCouponValid()
         && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
         && request.resource.data.restaurateurId ==
              get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.proprietaireId;
@@ -223,6 +248,35 @@ service cloud.firestore {
       // Immuable une fois posté : un avis "vérifié" ne peut pas être
       // retouché après coup.
       allow update, delete: if false;
+    }
+
+    // Promotions ciblées : coupons de réduction créés par un restaurateur
+    // pour son propre restaurant (distinct de `boosts`, qui est une mise
+    // en avant payante côté plateforme, pas une réduction client).
+    // L'id du document = le code lui-même (majuscules) — la lecture par
+    // code exact est ouverte à tout utilisateur authentifié pour permettre
+    // la saisie du code au moment du paiement.
+    match /coupons/{couponId} {
+      allow read: if isUserAuthenticated();
+
+      allow create: if isUserAuthenticated()
+        && isRestaurantOwner(request.resource.data.restaurantId)
+        && isUser(request.resource.data.restaurateurId)
+        && couponId == request.resource.data.code
+        && request.resource.data.code.matches('^[A-Z0-9]{4,12}$')
+        && request.resource.data.type in ['pourcentage', 'montant_fixe']
+        && request.resource.data.valeur > 0
+        && (request.resource.data.type != 'pourcentage' || request.resource.data.valeur <= 100);
+
+      // Seul l'interrupteur actif/inactif peut être modifié après coup —
+      // pas de compteur d'utilisations à faire avancer ni de valeur à
+      // retoucher discrètement une fois le code diffusé.
+      allow update: if isUserAuthenticated()
+        && (resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['actif']);
+
+      allow delete: if isUserAuthenticated()
+        && (resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin());
     }
 
     // Profil public d'un livreur (nom + position) consultable par tout

@@ -134,4 +134,31 @@ describe('buildOrderFromCart', () => {
     const order = buildOrderFromCart({ ...baseInput, paymentMode: 'orange_money' });
     expect(order.paiement).toEqual({ mode: 'orange_money', statut: 'en_attente', montant: 6500 });
   });
+
+  it('deducts a coupon discount from the total and the restaurant revenue only', () => {
+    const order = buildOrderFromCart({
+      ...baseInput,
+      coupon: { code: 'YAKRO10', montantReduction: 1000 },
+    });
+    expect(order.total).toBe(5500); // 6500 - 1000
+    expect(order.paiement.montant).toBe(5500);
+    expect(order.montantCommission).toBeCloseTo(900); // unaffected: 6000 * 0.15
+    expect(order.revenuNet).toBeCloseTo(4100); // 6000 - 900 - 1000
+    expect(order.codePromo).toEqual({ code: 'YAKRO10', montantReduction: 1000 });
+  });
+
+  it('omits codePromo when no coupon is applied', () => {
+    const order = buildOrderFromCart(baseInput);
+    expect(order).not.toHaveProperty('codePromo');
+  });
+
+  it('caps the discount at the subtotal so revenue never goes negative', () => {
+    const order = buildOrderFromCart({
+      ...baseInput,
+      coupon: { code: 'MEGA', montantReduction: 999999 },
+    });
+    expect(order.codePromo?.montantReduction).toBe(6000);
+    expect(order.total).toBe(500); // only the delivery fee remains
+    expect(order.revenuNet).toBeCloseTo(-900); // commission is still owed even if the restaurant discounts 100%
+  });
 });
