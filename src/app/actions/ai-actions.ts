@@ -7,6 +7,7 @@ import { intelligentSearch, type IntelligentSearchInput, type IntelligentSearchO
 import { generateMenuItem, type GenerateMenuItemInput, type GenerateMenuItemOutput } from '@/ai/flows/generate-menu-item-flow';
 import { generateVideo, type GenerateVideoInput, type GenerateVideoOutput } from '@/ai/flows/generate-video-flow';
 import { generateImage, type GenerateImageInput, type GenerateImageOutput } from '@/ai/flows/generate-image-flow';
+import { chatWithAssistant, type AssistantChatInput, type AssistantChatOutput } from '@/ai/flows/assistant-flow';
 
 export async function generateReviewsAction(input: GenerateReviewsInput): Promise<{ success: true; data: GenerateReviewsOutput } | { success: false; error: string }> {
     try {
@@ -66,7 +67,7 @@ export async function generateVideoAction(input: GenerateVideoInput): Promise<{ 
 export async function generateImageAction(input: GenerateImageInput): Promise<{ success: true; data: GenerateImageOutput } | { success: false; error: string }> {
     try {
         const data = await generateImage(input);
-        
+
         if (!data.imageDataUri) {
             throw new Error("L'IA n'a pas pu générer d'image.");
         }
@@ -75,5 +76,15 @@ export async function generateImageAction(input: GenerateImageInput): Promise<{ 
     } catch (error: unknown) {
         console.error('generateImageAction error:', error);
         return { success: false, error: error instanceof Error ? error.message : 'Erreur lors de la génération de l\'image.' };
+    }
+}
+
+export async function assistantChatAction(input: AssistantChatInput): Promise<{ success: true; data: AssistantChatOutput } | { success: false; error: string }> {
+    try {
+        const data = await chatWithAssistant(input);
+        return { success: true, data };
+    } catch (error: unknown) {
+        console.error('assistantChatAction error:', error);
+        return { success: false, error: error instanceof Error ? error.message : "Erreur lors de l'échange avec l'assistant." };
     }
 }

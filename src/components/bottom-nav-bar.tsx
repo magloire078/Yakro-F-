@@ -5,13 +5,14 @@ import { useAuth } from '@/contexts/auth-context';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign } from 'lucide-react';
+import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign, MessageCircle } from 'lucide-react';
 import * as React from 'react';
 import { motion } from 'framer-motion';
 
 const clientLinks = [
     { href: '/', label: 'Accueil', icon: Home },
     { href: '/recommendations', label: 'Pour Vous', icon: Sparkles },
+    { href: '/assistant', label: 'Assistant', icon: MessageCircle },
     { href: '/orders', label: 'Historique', icon: History },
 ];
 
