@@ -77,80 +77,6 @@ service cloud.firestore {
              == resource.data.get('codePromo', null);
     }
 
-    // Valide le sous-objet `paiement` à la création d'une commande.
-    // `especes` doit être immédiatement "à la livraison" ; tout opérateur
-    // Mobile Money démarre "en_attente" (la confirmation ne peut venir que
-    // du webhook CinetPay via l'Admin SDK). Les champs de suivi de
-    // transaction ne peuvent pas être pré-remplis par le client.
-    function orderPaymentValid() {
-      let p = request.resource.data.paiement;
-      return p.mode in ['especes', 'orange_money', 'mtn_money', 'moov_money']
-        && p.montant == request.resource.data.total
-        && !('transactionId' in p)
-        && !('paymentToken' in p)
-        && !('dateConfirmation' in p)
-        && (
-          (p.mode == 'especes' && p.statut == 'a_la_livraison') ||
-          (p.mode != 'especes' && p.statut == 'en_attente')
-        );
-    }
-
-    // Valide le code promo optionnel appliqué à la création d'une commande.
-    // Le montant de la réduction n'est jamais vérifié à l'exact — un
-    // pourcentage recalculé en float serait fragile à comparer — mais il
-    // ne peut jamais dépasser ce que le coupon autorise réellement.
-    function orderCouponValid() {
-      return !('codePromo' in request.resource.data) || couponMatchesOrder();
-    }
-
-    function couponMatchesOrder() {
-      let coupon = get(/databases/$(database)/documents/coupons/$(request.resource.data.codePromo.code)).data;
-      let sousTotal = request.resource.data.sousTotal;
-      let reduction = request.resource.data.codePromo.montantReduction;
-      return coupon.restaurantId == request.resource.data.restaurantId
-        && coupon.actif == true
-        && request.time < coupon.dateExpiration
-        && sousTotal >= coupon.get('montantMinimum', 0)
-        && reduction > 0
-        && reduction <= sousTotal
-        && (
-          (coupon.type == 'montant_fixe' && reduction <= coupon.valeur) ||
-          (coupon.type == 'pourcentage' && reduction <= (sousTotal * coupon.valeur) / 100)
-        );
-    }
-
-    // Verrou de tarification à la création d'une commande. Ce qui PEUT être
-    // vérifié ici l'est : le taux de commission est la constante de la
-    // plateforme (COMMISSION_RATE côté app), les frais de livraison doivent
-    // correspondre à ceux réellement définis sur le restaurant, et
-    // restaurateurId doit être son vrai propriétaire.
-    //
-    // LIMITE CONNUE : les Firestore Rules ne peuvent pas sommer un tableau
-    // de longueur variable, donc `sousTotal`/`total` ne peuvent PAS être
-    // recalculés ici à partir de `plats` — un client pourrait encore
-    // déclarer un sous-total déconnecté du contenu réel de son panier.
-    // Fermer complètement cette brèche demande de faire créer la commande
-    // via une Server Action (Admin SDK, qui relit les vrais prix de
-    // `plats/{id}`) plutôt que par écriture directe du client — pas encore
-    // fait à ce stade, à traiter avant tout lancement en production.
-    function orderPricingValid() {
-      let restaurant = get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data;
-      return request.resource.data.tauxCommission == 0.15
-        && request.resource.data.fraisDeLivraison == restaurant.fraisDeLivraison
-        && request.resource.data.restaurateurId == restaurant.proprietaireId;
-    }
-
-    // Un client ne peut se marquer "prioritaire" à la commande que si son
-    // compte est réellement Premium à cet instant (empêche l'auto-triche).
-    function orderPriorityValid() {
-      return !('prioritaire' in request.resource.data)
-        || request.resource.data.prioritaire == false
-        || (
-          userExists()
-          && request.time < getUserData().get('premiumJusquau', request.time)
-        );
-    }
-
     match /utilisateurs/{userId} {
       allow read: if isUserAuthenticated() && (isUser(userId) || isSuperAdmin());
 
@@ -222,17 +148,14 @@ service cloud.firestore {
         isRestaurantOwner(resource.data.restaurantId)
       );
 
-      // Création : champs serveur verrouillés pour empêcher la triche.
-      allow create: if isUserAuthenticated()
-        && isUser(request.resource.data.userId)
-        && request.resource.data.statut == 'Placée'
-        && !('livreurId' in request.resource.data)
-        && !('livraisonTraitee' in request.resource.data)
-        && orderPaymentValid()
-        && orderCouponValid()
-        && orderPriorityValid()
-        && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
-        && orderPricingValid();
+      // Création : jamais par écriture directe du client. Les Firestore
+      // Rules ne peuvent pas sommer un tableau de longueur variable, donc
+      // `sousTotal`/`total` ne peuvent pas être vérifiés ici contre le vrai
+      // contenu de `plats` — createOrderAction (Admin SDK, qui contourne
+      // ces rules) relit les vrais prix/`plats/{id}`/frais de livraison
+      // avant d'écrire quoi que ce soit et est désormais l'unique voie de
+      // création d'une commande.
+      allow create: if false;
 
       allow update: if isUserAuthenticated() && (
           // Le restaurateur accepte (Placée -> En Préparation)

@@ -102,15 +102,18 @@ describe('firestore.rules — restaurants & plats', () => {
 describe('firestore.rules — /commandes create', () => {
   beforeEach(seed);
 
-  it('lets the client create a properly-formed order', async () => {
+  // Les commandes ne sont plus créées par écriture directe du client :
+  // createOrderAction (Admin SDK) est désormais l'unique voie, car les
+  // rules ne peuvent pas sommer `plats` pour vérifier `sousTotal`/`total`
+  // contre le vrai contenu du panier. `allow create` est donc `if false`
+  // sans conditions — ces tests couvrent que la porte reste bien fermée,
+  // quelle que soit la forme du document envoyé.
+  it('rejects a direct client write, even a well-formed order', async () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), baseOrder()));
+    await assertFails(setDoc(doc(db, 'commandes', 'o1'), baseOrder()));
   });
 
-  it('accepts the exact payload produced by buildOrderFromCart', async () => {
-    // Re-import lazily so the rules file remains the single source of truth
-    // for what the rules expect, while the order builder is the single
-    // source of truth for what placeOrder writes.
+  it('rejects the exact payload produced by buildOrderFromCart', async () => {
     const { buildOrderFromCart } = await import('../src/lib/order-builder');
     const cartItem = {
       id: 'p1',
@@ -145,226 +148,14 @@ describe('firestore.rules — /commandes create', () => {
       now: new Date('2026-05-04T12:00:00.000Z'),
     });
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertSucceeds(setDoc(doc(db, 'commandes', 'placed'), order));
+    await assertFails(setDoc(doc(db, 'commandes', 'placed'), order));
   });
 
-  it('rejects orders with statut != Placée', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ statut: 'Livrée' })));
-  });
-
-  it('rejects orders that pre-set livreurId', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ livreurId: LIVREUR_UID })),
-    );
-  });
-
-  it('rejects orders whose restaurateurId does not match the restaurant owner', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ restaurateurId: OTHER_USER_UID })),
-    );
-  });
-
-  it('rejects orders impersonating another user', async () => {
+  it('rejects a direct write even when impersonating another user', async () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertFails(
       setDoc(doc(db, 'commandes', 'o1'), baseOrder({ userId: 'someone-else' })),
     );
-  });
-
-  it('lets the client create a Mobile Money order pending confirmation', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertSucceeds(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
-        paiement: { mode: 'orange_money', statut: 'en_attente', montant: 5000 },
-      })),
-    );
-  });
-
-  it('rejects an unknown payment mode', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
-        paiement: { mode: 'bitcoin', statut: 'en_attente', montant: 5000 },
-      })),
-    );
-  });
-
-  it('rejects a cash order whose paiement.montant does not match the total', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
-        paiement: { mode: 'especes', statut: 'a_la_livraison', montant: 1 },
-      })),
-    );
-  });
-
-  it('rejects a cash order marked as already paid', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
-        paiement: { mode: 'especes', statut: 'paye', montant: 5000 },
-      })),
-    );
-  });
-
-  it('rejects a Mobile Money order that claims to already be paid', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
-        paiement: { mode: 'mtn_money', statut: 'paye', montant: 5000 },
-      })),
-    );
-  });
-
-  it('rejects an order that pre-sets a transactionId at creation', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({
-        paiement: { mode: 'orange_money', statut: 'en_attente', montant: 5000, transactionId: 'forged' },
-      })),
-    );
-  });
-
-  it('rejects an order that pre-sets livraisonTraitee at creation', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ livraisonTraitee: true })),
-    );
-  });
-
-  it('rejects a commission rate different from the platform constant', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ tauxCommission: 0 })),
-    );
-  });
-
-  it('rejects a delivery fee that does not match the restaurant\'s real fee', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(
-      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ fraisDeLivraison: 1 })),
-    );
-  });
-});
-
-describe('firestore.rules — /commandes create with a coupon', () => {
-  const COUPON_CODE = 'YAKRO10';
-
-  beforeEach(seed);
-
-  async function seedCoupon(overrides: Record<string, unknown> = {}) {
-    await env.withSecurityRulesDisabled(async (ctx) => {
-      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), {
-        code: COUPON_CODE,
-        restaurantId: RESTAURANT_ID,
-        restaurateurId: RESTAURATEUR_UID,
-        type: 'montant_fixe',
-        valeur: 1000,
-        dateExpiration: Timestamp.fromDate(new Date(Date.now() + 86400_000)),
-        actif: true,
-        ...overrides,
-      });
-    });
-  }
-
-  // baseOrder(): sousTotal 4500, fraisDeLivraison 500 -> 5000 without a
-  // coupon. A 1000 FCFA discount brings the total to 4000.
-  const discountedOrder = (montantReduction: number, total: number, overrides: Record<string, unknown> = {}) =>
-    baseOrder({
-      total,
-      paiement: { mode: 'especes', statut: 'a_la_livraison', montant: total },
-      codePromo: { code: COUPON_CODE, montantReduction },
-      ...overrides,
-    });
-
-  it('lets the client apply a valid, active coupon', async () => {
-    await seedCoupon();
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
-  });
-
-  it('rejects a coupon code that does not exist', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
-  });
-
-  it('rejects a coupon that belongs to a different restaurant', async () => {
-    await seedCoupon({ restaurantId: 'other-restaurant' });
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
-  });
-
-  it('rejects an inactive coupon', async () => {
-    await seedCoupon({ actif: false });
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
-  });
-
-  it('rejects an expired coupon', async () => {
-    await seedCoupon({ dateExpiration: Timestamp.fromDate(new Date(Date.now() - 86400_000)) });
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
-  });
-
-  it('rejects a discount that exceeds a fixed-amount coupon\'s value', async () => {
-    await seedCoupon(); // valeur: 1000
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(2000, 3000)));
-  });
-
-  it('rejects a discount that exceeds a percentage coupon\'s cap', async () => {
-    await seedCoupon({ type: 'pourcentage', valeur: 10 }); // 10% of 4500 = 450 max
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
-  });
-
-  it('accepts a discount within a percentage coupon\'s cap', async () => {
-    await seedCoupon({ type: 'pourcentage', valeur: 10 }); // 10% of 4500 = 450 max
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(400, 4600)));
-  });
-
-  it('rejects a coupon when the order is below its minimum amount', async () => {
-    await seedCoupon({ montantMinimum: 10000 });
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), discountedOrder(1000, 4000)));
-  });
-});
-
-describe('firestore.rules — /commandes create with a priority flag', () => {
-  beforeEach(seed);
-
-  async function setPremiumExpiry(expiry: Date) {
-    await env.withSecurityRulesDisabled(async (ctx) => {
-      await updateDoc(doc(ctx.firestore(), 'utilisateurs', OTHER_USER_UID), {
-        premiumJusquau: Timestamp.fromDate(expiry),
-      });
-    });
-  }
-
-  it('lets a Premium client flag their order as prioritaire', async () => {
-    await setPremiumExpiry(new Date(Date.now() + 86400_000));
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: true })));
-  });
-
-  it('rejects prioritaire from a client with no Premium subscription', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: true })));
-  });
-
-  it('rejects prioritaire from a client whose Premium subscription has expired', async () => {
-    await setPremiumExpiry(new Date(Date.now() - 86400_000));
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertFails(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: true })));
-  });
-
-  it('lets any client explicitly set prioritaire to false', async () => {
-    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
-    await assertSucceeds(setDoc(doc(db, 'commandes', 'o1'), baseOrder({ prioritaire: false })));
   });
 });
 

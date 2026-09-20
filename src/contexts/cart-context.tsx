@@ -1,20 +1,18 @@
 'use client';
 
 import * as React from 'react';
-import type { CartItem, Coupon, Order, PaymentMode } from '@/lib/types';
+import type { CartItem, Coupon, PaymentMode } from '@/lib/types';
 import { useData } from './data-context';
 import { useAuth } from './auth-context';
-import { buildOrderFromCart } from '@/lib/order-builder';
-import { collection, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
-import { notifyNewOrderAction } from '@/app/actions/notification-actions';
+import { validateCoupon } from '@/lib/coupon-validation';
+import { createOrderAction } from '@/app/actions/create-order-action';
 import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions';
 
 interface PlaceOrderResult {
   success: boolean;
-  error?: FirestorePermissionError | Error;
+  error?: Error;
   /**
    * Présent uniquement pour un paiement Mobile Money réussi : l'appelant
    * doit rediriger le navigateur vers cette URL pour que le client
@@ -195,9 +193,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /**
    * Vérifie un code promo auprès de Firestore et, s'il est valide pour le
    * restaurant du panier en cours, calcule la réduction et la mémorise
-   * localement. La validation finale et non contournable reste faite par
-   * firestore.rules à la création de la commande — cette étape ne sert
-   * qu'à donner un retour immédiat au client.
+   * localement pour l'affichage. Cette étape ne sert qu'à donner un retour
+   * immédiat au client — createOrderAction revalide le même coupon,
+   * server-side, avec la même fonction pure (validateCoupon), au moment de
+   * la commande.
    */
   const applyCoupon = React.useCallback(async (rawCode: string): Promise<ApplyCouponResult> => {
     const code = rawCode.trim().toUpperCase();
@@ -216,32 +215,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: 'Code promo introuvable.' };
       }
       const coupon = snap.data() as Coupon;
-
-      if (coupon.restaurantId !== restaurantId) {
-        return { success: false, error: "Ce code n'est pas valable pour ce restaurant." };
-      }
-      if (!coupon.actif) {
-        return { success: false, error: "Ce code promo n'est plus actif." };
-      }
-      const expiration = coupon.dateExpiration instanceof Timestamp
-        ? coupon.dateExpiration.toDate()
-        : new Date(coupon.dateExpiration as unknown as string);
-      if (expiration.getTime() < Date.now()) {
-        return { success: false, error: 'Ce code promo a expiré.' };
-      }
-      if (coupon.montantMinimum && cartSubtotal < coupon.montantMinimum) {
-        return {
-          success: false,
-          error: `Commande minimum de ${coupon.montantMinimum.toLocaleString('fr-FR')} FCFA requise pour ce code.`,
-        };
+      const result = validateCoupon(coupon, restaurantId, cartSubtotal);
+      if (!result.valid) {
+        return { success: false, error: result.error };
       }
 
-      const rawDiscount = coupon.type === 'montant_fixe'
-        ? coupon.valeur
-        : (cartSubtotal * coupon.valeur) / 100;
-      const montantReduction = Math.min(Math.round(rawDiscount), cartSubtotal);
-
-      setAppliedCoupon({ code, montantReduction });
+      setAppliedCoupon({ code, montantReduction: result.discount });
       return { success: true };
     } catch (err) {
       console.error('applyCoupon: échec de la validation', err);
@@ -253,76 +232,67 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAppliedCoupon(null);
   }, []);
 
+  /**
+   * La commande n'est plus écrite directement par le client : cartItems ne
+   * transmet que des ids + quantités + noms d'options choisies.
+   * createOrderAction (Admin SDK) relit les vrais prix depuis `plats` et le
+   * vrai frais de livraison depuis `restaurants` avant d'écrire quoi que ce
+   * soit — sans ça, rien n'empêchait un client de déclarer un sous-total
+   * déconnecté du contenu réel de son panier (firestore.rules ne peut pas
+   * sommer un tableau de longueur variable pour le vérifier).
+   */
   const placeOrder = React.useCallback(async (paymentMode: PaymentMode) => {
     if (!user || !userProfile) {
       throw new Error("Vous devez être connecté pour passer une commande.");
     }
+    if (cartItems.length === 0) {
+      throw new Error("Votre panier est vide.");
+    }
 
     const location = await getUserLocation();
-    const restaurant = getRestaurant(cartItems[0]?.restaurantId ?? '');
+    const idToken = await user.getIdToken();
 
-    const newOrder: Omit<Order, 'id'> = buildOrderFromCart({
-      user,
-      userProfile,
-      cartItems,
-      restaurant,
-      cartSubtotal,
-      cartDeliveryFee,
-      cartTotal,
+    const result = await createOrderAction({
+      idToken,
+      restaurantId: cartItems[0].restaurantId,
+      items: cartItems.map((item) => ({
+        menuItemId: item.id,
+        quantite: item.quantite,
+        accompagnementNom: item.accompagnementSelectionne?.nom,
+        boissonNom: item.boissonSelectionnee?.nom,
+      })),
       paymentMode,
-      coupon: appliedCoupon,
+      couponCode: appliedCoupon?.code,
       location,
     });
 
-    const orderDocRef = doc(collection(db, "commandes"));
-
-    try {
-      await setDoc(orderDocRef, newOrder);
-      clearCart();
-      window.dispatchEvent(new CustomEvent('place-order'));
-
-      const idToken = await user.getIdToken();
-
-      // Fire-and-forget the NEW_ORDER notification — its failure should
-      // never block the order from being considered placed.
-      try {
-        const result = await notifyNewOrderAction(orderDocRef.id, idToken);
-        if (!result.success) {
-          console.error('notifyNewOrderAction failed:', result.error);
-        }
-      } catch (err) {
-        console.error('notifyNewOrderAction threw:', err);
-      }
-
-      if (paymentMode === 'especes') {
-        return { success: true };
-      }
-
-      // Mobile Money : la commande existe déjà (paiement.statut =
-      // 'en_attente'). On ouvre la session CinetPay et on renvoie l'URL
-      // de checkout à l'appelant pour rediriger le client. Un échec ici
-      // n'annule pas la commande — le client peut retenter le paiement
-      // depuis le suivi de commande.
-      try {
-        const paymentResult = await initiateMobileMoneyPaymentAction(orderDocRef.id, idToken);
-        if (!paymentResult.success) {
-          return { success: true, error: new Error(paymentResult.error) };
-        }
-        return { success: true, paymentUrl: paymentResult.paymentUrl };
-      } catch (err) {
-        console.error('initiateMobileMoneyPaymentAction threw:', err);
-        return { success: true, error: err instanceof Error ? err : new Error(String(err)) };
-      }
-    } catch {
-      const permissionError = new FirestorePermissionError({
-        path: orderDocRef.path,
-        operation: 'create',
-        requestResourceData: newOrder,
-      } satisfies SecurityRuleContext);
-      errorEmitter.emit('permission-error', permissionError);
-      return { success: false, error: permissionError };
+    if (!result.success) {
+      return { success: false, error: new Error(result.error) };
     }
-  }, [user, userProfile, cartItems, cartSubtotal, cartDeliveryFee, cartTotal, appliedCoupon, getRestaurant, clearCart, db]);
+
+    clearCart();
+    window.dispatchEvent(new CustomEvent('place-order'));
+
+    if (paymentMode === 'especes') {
+      return { success: true };
+    }
+
+    // Mobile Money : la commande existe déjà (paiement.statut =
+    // 'en_attente'). On ouvre la session CinetPay et on renvoie l'URL
+    // de checkout à l'appelant pour rediriger le client. Un échec ici
+    // n'annule pas la commande — le client peut retenter le paiement
+    // depuis le suivi de commande.
+    try {
+      const paymentResult = await initiateMobileMoneyPaymentAction(result.orderId, idToken);
+      if (!paymentResult.success) {
+        return { success: true, error: new Error(paymentResult.error) };
+      }
+      return { success: true, paymentUrl: paymentResult.paymentUrl };
+    } catch (err) {
+      console.error('initiateMobileMoneyPaymentAction threw:', err);
+      return { success: true, error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  }, [user, userProfile, cartItems, appliedCoupon, clearCart]);
 
   const value = React.useMemo(() => ({
     cartItems,
