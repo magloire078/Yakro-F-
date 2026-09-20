@@ -234,10 +234,22 @@ export function AvailableDeliveries({
                                 </div>
                            </div>
 
-                           <div className="flex items-center justify-between pt-2">
+                           <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-muted-foreground">
                                     {delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)
                                 </span>
+                                {delivery.paiement.mode === 'especes' ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-700 text-[11px] font-bold">
+                                        À encaisser : {delivery.total.toLocaleString('fr-FR')} FCFA
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 text-[11px] font-bold">
+                                        {delivery.paiement.statut === 'paye' ? 'Déjà payé (Mobile Money)' : 'Paiement Mobile Money en attente'}
+                                    </span>
+                                )}
+                           </div>
+
+                           <div className="flex items-center justify-end pt-2">
                                <Button
                                  onClick={() => handleAccept(delivery)}
                                  disabled={isAccepting !== null || !canTransitionOrder(delivery.statut, 'En Route', 'livreur')}

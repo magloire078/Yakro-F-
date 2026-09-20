@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/firebase/admin';
 import { getCinetPayConfig, checkCinetPayPaymentStatus } from '@/lib/cinetpay';
-import { computeNewPremiumExpiry } from '@/lib/premium';
+import { computeNewPremiumExpiry, PREMIUM_PRICE_FCFA } from '@/lib/premium';
 import type { PremiumSubscription, UserProfile } from '@/lib/types';
 
 /**
@@ -45,26 +45,51 @@ export async function POST(request: Request) {
   }
 
   const adminDb = getAdminDb();
-  const querySnap = await adminDb
-    .collection('abonnements')
-    .where('paiement.transactionId', '==', transactionId)
-    .limit(1)
-    .get();
 
-  if (querySnap.empty) {
+  // Résolution par la table dédiée `payment_transactions` — voir le webhook
+  // commandes pour le détail du problème que ça évite (paiement confirmé
+  // en retard mais champ transactionId déjà écrasé par une nouvelle
+  // tentative).
+  const mappingSnap = await adminDb.collection('payment_transactions').doc(transactionId).get();
+  let subscriptionRef = mappingSnap.exists && mappingSnap.data()?.collection === 'abonnements'
+    ? adminDb.collection('abonnements').doc(mappingSnap.data()!.docId as string)
+    : null;
+
+  if (!subscriptionRef) {
+    const querySnap = await adminDb
+      .collection('abonnements')
+      .where('paiement.transactionId', '==', transactionId)
+      .limit(1)
+      .get();
+    subscriptionRef = querySnap.empty ? null : querySnap.docs[0].ref;
+  }
+
+  if (!subscriptionRef) {
     console.error('cinetpay premium webhook: aucun abonnement pour transaction_id', transactionId);
     return NextResponse.json({ received: true, matched: false });
   }
 
-  const subscriptionDoc = querySnap.docs[0];
-  const subscription = subscriptionDoc.data() as PremiumSubscription;
+  const subscriptionSnap = await subscriptionRef.get();
+  if (!subscriptionSnap.exists) {
+    console.error('cinetpay premium webhook: abonnement référencé introuvable', transactionId);
+    return NextResponse.json({ received: true, matched: false });
+  }
+  const subscription = subscriptionSnap.data() as PremiumSubscription;
 
   // Idempotence : un statut déjà final n'est plus modifié.
   if (subscription.paiement.statut === 'paye' || subscription.paiement.statut === 'echoue') {
     return NextResponse.json({ received: true, alreadyProcessed: true });
   }
 
-  const { status } = verification.data;
+  const { status, amount } = verification.data;
+
+  // Le montant confirmé par CinetPay doit correspondre au prix Premium
+  // officiel — jamais à ce que l'abonnement prétend, même si les rules et
+  // l'action de paiement le verrouillent déjà en amont.
+  if (status === 'ACCEPTED' && amount !== undefined && amount !== PREMIUM_PRICE_FCFA) {
+    console.error('cinetpay premium webhook: montant confirmé différent du prix Premium', transactionId, { amount, attendu: PREMIUM_PRICE_FCFA });
+    return NextResponse.json({ error: 'Montant incohérent' }, { status: 500 });
+  }
 
   if (status === 'ACCEPTED') {
     const userRef = adminDb.collection('utilisateurs').doc(subscription.userId);
@@ -73,14 +98,14 @@ export async function POST(request: Request) {
     const newExpiry = computeNewPremiumExpiry(userProfile?.premiumJusquau, new Date(), subscription.dureeJours);
 
     const batch = adminDb.batch();
-    batch.update(subscriptionDoc.ref, {
+    batch.update(subscriptionRef, {
       'paiement.statut': 'paye',
       'paiement.dateConfirmation': new Date().toISOString(),
     });
     batch.update(userRef, { premiumJusquau: Timestamp.fromDate(newExpiry) });
     await batch.commit();
   } else if (status === 'REFUSED' || status === 'EXPIRED') {
-    await subscriptionDoc.ref.update({
+    await subscriptionRef.update({
       'paiement.statut': 'echoue',
       'paiement.dateConfirmation': new Date().toISOString(),
     });

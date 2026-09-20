@@ -53,7 +53,9 @@ service cloud.firestore {
     // `paiement` est volontairement inclus : seul l'Admin SDK (webhook
     // CinetPay, payment-actions), qui contourne les rules, peut faire
     // avancer un paiement — jamais un restaurateur/livreur/client via une
-    // transition de statut classique.
+    // transition de statut classique. `codePromo` est verrouillé pour la
+    // même raison : un code appliqué à la création ne doit pas pouvoir être
+    // ajouté, changé ou retiré lors d'une transition de statut ultérieure.
     function orderCoreUnchanged() {
       return request.resource.data.userId == resource.data.userId
         && request.resource.data.restaurantId == resource.data.restaurantId
@@ -70,7 +72,9 @@ service cloud.firestore {
         && request.resource.data.get('livraisonTraitee', false)
              == resource.data.get('livraisonTraitee', false)
         && request.resource.data.get('prioritaire', false)
-             == resource.data.get('prioritaire', false);
+             == resource.data.get('prioritaire', false)
+        && request.resource.data.get('codePromo', null)
+             == resource.data.get('codePromo', null);
     }
 
     // Valide le sous-objet `paiement` à la création d'une commande.
@@ -113,6 +117,27 @@ service cloud.firestore {
           (coupon.type == 'montant_fixe' && reduction <= coupon.valeur) ||
           (coupon.type == 'pourcentage' && reduction <= (sousTotal * coupon.valeur) / 100)
         );
+    }
+
+    // Verrou de tarification à la création d'une commande. Ce qui PEUT être
+    // vérifié ici l'est : le taux de commission est la constante de la
+    // plateforme (COMMISSION_RATE côté app), les frais de livraison doivent
+    // correspondre à ceux réellement définis sur le restaurant, et
+    // restaurateurId doit être son vrai propriétaire.
+    //
+    // LIMITE CONNUE : les Firestore Rules ne peuvent pas sommer un tableau
+    // de longueur variable, donc `sousTotal`/`total` ne peuvent PAS être
+    // recalculés ici à partir de `plats` — un client pourrait encore
+    // déclarer un sous-total déconnecté du contenu réel de son panier.
+    // Fermer complètement cette brèche demande de faire créer la commande
+    // via une Server Action (Admin SDK, qui relit les vrais prix de
+    // `plats/{id}`) plutôt que par écriture directe du client — pas encore
+    // fait à ce stade, à traiter avant tout lancement en production.
+    function orderPricingValid() {
+      let restaurant = get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data;
+      return request.resource.data.tauxCommission == 0.15
+        && request.resource.data.fraisDeLivraison == restaurant.fraisDeLivraison
+        && request.resource.data.restaurateurId == restaurant.proprietaireId;
     }
 
     // Un client ne peut se marquer "prioritaire" à la commande que si son
@@ -207,8 +232,7 @@ service cloud.firestore {
         && orderCouponValid()
         && orderPriorityValid()
         && exists(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId))
-        && request.resource.data.restaurateurId ==
-             get(/databases/$(database)/documents/restaurants/$(request.resource.data.restaurantId)).data.proprietaireId;
+        && orderPricingValid();
 
       allow update: if isUserAuthenticated() && (
           // Le restaurateur accepte (Placée -> En Préparation)
@@ -270,10 +294,14 @@ service cloud.firestore {
     // pour son propre restaurant (distinct de `boosts`, qui est une mise
     // en avant payante côté plateforme, pas une réduction client).
     // L'id du document = le code lui-même (majuscules) — la lecture par
-    // code exact est ouverte à tout utilisateur authentifié pour permettre
-    // la saisie du code au moment du paiement.
+    // code exact (`get`) est ouverte à tout utilisateur authentifié pour
+    // permettre la saisie du code au moment du paiement. `list` est en
+    // revanche restreint au propriétaire : sans ça, n'importe quel
+    // restaurateur pourrait lister tous les codes de tous ses concurrents.
     match /coupons/{couponId} {
-      allow read: if isUserAuthenticated();
+      allow get: if isUserAuthenticated();
+      allow list: if isUserAuthenticated()
+        && (resource.data.restaurateurId == request.auth.uid || isSuperAdmin());
 
       allow create: if isUserAuthenticated()
         && isRestaurantOwner(request.resource.data.restaurantId)
@@ -295,16 +323,30 @@ service cloud.firestore {
         && (resource.data.restaurateurId == request.auth.uid || isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin());
     }
 
+    // Table de correspondance transactionId -> (collection, docId), écrite
+    // uniquement par payment-actions.ts/premium-actions.ts et lue
+    // uniquement par les webhooks CinetPay, tous deux via l'Admin SDK (qui
+    // contourne ces rules). Aucun accès client, jamais — explicite plutôt
+    // que de compter sur le refus par défaut de Firestore.
+    match /payment_transactions/{transactionId} {
+      allow read, write: if false;
+    }
+
     // Abonnement Premium : achat ponctuel (pas de vrai prélèvement
     // récurrent en Mobile Money) qui prolonge `premiumJusquau` sur le
     // profil. Espèces exclues — aucun livreur n'intervient pour un
     // abonnement, donc pas de collecte physique possible. Seul le webhook
     // CinetPay (Admin SDK) peut faire avancer `paiement` après création.
+    // `montant`/`dureeJours` sont verrouillés aux constantes de l'app
+    // (PREMIUM_PRICE_FCFA/PREMIUM_DURATION_DAYS, src/lib/premium.ts) —
+    // sans ça un client pourrait créer un abonnement à 1 FCFA.
     match /abonnements/{subscriptionId} {
       allow read: if isUserAuthenticated() && (resource.data.userId == request.auth.uid || isSuperAdmin());
 
       allow create: if isUserAuthenticated()
         && isUser(request.resource.data.userId)
+        && request.resource.data.montant == 2000
+        && request.resource.data.dureeJours == 30
         && request.resource.data.paiement.mode in ['orange_money', 'mtn_money', 'moov_money']
         && request.resource.data.paiement.statut == 'en_attente'
         && request.resource.data.paiement.montant == request.resource.data.montant

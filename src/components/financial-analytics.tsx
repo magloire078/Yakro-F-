@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export function FinancialAnalytics() {
-    const { orders } = useData();
+    const { orders, restaurants } = useData();
 
     const stats = React.useMemo(() => {
         const totalSales = orders.reduce((acc, o) => acc + (o.total || 0), 0);
@@ -43,6 +43,29 @@ export function FinancialAnalytics() {
         const avgOrder = orders.length > 0 ? totalSales / orders.length : 0;
         return { totalSales, totalCommission, avgOrder };
     }, [orders]);
+
+    // Classement réel par revenu net (commission déduite), pas de données
+    // inventées — seuls les établissements avec au moins une commande
+    // apparaissent.
+    const topRestaurants = React.useMemo(() => {
+        const revenueByRestaurant = new Map<string, number>();
+        for (const order of orders) {
+            revenueByRestaurant.set(
+                order.restaurantId,
+                (revenueByRestaurant.get(order.restaurantId) || 0) + (order.revenuNet || 0)
+            );
+        }
+        const ranked = Array.from(revenueByRestaurant.entries())
+            .map(([restaurantId, revenue]) => ({
+                name: restaurants.find(r => r.id === restaurantId)?.nom || 'Restaurant inconnu',
+                revenue,
+            }))
+            .filter(r => r.revenue > 0)
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 3);
+        const max = ranked[0]?.revenue || 1;
+        return ranked.map(r => ({ ...r, pct: Math.round((r.revenue / max) * 100) }));
+    }, [orders, restaurants]);
 
     const chartData = React.useMemo(() => {
         return Array.from({ length: 7 }).map((_, i) => {
@@ -61,40 +84,34 @@ export function FinancialAnalytics() {
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             {/* Stat Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard 
-                    title="Volume d'Affaires" 
-                    value={`${stats.totalSales.toLocaleString()}`} 
+                <StatCard
+                    title="Volume d'Affaires"
+                    value={`${stats.totalSales.toLocaleString()}`}
                     unit="FCFA"
-                    change="+18.5%" 
-                    isUp={true} 
-                    icon={<BarChart3 className="text-primary" />} 
+                    icon={<BarChart3 className="text-primary" />}
                     delay={0}
                 />
-                <StatCard 
-                    title="Revenu Yakro" 
-                    value={`${stats.totalCommission.toLocaleString()}`} 
+                <StatCard
+                    title="Revenu Yakro"
+                    value={`${stats.totalCommission.toLocaleString()}`}
                     unit="FCFA"
-                    change="+12.3%" 
-                    isUp={true} 
-                    icon={<Wallet className="text-primary" />} 
+                    icon={<Wallet className="text-primary" />}
                     delay={0.1}
                 />
-                <StatCard 
-                    title="Panier Moyen" 
-                    value={`${Math.round(stats.avgOrder).toLocaleString()}`} 
+                <StatCard
+                    title="Panier Moyen"
+                    value={`${Math.round(stats.avgOrder).toLocaleString()}`}
                     unit="FCFA"
-                    change="-2.1%" 
-                    isUp={false} 
-                    icon={<CreditCard className="text-primary" />} 
+                    icon={<CreditCard className="text-primary" />}
                     delay={0.2}
                 />
-                <StatCard 
-                    title="Commission Plat." 
-                    value="15" 
+                <StatCard
+                    title="Commission Plat."
+                    value="15"
                     unit="%"
-                    change="STABLE" 
-                    isUp={true} 
-                    icon={<Activity className="text-primary" />} 
+                    change="STABLE"
+                    isUp={true}
+                    icon={<Activity className="text-primary" />}
                     delay={0.3}
                 />
             </div>
@@ -149,37 +166,35 @@ export function FinancialAnalytics() {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32 transition-all group-hover:bg-primary/10" />
                     <CardHeader className="p-10 border-b border-white/5 relative z-10">
                         <CardTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">Bastions <span className="text-primary">Dominants</span></CardTitle>
-                        <CardDescription className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Performances d&apos;élite par établissement</CardDescription>
+                        <CardDescription className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Revenu net par établissement, toutes commandes confondues</CardDescription>
                     </CardHeader>
                     <CardContent className="p-10 space-y-12 relative z-10">
-                        {[
-                            { name: 'Allocodrome Express', value: '420K', pct: 85 },
-                            { name: 'Le Gourmet de Yakro', value: '310K', pct: 65 },
-                            { name: 'Fast-Food Prestige', value: '180K', pct: 40 }
-                        ].map((item, idx) => (
-                            <div key={idx} className="space-y-4 group/item">
+                        {topRestaurants.length > 0 ? topRestaurants.map((item, idx) => (
+                            <div key={item.name} className="space-y-4 group/item">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[12px] font-black uppercase italic tracking-tight text-white group-hover/item:text-primary transition-colors">{item.name}</span>
-                                    <span className="text-[10px] text-primary font-black tracking-widest">{item.value} FCFA</span>
+                                    <span className="text-[10px] text-primary font-black tracking-widest">{item.revenue.toLocaleString()} FCFA</span>
                                 </div>
                                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${item.pct}%` }}
                                         transition={{ duration: 1.5, delay: 0.5 + (idx * 0.2), ease: "circOut" }}
-                                        className="h-full bg-primary shadow-[0_0_15px_rgba(249,115,22,0.6)] rounded-full" 
+                                        className="h-full bg-primary shadow-[0_0_15px_rgba(249,115,22,0.6)] rounded-full"
                                     />
                                 </div>
                             </div>
-                        ))}
-                        
+                        )) : (
+                            <p className="text-[11px] text-slate-500 uppercase tracking-widest text-center py-4">Pas encore de commande</p>
+                        )}
+
                         <div className="pt-10 mt-10 border-t border-white/5 flex items-center gap-6">
                             <div className="p-5 bg-primary/10 border border-primary/20 rounded-2xl group-hover:scale-110 transition-transform">
                                 <Target className="h-8 w-8 text-primary" />
                             </div>
                             <div>
-                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-1">RENDEMENT GLOBAL</p>
-                                <p className="text-3xl font-black italic text-white leading-none">+24.8% <span className="text-[10px] not-italic text-green-500 ml-2 tracking-widest font-black uppercase">M/M</span></p>
+                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-1">Commandes totales</p>
+                                <p className="text-3xl font-black italic text-white leading-none">{orders.length}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -189,13 +204,13 @@ export function FinancialAnalytics() {
     );
 }
 
-function StatCard({ title, value, unit, change, isUp, icon, delay }: { title: string, value: string, unit: string, change: string, isUp: boolean, icon: React.ReactNode, delay: number }) {
+function StatCard({ title, value, unit, change, isUp, icon, delay }: { title: string, value: string, unit: string, change?: string, isUp?: boolean, icon: React.ReactNode, delay: number }) {
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay }}
-            whileHover={{ y: -5 }} 
+            whileHover={{ y: -5 }}
         >
             <Card className="border border-white/5 shadow-2xl bg-white/5 backdrop-blur-3xl rounded-[2rem] p-8 relative overflow-hidden group transition-all duration-500 hover:border-primary/30">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
@@ -203,13 +218,15 @@ function StatCard({ title, value, unit, change, isUp, icon, delay }: { title: st
                     <div className="p-4 bg-white/5 border border-white/10 rounded-2xl group-hover:bg-primary/10 group-hover:border-primary/30 transition-all group-hover:scale-110">
                         {React.cloneElement(icon as React.ReactElement, { className: 'h-6 w-6 text-primary' })}
                     </div>
-                    <div className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black tracking-widest",
-                        isUp ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
-                    )}>
-                        {isUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                        {change}
-                    </div>
+                    {change && (
+                        <div className={cn(
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black tracking-widest",
+                            isUp ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                        )}>
+                            {isUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                            {change}
+                        </div>
+                    )}
                 </div>
                 <div className="space-y-1">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic mb-1">{title}</p>

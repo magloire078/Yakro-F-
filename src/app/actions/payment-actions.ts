@@ -96,6 +96,18 @@ export async function initiateMobileMoneyPaymentAction(
     return { success: false, error: result.error };
   }
 
+  // Une entrée dédiée, indexée par transactionId, plutôt qu'un simple champ
+  // écrasé sur la commande : si le client relance une tentative (nouveau
+  // transactionId), l'ancienne entrée reste résolvable si CinetPay finit
+  // par confirmer le paiement initial en retard — sans ça, le webhook ne
+  // retrouverait plus la commande (champ déjà écrasé) et le paiement
+  // resterait encaissé par CinetPay sans jamais être crédité.
+  await adminDb.collection('payment_transactions').doc(transactionId).set({
+    collection: 'commandes',
+    docId: orderId,
+    createdAt: new Date().toISOString(),
+  });
+
   await orderRef.update({
     'paiement.transactionId': transactionId,
     'paiement.paymentToken': result.data.paymentToken,

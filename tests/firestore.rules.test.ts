@@ -63,6 +63,7 @@ async function seed() {
     await setDoc(doc(db, 'restaurants', RESTAURANT_ID), {
       proprietaireId: RESTAURATEUR_UID,
       nom: 'Chez Test',
+      fraisDeLivraison: 500,
     });
   });
 }
@@ -75,7 +76,7 @@ const baseOrder = (overrides: Record<string, unknown> = {}) => ({
   total: 5000,
   sousTotal: 4500,
   fraisDeLivraison: 500,
-  tauxCommission: 0.1,
+  tauxCommission: 0.15,
   montantCommission: 450,
   revenuNet: 4050,
   plats: [{ id: 'p1', quantite: 1 }],
@@ -231,6 +232,20 @@ describe('firestore.rules — /commandes create', () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertFails(
       setDoc(doc(db, 'commandes', 'o1'), baseOrder({ livraisonTraitee: true })),
+    );
+  });
+
+  it('rejects a commission rate different from the platform constant', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ tauxCommission: 0 })),
+    );
+  });
+
+  it('rejects a delivery fee that does not match the restaurant\'s real fee', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'commandes', 'o1'), baseOrder({ fraisDeLivraison: 1 })),
     );
   });
 });
@@ -404,6 +419,23 @@ describe('firestore.rules — /abonnements', () => {
     );
   });
 
+  it('rejects a subscription priced below the official Premium price', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'abonnements', 'sub1'), baseSubscription({
+        montant: 1,
+        paiement: { mode: 'orange_money', statut: 'en_attente', montant: 1 },
+      })),
+    );
+  });
+
+  it('rejects a subscription with a duration different from the official 30 days', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'abonnements', 'sub1'), baseSubscription({ dureeJours: 365 })),
+    );
+  });
+
   it('lets the subscriber read their own subscription', async () => {
     await env.withSecurityRulesDisabled(async (ctx) => {
       await setDoc(doc(ctx.firestore(), 'abonnements', 'sub1'), baseSubscription());
@@ -505,6 +537,27 @@ describe('firestore.rules — /coupons', () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertSucceeds(getDoc(doc(db, 'coupons', COUPON_CODE)));
   });
+
+  it('lets the owner list their own coupons', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), baseCoupon());
+    });
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    const snap = await assertSucceeds(
+      getDocs(query(collection(db, 'coupons'), where('restaurateurId', '==', RESTAURATEUR_UID))),
+    );
+    expect(snap.docs.map((d) => d.id)).toEqual([COUPON_CODE]);
+  });
+
+  it('forbids another authenticated user from listing someone else\'s coupons', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'coupons', COUPON_CODE), baseCoupon());
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      getDocs(query(collection(db, 'coupons'), where('restaurateurId', '==', RESTAURATEUR_UID))),
+    );
+  });
 });
 
 describe('firestore.rules — /commandes list', () => {
@@ -583,6 +636,16 @@ describe('firestore.rules — /commandes update', () => {
     const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
     await assertFails(
       updateDoc(doc(db, 'commandes', 'o1'), { statut: 'En Préparation', prioritaire: true }),
+    );
+  });
+
+  it('forbids a restaurateur from adding a codePromo while accepting an order', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'commandes', 'o1'), {
+        statut: 'En Préparation',
+        codePromo: { code: 'FORGED', montantReduction: 1000 },
+      }),
     );
   });
 });

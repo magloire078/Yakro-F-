@@ -145,7 +145,26 @@ export default function DashboardOrdersPage() {
                                 </div>
                             ))}
                             
-                            <div className="pt-6 mt-2 border-t border-white/5">
+                            {order.codePromo && (
+                                <div className="flex justify-between items-center px-4 text-[10px] font-black uppercase tracking-widest text-primary">
+                                    <span>Code promo {order.codePromo.code}</span>
+                                    <span>-{order.codePromo.montantReduction.toLocaleString('fr-FR')} F</span>
+                                </div>
+                            )}
+
+                            <div className="pt-6 mt-2 border-t border-white/5 space-y-4">
+                                <div className="flex justify-between items-center px-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    <span>Paiement</span>
+                                    <span className={order.paiement.statut === 'echoue' ? 'text-rose-500' : order.paiement.statut === 'en_attente' ? 'text-amber-500' : 'text-emerald-500'}>
+                                        {order.paiement.mode === 'especes'
+                                            ? 'Espèces à la livraison'
+                                            : `Mobile Money — ${
+                                                order.paiement.statut === 'paye' ? 'payé'
+                                                : order.paiement.statut === 'echoue' ? 'échoué'
+                                                : 'en attente'
+                                              }`}
+                                    </span>
+                                </div>
                                 <div className="flex justify-between items-center bg-primary/5 p-6 rounded-3xl border border-primary/10 relative overflow-hidden group/revenue">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
                                     <div className="space-y-1 relative z-10">

@@ -52,35 +52,63 @@ export async function POST(request: Request) {
   }
 
   const adminDb = getAdminDb();
-  const querySnap = await adminDb
-    .collection('commandes')
-    .where('paiement.transactionId', '==', transactionId)
-    .limit(1)
-    .get();
 
-  if (querySnap.empty) {
+  // Résolution par la table dédiée `payment_transactions` (indexée par
+  // transactionId, jamais écrasée) plutôt que par une requête sur
+  // `paiement.transactionId` : ce champ sur la commande peut avoir été
+  // remplacé par une tentative de paiement plus récente, ce qui rendrait
+  // une commande introuvable alors que CinetPay confirme bien ce paiement.
+  const mappingSnap = await adminDb.collection('payment_transactions').doc(transactionId).get();
+  let orderRef = mappingSnap.exists && mappingSnap.data()?.collection === 'commandes'
+    ? adminDb.collection('commandes').doc(mappingSnap.data()!.docId as string)
+    : null;
+
+  if (!orderRef) {
+    // Filet de sécurité pour une transaction initiée avant la mise en place
+    // de la table de correspondance.
+    const querySnap = await adminDb
+      .collection('commandes')
+      .where('paiement.transactionId', '==', transactionId)
+      .limit(1)
+      .get();
+    orderRef = querySnap.empty ? null : querySnap.docs[0].ref;
+  }
+
+  if (!orderRef) {
     console.error('cinetpay webhook: aucune commande pour transaction_id', transactionId);
     // 200 : ce n'est pas une erreur transitoire, retenter ne changera rien.
     return NextResponse.json({ received: true, matched: false });
   }
 
-  const orderDoc = querySnap.docs[0];
-  const order = orderDoc.data() as Order;
+  const orderSnap = await orderRef.get();
+  if (!orderSnap.exists) {
+    console.error('cinetpay webhook: commande référencée introuvable', transactionId);
+    return NextResponse.json({ received: true, matched: false });
+  }
+  const order = orderSnap.data() as Order;
 
   // Idempotence : un statut déjà final n'est plus modifié.
   if (order.paiement.statut === 'paye' || order.paiement.statut === 'echoue') {
     return NextResponse.json({ received: true, alreadyProcessed: true });
   }
 
-  const { status } = verification.data;
+  const { status, amount } = verification.data;
+
+  // Garde-fou supplémentaire : le montant confirmé par CinetPay doit
+  // correspondre à ce que la commande attend. Un écart signale une
+  // incohérence à investiguer plutôt qu'à créditer aveuglément.
+  if (status === 'ACCEPTED' && amount !== undefined && amount !== order.paiement.montant) {
+    console.error('cinetpay webhook: montant confirmé différent du montant attendu', transactionId, { amount, attendu: order.paiement.montant });
+    return NextResponse.json({ error: 'Montant incohérent' }, { status: 500 });
+  }
 
   if (status === 'ACCEPTED') {
-    await orderDoc.ref.update({
+    await orderRef.update({
       'paiement.statut': 'paye',
       'paiement.dateConfirmation': new Date().toISOString(),
     });
   } else if (status === 'REFUSED' || status === 'EXPIRED') {
-    await orderDoc.ref.update({
+    await orderRef.update({
       'paiement.statut': 'echoue',
       'paiement.dateConfirmation': new Date().toISOString(),
     });

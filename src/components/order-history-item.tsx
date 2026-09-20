@@ -155,9 +155,27 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 <span>Livraison</span>
                 <span>{order.fraisDeLivraison.toLocaleString('fr-FR')} FCFA</span>
               </div>
+              {order.codePromo && (
+                <div className="flex justify-between text-primary">
+                  <span>Réduction ({order.codePromo.code})</span>
+                  <span>-{order.codePromo.montantReduction.toLocaleString('fr-FR')} FCFA</span>
+                </div>
+              )}
               <div className="flex justify-between font-black text-lg text-foreground tracking-tighter pt-2">
                 <span className="text-sm opacity-100 uppercase">Total de la commande</span>
                 <span className="text-primary">{order.total.toLocaleString('fr-FR')} FCFA</span>
+              </div>
+              <div className="flex justify-between normal-case font-bold text-[11px] pt-1">
+                <span>Paiement</span>
+                <span className={order.paiement.statut === 'echoue' ? 'text-rose-500' : ''}>
+                  {order.paiement.mode === 'especes'
+                    ? 'Espèces à la livraison'
+                    : `Mobile Money — ${
+                        order.paiement.statut === 'paye' ? 'payé'
+                        : order.paiement.statut === 'echoue' ? 'échoué'
+                        : 'en attente de confirmation'
+                      }`}
+                </span>
               </div>
             </div>
             

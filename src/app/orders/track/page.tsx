@@ -9,10 +9,12 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { Order, Restaurant } from '@/lib/types';
 import type { LivreurPublicData } from '@/lib/livreur-public';
-import { Loader, MapPin, Bike, Home } from 'lucide-react';
+import { Loader, MapPin, Bike, Home, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions';
+import { useToast } from '@/hooks/use-toast';
 
 function TrackOrderContent() {
     const searchParams = useSearchParams();
@@ -20,12 +22,33 @@ function TrackOrderContent() {
     const { user } = useAuth();
     const { getOrder, getRestaurant } = useData();
     const { db } = useFirebase();
+    const { toast } = useToast();
 
     const orderId = searchParams.get('id');
 
     const [liveOrder, setLiveOrder] = React.useState<Order | null>(null);
     const [livreur, setLivreur] = React.useState<LivreurPublicData | null>(null);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
+    const [isRetryingPayment, setIsRetryingPayment] = React.useState(false);
+
+    const handleRetryPayment = async () => {
+        if (!orderId || !user) return;
+        setIsRetryingPayment(true);
+        try {
+            const idToken = await user.getIdToken();
+            const result = await initiateMobileMoneyPaymentAction(orderId, idToken);
+            if (!result.success) {
+                toast({ variant: 'destructive', title: 'Erreur', description: result.error });
+                return;
+            }
+            window.location.href = result.paymentUrl;
+        } catch (error) {
+            console.error('handleRetryPayment: échec', error);
+            toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de relancer le paiement pour le moment.' });
+        } finally {
+            setIsRetryingPayment(false);
+        }
+    };
 
     React.useEffect(() => {
         if (!orderId || !db) return;
@@ -162,6 +185,32 @@ function TrackOrderContent() {
                             <div>
                                 <p className="font-bold">Votre Adresse</p>
                                 <p className="text-muted-foreground">{liveOrder.adresseClient}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-4">
+                            <Wallet className="h-8 w-8 text-primary mt-1" />
+                            <div className="flex-1">
+                                <p className="font-bold">Paiement</p>
+                                <p className="text-muted-foreground">
+                                    {liveOrder.paiement.mode === 'especes'
+                                        ? 'Espèces à la livraison'
+                                        : `Mobile Money — ${
+                                            liveOrder.paiement.statut === 'paye' ? 'confirmé'
+                                            : liveOrder.paiement.statut === 'echoue' ? 'échoué'
+                                            : 'en attente de confirmation'
+                                          }`}
+                                </p>
+                                {liveOrder.paiement.mode !== 'especes' && liveOrder.paiement.statut !== 'paye' && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="mt-2"
+                                        onClick={handleRetryPayment}
+                                        disabled={isRetryingPayment}
+                                    >
+                                        {isRetryingPayment ? <Loader className="h-4 w-4 animate-spin" /> : 'Réessayer le paiement'}
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

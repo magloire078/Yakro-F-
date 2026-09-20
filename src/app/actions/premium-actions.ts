@@ -2,6 +2,7 @@
 
 import { getAdminAuth, getAdminDb } from '@/firebase/admin';
 import { getCinetPayConfig, initCinetPayPayment } from '@/lib/cinetpay';
+import { PREMIUM_PRICE_FCFA } from '@/lib/premium';
 import type { PremiumSubscription, UserProfile } from '@/lib/types';
 
 export type InitiatePremiumSubscriptionPaymentResult =
@@ -61,6 +62,13 @@ export async function initiatePremiumSubscriptionPaymentAction(
   if (subscription.paiement.statut === 'paye') {
     return { success: false, error: 'Cet abonnement est déjà payé.' };
   }
+  // Défense en profondeur : même si firestore.rules verrouille déjà
+  // `montant` à la constante serveur, on ne fait jamais confiance à la
+  // valeur du document pour l'appel CinetPay — seule la constante compte.
+  if (subscription.montant !== PREMIUM_PRICE_FCFA) {
+    console.error('initiatePremiumSubscriptionPaymentAction: montant inattendu', subscription.id, subscription.montant);
+    return { success: false, error: 'Abonnement invalide.' };
+  }
 
   const userSnap = await adminDb.collection('utilisateurs').doc(uid).get();
   const userProfile = userSnap.data() as UserProfile | undefined;
@@ -70,7 +78,7 @@ export async function initiatePremiumSubscriptionPaymentAction(
 
   const result = await initCinetPayPayment(cinetpayConfig, {
     transactionId,
-    amount: subscription.paiement.montant,
+    amount: PREMIUM_PRICE_FCFA,
     description: 'Abonnement Premium Yakro Fê — 30 jours',
     notifyUrl: `${baseUrl}/api/webhooks/cinetpay/premium`,
     returnUrl: `${baseUrl}/profile`,
@@ -83,6 +91,18 @@ export async function initiatePremiumSubscriptionPaymentAction(
   if (!result.success) {
     return { success: false, error: result.error };
   }
+
+  // Une entrée dédiée, indexée par transactionId, plutôt qu'un simple champ
+  // écrasé sur l'abonnement : si le client relance une tentative (nouveau
+  // transactionId), l'ancienne entrée reste résolvable si CinetPay finit
+  // par confirmer le paiement initial en retard — sans ça, le webhook ne
+  // retrouverait plus l'abonnement (champ déjà écrasé) et le paiement
+  // resterait encaissé par CinetPay sans jamais être crédité.
+  await adminDb.collection('payment_transactions').doc(transactionId).set({
+    collection: 'abonnements',
+    docId: subscriptionId,
+    createdAt: new Date().toISOString(),
+  });
 
   await subscriptionRef.update({
     'paiement.transactionId': transactionId,
