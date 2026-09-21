@@ -324,7 +324,7 @@ export function ReportCenter() {
                         {/* Footer decorative text */}
                         <div className="mt-20 pt-10 border-t border-border/50 text-center opacity-20">
                             <p className="text-[8px] font-black uppercase tracking-[0.5em] text-muted-foreground">
-                                YAKRO GO SUPREME AUTHORITY &bull; PROTOCOLE DE RAPPORT V9.4
+                                YAKRO FÊ SUPREME AUTHORITY &bull; PROTOCOLE DE RAPPORT V9.4
                             </p>
                         </div>
                     </div>
@@ -382,7 +382,7 @@ export function ReportCenter() {
                 </div>
 
                 <div className="mt-20 pt-10 border-t-2 border-slate-100 text-center">
-                    <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-300">DOCUMENT OFFICIEL YAKRO GO &bull; ARCHIVE ADMINISTRATIVE</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-300">DOCUMENT OFFICIEL YAKRO FÊ &bull; ARCHIVE ADMINISTRATIVE</p>
                 </div>
             </div>
         </div>

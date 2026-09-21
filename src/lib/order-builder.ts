@@ -21,7 +21,7 @@ interface BuildOrderInput {
   /**
    * Code promo déjà validé (montantReduction calculé et plafonné par
    * l'appelant) — le restaurant absorbe la réduction sur sa part, la
-   * commission Yakro Go reste calculée sur le sous-total plein.
+   * commission Yakro Fê reste calculée sur le sous-total plein.
    */
   coupon?: AppliedCoupon | null;
   /** Optional GPS coordinates of the client at order time. */

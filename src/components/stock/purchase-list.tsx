@@ -31,7 +31,7 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
             `- ${item.nom} (${item.restaurantName}) : Commander ${item.suggestedQty} ${item.unite} (Stock actuel: ${item.quantite})`
         ).join('\n');
 
-        const fullMessage = `🛒 *LISTE DE RÉAPPROVISIONNEMENT - YAKRO GO*\n\n${text}\n\nGénéré le ${new Date().toLocaleDateString('fr-FR')}`;
+        const fullMessage = `🛒 *LISTE DE RÉAPPROVISIONNEMENT - YAKRO FÊ*\n\n${text}\n\nGénéré le ${new Date().toLocaleDateString('fr-FR')}`;
 
         navigator.clipboard.writeText(fullMessage);
         setCopied(true);

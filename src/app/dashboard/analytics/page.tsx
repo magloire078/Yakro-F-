@@ -340,7 +340,7 @@ export default function AnalyticsPage() {
                         {/* Key Metrics Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                             {[
-                                { label: 'Revenu Net', value: stats.totalRevenue, growth: stats.revenueGrowth, sub: 'Après commission Yakro Go', icon: DollarSign, color: 'orange' },
+                                { label: 'Revenu Net', value: stats.totalRevenue, growth: stats.revenueGrowth, sub: 'Après commission Yakro Fê', icon: DollarSign, color: 'orange' },
                                 { label: 'Flux de Commandes', value: stats.totalOrders, growth: stats.ordersGrowth, sub: 'Activité sur la période', icon: ShoppingCart, color: 'slate', unit: 'ITEMS' },
                                 { label: 'Valeur de Signature', value: stats.averageOrderValue, growth: stats.avgGrowth, sub: 'Panier moyen brut', icon: TrendingUp, color: 'slate' }
                             ].map((item, idx) => (

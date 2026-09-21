@@ -416,7 +416,7 @@ export default function NewMenuItemPage() {
                 {/* Technical Footnote */}
                 <div className="mt-16 text-center opacity-20 group cursor-default">
                     <p className="text-[9px] font-black uppercase tracking-[0.5em] text-gray-500 transition-all group-hover:tracking-[0.6em] duration-700">
-                        Yakro Go Neural Engine v4.0 &bull; High Performance Computing
+                        Yakro Fê Neural Engine v4.0 &bull; High Performance Computing
                     </p>
                 </div>
             </div>
