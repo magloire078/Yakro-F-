@@ -41,6 +41,9 @@ const signupSchema = z.object({
 
 type AuthFormValues = z.infer<typeof signupSchema> & z.infer<typeof loginSchema>;
 
+// Instancié une seule fois plutôt qu'à chaque rendu du formulaire.
+const googleAuthProvider = new GoogleAuthProvider();
+
 function UserAuthFormContent() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
@@ -78,9 +81,8 @@ function UserAuthFormContent() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, googleAuthProvider);
       const userDocRef = doc(db, 'utilisateurs', result.user.uid);
       const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
 
