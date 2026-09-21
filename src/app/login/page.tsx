@@ -31,7 +31,7 @@ export default function LoginPage() {
     }
     
     return (
-        <div className="relative h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <div className="relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-slate-50 dark:bg-slate-950 overflow-x-hidden">
              <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
                 <Image
                     src="/assets/marketing/hero-delivery.png"

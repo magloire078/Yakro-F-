@@ -43,7 +43,7 @@ export default function ProfileSelectionPage() {
     }, [user, userProfile, authLoading, router, activeRole, isRedirecting]);
     
     return (
-        <div className="relative flex h-screen w-full items-center justify-center bg-background overflow-hidden">
+        <div className="relative flex min-h-screen w-full items-center justify-center bg-background overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
             <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-[120px] animate-pulse" />
             <div className="relative z-10 flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
