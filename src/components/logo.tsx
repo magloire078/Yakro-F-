@@ -34,7 +34,7 @@ export function Logo({ className, size = 'md', disableLink = false, compact = fa
       </div>
       {!compact && (
         <span className={cn("bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300", sizes[size])}>
-          Yakro<span className="text-primary">Go</span>
+          Yakro<span className="text-primary">Fê</span>
         </span>
       )}
     </div>
