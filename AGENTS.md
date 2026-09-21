@@ -1,6 +1,6 @@
-# Yakro-F Collaboration & Design Guide (AGENTS.md)
+# Yakro-Fê Collaboration & Design Guide (AGENTS.md)
 
-Welcome to the **Yakro-F** project. This document serves as a reference for both AI agents and human developers to ensure consistency, quality, and adherence to our "Hyper-Premium" design standards.
+Welcome to the **Yakro-Fê** project. This document serves as a reference for both AI agents and human developers to ensure consistency, quality, and adherence to our "Hyper-Premium" design standards.
 
 ## 1. Design System: "Yakro Elite"
 

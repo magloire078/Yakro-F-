@@ -1,7 +1,7 @@
 import type { Order } from './types';
 
 export type OrderStatus = Order['statut'];
-export type ActorRole = 'restaurateur' | 'livreur' | 'superadmin';
+export type ActorRole = 'restaurateur' | 'livreur' | 'client' | 'superadmin';
 
 /**
  * Mirror of the status transitions enforced server-side in `firestore.rules`.
@@ -29,6 +29,12 @@ export function canTransitionOrder(
     if (next === 'Livrée') {
       return current === 'En Route';
     }
+    return false;
+  }
+
+  if (role === 'client') {
+    if (next === 'Annulée') return current === 'Placée';
+    return false;
   }
 
   return false;

@@ -373,6 +373,19 @@ describe('firestore.rules — /commandes list', () => {
     );
     expect(snap.docs.map((d) => d.id)).toEqual(['o-mine']);
   });
+
+  it('lets a livreur list orders still Placée (not yet accepted by a restaurateur)', async () => {
+    // A livreur must be able to discover new deliveries before any
+    // restaurateur has accepted them — restricting visibility to
+    // 'En Préparation' only would make 'Placée'/'Prête' orders invisible
+    // to every livreur, even though the update rule lets them pick those
+    // orders up directly.
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    const snap = await assertSucceeds(
+      getDocs(query(collection(db, 'commandes'), where('statut', '==', 'Placée'))),
+    );
+    expect(snap.docs.map((d) => d.id).sort()).toEqual(['o-mine', 'o-other']);
+  });
 });
 
 describe('firestore.rules — /commandes update', () => {
@@ -408,6 +421,38 @@ describe('firestore.rules — /commandes update', () => {
     const db = env.authenticatedContext(LIVREUR_UID).firestore();
     await assertSucceeds(
       updateDoc(doc(db, 'commandes', 'o1'), { statut: 'En Route', livreurId: LIVREUR_UID }),
+    );
+  });
+
+  it('lets the livreur take an order straight from Placée (never accepted by the restaurateur)', async () => {
+    const db = env.authenticatedContext(LIVREUR_UID).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'commandes', 'o1'), { statut: 'En Route', livreurId: LIVREUR_UID }),
+    );
+  });
+
+  it('lets the client cancel their own order while still Placée', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(updateDoc(doc(db, 'commandes', 'o1'), { statut: 'Annulée' }));
+  });
+
+  it('forbids the client from cancelling an order already accepted by the restaurateur', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await updateDoc(doc(ctx.firestore(), 'commandes', 'o1'), { statut: 'En Préparation' });
+    });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(updateDoc(doc(db, 'commandes', 'o1'), { statut: 'Annulée' }));
+  });
+
+  it('forbids a stranger from cancelling someone else\'s order', async () => {
+    const db = env.authenticatedContext('stranger').firestore();
+    await assertFails(updateDoc(doc(db, 'commandes', 'o1'), { statut: 'Annulée' }));
+  });
+
+  it('forbids the client from also changing the total while cancelling', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'commandes', 'o1'), { statut: 'Annulée', total: 1 }),
     );
   });
 
@@ -591,6 +636,35 @@ describe('firestore.rules — /utilisateurs', () => {
       }),
     );
   });
+
+  it('lets a SuperAdmin promote any user\'s role', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'utilisateurs', 'super-1'), {
+        role: 'client',
+        roleSysteme: 'SuperAdmin',
+      });
+    });
+    const db = env.authenticatedContext('super-1').firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'utilisateurs', OTHER_USER_UID), { role: 'restaurateur' }),
+    );
+  });
+
+  it('lets a SuperAdmin list all users', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'utilisateurs', 'super-1'), {
+        role: 'client',
+        roleSysteme: 'SuperAdmin',
+      });
+    });
+    const db = env.authenticatedContext('super-1').firestore();
+    await assertSucceeds(getDocs(collection(db, 'utilisateurs')));
+  });
+
+  it('forbids a restaurateur from listing all users (privacy)', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(getDocs(collection(db, 'utilisateurs')));
+  });
 });
 
 describe('firestore.rules — /avis', () => {
@@ -745,8 +819,13 @@ describe('firestore.rules — /notifications', () => {
     );
   });
 
-  it('forbids deletion even by the recipient', async () => {
+  it('lets the recipient delete their own notification', async () => {
     const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(deleteDoc(doc(db, 'notifications', 'n1')));
+  });
+
+  it('forbids deleting someone else\'s notification', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertFails(deleteDoc(doc(db, 'notifications', 'n1')));
   });
 });

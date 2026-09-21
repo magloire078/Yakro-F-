@@ -18,9 +18,25 @@ export const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async ({ prompt }) => {
-    // Culinary Guardrail: Refine the user's simple prompt into a professional photography prompt
-    const refinedPrompt = `Professional high-end studio food photography, close-up of a dish named: ${prompt}, 
-      appetizing lighting, artistic plating, culinary styling, soft bokeh background, 8k resolution, gastronomic style.`;
+    // Detect if the prompt is for a restaurant or a dish
+    const isRestaurant = /restaurant|établissement|façade|hôtel|boutique|enseigne/i.test(prompt);
+
+    let refinedPrompt = "";
+
+    if (isRestaurant) {
+      refinedPrompt = `Authentic street-level photography of a real restaurant in Côte d'Ivoire: ${prompt}. 
+        Natural daylight, real-world atmosphere, authentic storefront textures (wood, stone, glass). 
+        Warm and welcoming local vibe, shot on a high-end smartphone for a natural documentary look. 
+        Sharp focus on the signage and entrance, realistic urban environment. 
+        AVOID 3D renders, AVOID unrealistic luxury lighting, purely natural professional photography.`;
+    } else {
+      refinedPrompt = `Realistic and authentic food photography of: ${prompt}. 
+        Served in a simple ceramic plate on a wooden restaurant table. 
+        Natural window lighting, real textures (glistening oils, steam, charred edges). 
+        True West African colors, organic presentation, shallow depth of field. 
+        Shot in a real kitchen or restaurant setting, not a studio. 
+        AVOID plastic look, AVOID artificial saturation, AVOID perfection - make it look like a real delicious meal.`;
+    }
 
     try {
       const { media } = await ai.generate({

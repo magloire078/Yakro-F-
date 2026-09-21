@@ -46,7 +46,7 @@ function initFirebase() {
     if (!app) return;
 
     // Initialize missing services if they haven't been initialized yet
-    if (!auth) {
+    if (!auth && typeof window !== 'undefined') {
         auth = getAuth(app);
     }
 

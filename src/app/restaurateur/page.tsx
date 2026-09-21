@@ -16,8 +16,9 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
 import { Order } from '@/lib/types';
-import { canTransitionOrder } from '@/lib/order-transitions';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, Cell } from 'recharts';
+import { DashboardPage } from '@/components/dashboard/dashboard-page';
+import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 
 export default function RestaurateurHomePage() {
     const { restaurants, orders, isLoading: isDataLoading } = useData();
@@ -123,7 +124,7 @@ export default function RestaurateurHomePage() {
                 >
                     <Card className="bg-white/70 backdrop-blur-xl border-white/40 shadow-2xl shadow-slate-200/50 p-8 text-center">
                         <CardHeader>
-                            <div className="h-20 w-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <div className="h-20 w-20 mx-auto bg-orange-50 rounded-full flex items-center justify-center mb-6">
                                 <ChefHat className="h-10 w-10 text-primary" />
                             </div>
                             <CardTitle className="text-3xl font-black tracking-tight text-slate-900 italic">Bienvenue Elite !</CardTitle>
@@ -146,50 +147,52 @@ export default function RestaurateurHomePage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-20">
-            {/* Header Section */}
-            <div className="relative h-[250px] md:h-[300px] overflow-hidden bg-slate-900 flex items-center">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070')] bg-cover bg-center opacity-30 scale-110 animate-slow-zoom" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50" />
-                
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-4"
-                    >
-                        <Activity className="h-3.5 w-3.5 text-primary animate-pulse" />
-                        <span className="text-[10px] font-bold tracking-[0.2em] text-white uppercase">Tableau de Bord Elite</span>
-                    </motion.div>
-                    <motion.h1 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-7xl font-black tracking-tighter text-white italic mb-4"
-                    >
-                        Gestion <span className="text-primary">Premium</span>
-                    </motion.h1>
-                    <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-white/70 font-medium max-w-xl mx-auto text-sm md:text-lg"
-                    >
-                        Supervisez vos opérations avec l&apos;excellence Yakro Elite.
-                    </motion.p>
-                </div>
-            </div>
-
-            <div className="container mx-auto px-4 -mt-12 relative z-20 space-y-8">
+        <DashboardPage
+            heroProps={{
+                backgroundImage: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070",
+                badgeIcon: <Activity className="h-3.5 w-3.5" />,
+                badgeText: "Tableau de Bord Elite",
+                title: <>Gestion <span className="text-primary">Premium</span></>,
+                subtitle: "Supervisez vos opérations avec l'excellence Yakro Elite.",
+                children: (
+                    <DashboardStats 
+                        items={[
+                            { 
+                                label: 'Revenu du Jour', 
+                                value: stats.revenueToday, 
+                                unit: 'FCFA', 
+                                icon: DollarSign, 
+                                color: 'emerald',
+                                growth: 12 // Simulated for now
+                            },
+                            { 
+                                label: 'Commandes', 
+                                value: stats.ordersTodayCount, 
+                                unit: 'ITEMS', 
+                                icon: ShoppingCart, 
+                                color: 'orange' 
+                            },
+                            { 
+                                label: 'En Préparation', 
+                                value: stats.preparingCount, 
+                                unit: 'PLATS', 
+                                icon: ChefHat 
+                            }
+                        ]}
+                    />
+                )
+            }}
+        >
+            <div className="space-y-8">
                 {/* Action Bar */}
                 <div className="flex flex-wrap justify-center gap-4">
-                    <Button asChild className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-xl">
+                    <Button asChild className="bg-slate-900/80 hover:bg-slate-900 text-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-xl backdrop-blur-md border border-white/10">
                        <Link href="/dashboard/orders">
                             <ClipboardList className="mr-2 h-4 w-4 text-primary" />
                             Commandes
                         </Link>
                     </Button>
-                    <Button asChild variant="outline" className="bg-white/70 backdrop-blur-md border-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-lg hover:border-primary/30">
+                    <Button asChild variant="outline" className="bg-white/10 backdrop-blur-md border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-lg hover:border-primary/30 text-white">
                        <Link href="/dashboard/menu">
                             <BookOpenCheck className="mr-2 h-4 w-4 text-primary" />
                             Menu
@@ -197,38 +200,6 @@ export default function RestaurateurHomePage() {
                     </Button>
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[
-                        { label: 'Revenu du Jour', value: stats.revenueToday, sub: 'Commandes livrées', icon: DollarSign, unit: 'FCFA' },
-                        { label: 'Commandes Total', value: stats.ordersTodayCount, sub: 'Volume journalier', icon: ShoppingCart, unit: 'ITEMS' },
-                        { label: 'En Préparation', value: stats.preparingCount, sub: 'Commandes actives', icon: ChefHat, unit: 'PLATS' }
-                    ].map((item, idx) => (
-                        <motion.div 
-                            key={idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 + idx * 0.1 }}
-                            className="bg-white/70 backdrop-blur-xl border border-white p-8 relative overflow-hidden group hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500"
-                        >
-                            <div className="flex justify-between items-start mb-6">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">{item.label}</span>
-                                <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-primary/10 transition-all">
-                                    <item.icon className="h-4 w-4 text-slate-400 group-hover:text-primary" />
-                                </div>
-                            </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-black tracking-tighter text-slate-900 group-hover:text-primary transition-colors">
-                                    {item.value.toLocaleString('fr-FR')}
-                                </span>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                    {item.unit}
-                                </span>
-                            </div>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase mt-4 tracking-widest">{item.sub}</p>
-                        </motion.div>
-                    ))}
-                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Latest Orders & Performance */}
@@ -274,7 +245,7 @@ export default function RestaurateurHomePage() {
                                                             <Badge className={cn(
                                                                 "text-[9px] font-black uppercase tracking-widest rounded-none px-3 py-1 border-none",
                                                                 order.statut === 'Livrée' ? "bg-green-100 text-green-700" :
-                                                                order.statut === 'En Préparation' ? "bg-primary/10 text-primary" :
+                                                                order.statut === 'En Préparation' ? "bg-orange-100 text-orange-700" :
                                                                 "bg-slate-100 text-slate-600"
                                                             )}>
                                                                 {order.statut}
@@ -282,10 +253,10 @@ export default function RestaurateurHomePage() {
                                                         </TableCell>
                                                         <TableCell className="text-center">
                                                             <div className="flex justify-center gap-2">
-                                                                {canTransitionOrder(order.statut, 'En Préparation', 'restaurateur') && (
-                                                                    <Button
-                                                                        size="icon"
-                                                                        variant="outline"
+                                                                {order.statut === 'Placée' && (
+                                                                    <Button 
+                                                                        size="icon" 
+                                                                        variant="outline" 
                                                                         className="h-8 w-8 rounded-none border-primary/20 text-primary hover:bg-primary hover:text-white transition-all"
                                                                         onClick={() => handleStatusUpdate(order, 'En Préparation')}
                                                                         disabled={isUpdating === order.id}
@@ -293,10 +264,10 @@ export default function RestaurateurHomePage() {
                                                                         {isUpdating === order.id ? <Loader className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
                                                                     </Button>
                                                                 )}
-                                                                {canTransitionOrder(order.statut, 'Prête', 'restaurateur') && (
-                                                                    <Button
-                                                                        size="icon"
-                                                                        variant="outline"
+                                                                {order.statut === 'En Préparation' && (
+                                                                    <Button 
+                                                                        size="icon" 
+                                                                        variant="outline" 
                                                                         className="h-8 w-8 rounded-none border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white transition-all"
                                                                         onClick={() => handleStatusUpdate(order, 'Prête')}
                                                                         disabled={isUpdating === order.id}
@@ -358,7 +329,7 @@ export default function RestaurateurHomePage() {
                                                     <Cell 
                                                         key={`cell-${index}`} 
                                                         fill={index === revenueTrend.length - 1 ? '#f97316' : '#e2e8f0'} 
-                                                        className="hover:fill-primary transition-colors"
+                                                        className="hover:fill-orange-400 transition-colors"
                                                     />
                                                 ))}
                                             </Bar>
@@ -380,7 +351,7 @@ export default function RestaurateurHomePage() {
                                     {topItems.map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between group">
                                             <div className="flex items-center gap-3">
-                                                <span className="text-[10px] font-black text-primary bg-primary/10 w-5 h-5 flex items-center justify-center">0{idx+1}</span>
+                                                <span className="text-[10px] font-black text-primary bg-orange-50 w-5 h-5 flex items-center justify-center">0{idx+1}</span>
                                                 <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors uppercase tracking-tight">{item.name}</span>
                                             </div>
                                             <div className="text-right">
@@ -438,6 +409,8 @@ export default function RestaurateurHomePage() {
                     </motion.div>
                 </div>
             </div>
-        </div>
+        </DashboardPage>
     );
 }
+
+

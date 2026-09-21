@@ -9,7 +9,9 @@ import {
     Store,
     TrendingUp,
     ShieldAlert,
-    Filter
+    Filter,
+    Trash2,
+    Loader
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,9 +29,20 @@ import {
     DropdownMenuItem, 
     DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 import { useData } from '@/contexts/data-context';
 import { Restaurant } from '@/lib/types';
 import Image from 'next/image';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useAuth } from '@/contexts/auth-context';
@@ -37,14 +50,17 @@ import { logAdminAction, type AdminAction } from '@/lib/audit-logs';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { deleteRestaurant } from '@/contexts/data-context';
 
 export function RestaurantManager() {
     const { restaurants } = useData();
     const { db } = useFirebase();
     const { user } = useAuth();
     const { toast } = useToast();
+    const [restaurantToDelete, setRestaurantToDelete] = React.useState<Restaurant | null>(null);
+    const [isDeleting, setIsDeleting] = React.useState(false);
 
-    const handleAction = async (restaurant: Restaurant, action: 'FEATURE_RESTAURANT' | 'UNFEATURE_RESTAURANT' | 'SUSPEND_RESTAURANT' | 'ACTIVATE_RESTAURANT') => {
+    const handleAction = async (restaurant: Restaurant, action: 'FEATURE_RESTAURANT' | 'UNFEATURE_RESTAURANT' | 'SUSPEND_RESTAURANT' | 'ACTIVATE_RESTAURANT' | 'DELETE_RESTAURANT') => {
         if (!user) return;
 
         try {
@@ -69,9 +85,19 @@ export function RestaurantManager() {
                     updateData = { suspendu: false };
                     detailMessage = `Réactivation du restaurant ${restaurant.nom}`;
                     break;
+                case 'DELETE_RESTAURANT':
+                    detailMessage = `SUPPRESSION DÉFINITIVE du restaurant ${restaurant.nom}`;
+                    break;
             }
 
-            await updateDoc(restaurantRef, updateData);
+            if (action === 'DELETE_RESTAURANT') {
+                setIsDeleting(true);
+                await deleteRestaurant(db, restaurant.id);
+                setIsDeleting(false);
+                setRestaurantToDelete(null);
+            } else {
+                await updateDoc(restaurantRef, updateData);
+            }
 
             await logAdminAction(db, {
                 adminId: user.uid,
@@ -84,7 +110,7 @@ export function RestaurantManager() {
             toast({
                 title: "ORDRE EXÉCUTÉ",
                 description: `Action tracée dans les registres d'audit Yakro.`,
-                className: "bg-[#121214] border-primary text-white font-black uppercase italic tracking-tighter"
+                className: "bg-card border-primary text-foreground font-black uppercase italic tracking-tighter"
             });
         } catch (error) {
             console.error(error);
@@ -98,7 +124,7 @@ export function RestaurantManager() {
     };
 
     return (
-        <div className="bg-white/5 backdrop-blur-3xl border border-white/5 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+        <div className="bg-card/40 backdrop-blur-3xl border border-border/50 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
                 <div className="space-y-2">
@@ -106,7 +132,7 @@ export function RestaurantManager() {
                         <div className="p-2 bg-primary/10 border border-primary/20 rounded-xl">
                             <Store className="h-5 w-5 text-primary" />
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">
+                        <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-foreground leading-none">
                             Gestion des <span className="text-primary italic">Bastions</span>
                         </h2>
                     </div>
@@ -116,11 +142,11 @@ export function RestaurantManager() {
                 </div>
                     
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                    <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-end">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">CAPACITÉ RÉSEAU</span>
-                        <span className="text-xl font-black italic text-white">{restaurants.length} UNITÉS</span>
+                    <div className="px-6 py-3 bg-card/50 border border-border/50 rounded-2xl flex flex-col items-end">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">CAPACITÉ RÉSEAU</span>
+                        <span className="text-xl font-black italic text-foreground">{restaurants.length} UNITÉS</span>
                     </div>
-                    <Button variant="outline" className="h-14 w-14 rounded-2xl bg-white/5 border-white/10 hover:bg-primary/10 hover:text-primary text-white transition-all">
+                    <Button variant="outline" aria-label="Filtrer les bastions" className="h-14 w-14 rounded-2xl bg-card/50 border-border/50 hover:bg-primary/10 hover:text-primary text-foreground transition-all">
                         <Filter className="h-5 w-5" />
                     </Button>
                 </div>
@@ -129,8 +155,8 @@ export function RestaurantManager() {
             <div className="relative z-10">
                 <div className="overflow-x-auto scrollbar-hide">
                     <Table>
-                    <TableHeader className="border-white/5">
-                        <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHeader className="border-border/50">
+                        <TableRow className="border-border/50 hover:bg-transparent">
                             <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6 px-4">Identifiant / Unité</TableHead>
                             <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Catégorie</TableHead>
                             <TableHead className="text-[10px] font-black uppercase tracking-widest opacity-40 py-6">Performance</TableHead>
@@ -146,11 +172,11 @@ export function RestaurantManager() {
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.05 }}
-                                        className="group border-white/5 hover:bg-white/5 transition-all cursor-default"
+                                        className="group border-border/50 hover:bg-card/50 transition-all cursor-default"
                                     >
                                         <TableCell className="py-6 px-4">
                                             <div className="flex items-center gap-4">
-                                                <div className="relative h-12 w-12 rounded-2xl border border-white/10 group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg overflow-hidden">
+                                                <div className="relative h-12 w-12 rounded-2xl border border-border group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg overflow-hidden">
                                                     <Image 
                                                         src={restaurant.image || `/assets/marketing/hero-food.png`}
                                                         alt={restaurant.nom}
@@ -159,7 +185,7 @@ export function RestaurantManager() {
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-1 min-w-0">
-                                                    <span className="font-black text-sm text-white uppercase italic tracking-tight group-hover:text-primary transition-colors">{restaurant.nom}</span>
+                                                    <span className="font-black text-sm text-foreground uppercase italic tracking-tight group-hover:text-primary transition-colors">{restaurant.nom}</span>
                                                     <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest truncate">{restaurant.adresse || 'ZONE YAKRO CENTRALE'}</span>
                                                 </div>
                                             </div>
@@ -174,10 +200,10 @@ export function RestaurantManager() {
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex gap-0.5">
                                                         {[1, 2, 3, 4, 5].map((s) => (
-                                                            <Star key={s} className={cn("h-3 w-3", s <= Math.round(restaurant.note) ? "fill-primary text-primary" : "fill-white/5 text-white/10")} />
+                                                            <Star key={s} className={cn("h-3 w-3", s <= Math.round(restaurant.note) ? "fill-primary text-primary" : "fill-muted/20 text-muted/30")} />
                                                         ))}
                                                     </div>
-                                                    <span className="text-[10px] font-black text-white italic">{restaurant.note.toFixed(1)}</span>
+                                                    <span className="text-[10px] font-black text-foreground italic">{restaurant.note.toFixed(1)}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[8px] font-black text-slate-500 uppercase tracking-widest">
                                                     <Clock className="h-2.5 w-2.5" />
@@ -202,14 +228,21 @@ export function RestaurantManager() {
                                         <TableCell className="text-right py-6 px-4">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 text-slate-500 hover:text-primary border border-transparent hover:border-primary/20 transition-all hover:scale-110">
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            aria-label="Actions du restaurant"
+                            className="h-10 w-10 rounded-xl hover:bg-primary/10 text-slate-500 hover:text-primary border border-transparent hover:border-primary/20 transition-all hover:scale-110"
+                        >
                                                         <MoreHorizontal className="h-5 w-5" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-64 bg-[#0A0A0B]/95 backdrop-blur-3xl border-white/10 rounded-2xl p-1 shadow-2xl text-white overflow-hidden">
-                                                    <DropdownMenuItem className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-primary focus:text-white cursor-pointer transition-colors">
-                                                        <ExternalLink className="h-4 w-4" />
-                                                        Accéder à la Vitrine
+                                                <DropdownMenuContent align="end" aria-label="Menu d'actions" className="w-64 bg-card/95 backdrop-blur-3xl border-border/50 rounded-2xl p-1 shadow-2xl text-foreground overflow-hidden">
+                                                    <DropdownMenuItem asChild className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-primary focus:text-white cursor-pointer transition-colors">
+                                                        <Link href={`/restaurants?id=${restaurant.id}`}>
+                                                            <ExternalLink className="h-4 w-4" />
+                                                            Accéder à la Vitrine
+                                                        </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem 
                                                         className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-green-600 focus:text-white cursor-pointer transition-colors"
@@ -218,13 +251,21 @@ export function RestaurantManager() {
                                                         <TrendingUp className="h-4 w-4" />
                                                         {restaurant.enVedette ? 'Retirer des Vedettes' : 'Propulser en Vedette'}
                                                     </DropdownMenuItem>
-                                                    <div className="h-px bg-white/5 my-1" />
+                                                    <div className="h-px bg-border/50 my-1" />
                                                     <DropdownMenuItem 
                                                         className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-red-600 focus:text-white cursor-pointer transition-colors text-red-500"
                                                         onClick={() => handleAction(restaurant, restaurant.suspendu ? 'ACTIVATE_RESTAURANT' : 'SUSPEND_RESTAURANT')}
                                                     >
                                                         <ShieldAlert className="h-4 w-4" />
                                                         {restaurant.suspendu ? 'Réactiver le Service' : 'Interruption de Service'}
+                                                    </DropdownMenuItem>
+                                                    <div className="h-px bg-border/50 my-1" />
+                                                    <DropdownMenuItem 
+                                                        className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-red-700 focus:text-white cursor-pointer transition-colors text-red-600"
+                                                        onClick={() => setRestaurantToDelete(restaurant)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        Suppression Définitive
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -237,13 +278,38 @@ export function RestaurantManager() {
                 </div>
             </div>
             
-            <div className="p-8 bg-white/5 flex justify-between items-center border-t border-white/5 relative z-10 mt-6">
-                <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">Protocol: BASTION-CONTROL-v2.1</span>
+            <div className="p-8 bg-card/30 flex justify-between items-center border-t border-border/50 relative z-10 mt-6">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">Protocol: BASTION-CONTROL-v2.1</span>
                 <div className="flex gap-3">
-                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-white/5 border-white/10 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-white/10 transition-all">PRÉCÉDENT</Button>
-                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-white/5 border-white/10 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-white/10 transition-all">SUIVANT</Button>
+                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">PRÉCÉDENT</Button>
+                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">SUIVANT</Button>
                 </div>
             </div>
+
+            {/* Non-blocking Restaurant Deletion Confirmation */}
+            <AlertDialog open={!!restaurantToDelete} onOpenChange={(open) => !open && setRestaurantToDelete(null)}>
+                <AlertDialogContent className="bg-card/95 backdrop-blur-3xl border-border rounded-[2rem] shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Destruction du <span className="text-red-500 italic">Bastion</span></AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-500 font-black uppercase tracking-[0.2em] text-[9px] py-4 leading-relaxed">
+                            Êtes-vous certain de vouloir raser définitivement <span className="text-foreground"> {restaurantToDelete?.nom}</span> ? 
+                            <br /><br />
+                            Toutes les données associées seront purgées du réseau Yakro. Cette action est irréversible.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-3 mt-6">
+                        <AlertDialogCancel className="rounded-xl h-12 bg-card/50 border-border text-[9px] font-black uppercase tracking-widest px-8">ANNULER</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={() => restaurantToDelete && handleAction(restaurantToDelete, 'DELETE_RESTAURANT')}
+                            disabled={isDeleting}
+                            className="rounded-xl h-12 bg-red-600 hover:bg-red-700 text-white font-black italic uppercase tracking-tighter px-8 shadow-xl shadow-red-600/20"
+                        >
+                            {isDeleting ? <Loader className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                            CONFIRMER LA DESTRUCTION
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

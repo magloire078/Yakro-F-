@@ -64,13 +64,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
             setUserProfile(profile);
 
-            if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') {
+            if (typeof window !== 'undefined' && window.localStorage) {
               const storedRole = window.localStorage.getItem('activeRole') as AppRole | null;
-              if (!storedRole) {
+              
+              // Validation logic: 
+              // 1. If no stored role, use profile role
+              // 2. If stored role exists, check if it's allowed for this user profile
+              // For now, if the profile role is 'client', only 'client' is allowed.
+              // If profile role is 'restaurateur', both 'client' and 'restaurateur' might be allowed (if we want role switching), 
+              // but for safety during stabilization, we force match profile.role if mismatch is found.
+              
+              const isRoleValid = storedRole && (
+                storedRole === profile.role || 
+                (profile.role === 'restaurateur' && (storedRole === 'restaurateur' || storedRole === 'client')) ||
+                (profile.role === 'livreur' && (storedRole === 'livreur' || storedRole === 'client'))
+              );
+
+              if (!isRoleValid) {
                 setActiveRoleState(profile.role);
-                if (typeof window.localStorage.setItem === 'function') {
-                    window.localStorage.setItem('activeRole', profile.role);
-                }
+                window.localStorage.setItem('activeRole', profile.role);
+              } else if (storedRole && storedRole !== activeRole) {
+                setActiveRoleState(storedRole);
               }
             }
           } else {
@@ -96,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubscribeProfile();
       }
     };
-  }, [user, db]);
+  }, [user, db, activeRole]);
 
   const setActiveRole = (role: AppRole) => {
     setActiveRoleState(role);

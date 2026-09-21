@@ -48,6 +48,16 @@ describe('canTransitionOrder', () => {
     });
   });
 
+  describe('client', () => {
+    it('accepts Placée → Annulée (client cancellation)', () => {
+      expect(canTransitionOrder('Placée', 'Annulée', 'client')).toBe(true);
+    });
+
+    it('rejects cancellation once cooking has started', () => {
+      expect(canTransitionOrder('En Préparation', 'Annulée', 'client')).toBe(false);
+    });
+  });
+
   describe('superadmin', () => {
     it('can move between any two distinct statuses', () => {
       expect(canTransitionOrder('Placée', 'Annulée', 'superadmin')).toBe(true);

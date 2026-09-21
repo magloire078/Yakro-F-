@@ -170,9 +170,9 @@ export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
           </div>
           <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={() => setQuantity(q => Math.max(1, q - 1))}><Minus /></Button>
+              <Button variant="outline" size="icon" aria-label="Diminuer la quantité" onClick={() => setQuantity(q => Math.max(1, q - 1))}><Minus /></Button>
               <span className="text-lg font-bold w-10 text-center">{quantity}</span>
-              <Button variant="outline" size="icon" onClick={() => setQuantity(q => q + 1)}><Plus /></Button>
+              <Button variant="outline" size="icon" aria-label="Augmenter la quantité" onClick={() => setQuantity(q => q + 1)}><Plus /></Button>
             </div>
             <Button onClick={handleAddToCart} className="w-full sm:w-auto">
               Ajouter - {calculateTotalPrice().toLocaleString('fr-FR')} FCFA

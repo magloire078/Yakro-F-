@@ -14,7 +14,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuItem } from '@/lib/types';
-import { Loader, BookOpenCheck } from 'lucide-react';
 import { MenuItemForm, type MenuItemFormValues, menuItemFormSchema } from './menu-item-form';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -22,32 +21,9 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { logAdminAction } from '@/lib/audit-logs';
 import { useAuth } from '@/contexts/auth-context';
+import { uploadImage } from '@/lib/cloudinary';
+import { Loader, BookOpenCheck } from 'lucide-react';
 
-const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-  if (!cloudName || !uploadPreset) {
-    throw new Error("Cloudinary configuration missing.");
-  }
-
-  const formData = new FormData();
-  formData.append('file', fileOrDataUrl);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('public_id', path);
-
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: 'POST',
-    body: formData
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to upload image to Cloudinary');
-  }
-
-  const data = await response.json();
-  return data.secure_url;
-};
 
 
 interface EditMenuItemDialogProps {
@@ -154,7 +130,7 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
               Actualiser <span className="text-primary">&ldquo;{menuItem.nom}&rdquo;</span>
             </DialogTitle>
             <DialogDescription className="text-gray-500 font-medium text-sm mt-2">
-              Ajustez les paramètres de votre création pour maintenir l&apos;excellence Yakro Elite.
+              Mise à jour des informations de votre carte.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -173,7 +149,7 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
                 onClick={onClose}
                 className="h-14 px-8 bg-white/5 hover:bg-white/10 text-white rounded-none font-bold uppercase tracking-widest text-[10px] transition-all"
               >
-                Préserver l&apos;Actuel
+                Annuler
               </Button>
               <Button 
                 type="submit" 
@@ -185,7 +161,7 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
                 ) : (
                   <BookOpenCheck className="h-5 w-5 mr-2" />
                 )}
-                Confirmer l&apos;Excellence
+                Enregistrer les modifications
               </Button>
             </DialogFooter>
           </MenuItemForm>

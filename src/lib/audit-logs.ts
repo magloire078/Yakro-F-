@@ -10,8 +10,11 @@ export type AdminAction =
     | 'CHANGE_USER_ROLE'
     | 'UPDATE_USER'
     | 'DELETE_USER'
+    | 'DELETE_RESTAURANT'
+    | 'DELETE_MENU_ITEM'
     | 'LOGIN_FAILURE'
-    | 'SYSTEM_CONFIG_CHANGE';
+    | 'SYSTEM_CONFIG_CHANGE'
+    | 'PURGE_LOGS';
 
 export interface AuditLogData {
     adminId: string;
