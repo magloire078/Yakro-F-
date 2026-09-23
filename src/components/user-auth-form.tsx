@@ -11,6 +11,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   getAdditionalUserInfo,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +28,10 @@ import { FirestorePermissionError } from '@/firebase/errors';
 const loginSchema = z.object({
   email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
   password: z.string().min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' }),
+});
+
+const resetPasswordSchema = z.object({
+  email: z.string().email({ message: 'Veuillez entrer une adresse email valide.' }),
 });
 
 const signupSchema = z.object({
@@ -48,12 +53,19 @@ function UserAuthFormContent() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const [isLoginView, setIsLoginView] = React.useState(true);
+  const [showResetView, setShowResetView] = React.useState(false);
+  const [isResetLoading, setIsResetLoading] = React.useState(false);
   const { auth, db } = useFirebase();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   // Un lien de parrainage (`?ref=<uid-du-parrain>`) pré-remplit le champ ;
   // l'utilisateur peut aussi saisir/coller le code manuellement.
   const referralFromLink = searchParams.get('ref') || '';
+
+  const resetForm = useForm<{ email: string }>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { email: '' },
+  });
 
   const form = useForm<AuthFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -194,6 +206,81 @@ function UserAuthFormContent() {
     }
   };
 
+  const handleResetPassword = async (data: { email: string }) => {
+    setIsResetLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, data.email);
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
+      // Toujours afficher le même message de succès, y compris si le compte
+      // n'existe pas (`auth/user-not-found`) : révéler la différence
+      // permettrait à quiconque de vérifier quelles adresses ont un compte
+      // sur Yakro Fê. Seules les erreurs qui ne renseignent sur aucun compte
+      // précis (email mal formé, trop de tentatives) sont affichées telles
+      // quelles.
+      if (firebaseError.code && firebaseError.code !== 'auth/user-not-found') {
+        let description = "Une erreur inattendue s'est produite.";
+        if (firebaseError.code === 'auth/invalid-email') {
+          description = 'Adresse email invalide.';
+        } else if (firebaseError.code === 'auth/too-many-requests') {
+          description = 'Trop de tentatives. Veuillez réessayer plus tard.';
+        }
+        toast({ variant: 'destructive', title: 'Erreur', description });
+        setIsResetLoading(false);
+        return;
+      }
+    }
+    toast({
+      title: 'Email envoyé',
+      description: `Si un compte existe pour ${data.email}, un lien de réinitialisation vient de lui être envoyé.`,
+    });
+    resetForm.reset();
+    setShowResetView(false);
+    setIsResetLoading(false);
+  };
+
+  if (showResetView) {
+    return (
+      <div className="grid gap-6">
+        <form onSubmit={resetForm.handleSubmit(handleResetPassword)}>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="reset-email">Email</Label>
+              <Input
+                id="reset-email"
+                type="email"
+                placeholder="nom@exemple.com"
+                autoCapitalize="none"
+                autoComplete="email"
+                autoCorrect="off"
+                disabled={isResetLoading}
+                {...resetForm.register('email')}
+              />
+              {resetForm.formState.errors.email && (
+                <p className="text-sm text-destructive">{String(resetForm.formState.errors.email.message)}</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                Saisissez l&apos;adresse email de votre compte : nous vous enverrons un lien pour choisir un nouveau mot de passe.
+              </p>
+            </div>
+            <Button disabled={isResetLoading} type="submit">
+              {isResetLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+              Envoyer le lien de réinitialisation
+            </Button>
+          </div>
+        </form>
+        <p className="px-8 text-center text-sm text-muted-foreground">
+          <button
+            className="underline underline-offset-4 hover:text-primary"
+            onClick={() => setShowResetView(false)}
+          >
+            Retour à la connexion
+          </button>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6">
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -241,7 +328,21 @@ function UserAuthFormContent() {
             {form.formState.errors.email && <p className="text-sm text-destructive">{String(form.formState.errors.email.message)}</p>}
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="password">Mot de passe</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Mot de passe</Label>
+              {isLoginView && (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground underline underline-offset-4 hover:text-primary"
+                  onClick={() => {
+                    resetForm.setValue('email', form.getValues('email'));
+                    setShowResetView(true);
+                  }}
+                >
+                  Mot de passe oublié ?
+                </button>
+              )}
+            </div>
             <Input
               id="password"
               type="password"
