@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc, Unsubscribe } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, type Unsubscribe, type DocumentSnapshot } from 'firebase/firestore';
 import { useFirebase } from './firebase-provider';
 import type { AppRole, UserProfile } from '@/lib/types';
 import { Loader } from 'lucide-react';
@@ -33,7 +33,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeRole, setActiveRoleState] = React.useState<AppRole>(getInitialActiveRole);
 
   React.useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Attend que le jeton d'ID soit réellement prêt avant de déclencher
+        // la moindre lecture Firestore. `onAuthStateChanged` peut se
+        // déclencher avant que le SDK Firestore n'ait fini de propager les
+        // identifiants à ses requêtes internes — sans cette attente, le
+        // premier `onSnapshot` sur `/utilisateurs/{uid}` (juste après
+        // inscription ou connexion) peut essuyer un PERMISSION_DENIED
+        // définitif, que Firestore ne retente jamais de lui-même.
+        try {
+          await firebaseUser.getIdToken();
+        } catch (e) {
+          console.error('Échec du rafraîchissement du jeton ID:', e);
+        }
+      }
       setUser(firebaseUser);
       if (!firebaseUser) {
         setUserProfile(null);
@@ -53,62 +67,88 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [auth]);
 
   React.useEffect(() => {
-    let unsubscribeProfile: Unsubscribe | undefined;
-    if (user) {
-      setLoading(true);
-      const userDocRef = doc(db, 'utilisateurs', user.uid);
-
-      unsubscribeProfile = onSnapshot(userDocRef,
-        (docSnap) => {
-          if (docSnap.exists()) {
-            const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
-            setUserProfile(profile);
-
-            if (typeof window !== 'undefined' && window.localStorage) {
-              const storedRole = window.localStorage.getItem('activeRole') as AppRole | null;
-              
-              // Validation logic: 
-              // 1. If no stored role, use profile role
-              // 2. If stored role exists, check if it's allowed for this user profile
-              // For now, if the profile role is 'client', only 'client' is allowed.
-              // If profile role is 'restaurateur', both 'client' and 'restaurateur' might be allowed (if we want role switching), 
-              // but for safety during stabilization, we force match profile.role if mismatch is found.
-              
-              const isRoleValid = storedRole && (
-                storedRole === profile.role || 
-                (profile.role === 'restaurateur' && (storedRole === 'restaurateur' || storedRole === 'client')) ||
-                (profile.role === 'livreur' && (storedRole === 'livreur' || storedRole === 'client'))
-              );
-
-              if (!isRoleValid) {
-                setActiveRoleState(profile.role);
-                window.localStorage.setItem('activeRole', profile.role);
-              } else if (storedRole && storedRole !== activeRole) {
-                setActiveRoleState(storedRole);
-              }
-            }
-          } else {
-            setUserProfile(null);
-          }
-          setLoading(false);
-        },
-        () => {
-          const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'get',
-          } satisfies SecurityRuleContext);
-          errorEmitter.emit('permission-error', permissionError);
-          setLoading(false);
-        }
-      );
-    } else {
+    if (!user) {
       setUserProfile(null);
       setLoading(false);
+      return;
     }
-    return () => {
-      if (unsubscribeProfile) {
-        unsubscribeProfile();
+
+    let cancelled = false;
+    let unsubscribeProfile: Unsubscribe | undefined;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    const currentUser = user;
+    const userDocRef = doc(db, 'utilisateurs', currentUser.uid);
+
+    const handleSnapshot = (docSnap: DocumentSnapshot) => {
+      if (docSnap.exists()) {
+        const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
+        setUserProfile(profile);
+
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const storedRole = window.localStorage.getItem('activeRole') as AppRole | null;
+
+          // Validation logic:
+          // 1. If no stored role, use profile role
+          // 2. If stored role exists, check if it's allowed for this user profile
+          // For now, if the profile role is 'client', only 'client' is allowed.
+          // If profile role is 'restaurateur', both 'client' and 'restaurateur' might be allowed (if we want role switching),
+          // but for safety during stabilization, we force match profile.role if mismatch is found.
+
+          const isRoleValid = storedRole && (
+            storedRole === profile.role ||
+            (profile.role === 'restaurateur' && (storedRole === 'restaurateur' || storedRole === 'client')) ||
+            (profile.role === 'livreur' && (storedRole === 'livreur' || storedRole === 'client'))
+          );
+
+          if (!isRoleValid) {
+            setActiveRoleState(profile.role);
+            window.localStorage.setItem('activeRole', profile.role);
+          } else if (storedRole && storedRole !== activeRole) {
+            setActiveRoleState(storedRole);
+          }
+        }
+      } else {
+        setUserProfile(null);
       }
+      setLoading(false);
+    };
+
+    // Filet de sécurité : si, malgré l'attente du jeton d'ID dans l'effet
+    // ci-dessus, la toute première lecture essuie encore un PERMISSION_DENIED
+    // (fenêtre de course connue entre `onAuthStateChanged` et la propagation
+    // des identifiants côté SDK Firestore), on retente une seule fois après
+    // un court délai plutôt que d'abandonner définitivement — Firestore ne
+    // retente jamais un refus de permission de lui-même.
+    const attach = (attempt: number) => {
+      unsubscribeProfile = onSnapshot(userDocRef, handleSnapshot, async () => {
+        if (cancelled) return;
+        if (attempt === 0) {
+          try {
+            await currentUser.getIdToken(true);
+          } catch (e) {
+            console.error('Échec du rafraîchissement forcé du jeton ID:', e);
+          }
+          retryTimer = setTimeout(() => {
+            if (!cancelled) attach(1);
+          }, 400);
+          return;
+        }
+        const permissionError = new FirestorePermissionError({
+          path: userDocRef.path,
+          operation: 'get',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+        setLoading(false);
+      });
+    };
+
+    setLoading(true);
+    attach(0);
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      if (unsubscribeProfile) unsubscribeProfile();
     };
   }, [user, db, activeRole]);
 
