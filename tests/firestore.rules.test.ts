@@ -88,14 +88,28 @@ const baseOrder = (overrides: Record<string, unknown> = {}) => ({
 describe('firestore.rules — restaurants & plats', () => {
   beforeEach(seed);
 
-  it('blocks unauthenticated reads on restaurants', async () => {
+  // Lecture publique et sans authentification : la liste des restaurants
+  // doit se charger sur l'écran d'accueil avant connexion, et exiger
+  // l'authentification exposait aussi les clients déjà connectés à une
+  // course avec le jeton d'ID Firebase (onSnapshot pouvait démarrer avant
+  // qu'il ne soit attaché), provoquant un PERMISSION_DENIED définitif —
+  // Firestore ne retente jamais ce type d'erreur.
+  it('allows unauthenticated reads on restaurants', async () => {
     const db = env.unauthenticatedContext().firestore();
-    await assertFails(getDoc(doc(db, 'restaurants', RESTAURANT_ID)));
+    await assertSucceeds(getDoc(doc(db, 'restaurants', RESTAURANT_ID)));
   });
 
   it('allows authenticated reads on restaurants', async () => {
     const db = env.authenticatedContext(OTHER_USER_UID).firestore();
     await assertSucceeds(getDoc(doc(db, 'restaurants', RESTAURANT_ID)));
+  });
+
+  it('allows unauthenticated reads on plats', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'plats', 'p1'), { restaurantId: RESTAURANT_ID, prix: 1000 });
+    });
+    const db = env.unauthenticatedContext().firestore();
+    await assertSucceeds(getDoc(doc(db, 'plats', 'p1')));
   });
 });
 

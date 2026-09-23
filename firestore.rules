@@ -133,8 +133,15 @@ service cloud.firestore {
 
     // ── Restaurants ───────────────────────────────────────────────────────
     match /restaurants/{restaurantId} {
-      allow read:   if isAuth();
-      allow list:   if isAuth();
+      // Lecture publique, y compris sans authentification : la liste des
+      // restaurants doit pouvoir se charger dès l'écran d'accueil (parcours
+      // avant connexion), et exiger isAuth() ici exposait aussi les clients
+      // déjà connectés à une vraie fenêtre de course : `onSnapshot` peut
+      // démarrer dès que `user` devient non-nul côté client, avant que le
+      // jeton d'ID Firebase ne soit réellement attaché aux requêtes
+      // Firestore — la première tentative échouait alors en PERMISSION_DENIED,
+      // une erreur non transitoire que le SDK ne retente jamais.
+      allow read, list: if true;
       allow create: if isAuth()
         && isUser(request.resource.data.proprietaireId)
         && userExists()
@@ -145,8 +152,8 @@ service cloud.firestore {
 
     // ── Plats ─────────────────────────────────────────────────────────────
     match /plats/{platId} {
-      allow read:   if isAuth();
-      allow list:   if isAuth();
+      // Lecture publique pour la même raison que /restaurants ci-dessus.
+      allow read, list: if true;
       allow create: if isAuth() && isRestaurantOwner(request.resource.data.restaurantId);
       allow update, delete: if isRestaurantOwner(resource.data.restaurantId) || isSuperAdmin();
     }

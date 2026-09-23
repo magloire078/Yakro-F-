@@ -133,7 +133,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                             <AvatarFallback className="bg-primary/10 text-primary text-xs font-black italic">{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-black truncate leading-tight text-foreground uppercase tracking-tight">{userProfile?.nom || user.email}</p>
+                            <p className={cn(
+                              "text-sm font-black truncate leading-tight text-foreground tracking-tight",
+                              userProfile?.nom ? "uppercase" : "lowercase"
+                            )}>{userProfile?.nom || user.email}</p>
                             <p className="text-[10px] text-primary/70 capitalize font-bold italic tracking-widest">{activeRole}</p>
                         </div>
                     </div>
