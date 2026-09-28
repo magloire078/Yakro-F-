@@ -50,6 +50,11 @@ export default function NewRestaurantPage() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [isGeneratingImage, setIsGeneratingImage] = React.useState(false);
     const [generatedImageUrl, setGeneratedImageUrl] = React.useState<string | null>(null);
+    // Sur un réseau mobile faible, l'image de fond hotlinkée (Unsplash) peut
+    // échouer à charger et son texte alternatif s'affiche alors comme du
+    // texte visible qui déborde du conteneur, faisant paraître toute la
+    // page "trop large" — on arrête de la rendre en cas d'échec.
+    const [bgImageFailed, setBgImageFailed] = React.useState(false);
 
     const onSubmit = async (data: RestaurantFormValues, imageFile: File | null) => {
         if (!user) {
@@ -136,12 +141,15 @@ export default function NewRestaurantPage() {
         <div className="min-h-screen relative overflow-hidden bg-white pb-20">
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
-                <Image
-                    src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop"
-                    alt="Culinary Background"
-                    fill
-                    className="object-cover opacity-10 scale-110 animate-slow-zoom"
-                />
+                {!bgImageFailed && (
+                    <Image
+                        src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop"
+                        alt=""
+                        fill
+                        className="object-cover opacity-10 scale-110 animate-slow-zoom"
+                        onError={() => setBgImageFailed(true)}
+                    />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
             </div>
 

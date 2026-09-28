@@ -31,6 +31,11 @@ function EditRestaurantContent() {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
+    // Sur un réseau mobile faible, l'image de fond hotlinkée (Unsplash) peut
+    // échouer à charger et son texte alternatif s'affiche alors comme du
+    // texte visible qui déborde du conteneur, faisant paraître toute la
+    // page "trop large" — on arrête de la rendre en cas d'échec.
+    const [bgImageFailed, setBgImageFailed] = React.useState(false);
 
     React.useEffect(() => {
         if (!restaurantId || !user) return;
@@ -105,12 +110,15 @@ function EditRestaurantContent() {
         <div className="min-h-screen relative overflow-hidden bg-[#0A0A0B] pb-20">
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
-                <Image
-                    src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=2070&auto=format&fit=crop"
-                    alt="Kitchen Background"
-                    fill
-                    className="object-cover opacity-20 scale-110 animate-slow-zoom"
-                />
+                {!bgImageFailed && (
+                    <Image
+                        src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=2070&auto=format&fit=crop"
+                        alt=""
+                        fill
+                        className="object-cover opacity-20 scale-110 animate-slow-zoom"
+                        onError={() => setBgImageFailed(true)}
+                    />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
             </div>
 
