@@ -129,9 +129,22 @@ function UserAuthFormContent() {
             uid: result.user.uid,
             email: result.user.email!,
             nom: result.user.displayName || result.user.email?.split('@')[0],
-            dateCreation: serverTimestamp(),
-            role: 'client',
-            roleSysteme: 'User',
+            // `dateCreation`, `role` et `roleSysteme` ne doivent être écrits
+            // qu'à la toute première connexion : ce merge s'exécute à CHAQUE
+            // connexion Google, y compris pour un compte existant — les
+            // resoumettre systématiquement écrasait silencieusement le rôle
+            // et le niveau système d'un compte restaurateur/livreur/admin à
+            // chaque reconnexion (ex. un SuperAdmin repassait "User" à
+            // chaque connexion via Google), les rules l'autorisant puisque
+            // l'utilisateur agit alors sur son propre profil avec ses
+            // privilèges actuels encore en vigueur au moment de la lecture.
+            ...(isNewUser
+              ? {
+                  dateCreation: serverTimestamp(),
+                  role: 'client',
+                  roleSysteme: 'User',
+                }
+              : {}),
             // parrainId n'est capturable qu'à la toute première connexion —
             // sur les connexions suivantes le champ est verrouillé par les
             // rules (immuable), donc on ne le renvoie jamais sur un merge.
