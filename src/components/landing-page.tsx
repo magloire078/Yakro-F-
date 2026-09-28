@@ -138,49 +138,64 @@ export function LandingPage() {
               initial={{ opacity: 0, rotateX: 10, y: 40 }}
               animate={{ opacity: 1, rotateX: 0, y: 0 }}
               transition={{ delay: 0.4, duration: 1 }}
-              className="relative rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-[0_30px_60px_rgba(249,115,22,0.1)] sm:shadow-[0_50px_100px_rgba(249,115,22,0.15)] bg-white aspect-[3/4] xs:aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9]"
+              className="relative rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-[0_30px_60px_rgba(249,115,22,0.15)] sm:shadow-[0_50px_100px_rgba(249,115,22,0.2)] bg-slate-950 aspect-[3/4] xs:aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9]"
             >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentHero}
-                  initial={{ opacity: 0, scale: 1.1 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                  className="absolute inset-0 z-10"
-                >
-                  <Image
-                    src={heroSlides[currentHero].image}
-                    alt={heroSlides[currentHero].title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+              {/* Background Slides with Seamless Crossfade */}
+              {heroSlides.map((slide, index) => {
+                const isActive = currentHero === index;
+                return (
+                  <motion.div
+                    key={slide.image}
+                    initial={false}
+                    animate={{
+                      opacity: isActive ? 1 : 0,
+                      scale: isActive ? 1 : 1.06,
+                      zIndex: isActive ? 10 : 1,
+                    }}
+                    transition={{
+                      opacity: { duration: 1.2, ease: "easeInOut" },
+                      scale: { duration: 7, ease: "easeOut" },
+                    }}
+                    className="absolute inset-0 pointer-events-none"
+                  >
+                    <Image
+                      src={slide.image}
+                      alt={slide.title}
+                      fill
+                      className="object-cover"
+                      priority={index === 0}
+                      sizes="(max-width: 1400px) 100vw, 1400px"
+                    />
 
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
-                  
-                  {/* Text Content */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-20 text-left">
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5, duration: 0.8 }}
-                      className="max-w-3xl"
-                    >
-                      <h3 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-black text-white mb-3 sm:mb-6 tracking-tighter leading-tight">
-                        {heroSlides[currentHero].title}
-                      </h3>
-                      <p className="text-sm xs:text-base sm:text-xl md:text-2xl text-orange-100 font-medium leading-relaxed max-w-xl">
-                        {heroSlides[currentHero].description}
-                      </p>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                    {/* Gradient Overlay for high readability and cinema look */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-transparent" />
+                  </motion.div>
+                );
+              })}
+
+              {/* Text Content */}
+              <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 sm:p-10 md:p-20 text-left pointer-events-none">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentHero}
+                    initial={{ opacity: 0, y: 25 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="max-w-3xl"
+                  >
+                    <h3 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-black text-white mb-3 sm:mb-6 tracking-tighter leading-tight drop-shadow-md">
+                      {heroSlides[currentHero].title}
+                    </h3>
+                    <p className="text-sm xs:text-base sm:text-xl md:text-2xl text-orange-100 font-medium leading-relaxed max-w-xl drop-shadow-sm">
+                      {heroSlides[currentHero].description}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
               {/* Slider Controls */}
-              <div className="absolute bottom-4 right-4 xs:bottom-6 xs:right-6 sm:bottom-12 sm:right-12 flex gap-2 sm:gap-3 z-20">
+              <div className="absolute bottom-4 right-4 xs:bottom-6 xs:right-6 sm:bottom-12 sm:right-12 flex gap-2 sm:gap-3 z-30 pointer-events-auto">
                 {heroSlides.map((_, i) => (
                   <button
                     key={i}
@@ -343,10 +358,10 @@ export function LandingPage() {
                 </nav>
             </div>
             <div className="space-y-4">
-                <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] sm:text-xs">Légal</h4>
+                <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-[10px] sm:text-xs">Légal</h4>
                 <nav className="flex flex-col gap-2 sm:gap-3">
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Mentions</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Confidentialité</Link>
+                    <Link href="/terms" prefetch={false} className="text-sm font-bold text-slate-500 hover:text-primary">Conditions (CGU)</Link>
+                    <Link href="/privacy" prefetch={false} className="text-sm font-bold text-slate-500 hover:text-primary">Confidentialité</Link>
                 </nav>
             </div>
           </div>
