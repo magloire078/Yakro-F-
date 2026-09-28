@@ -263,7 +263,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                     )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="tempsDeLivraison"
@@ -318,7 +318,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                         </Button>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
                             name="latitude"
