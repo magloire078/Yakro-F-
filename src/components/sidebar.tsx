@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Icons } from './icons';
-import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, ChefHat, LogOut, Package, X, Ticket } from 'lucide-react';
+import { Home, ClipboardList, User, BookOpen, BarChart, Rocket, ChefHat, LogOut, Package, X, Ticket, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -47,6 +47,8 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   }
 
   const homeLink = getHomeLink();
+
+  const isSuperAdmin = userProfile?.roleSysteme === 'SuperAdmin';
 
   const navItems = [
     { href: homeLink, label: 'Accueil', icon: Home, roles: ['client', 'restaurateur', 'livreur', 'admin'] },
@@ -98,16 +100,16 @@ export function Sidebar({ onNavigate }: SidebarProps) {
            {navItems.filter(item => item.roles.includes(activeRole || 'client')).map((item) => {
              const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
              return (
-               <Button 
+               <Button
                  key={item.href}
-                 variant={isActive ? 'secondary' : 'ghost'} 
-                 onClick={onNavigate} 
+                 variant={isActive ? 'secondary' : 'ghost'}
+                 onClick={onNavigate}
                  className={cn(
                    "justify-start text-xs font-bold h-12 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest group",
-                   isActive 
-                    ? "bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5" 
+                   isActive
+                    ? "bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5"
                     : "text-slate-500 hover:text-primary hover:bg-primary/5"
-                 )} 
+                 )}
                  asChild
                >
                     <Link href={item.href} className="flex items-center w-full">
@@ -121,8 +123,34 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                </Button>
              );
            })}
+           {isSuperAdmin && (() => {
+             const isActive = pathname?.startsWith('/dashboard/admin') ?? false;
+             return (
+               <div className="mt-4 pt-4 border-t border-border/50">
+                 <Button
+                   variant={isActive ? 'secondary' : 'ghost'}
+                   onClick={onNavigate}
+                   className={cn(
+                     "justify-start text-xs font-bold h-12 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest group w-full",
+                     isActive
+                       ? "bg-primary/10 text-primary border border-primary/20 shadow-lg shadow-primary/5"
+                       : "text-slate-500 hover:text-primary hover:bg-primary/5"
+                   )}
+                   asChild
+                 >
+                   <Link href="/dashboard/admin" className="flex items-center w-full">
+                     <ShieldCheck className={cn(
+                       "mr-3 h-4 w-4 transition-transform group-hover:scale-110",
+                       isActive ? "text-primary" : "text-slate-400 group-hover:text-primary"
+                     )} />
+                     Administration
+                     {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+                   </Link>
+                 </Button>
+               </div>
+             );
+           })()}
         </nav>
-
 
         <div className="mt-auto">
            {!loading && user && (
