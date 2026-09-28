@@ -86,9 +86,9 @@ export default function LoginPage() {
                     <UserAuthForm />
                     <p className="px-8 text-center text-[10px] sm:text-xs text-slate-400 font-black uppercase tracking-widest opacity-60">
                         En continuant, vous adhérez à nos{" "}
-                        <Link href="/terms" className="text-orange-500 hover:text-orange-600 underline-offset-4 font-black">Conditions</Link>{" "}
+                        <Link href="/terms" prefetch={false} className="text-orange-500 hover:text-orange-600 underline-offset-4 font-black">Conditions</Link>{" "}
                         &{" "}
-                        <Link href="/privacy" className="text-orange-500 hover:text-orange-600 underline-offset-4 font-black">Confidentialité</Link>.
+                        <Link href="/privacy" prefetch={false} className="text-orange-500 hover:text-orange-600 underline-offset-4 font-black">Confidentialité</Link>.
                     </p>
                  </div>
             </div>
