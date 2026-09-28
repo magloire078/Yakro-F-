@@ -12,7 +12,20 @@ export function FirebaseErrorListener() {
   React.useEffect(() => {
     const handlePermissionError = (error: FirestorePermissionError) => {
       console.error("Caught Firestore Permission Error:", error);
-      
+
+      // Cet écouteur est un outil de débogage pour le développement : il
+      // expose le chemin Firestore exact et, parfois, le contenu de la
+      // requête (`requestResourceData`) dans un toast affiché à l'écran.
+      // Un vrai utilisateur en production n'a jamais besoin de voir ces
+      // détails internes — ça ne fait que l'inquiéter et fuite des
+      // informations sur la structure de la base. Chaque appel qui peut
+      // légitimement échouer gère déjà son propre message d'erreur
+      // (voir les blocs catch de user-auth-form.tsx, restaurant-manager.tsx,
+      // etc.) ; celui-ci reste utile uniquement pour le débogage local.
+      if (process.env.NODE_ENV !== 'development') {
+        return;
+      }
+
       const readableOperation = {
         'get': 'lecture',
         'list': 'liste',

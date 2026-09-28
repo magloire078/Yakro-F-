@@ -116,21 +116,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Filet de sécurité : si, malgré l'attente du jeton d'ID dans l'effet
     // ci-dessus, la toute première lecture essuie encore un PERMISSION_DENIED
     // (fenêtre de course connue entre `onAuthStateChanged` et la propagation
-    // des identifiants côté SDK Firestore), on retente une seule fois après
-    // un court délai plutôt que d'abandonner définitivement — Firestore ne
-    // retente jamais un refus de permission de lui-même.
+    // des identifiants côté SDK Firestore), on retente plusieurs fois avec
+    // un délai croissant plutôt que d'abandonner définitivement — Firestore
+    // ne retente jamais un refus de permission de lui-même, et sur un
+    // réseau mobile lent la propagation du jeton peut prendre plus que
+    // quelques centaines de millisecondes.
+    const RETRY_DELAYS_MS = [400, 1000, 2500];
     const attach = (attempt: number) => {
       unsubscribeProfile = onSnapshot(userDocRef, handleSnapshot, async () => {
         if (cancelled) return;
-        if (attempt === 0) {
+        const delay = RETRY_DELAYS_MS[attempt];
+        if (delay !== undefined) {
           try {
             await currentUser.getIdToken(true);
           } catch (e) {
             console.error('Échec du rafraîchissement forcé du jeton ID:', e);
           }
           retryTimer = setTimeout(() => {
-            if (!cancelled) attach(1);
-          }, 400);
+            if (!cancelled) attach(attempt + 1);
+          }, delay);
           return;
         }
         const permissionError = new FirestorePermissionError({
