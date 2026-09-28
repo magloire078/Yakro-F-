@@ -7,7 +7,8 @@ import * as z from 'zod';
 import { useSearchParams } from 'next/navigation';
 import {
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   getAdditionalUserInfo,
@@ -91,42 +92,17 @@ function UserAuthFormContent() {
     });
   }, [isLoginView, form, referralFromLink]);
 
+  // `signInWithPopup` échoue de façon fiable sur Safari/iOS ("The requested
+  // action is invalid") : la protection anti-traçage d'Apple bloque le
+  // dialogue entre la pop-up et la page d'origine. `signInWithRedirect` est
+  // la solution recommandée par Firebase pour ces environnements — la page
+  // quitte brièvement l'app vers Google puis revient connectée ; le
+  // résultat est alors récupéré via `getRedirectResult` dans l'effet
+  // ci-dessous, au retour.
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      const result = await signInWithPopup(auth, googleAuthProvider);
-      const userDocRef = doc(db, 'utilisateurs', result.user.uid);
-      const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
-
-      const profileData = {
-          uid: result.user.uid,
-          email: result.user.email!,
-          nom: result.user.displayName || result.user.email?.split('@')[0],
-          dateCreation: serverTimestamp(),
-          role: 'client',
-          roleSysteme: 'User',
-          // parrainId n'est capturable qu'à la toute première connexion —
-          // sur les connexions suivantes le champ est verrouillé par les
-          // rules (immuable), donc on ne le renvoie jamais sur un merge.
-          ...(isNewUser && referralFromLink && referralFromLink !== result.user.uid
-            ? { parrainId: referralFromLink }
-            : {}),
-      };
-
-      setDoc(userDocRef, profileData, { merge: true })
-        .catch(async () => {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'write',
-                requestResourceData: profileData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        });
-
-      toast({
-        title: 'Connexion réussie',
-        description: 'Vous êtes maintenant connecté via Google.',
-      });
+      await signInWithRedirect(auth, googleAuthProvider);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la connexion.';
       toast({
@@ -134,10 +110,67 @@ function UserAuthFormContent() {
         title: 'Erreur de connexion Google',
         description: errorMessage,
       });
-    } finally {
       setIsGoogleLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result || cancelled) return;
+
+        const userDocRef = doc(db, 'utilisateurs', result.user.uid);
+        const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
+
+        const profileData = {
+            uid: result.user.uid,
+            email: result.user.email!,
+            nom: result.user.displayName || result.user.email?.split('@')[0],
+            dateCreation: serverTimestamp(),
+            role: 'client',
+            roleSysteme: 'User',
+            // parrainId n'est capturable qu'à la toute première connexion —
+            // sur les connexions suivantes le champ est verrouillé par les
+            // rules (immuable), donc on ne le renvoie jamais sur un merge.
+            ...(isNewUser && referralFromLink && referralFromLink !== result.user.uid
+              ? { parrainId: referralFromLink }
+              : {}),
+        };
+
+        setDoc(userDocRef, profileData, { merge: true })
+          .catch(async () => {
+              const permissionError = new FirestorePermissionError({
+                  path: userDocRef.path,
+                  operation: 'write',
+                  requestResourceData: profileData,
+              });
+              errorEmitter.emit('permission-error', permissionError);
+          });
+
+        if (!cancelled) {
+          toast({
+            title: 'Connexion réussie',
+            description: 'Vous êtes maintenant connecté via Google.',
+          });
+        }
+      } catch (error: unknown) {
+        if (cancelled) return;
+        const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la connexion.';
+        toast({
+          variant: 'destructive',
+          title: 'Erreur de connexion Google',
+          description: errorMessage,
+        });
+      } finally {
+        if (!cancelled) setIsGoogleLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [auth, db, referralFromLink, toast]);
 
   const onSubmit = async (data: AuthFormValues) => {
     setIsLoading(true);
