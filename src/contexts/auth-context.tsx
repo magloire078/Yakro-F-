@@ -131,10 +131,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // (fenêtre de course connue entre `onAuthStateChanged` et la propagation
     // des identifiants côté SDK Firestore), on retente plusieurs fois avec
     // un délai croissant plutôt que d'abandonner définitivement — Firestore
-    // ne retente jamais un refus de permission de lui-même, et sur un
-    // réseau mobile lent la propagation du jeton peut prendre plus que
-    // quelques centaines de millisecondes.
-    const RETRY_DELAYS_MS = [400, 1000, 2500];
+    // ne retente jamais un refus de permission de lui-même. Sur le terrain à
+    // Yamoussoukro, le réseau mobile est parfois assez lent/instable pour
+    // que la propagation du jeton dépasse largement quelques centaines de
+    // millisecondes (observé en conditions réelles avec 2 barres de
+    // réseau) : le budget total va donc jusqu'à ~15s sur 5 tentatives
+    // plutôt que ~4s sur 3, pour laisser le temps à une connexion lente de
+    // rattraper son retard avant d'afficher un écran d'erreur.
+    const RETRY_DELAYS_MS = [400, 1000, 2000, 4000, 8000];
     const attach = (attempt: number) => {
       unsubscribeProfile = onSnapshot(userDocRef, handleSnapshot, async () => {
         if (cancelled) return;
