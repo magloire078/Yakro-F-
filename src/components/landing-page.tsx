@@ -149,14 +149,14 @@ export function LandingPage() {
                     initial={false}
                     animate={{
                       opacity: isActive ? 1 : 0,
-                      scale: isActive ? 1 : 1.06,
+                      scale: isActive ? 1 : 1.05,
                       zIndex: isActive ? 10 : 1,
                     }}
                     transition={{
-                      opacity: { duration: 1.2, ease: "easeInOut" },
-                      scale: { duration: 7, ease: "easeOut" },
+                      opacity: { duration: 1, ease: "easeInOut" },
+                      scale: { duration: 6, ease: "easeOut" },
                     }}
-                    className="absolute inset-0 pointer-events-none"
+                    className="absolute inset-0 pointer-events-none transform-gpu will-change-transform"
                   >
                     <Image
                       src={slide.image}
