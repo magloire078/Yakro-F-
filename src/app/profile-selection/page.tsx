@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Loader } from 'lucide-react';
 
 export default function ProfileSelectionPage() {
-    const { user, userProfile, profileError, loading: authLoading, activeRole } = useAuth();
+    const { user, userProfile, profileError, profileErrorCode, loading: authLoading, activeRole } = useAuth();
     const router = useRouter();
     const [isRedirecting, setIsRedirecting] = React.useState(false);
 
@@ -65,6 +65,11 @@ export default function ProfileSelectionPage() {
                         <p className="text-xs font-medium text-muted-foreground/80">
                             Impossible de charger votre profil pour le moment. Vérifiez votre connexion puis réessayez.
                         </p>
+                        {profileErrorCode && (
+                            <p className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest">
+                                Code : {profileErrorCode}
+                            </p>
+                        )}
                     </div>
                     <button
                         onClick={() => window.location.reload()}

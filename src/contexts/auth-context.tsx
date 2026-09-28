@@ -33,6 +33,13 @@ interface AuthContextType {
    * et écraser son propre profil.
    */
   profileError: boolean;
+  /**
+   * Code d'erreur Firestore brut (ex. `permission-denied`, `unavailable`)
+   * de la dernière tentative échouée avant abandon. Affiché en petit sur
+   * l'écran d'erreur pour qu'un futur signalement (capture d'écran) révèle
+   * directement la cause réelle, sans accès aux logs de l'appareil.
+   */
+  profileErrorCode: string | null;
   activeRole: AppRole;
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: FirestorePermissionError | Error }>;
@@ -50,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = React.useState<User | null>(null);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const [profileError, setProfileError] = React.useState(false);
+  const [profileErrorCode, setProfileErrorCode] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   // Distinct de `loading` : ne reste vrai que jusqu'au tout premier retour de
   // `onAuthStateChanged` (savoir SI un utilisateur est connecté), jamais
@@ -160,8 +168,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // rattraper son retard avant d'afficher un écran d'erreur.
     const RETRY_DELAYS_MS = [400, 1000, 2000, 4000, 8000];
     const attach = (attempt: number) => {
-      unsubscribeProfile = onSnapshot(userDocRef, handleSnapshot, async () => {
+      unsubscribeProfile = onSnapshot(userDocRef, handleSnapshot, async (err) => {
         if (cancelled) return;
+        // Journalisé à chaque tentative (pas seulement à l'abandon final) :
+        // le code exact (`permission-denied`, `unavailable`, …) distingue un
+        // vrai refus de permission d'un souci de connexion au démarrage à
+        // froid, deux causes très différentes qui se présentaient jusqu'ici
+        // de façon identique à l'utilisateur.
+        console.error(`Lecture du profil échouée (tentative ${attempt + 1}/${RETRY_DELAYS_MS.length + 1}):`, err.code, err.message);
         const delay = RETRY_DELAYS_MS[attempt];
         if (delay !== undefined) {
           try {
@@ -181,12 +195,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         errorEmitter.emit('permission-error', permissionError);
         setUserProfile(null);
         setProfileError(true);
+        setProfileErrorCode(err.code);
         setLoading(false);
       });
     };
 
     setLoading(true);
     setProfileError(false);
+    setProfileErrorCode(null);
     attach(0);
 
     return () => {
@@ -239,13 +255,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     userProfile,
     profileError,
+    profileErrorCode,
     loading,
     authResolving,
     activeRole,
     setActiveRole,
     updateUserProfile,
     updateOtherUserProfile
-  }), [user, userProfile, profileError, loading, authResolving, activeRole, updateUserProfile, updateOtherUserProfile]);
+  }), [user, userProfile, profileError, profileErrorCode, loading, authResolving, activeRole, updateUserProfile, updateOtherUserProfile]);
 
   if (authResolving) {
     return (
