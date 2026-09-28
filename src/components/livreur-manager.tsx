@@ -5,11 +5,9 @@ import {
     Bike,
     MoreHorizontal,
     Filter,
-    Trash2,
     Loader,
     Navigation2,
     Activity,
-    UserX,
     MapPin,
     Map as MapIcon,
     LayoutList
@@ -248,23 +246,13 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end" className="w-64 bg-card/95 backdrop-blur-3xl border-border/50 rounded-2xl p-1 shadow-2xl text-foreground overflow-hidden">
-                                                            <DropdownMenuItem 
+                                                            <DropdownMenuItem
                                                                 className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-orange-500 focus:text-white cursor-pointer transition-colors"
                                                                 onClick={() => handleToggleSuspension(livreur)}
                                                                 disabled={isUpdating === livreur.uid}
                                                             >
                                                                 {isUpdating === livreur.uid ? <Loader className="h-4 w-4 animate-spin" /> : <Navigation2 className="h-4 w-4" />}
                                                                 {livreur.statutService === 'En service' ? 'Désactiver le Service' : 'Forcer Activation'}
-                                                            </DropdownMenuItem>
-                                                            <div className="h-px bg-border/50 my-1" />
-                                                            <DropdownMenuItem className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-red-600 focus:text-white cursor-pointer transition-colors text-red-500">
-                                                                <UserX className="h-4 w-4" />
-                                                                Suspendre Compte
-                                                            </DropdownMenuItem>
-                                                            <div className="h-px bg-border/50 my-1" />
-                                                            <DropdownMenuItem className="rounded-xl gap-3 font-black uppercase italic tracking-tighter text-[10px] py-4 focus:bg-red-700 focus:text-white cursor-pointer transition-colors text-red-600">
-                                                                <Trash2 className="h-4 w-4" />
-                                                                Suppression Définitive
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
@@ -290,10 +278,7 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
             
             <div className="p-8 bg-card/30 flex justify-between items-center border-t border-border/50 relative z-10 mt-6">
                 <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">Protocol: COURIER-TRACK-v4.0</span>
-                <div className="flex gap-3">
-                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">PRÉCÉDENT</Button>
-                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">SUIVANT</Button>
-                </div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{livreurs.length} livreur{livreurs.length !== 1 ? 's' : ''}</span>
             </div>
         </div>
     );

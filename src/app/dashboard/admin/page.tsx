@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 import Link from 'next/link';
-import { collection, onSnapshot, query, Timestamp, doc, deleteDoc, orderBy, limit, where, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, query, Timestamp, doc, deleteDoc, orderBy, limit } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { AddUserDialog } from '@/components/add-user-dialog';
 import { useData } from '@/contexts/data-context';
@@ -58,9 +58,7 @@ export default function AdminPage() {
     const [isAddUserDialogOpen, setIsAddUserDialogOpen] = React.useState(false);
     const [userToDelete, setUserToDelete] = React.useState<UserProfile | null>(null);
     const [isDeleting, setIsDeleting] = React.useState(false);
-    const [isPurgeDialogOpen, setIsPurgeDialogOpen] = React.useState(false);
-    const [isPurging, setIsPurging] = React.useState(false);
-    
+
 
     const [auditLogs, setAuditLogs] = React.useState<AuditLogEntry[]>([]);
     const [logSearchQuery, setLogSearchQuery] = React.useState('');
@@ -140,7 +138,20 @@ export default function AdminPage() {
 
     const handleSystemRoleChange = async (userId: string, newRole: SystemRole) => {
         if (!user || !userProfile) return;
-        
+
+        // Empêche un SuperAdmin de se retirer lui-même son propre accès :
+        // sans autre SuperAdmin, ce serait un verrouillage immédiat et
+        // irréversible depuis l'interface (il faudrait alors corriger le
+        // document directement dans la console Firebase).
+        if (userId === user.uid) {
+            toast({
+                variant: "destructive",
+                title: "Action bloquée",
+                description: "Vous ne pouvez pas modifier votre propre rôle système.",
+            });
+            return;
+        }
+
         try {
             await updateOtherUserProfile(userId, { roleSysteme: newRole });
             
@@ -160,7 +171,19 @@ export default function AdminPage() {
     
     const handleDeleteUser = async (userId: string) => {
         if (!user || !userProfile) return;
-        
+
+        // Même garde-fou que pour le changement de rôle : on ne se supprime
+        // jamais soi-même depuis cette interface.
+        if (userId === user.uid) {
+            toast({
+                variant: "destructive",
+                title: "Action bloquée",
+                description: "Vous ne pouvez pas supprimer votre propre compte.",
+            });
+            setUserToDelete(null);
+            return;
+        }
+
         setIsDeleting(true);
         try {
             const userRef = doc(db, 'utilisateurs', userId);
@@ -183,54 +206,6 @@ export default function AdminPage() {
             setIsDeleting(false);
         }
     };
-
-    const handlePurgeLogs = async () => {
-        if (!user || !userProfile) return;
-        
-        setIsPurging(true);
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
-        try {
-            const q = query(collection(db, 'audit_logs'), where('timestamp', '<', Timestamp.fromDate(thirtyDaysAgo)));
-            const snapshot = await getDocs(q);
-            
-            if (snapshot.empty) {
-                toast({ title: "Nettoyage terminé", description: "Aucun log ancien à supprimer." });
-                return;
-            }
-
-            const docs = snapshot.docs;
-            const batchSize = 500;
-            let deletedCount = 0;
-
-            for (let i = 0; i < docs.length; i += batchSize) {
-                const batch = writeBatch(db);
-                const chunk = docs.slice(i, i + batchSize);
-                chunk.forEach((doc) => batch.delete(doc.ref));
-                await batch.commit();
-                deletedCount += chunk.length;
-            }
-            
-            await logAdminAction(db, {
-                adminId: user.uid,
-                adminEmail: user.email || 'unknown',
-                action: 'PURGE_LOGS',
-                targetId: 'SYSTEM',
-                details: `Purge de ${deletedCount} anciens journaux d'audit`
-            });
-            
-            toast({ title: "Journal purgé", description: `${deletedCount} entrées ont été supprimées.` });
-            setIsPurgeDialogOpen(false);
-        } catch (error) {
-            console.error("Erreur lors de la purge:", error);
-            toast({ variant: "destructive", title: "Erreur", description: "Impossible de purger les journaux." });
-        } finally {
-            setIsPurging(false);
-        }
-    };
-
-
 
     const getInitials = (name: string | undefined) => {
         if (!name) return '?';
@@ -446,6 +421,9 @@ export default function AdminPage() {
                                             <div className="space-y-2">
                                                 <h2 className="text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Journal d&apos;Audit <span className="text-primary">Sécurisé</span></h2>
                                                 <p className="text-[11px] font-body font-medium text-slate-500/70 uppercase tracking-widest">TRAÇABILITÉ TOTALE DES OPÉRATIONS DE COMMANDEMENT</p>
+                                                <p className="text-[10px] font-body text-slate-500/60 normal-case tracking-normal max-w-md">
+                                                    Journal immuable — même un Super Administrateur ne peut pas modifier ou supprimer une entrée. Les entrées de plus de 30 jours sont purgées automatiquement.
+                                                </p>
                                             </div>
                                             <div className="flex items-center gap-4 w-full md:w-auto">
                                                 <Input 
@@ -458,14 +436,6 @@ export default function AdminPage() {
                                                     <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                                                     <span className="text-[10px] font-body font-bold tracking-widest text-primary">PROTOCOLE ACTIF</span>
                                                 </div>
-                                                <Button 
-                                                    onClick={() => setIsPurgeDialogOpen(true)}
-                                                    variant="outline" 
-                                                    className="h-12 px-6 border-red-500/20 hover:bg-red-500/10 text-red-500 rounded-2xl font-body font-bold text-[10px] tracking-widest transition-all"
-                                                >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    NETTOYER
-                                                </Button>
                                             </div>
                                         </div>
                                         <div className="overflow-x-auto">
@@ -569,8 +539,12 @@ export default function AdminPage() {
                                                                     </div>
                                                                 </TableCell>
                                                                 <TableCell className="py-6">
-                                                                    <Select value={u.roleSysteme || 'User'} onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}>
-                                                                        <SelectTrigger aria-label="Changer le rôle système" className="w-[140px] h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 rounded-2xl text-[10px] font-body font-bold tracking-widest focus:ring-primary/50 transition-all hover:bg-card dark:hover:bg-white/10">
+                                                                    <Select
+                                                                        value={u.roleSysteme || 'User'}
+                                                                        onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}
+                                                                        disabled={u.uid === user?.uid}
+                                                                    >
+                                                                        <SelectTrigger aria-label="Changer le rôle système" className="w-[140px] h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 rounded-2xl text-[10px] font-body font-bold tracking-widest focus:ring-primary/50 transition-all hover:bg-card dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">
                                                                             <SelectValue />
                                                                         </SelectTrigger>
                                                                         <SelectContent className="bg-popover/95 backdrop-blur-3xl border-border text-foreground rounded-2xl overflow-hidden shadow-2xl">
@@ -585,7 +559,14 @@ export default function AdminPage() {
                                                                         <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} aria-label="Modifier l'utilisateur" className="h-12 w-12 hover:bg-primary/10 hover:text-primary rounded-2xl border border-transparent hover:border-primary/20 transition-all hover:scale-110">
                                                                             <Edit className="h-5 w-5" />
                                                                         </Button>
-                                                                        <Button variant="ghost" size="icon" onClick={() => setUserToDelete(u)} aria-label="Supprimer l'utilisateur" className="h-12 w-12 hover:bg-red-500/10 hover:text-red-500 rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            onClick={() => setUserToDelete(u)}
+                                                                            disabled={u.uid === user?.uid}
+                                                                            aria-label="Supprimer l'utilisateur"
+                                                                            className="h-12 w-12 hover:bg-red-500/10 hover:text-red-500 rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                                                        >
                                                                             <Trash2 className="h-5 w-5" />
                                                                         </Button>
                                                                     </div>
@@ -690,30 +671,6 @@ export default function AdminPage() {
                             className="rounded-2xl h-12 bg-red-500 hover:bg-red-600 text-white font-body font-bold text-[10px] tracking-widest px-8 shadow-xl shadow-red-500/20"
                         >
                             {isDeleting ? <Loader className="h-4 w-4 animate-spin" /> : "CONFIRMER LA SUPPRESSION"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Purge Logs Confirmation */}
-            <AlertDialog open={isPurgeDialogOpen} onOpenChange={setIsPurgeDialogOpen}>
-                <AlertDialogContent className="bg-card/95 backdrop-blur-3xl border-border rounded-3xl shadow-2xl">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="text-2xl font-headline font-bold tracking-tight">Nettoyage des <span className="text-primary italic">Registres</span></AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-500 font-body text-xs tracking-wide py-4 leading-relaxed">
-                            Cette opération va purger tous les journaux d&apos;audit de plus de <span className="font-bold text-foreground">30 jours</span>.
-                            <br /><br />
-                            Cette action est irréversible et libérera de l&apos;espace dans le bastion de données.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="gap-3 mt-4">
-                        <AlertDialogCancel className="rounded-2xl h-12 border-border font-body font-bold text-[10px] tracking-widest px-8">ANNULER</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={handlePurgeLogs}
-                            disabled={isPurging}
-                            className="rounded-2xl h-12 bg-primary hover:bg-primary/90 text-white font-body font-bold text-[10px] tracking-widest px-8 shadow-xl shadow-primary/20"
-                        >
-                            {isPurging ? <Loader className="h-4 w-4 animate-spin" /> : "CONFIRMER LA PURGE"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
