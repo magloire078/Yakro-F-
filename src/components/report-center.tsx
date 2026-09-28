@@ -335,7 +335,7 @@ export function ReportCenter() {
             <div className="hidden print:block print-section">
                 <div className="print-header">
                     <div>
-                        <h1 className="text-3xl font-black italic uppercase tracking-tighter">YAKRO <span className="text-primary">GO</span> CORPORATE</h1>
+                        <h1 className="text-3xl font-black italic uppercase tracking-tighter">YAKRO <span className="text-primary">FÊ</span> CORPORATE</h1>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Rapport de Performance Administrative</p>
                     </div>
                     <div className="text-right">

@@ -124,7 +124,7 @@ export default function RestaurateurHomePage() {
                 >
                     <Card className="bg-white/70 backdrop-blur-xl border-white/40 shadow-2xl shadow-slate-200/50 p-8 text-center">
                         <CardHeader>
-                            <div className="h-20 w-20 mx-auto bg-orange-50 rounded-full flex items-center justify-center mb-6">
+                            <div className="h-20 w-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
                                 <ChefHat className="h-10 w-10 text-primary" />
                             </div>
                             <CardTitle className="text-3xl font-black tracking-tight text-slate-900 italic">Bienvenue Elite !</CardTitle>
@@ -351,7 +351,7 @@ export default function RestaurateurHomePage() {
                                     {topItems.map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between group">
                                             <div className="flex items-center gap-3">
-                                                <span className="text-[10px] font-black text-primary bg-orange-50 w-5 h-5 flex items-center justify-center">0{idx+1}</span>
+                                                <span className="text-[10px] font-black text-primary bg-primary/10 w-5 h-5 flex items-center justify-center">0{idx+1}</span>
                                                 <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors uppercase tracking-tight">{item.name}</span>
                                             </div>
                                             <div className="text-right">
