@@ -280,9 +280,10 @@ export default function AdminPage() {
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
-                            src="https://images.unsplash.com/photo-1451187534959-42266104411e?q=80&w=2070&auto=format&fit=crop"
+                            src="/assets/marketing/hero-basilica.png"
                             alt=""
                             fill
+                            unoptimized
                             className="object-cover opacity-10 dark:opacity-20 scale-110 animate-slow-zoom"
                             onError={() => setBgImageFailed(true)}
                         />
