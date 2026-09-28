@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { EditUserDialog } from '@/components/edit-user-dialog';
 import Link from 'next/link';
-import { collection, onSnapshot, query, Timestamp, doc, deleteDoc, orderBy, limit } from 'firebase/firestore';
+import { collection, onSnapshot, query, Timestamp, orderBy, limit } from 'firebase/firestore';
+import { deleteUserAction } from '@/app/actions/admin-user-actions';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { AddUserDialog } from '@/components/add-user-dialog';
 import { useData } from '@/contexts/data-context';
@@ -186,18 +187,23 @@ export default function AdminPage() {
 
         setIsDeleting(true);
         try {
-            const userRef = doc(db, 'utilisateurs', userId);
             const userEmail = userToDelete?.email || 'inconnu';
-            await deleteDoc(userRef);
-            
+            const idToken = await user.getIdToken();
+            const result = await deleteUserAction({ idToken, targetUid: userId });
+
+            if (!result.success) {
+                toast({ variant: "destructive", title: "Erreur", description: result.error });
+                return;
+            }
+
             await logAdminAction(db, {
                 adminId: user.uid,
                 adminEmail: user.email || 'unknown',
                 action: 'DELETE_USER',
                 targetId: userId,
-                details: `Suppression définitive du compte ${userEmail}`
+                details: `Suppression définitive du compte ${userEmail} (profil et authentification)`
             });
-            
+
             toast({ title: "Utilisateur supprimé", description: "Le compte a été retiré du système." });
             setUserToDelete(null);
         } catch {

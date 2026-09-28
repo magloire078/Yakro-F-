@@ -29,10 +29,10 @@ import {
 import type { AppRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { useFirebase } from '@/contexts/firebase-provider';
+import { useAuth } from '@/contexts/auth-context';
+import { createUserAction } from '@/app/actions/admin-user-actions';
+import { logAdminAction } from '@/lib/audit-logs';
 
 interface AddUserDialogProps {
   isOpen: boolean;
@@ -51,6 +51,7 @@ type AddUserFormValues = z.infer<typeof addUserSchema>;
 export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
   const { toast } = useToast();
   const { db } = useFirebase();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<AddUserFormValues>({
@@ -70,37 +71,38 @@ export function AddUserDialog({ isOpen, onClose }: AddUserDialogProps) {
   }, [isOpen, form]);
 
   const onSubmit = async (data: AddUserFormValues) => {
+    if (!user) return;
     setIsSubmitting(true);
     try {
-        // This functionality requires privilege separation, which is complex with client-side SDK alone.
-        // We simulate the creation for now. In a real app, this would be a Cloud Function.
-        const newUserProfile = {
+        const idToken = await user.getIdToken();
+        const result = await createUserAction({
+            idToken,
             nom: data.nom,
             email: data.email,
+            password: data.password,
             role: data.role as AppRole,
-            roleSysteme: 'User',
-            dateCreation: serverTimestamp()
-        };
-        
-        // This will likely fail with security rules if the admin isn't creating themselves,
-        // which is the point. This is an admin action that needs backend privilege.
-        // We use a placeholder UID.
-        const tempUid = `new-user-${Date.now()}`;
-        const userDocRef = doc(db, 'utilisateurs', tempUid);
+        });
 
-        setDoc(userDocRef, newUserProfile).catch(e => {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'create',
-                requestResourceData: newUserProfile,
+        if (!result.success) {
+            toast({
+                variant: "destructive",
+                title: "Erreur lors de la création",
+                description: result.error,
             });
-            errorEmitter.emit('permission-error', permissionError);
-            throw e;
+            return;
+        }
+
+        await logAdminAction(db, {
+            adminId: user.uid,
+            adminEmail: user.email || 'unknown',
+            action: 'CREATE_USER',
+            targetId: result.uid,
+            details: `Création du compte ${data.email} (${data.role})`,
         });
 
         toast({
-            title: "Création d'utilisateur (simulation)",
-            description: "Dans une application de production, cela se ferait via un backend sécurisé. La création directe peut être bloquée par les règles de sécurité.",
+            title: "Utilisateur créé",
+            description: `Le compte ${data.email} a été créé avec succès.`,
         });
         onClose();
     } catch(e: unknown) {

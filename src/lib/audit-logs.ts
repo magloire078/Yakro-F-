@@ -8,6 +8,7 @@ export type AdminAction =
     | 'UPDATE_RESTAURANT'
     | 'UPDATE_MENU_ITEM'
     | 'CHANGE_USER_ROLE'
+    | 'CREATE_USER'
     | 'UPDATE_USER'
     | 'DELETE_USER'
     | 'DELETE_RESTAURANT'
