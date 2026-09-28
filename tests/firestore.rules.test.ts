@@ -651,6 +651,18 @@ describe('firestore.rules — /utilisateurs', () => {
     );
   });
 
+  it('rejects a profile that pre-sets premiumJusquau at creation', async () => {
+    const db = env.authenticatedContext('newbie').firestore();
+    await assertFails(
+      setDoc(doc(db, 'utilisateurs', 'newbie'), {
+        email: 'n@x.io',
+        role: 'client',
+        roleSysteme: 'User',
+        premiumJusquau: Timestamp.fromDate(new Date(Date.now() + 30 * 86400_000)),
+      }),
+    );
+  });
+
   it('lets a SuperAdmin promote any user\'s role', async () => {
     await env.withSecurityRulesDisabled(async (ctx) => {
       await setDoc(doc(ctx.firestore(), 'utilisateurs', 'super-1'), {
@@ -983,5 +995,31 @@ describe('firestore.rules — /stocks', () => {
   it("forbids a restaurateur from reading another restaurateur's stock", async () => {
     const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
     await assertFails(getDoc(doc(db, 'stocks', 's-other')));
+  });
+
+  it("forbids a restaurateur from hijacking another restaurateur's stock via update", async () => {
+    // La mise à jour ne doit jamais s'appuyer sur la valeur ENVOYÉE de
+    // restaurateurId pour autoriser l'accès : sinon n'importe qui pourrait
+    // s'approprier le stock d'un autre en renvoyant simplement son propre
+    // uid dans la requête.
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'stocks', 's-other'), {
+        restaurateurId: RESTAURATEUR_UID,
+        quantite: 999,
+      }),
+    );
+  });
+
+  it('forbids the owner from transferring their own stock to another restaurateur', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'stocks', 's-mine'), { restaurateurId: 'someone' }),
+    );
+  });
+
+  it('lets the owner update their own stock quantity', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(updateDoc(doc(db, 'stocks', 's-mine'), { quantite: 20 }));
   });
 });

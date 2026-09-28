@@ -21,7 +21,13 @@ service cloud.firestore {
     }
 
     function getRole() {
-      return isAuth() ? getUserData().get('role', 'client') : 'client';
+      // Gardé par `userExists()` (comme `getSystemRole()` juste en dessous) :
+      // sans ça, `getUserData().data` sur un document `/utilisateurs/{uid}`
+      // absent (ex. compte authentifié avant la création de son profil) fait
+      // échouer l'évaluation de la règle avec une erreur plutôt que de
+      // retomber proprement sur 'client' — repéré en reprenant les règles
+      // proposées par Antigravity sur master, bonne prise.
+      return isAuth() && userExists() ? getUserData().get('role', 'client') : 'client';
     }
 
     function getSystemRole() {
@@ -103,15 +109,19 @@ service cloud.firestore {
       // rôle valide et roleSysteme verrouillé à 'User' (l'élévation est
       // réservée aux SuperAdmin via update). `parrainId`, s'il est fourni
       // (lien/code de parrainage saisi à l'inscription), doit désigner un
-      // utilisateur existant autre que soi-même ; `pointsFidelite` et
-      // `filleulRecompenseVersee` ne peuvent jamais être pré-remplis par
-      // le client à la création.
+      // utilisateur existant autre que soi-même ; `pointsFidelite`,
+      // `filleulRecompenseVersee` et `premiumJusquau` ne peuvent jamais être
+      // pré-remplis par le client à la création (ce dernier repéré en
+      // reprenant les règles proposées par Antigravity sur master : sans ce
+      // verrou, un nouveau compte pouvait s'auto-attribuer le Premium dès
+      // l'inscription).
       allow create: if isAuth()
         && isUser(userId)
         && request.resource.data.role in ['client', 'restaurateur', 'livreur']
         && request.resource.data.get('roleSysteme', 'User') == 'User'
         && !('pointsFidelite' in request.resource.data)
         && !('filleulRecompenseVersee' in request.resource.data)
+        && !('premiumJusquau' in request.resource.data)
         && (
           !('parrainId' in request.resource.data) ||
           (
@@ -357,8 +367,22 @@ service cloud.firestore {
         resource.data.restaurateurId == request.auth.uid || isSuperAdmin()
       );
 
-      allow create, update: if isAuth() && (
+      allow create: if isAuth() && (
         request.resource.data.restaurateurId == request.auth.uid || isSuperAdmin()
+      );
+
+      // Update : vérifie le propriétaire EXISTANT (`resource.data`), pas la
+      // valeur envoyée dans la requête — repéré en reprenant les règles
+      // proposées par Antigravity sur master : la version précédente ne
+      // vérifiait que `request.resource.data.restaurateurId`, permettant à
+      // n'importe quel restaurateur de s'approprier le stock d'un autre en
+      // renvoyant simplement son propre uid dans la requête de mise à jour.
+      // `restaurateurId` est en plus verrouillé pour interdire tout
+      // transfert de propriété après coup, même par le propriétaire actuel.
+      allow update: if isAuth() && (
+        isSuperAdmin() ||
+        (resource.data.restaurateurId == request.auth.uid &&
+         request.resource.data.restaurateurId == resource.data.restaurateurId)
       );
 
       allow delete: if isAuth() && (
