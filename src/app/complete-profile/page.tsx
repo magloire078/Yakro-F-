@@ -7,7 +7,7 @@ import { useFirebase } from '@/contexts/firebase-provider';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,6 +57,23 @@ function CompleteProfileContent() {
 
     try {
       const userDocRef = doc(db, 'utilisateurs', user.uid);
+
+      // Dernier rempart : si un profil existe déjà pour ce compte (ex. une
+      // lecture en erreur de permission avait empêché l'app de le charger,
+      // amenant ici à tort un utilisateur existant), on refuse d'écraser un
+      // document déjà présent plutôt que de risquer une perte de données
+      // (rôle système, points de fidélité, etc.).
+      const existingSnap = await getDoc(userDocRef);
+      if (existingSnap.exists()) {
+        toast({
+          variant: 'destructive',
+          title: 'Profil déjà existant',
+          description: 'Un profil existe déjà pour ce compte. Rechargez la page pour y accéder.',
+        });
+        setIsSaving(false);
+        return;
+      }
+
       const parrainId = data.codeParrainage?.trim();
       await setDoc(userDocRef, {
         uid: user.uid,

@@ -13,6 +13,17 @@ interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  /**
+   * true si la lecture du profil a échoué en PERMISSION_DENIED après
+   * épuisement des tentatives (voir plus bas), plutôt que d'avoir confirmé
+   * que le document n'existe pas. Sert à distinguer un « nouvel
+   * utilisateur » (document absent, confirmé) d'un échec technique — les
+   * deux se traduisent par `userProfile === null`, mais seul le premier cas
+   * doit rediriger vers /complete-profile : sinon un compte existant (ex.
+   * SuperAdmin) pourrait se voir proposer de « finaliser son inscription »
+   * et écraser son propre profil.
+   */
+  profileError: boolean;
   activeRole: AppRole;
   setActiveRole: (role: AppRole) => void;
   updateUserProfile: (uid: string, data: Partial<UserProfile>) => Promise<{ success: boolean; error?: FirestorePermissionError | Error }>;
@@ -29,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { auth, db } = useFirebase();
   const [user, setUser] = React.useState<User | null>(null);
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
+  const [profileError, setProfileError] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [activeRole, setActiveRoleState] = React.useState<AppRole>(getInitialActiveRole);
 
@@ -80,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userDocRef = doc(db, 'utilisateurs', currentUser.uid);
 
     const handleSnapshot = (docSnap: DocumentSnapshot) => {
+      setProfileError(false);
       if (docSnap.exists()) {
         const profile = { uid: docSnap.id, ...docSnap.data() } as UserProfile;
         setUserProfile(profile);
@@ -142,11 +155,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           operation: 'get',
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
+        setUserProfile(null);
+        setProfileError(true);
         setLoading(false);
       });
     };
 
     setLoading(true);
+    setProfileError(false);
     attach(0);
 
     return () => {
@@ -198,12 +214,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = React.useMemo(() => ({
     user,
     userProfile,
+    profileError,
     loading,
     activeRole,
     setActiveRole,
     updateUserProfile,
     updateOtherUserProfile
-  }), [user, userProfile, loading, activeRole, updateUserProfile, updateOtherUserProfile]);
+  }), [user, userProfile, profileError, loading, activeRole, updateUserProfile, updateOtherUserProfile]);
 
   if (loading) {
     return (
