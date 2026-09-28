@@ -33,17 +33,28 @@ export function DashboardHero({
     children,
     className
 }: DashboardHeroProps) {
+    // Sur un réseau mobile faible, l'image hotlinkée (Unsplash) peut échouer à
+    // charger — le texte alternatif de l'image cassée s'affiche alors comme
+    // du texte visible qui déborde du conteneur, faisant paraître toute la
+    // page "trop large" alors qu'il ne s'agit que d'un visuel décoratif. On
+    // arrête simplement de rendre l'image en cas d'échec plutôt que de
+    // laisser le navigateur afficher son propre texte de repli.
+    const [imageFailed, setImageFailed] = React.useState(false);
+
     return (
         <div className={cn("relative min-h-[20vh] md:min-h-[25vh] w-full overflow-hidden flex items-start justify-center pt-12 md:pt-16 pb-10 md:pb-12", className)}>
             {/* Background Image with Cinematic Effects */}
             <div className="absolute inset-0 z-0">
-                <Image
-                    src={backgroundImage}
-                    alt="Hero Background"
-                    fill
-                    className="object-cover scale-110 animate-slow-zoom opacity-10"
-                    priority
-                />
+                {!imageFailed && (
+                    <Image
+                        src={backgroundImage}
+                        alt=""
+                        fill
+                        className="object-cover scale-110 animate-slow-zoom opacity-10"
+                        priority
+                        onError={() => setImageFailed(true)}
+                    />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/60 z-10" />
             </div>
             

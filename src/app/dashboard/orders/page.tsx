@@ -22,6 +22,11 @@ export default function DashboardOrdersPage() {
     const { orders, restaurants } = useData();
     const { toast } = useToast();
     const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
+    // Sur un réseau mobile faible, l'image de fond hotlinkée (Unsplash) peut
+    // échouer à charger et son texte alternatif s'affiche alors comme du
+    // texte visible qui déborde du conteneur, faisant paraître toute la
+    // page "trop large" — on arrête de la rendre en cas d'échec.
+    const [bgImageFailed, setBgImageFailed] = React.useState(false);
 
     const myRestaurantIds = React.useMemo(() => {
         if (activeRole !== 'restaurateur' || !user) return [];
@@ -213,12 +218,15 @@ export default function DashboardOrdersPage() {
             {/* Elite Command Header */}
             <div className="relative h-[45vh] md:h-[50vh] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
-                    <Image
-                        src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop"
-                        alt="Kitchen Header"
-                        fill
-                        className="object-cover opacity-5 scale-110 animate-slow-zoom"
-                    />
+                    {!bgImageFailed && (
+                        <Image
+                            src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop"
+                            alt=""
+                            fill
+                            className="object-cover opacity-5 scale-110 animate-slow-zoom"
+                            onError={() => setBgImageFailed(true)}
+                        />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/40 z-10" />
                 </div>
                 

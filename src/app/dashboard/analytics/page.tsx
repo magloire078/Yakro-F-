@@ -33,7 +33,14 @@ export default function AnalyticsPage() {
     const router = useRouter();
     const { orders, restaurants } = useData();
     const [selectedRange, setSelectedRange] = React.useState<TimeRange>('all');
-    
+    // Sur un réseau mobile faible, l'image de fond hotlinkée (Unsplash) peut
+    // échouer à charger — son texte alternatif s'affiche alors comme du
+    // texte visible qui déborde du conteneur, faisant paraître toute la page
+    // "trop large" (signalé par capture d'écran) alors qu'il ne s'agit que
+    // d'un visuel décoratif. On arrête simplement de la rendre en cas
+    // d'échec.
+    const [bgImageFailed, setBgImageFailed] = React.useState(false);
+
     React.useEffect(() => {
         if (user && activeRole !== 'restaurateur') {
             router.push('/');
@@ -262,12 +269,15 @@ export default function AnalyticsPage() {
             {/* Elite Analytics Header */}
             <div className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
-                    <Image
-                        src="https://images.unsplash.com/photo-1551288049-bbbda5366991?q=80&w=2070&auto=format&fit=crop"
-                        alt="Data Analytics Background"
-                        fill
-                        className="object-cover opacity-5 scale-110 animate-slow-zoom"
-                    />
+                    {!bgImageFailed && (
+                        <Image
+                            src="https://images.unsplash.com/photo-1551288049-bbbda5366991?q=80&w=2070&auto=format&fit=crop"
+                            alt=""
+                            fill
+                            className="object-cover opacity-5 scale-110 animate-slow-zoom"
+                            onError={() => setBgImageFailed(true)}
+                        />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/20" />
                 </div>
                 
