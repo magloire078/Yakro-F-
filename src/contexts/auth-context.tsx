@@ -14,6 +14,15 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   /**
+   * true jusqu'au tout premier retour de Firebase Auth (savoir SI un
+   * utilisateur est connecté), jamais pendant les nouvelles tentatives de
+   * lecture du profil qui suivent (voir `loading`). Permet à /login de
+   * rediriger dès qu'on sait qu'un utilisateur est connecté, sans attendre
+   * la résolution complète de son profil — /profile-selection s'en charge
+   * déjà (spinner puis, le cas échéant, écran d'erreur avec réessai).
+   */
+  authResolving: boolean;
+  /**
    * true si la lecture du profil a échoué en PERMISSION_DENIED après
    * épuisement des tentatives (voir plus bas), plutôt que d'avoir confirmé
    * que le document n'existe pas. Sert à distinguer un « nouvel
@@ -42,6 +51,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null);
   const [profileError, setProfileError] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  // Distinct de `loading` : ne reste vrai que jusqu'au tout premier retour de
+  // `onAuthStateChanged` (savoir SI un utilisateur est connecté), jamais
+  // pendant les nouvelles tentatives de lecture du profil qui suivent. Sur
+  // certains rechargements à froid (PWA fermée/rouverte), Firebase Auth peut
+  // émettre un premier événement transitoire (`null`) avant de restaurer la
+  // session persistée un instant plus tard — si l'écran de chargement
+  // plein-page ci-dessous restait affiché pendant tout le cycle de
+  // nouvelles tentatives du profil (jusqu'à ~15s, voir plus bas), l'appli
+  // entière restait figée sur une simple roue sans le moindre contexte.
+  const [authResolving, setAuthResolving] = React.useState(true);
   const [activeRole, setActiveRoleState] = React.useState<AppRole>(getInitialActiveRole);
 
   React.useEffect(() => {
@@ -61,6 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       setUser(firebaseUser);
+      setAuthResolving(false);
       if (!firebaseUser) {
         setUserProfile(null);
         setLoading(false);
@@ -220,13 +240,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userProfile,
     profileError,
     loading,
+    authResolving,
     activeRole,
     setActiveRole,
     updateUserProfile,
     updateOtherUserProfile
-  }), [user, userProfile, profileError, loading, activeRole, updateUserProfile, updateOtherUserProfile]);
+  }), [user, userProfile, profileError, loading, authResolving, activeRole, updateUserProfile, updateOtherUserProfile]);
 
-  if (loading) {
+  if (authResolving) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader className="h-16 w-16 animate-spin text-primary" />

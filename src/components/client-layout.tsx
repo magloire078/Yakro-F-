@@ -21,16 +21,23 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     pathname === '/marketing' ||
     (!user && pathname === '/');
 
+  // Les pages d'authentification (login, sélection/complétion de profil…)
+  // gèrent elles-mêmes leur état de chargement et d'erreur (voir leurs
+  // propres écrans dédiés) — on les laisse toujours s'afficher plutôt que
+  // de les bloquer ici derrière un spinner générique sans contexte pendant
+  // tout le cycle de nouvelles tentatives de lecture du profil (jusqu'à
+  // ~15s sur réseau lent), qui laissait l'appli entière figée sans
+  // explication ni possibilité de réessayer.
+  if (isLandingOrAuthPage) {
+    return <>{children}</>;
+  }
+
   if (authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (isLandingOrAuthPage) {
-    return <>{children}</>;
   }
 
   const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/restaurateur');

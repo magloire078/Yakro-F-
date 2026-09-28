@@ -10,18 +10,24 @@ import Image from 'next/image';
 import { Logo } from '@/components/logo';
 
 export default function LoginPage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, authResolving } = useAuth();
     const router = useRouter();
     const [isRedirecting, setIsRedirecting] = React.useState(false);
 
+    // On redirige dès qu'on SAIT qu'un utilisateur est connecté
+    // (`authResolving` false), sans attendre la résolution complète de son
+    // profil Firestore (qui peut prendre jusqu'à ~15s sur réseau lent avec
+    // les nouvelles tentatives) — /profile-selection gère déjà cette
+    // attente avec un écran dédié (spinner, puis erreur+réessai le cas
+    // échéant), inutile de bloquer /login en plus pendant tout ce temps.
     React.useEffect(() => {
-        if (!authLoading && user && !isRedirecting) {
+        if (!authResolving && user && !isRedirecting) {
             setIsRedirecting(true);
             router.replace('/profile-selection');
         }
-    }, [user, authLoading, isRedirecting, router]);
-    
-    if (authLoading || isRedirecting || (!authLoading && user)) {
+    }, [user, authResolving, isRedirecting, router]);
+
+    if (authResolving || isRedirecting || (!authResolving && user)) {
         return (
             <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
