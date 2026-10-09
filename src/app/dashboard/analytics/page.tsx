@@ -316,9 +316,9 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40 space-y-6 sm:space-y-10 md:space-y-12">
+            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-5xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40 space-y-6 sm:space-y-8 md:space-y-10">
                 {/* Time Range Selector — sticky scrollable on mobile */}
-                <div className="sticky top-0 z-40 -mx-3 sm:-mx-6 lg:-mx-8 px-3 py-2.5 mb-2 flex overflow-x-auto gap-2 sm:gap-3 scrollbar-hide scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
+                <div className="sticky top-0 z-40 px-1 py-2.5 mb-2 flex overflow-x-auto gap-2 sm:gap-3 scrollbar-hide scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:justify-center md:flex-wrap md:bg-transparent">
                     {ranges.map((range, idx) => (
                         <motion.button
                             key={range.id}

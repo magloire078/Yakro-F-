@@ -278,7 +278,7 @@ export default function DashboardOrdersPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40">
+            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-6xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40">
                 {/* Mobile Header Correction */}
                 <div className="md:hidden flex justify-start mb-4 sm:mb-6">
                     <MobileBackButton href="/restaurateur" label="Tableau de Bord" />

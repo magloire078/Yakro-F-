@@ -65,6 +65,7 @@ export default function BoostPage() {
 
     return (
         <DashboardPage
+            containerClassName="max-w-4xl"
             heroProps={{
                 backgroundImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
                 badgeIcon: <Rocket className="h-4 w-4" />,

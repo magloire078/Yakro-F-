@@ -59,6 +59,7 @@ export default function EarningsPage() {
     
     return (
         <DashboardPage
+            containerClassName="max-w-5xl"
             heroProps={{
                 backgroundImage: "https://images.unsplash.com/photo-1558981403-c5f91cbba527?q=80&w=2070&auto=format&fit=crop",
                 badgeIcon: <ShieldCheck className="h-4 w-4" />,
