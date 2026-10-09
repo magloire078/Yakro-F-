@@ -53,8 +53,8 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col md:pl-64">
         <MobileHeader />
         <main className={cn(
-          "flex-1 pb-24 md:pb-10",
-          isDashboard ? "p-0" : "p-4 md:p-10"
+          "flex-1 pb-20 md:pb-10",
+          isDashboard ? "p-0" : "p-3 sm:p-4 md:p-8 lg:p-10"
         )}>
           {children}
         </main>

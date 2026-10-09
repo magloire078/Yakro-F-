@@ -63,7 +63,7 @@ export default function LoginPage() {
                     </blockquote>
                 </div>
             </div>
-            <div className="relative p-6 h-full flex items-center justify-center z-10">
+            <div className="relative p-3.5 sm:p-6 h-full flex items-center justify-center z-10">
                  {/* Mobile Background Image */}
                  <div className="absolute inset-0 lg:hidden">
                     <Image
@@ -77,20 +77,20 @@ export default function LoginPage() {
                  </div>
                  <div className="absolute inset-0 bg-slate-50/50 dark:bg-slate-950/50 backdrop-blur-3xl lg:hidden" />
 
-                 <div className="mx-auto flex w-full flex-col justify-center space-y-10 sm:w-[500px] glass-dark lg:glass p-8 sm:p-14 rounded-[3rem] border-white/10 lg:border-slate-200/50 shadow-2xl">
-                    <div className="flex flex-col space-y-4 text-center">
-                        <div className="lg:hidden flex justify-center mb-4">
-                            <Logo size="lg" />
+                 <div className="mx-auto flex w-full flex-col justify-center space-y-5 sm:space-y-8 sm:w-[500px] glass-dark lg:glass p-5 sm:p-10 md:p-14 rounded-2xl sm:rounded-[2.5rem] border-white/10 lg:border-slate-200/50 shadow-2xl">
+                    <div className="flex flex-col space-y-2 sm:space-y-3 text-center">
+                        <div className="lg:hidden flex justify-center mb-1 sm:mb-2">
+                            <Logo size="md" />
                         </div>
-                        <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground lg:text-slate-900 uppercase italic">
+                        <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-foreground lg:text-slate-900 uppercase italic">
                             Bienvenue dans <span className="text-primary drop-shadow-sm">l&apos;Elite</span>
                         </h1>
-                        <p className="text-sm sm:text-base text-slate-400 lg:text-slate-500 font-medium tracking-tight">
+                        <p className="text-xs sm:text-sm text-slate-400 lg:text-slate-500 font-medium tracking-tight">
                             Connectez-vous pour transcender votre expérience.
                         </p>
                     </div>
                     <UserAuthForm />
-                    <p className="px-8 text-center text-[10px] sm:text-xs text-slate-400 font-black uppercase tracking-widest opacity-60">
+                    <p className="px-4 sm:px-8 text-center text-[9px] sm:text-xs text-slate-400 font-black uppercase tracking-widest opacity-60">
                         En continuant, vous adhérez à nos{" "}
                         <Link href="/terms" prefetch={false} className="text-primary hover:underline underline-offset-4 font-black">Conditions</Link>{" "}
                         &{" "}

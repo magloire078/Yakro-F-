@@ -183,81 +183,81 @@ export default function RestaurateurHomePage() {
                 )
             }}
         >
-            <div className="space-y-8">
+            <div className="space-y-4 sm:space-y-8">
                 {/* Action Bar */}
-                <div className="flex flex-wrap justify-center gap-4">
-                    <Button asChild className="bg-slate-900/80 hover:bg-slate-900 text-white px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-xl backdrop-blur-md border border-white/10">
+                <div className="flex flex-wrap justify-center gap-2.5 sm:gap-4">
+                    <Button asChild className="bg-slate-900/80 hover:bg-slate-900 text-white px-5 sm:px-8 py-3 sm:py-5 h-auto font-black uppercase tracking-wider text-[9px] sm:text-[10px] shadow-lg backdrop-blur-md border border-white/10 rounded-xl">
                        <Link href="/dashboard/orders">
-                            <ClipboardList className="mr-2 h-4 w-4 text-primary" />
+                            <ClipboardList className="mr-1.5 h-3.5 w-3.5 text-primary" />
                             Commandes
                         </Link>
                     </Button>
-                    <Button asChild variant="outline" className="bg-white/10 backdrop-blur-md border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[10px] shadow-lg hover:border-primary/30 text-white">
+                    <Button asChild variant="outline" className="bg-white/10 backdrop-blur-md border-white/10 px-5 sm:px-8 py-3 sm:py-5 h-auto font-black uppercase tracking-wider text-[9px] sm:text-[10px] shadow-md hover:border-primary/30 text-white rounded-xl">
                        <Link href="/dashboard/menu">
-                            <BookOpenCheck className="mr-2 h-4 w-4 text-primary" />
+                            <BookOpenCheck className="mr-1.5 h-3.5 w-3.5 text-primary" />
                             Menu
                         </Link>
                     </Button>
                 </div>
 
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
                     {/* Latest Orders & Performance */}
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.6 }}
-                        className="lg:col-span-8 space-y-8"
+                        className="lg:col-span-8 space-y-4 sm:space-y-8"
                     >
                         {/* Table Card */}
-                        <div className="bg-white/70 backdrop-blur-xl border border-white p-0 overflow-hidden shadow-xl">
-                            <div className="p-8 border-b border-slate-100 flex justify-between items-center">
+                        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/40 dark:border-slate-800 p-0 overflow-hidden shadow-lg rounded-2xl sm:rounded-3xl">
+                            <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                                 <div>
-                                    <h3 className="text-lg font-black tracking-tight text-slate-900 uppercase">Dernières Commandes</h3>
-                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Flux en temps réel</p>
+                                    <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">Dernières Commandes</h3>
+                                    <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">Flux en temps réel</p>
                                 </div>
-                                <Button variant="ghost" size="sm" asChild className="text-[10px] font-black uppercase tracking-widest hover:text-primary">
-                                    <Link href="/dashboard/orders">Tout voir <ArrowRight className="ml-2 h-3 w-3" /></Link>
+                                <Button variant="ghost" size="sm" asChild className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider hover:text-primary h-7 px-2">
+                                    <Link href="/dashboard/orders">Tout voir <ArrowRight className="ml-1.5 h-3 w-3" /></Link>
                                 </Button>
                             </div>
-                            <div className="p-0">
+                            <div className="p-0 overflow-x-auto">
                                 {stats.latestOrders.length > 0 ? (
                                     <Table>
-                                        <TableHeader className="bg-slate-50/50">
+                                        <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                                             <TableRow className="hover:bg-transparent border-none">
-                                                <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 pl-8">Client / Heure</TableHead>
-                                                <TableHead className="text-[10px] font-black uppercase tracking-widest">Statut</TableHead>
-                                                <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Action</TableHead>
-                                                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest py-4 pr-8">Montant</TableHead>
+                                                <TableHead className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider py-2.5 sm:py-4 pl-4 sm:pl-8">Client / Heure</TableHead>
+                                                <TableHead className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">Statut</TableHead>
+                                                <TableHead className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-center">Action</TableHead>
+                                                <TableHead className="text-right text-[9px] sm:text-[10px] font-black uppercase tracking-wider py-2.5 sm:py-4 pr-4 sm:pr-8">Montant</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             <AnimatePresence>
                                                 {stats.latestOrders.map((order) => (
-                                                    <TableRow key={order.id} className="group hover:bg-slate-50/30 border-slate-50 transition-colors">
-                                                        <TableCell className="py-5 pl-8">
-                                                            <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{order.nomRestaurant}</div>
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">
+                                                    <TableRow key={order.id} className="group hover:bg-slate-50/30 dark:hover:bg-slate-800/30 border-slate-50 dark:border-slate-800 transition-colors">
+                                                        <TableCell className="py-3 sm:py-4 pl-4 sm:pl-8">
+                                                            <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none">{order.nomRestaurant}</div>
+                                                            <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">
                                                                 {format(new Date(order.date), "dd MMM · HH:mm")}
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge className={cn(
-                                                                "text-[9px] font-black uppercase tracking-widest rounded-none px-3 py-1 border-none",
-                                                                order.statut === 'Livrée' ? "bg-green-100 text-green-700" :
-                                                                order.statut === 'En Préparation' ? "bg-orange-100 text-orange-700" :
-                                                                "bg-slate-100 text-slate-600"
+                                                                "text-[8px] sm:text-[9px] font-black uppercase tracking-wider rounded-lg px-2 py-0.5 border-none",
+                                                                order.statut === 'Livrée' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                                                                order.statut === 'En Préparation' ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
+                                                                "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                                                             )}>
                                                                 {order.statut}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-center">
-                                                            <div className="flex justify-center gap-2">
+                                                            <div className="flex justify-center gap-1.5">
                                                                 {order.statut === 'Placée' && (
                                                                     <Button 
                                                                         size="icon" 
                                                                         variant="outline" 
-                                                                        className="h-8 w-8 rounded-none border-primary/20 text-primary hover:bg-primary hover:text-white transition-all"
+                                                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-primary/20 text-primary hover:bg-primary hover:text-white transition-all"
                                                                         onClick={() => handleStatusUpdate(order, 'En Préparation')}
                                                                         disabled={isUpdating === order.id}
                                                                     >
@@ -268,7 +268,7 @@ export default function RestaurateurHomePage() {
                                                                     <Button 
                                                                         size="icon" 
                                                                         variant="outline" 
-                                                                        className="h-8 w-8 rounded-none border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white transition-all"
+                                                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white transition-all"
                                                                         onClick={() => handleStatusUpdate(order, 'Prête')}
                                                                         disabled={isUpdating === order.id}
                                                                     >
@@ -277,9 +277,9 @@ export default function RestaurateurHomePage() {
                                                                 )}
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell className="text-right py-5 pr-8">
-                                                            <span className="font-black text-slate-900">{order.total.toLocaleString('fr-FR')}</span>
-                                                            <span className="text-[9px] font-bold text-slate-400 ml-1">FCFA</span>
+                                                        <TableCell className="text-right py-3 sm:py-4 pr-4 sm:pr-8">
+                                                            <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white">{order.total.toLocaleString('fr-FR')}</span>
+                                                            <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 ml-1">F</span>
                                                         </TableCell>
                                                     </TableRow>
                                                 ))}
@@ -287,28 +287,28 @@ export default function RestaurateurHomePage() {
                                         </TableBody>
                                     </Table>
                                 ) : (
-                                    <div className="text-center py-20">
-                                        <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <ShoppingCart className="h-6 w-6 text-slate-300" />
+                                    <div className="text-center py-10 sm:py-16">
+                                        <div className="h-10 w-10 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <ShoppingCart className="h-5 w-5 text-slate-300" />
                                         </div>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aucune commande pour le moment</p>
+                                        <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Aucune commande pour le moment</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Performance Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             {/* Revenue Trend Mini Chart */}
-                            <div className="bg-white/70 backdrop-blur-xl border border-white p-8 shadow-xl">
-                                <div className="flex justify-between items-center mb-6">
+                            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/40 dark:border-slate-800 p-4 sm:p-6 shadow-md rounded-2xl sm:rounded-3xl">
+                                <div className="flex justify-between items-center mb-3 sm:mb-4">
                                     <div>
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tendance Revenus</h4>
-                                        <p className="text-lg font-black italic text-slate-900">7 derniers jours</p>
+                                        <h4 className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-400">Tendance Revenus</h4>
+                                        <p className="text-base sm:text-lg font-black italic text-slate-900 dark:text-white">7 derniers jours</p>
                                     </div>
-                                    <TrendingUp className="h-5 w-5 text-primary" />
+                                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                                 </div>
-                                <div className="h-[120px] w-full">
+                                <div className="h-[100px] sm:h-[120px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={revenueTrend}>
                                             <Tooltip 
@@ -316,7 +316,7 @@ export default function RestaurateurHomePage() {
                                                 content={({ active, payload }: { active?: boolean; payload?: Array<{ value?: number }> }) => {
                                                     if (active && payload && payload.length) {
                                                         return (
-                                                            <div className="bg-slate-900 text-white p-2 text-[10px] font-bold uppercase tracking-widest">
+                                                            <div className="bg-slate-900 text-white p-1.5 text-[9px] font-bold uppercase tracking-wider rounded">
                                                                 {payload[0].value?.toLocaleString()} F
                                                             </div>
                                                         );
@@ -339,28 +339,28 @@ export default function RestaurateurHomePage() {
                             </div>
 
                             {/* Top Selling Items */}
-                            <div className="bg-white/70 backdrop-blur-xl border border-white p-8 shadow-xl">
-                                <div className="flex justify-between items-center mb-6">
+                            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/40 dark:border-slate-800 p-4 sm:p-6 shadow-md rounded-2xl sm:rounded-3xl">
+                                <div className="flex justify-between items-center mb-3 sm:mb-4">
                                     <div>
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Best-Sellers</h4>
-                                        <p className="text-lg font-black italic text-slate-900">Top 3 Plats</p>
+                                        <h4 className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-400">Best-Sellers</h4>
+                                        <p className="text-base sm:text-lg font-black italic text-slate-900 dark:text-white">Top 3 Plats</p>
                                     </div>
-                                    <Sparkles className="h-5 w-5 text-primary" />
+                                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-2.5 sm:space-y-3">
                                     {topItems.map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between group">
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-[10px] font-black text-primary bg-primary/10 w-5 h-5 flex items-center justify-center">0{idx+1}</span>
-                                                <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors uppercase tracking-tight">{item.name}</span>
+                                            <div className="flex items-center gap-2.5">
+                                                <span className="text-[9px] font-black text-primary bg-primary/10 w-4 h-4 sm:w-5 sm:h-5 rounded flex items-center justify-center">0{idx+1}</span>
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors uppercase tracking-tight truncate max-w-[150px]">{item.name}</span>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-[10px] font-black text-slate-900">{item.count} <span className="text-slate-400">Ventes</span></p>
+                                                <p className="text-[10px] font-black text-slate-900 dark:text-white">{item.count} <span className="text-slate-400 font-normal">Ventes</span></p>
                                             </div>
                                         </div>
                                     ))}
                                     {topItems.length === 0 && (
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest py-4">En attente de données...</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">En attente de données...</p>
                                     )}
                                 </div>
                             </div>
@@ -372,22 +372,22 @@ export default function RestaurateurHomePage() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.7 }}
-                        className="lg:col-span-4 bg-slate-900 p-8 relative overflow-hidden flex flex-col justify-between"
+                        className="lg:col-span-4 bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-3xl relative overflow-hidden flex flex-col justify-between"
                     >
                         <div className="absolute top-0 right-0 p-4">
-                            <Wand2 className="h-20 w-20 text-white/5 -rotate-12" />
+                            <Wand2 className="h-16 w-16 sm:h-20 sm:w-20 text-white/5 -rotate-12" />
                         </div>
                         
                         <div className="relative z-10">
-                            <div className="h-12 w-12 bg-primary rounded-none flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
-                                <Activity className="h-6 w-6 text-white" />
+                            <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary rounded-xl flex items-center justify-center mb-4 sm:mb-6 shadow-md shadow-primary/20">
+                                <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                             </div>
-                            <h3 className="text-2xl font-black tracking-tight text-white italic leading-tight">
+                            <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white italic leading-tight">
                                 Intelligence <span className="text-primary block">Stratégique Yakro</span>
                             </h3>
-                            <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-none relative">
-                                <p className="text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-2">Conseil du Jour</p>
-                                <p className="text-white/70 text-[11px] font-bold italic leading-relaxed">
+                            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-white/5 border border-white/10 rounded-xl relative">
+                                <p className="text-primary text-[9px] sm:text-[10px] font-black uppercase tracking-wider mb-1">Conseil du Jour</p>
+                                <p className="text-white/70 text-[11px] sm:text-xs font-bold italic leading-relaxed">
                                     {topItems.length > 0 
                                         ? `Votre "${topItems[0].name}" performe exceptionnellement. Créez un pack "Elite" incluant ce plat pour booster vos ventes de 15%.`
                                         : "Analysez vos ventes pour identifier votre plat signature et optimiser votre rentabilité."}
@@ -395,17 +395,17 @@ export default function RestaurateurHomePage() {
                             </div>
                         </div>
 
-                        <div className="mt-12 relative z-10">
-                            <Button asChild size="lg" className="w-full bg-white hover:bg-primary hover:text-white text-slate-900 font-black uppercase tracking-widest text-[10px] py-6 rounded-none transition-all duration-500">
+                        <div className="mt-6 sm:mt-8 relative z-10">
+                            <Button asChild size="sm" className="w-full bg-white hover:bg-primary hover:text-white text-slate-900 font-bold uppercase tracking-wider text-[10px] h-10 sm:h-12 rounded-xl transition-all duration-300">
                                <Link href="/dashboard/new-menu-item">
-                                    <Wand2 className="mr-2 h-4 w-4" />
-                                    Commencer à créer
+                                    <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                                    Créer un nouveau plat
                                 </Link>
                             </Button>
                         </div>
                         
                         {/* Decorative background glow */}
-                        <div className="absolute -bottom-20 -left-20 h-64 w-64 bg-primary/20 rounded-full blur-[100px]" />
+                        <div className="absolute -bottom-20 -left-20 h-48 w-48 bg-primary/20 rounded-full blur-[80px]" />
                     </motion.div>
                 </div>
             </div>

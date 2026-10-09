@@ -267,7 +267,7 @@ export default function AnalyticsPage() {
         <div className="min-h-screen bg-transparent pb-24 relative overflow-hidden">
 
             {/* Elite Analytics Header */}
-            <div className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative h-[24vh] sm:h-[30vh] md:h-[40vh] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -285,23 +285,23 @@ export default function AnalyticsPage() {
                 <MobileBackButton 
                     label="Dashboard" 
                     href="/restaurateur" 
-                    className="md:hidden absolute top-6 left-4 z-50 mb-0"
+                    className="md:hidden absolute top-4 left-3 z-50 mb-0"
                 />
 
-                <div className="relative z-30 text-center space-y-4 px-6 max-w-4xl pt-10 md:pt-0">
+                <div className="relative z-30 text-center space-y-2 md:space-y-4 px-4 sm:px-6 max-w-4xl pt-4 md:pt-0">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-4"
+                        className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-1 sm:mb-2"
                     >
                         <Activity className="h-3 w-3 text-primary animate-pulse" />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
+                        <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
                     </motion.div>
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-8xl font-black italic uppercase tracking-tighter text-white leading-none"
+                        className="text-3xl sm:text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-white leading-tight"
                     >
                         Analyse <span className="text-primary">Elite</span>
                     </motion.h1>
@@ -309,16 +309,16 @@ export default function AnalyticsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-slate-500 font-medium text-[10px] md:text-xs uppercase tracking-[0.3em]"
+                        className="text-slate-500 font-medium text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em]"
                     >
                         Pilotez votre performance avec précision chirurgicale
                     </motion.p>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl -mt-12 md:-mt-16 relative z-40 space-y-10 md:space-y-12">
+            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40 space-y-6 sm:space-y-10 md:space-y-12">
                 {/* Time Range Selector — sticky scrollable on mobile */}
-                <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 py-4 mb-4 flex overflow-x-auto gap-3 no-scrollbar scroll-smooth snap-x bg-[#0A0A0B]/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
+                <div className="sticky top-0 z-40 -mx-3 sm:-mx-6 lg:-mx-8 px-3 py-2.5 mb-2 flex overflow-x-auto gap-2 sm:gap-3 no-scrollbar scroll-smooth snap-x bg-[#0A0A0B]/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
                     {ranges.map((range, idx) => (
                         <motion.button
                             key={range.id}
@@ -327,7 +327,7 @@ export default function AnalyticsPage() {
                             transition={{ delay: 0.3 + idx * 0.05 }}
                             onClick={() => setSelectedRange(range.id)}
                             className={cn(
-                                "flex-none snap-start px-5 py-3 md:px-6 md:py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
+                                "flex-none snap-start px-3.5 py-1.5 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
                                 selectedRange === range.id 
                                     ? "bg-primary text-white shadow-xl shadow-primary/20" 
                                     : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5"
@@ -345,10 +345,10 @@ export default function AnalyticsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.3 }}
-                        className="space-y-12"
+                        className="space-y-6 sm:space-y-10 md:space-y-12"
                     >
                         {/* Key Metrics Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 md:gap-6">
                             {[
                                 { label: 'Revenu Net', value: stats.totalRevenue, growth: stats.revenueGrowth, sub: 'Après commission Yakro Fê', icon: DollarSign, color: 'orange' },
                                 { label: 'Flux de Commandes', value: stats.totalOrders, growth: stats.ordersGrowth, sub: 'Activité sur la période', icon: ShoppingCart, color: 'slate', unit: 'ITEMS' },
@@ -356,15 +356,15 @@ export default function AnalyticsPage() {
                             ].map((item, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="group glass-dark p-8 relative overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 shadow-xl rounded-[2.5rem]"
+                                    className="group glass-dark p-4 sm:p-6 md:p-8 relative overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 shadow-xl rounded-2xl sm:rounded-[2.5rem]"
                                 >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">{item.label}</span>
+                                    <div className="flex justify-between items-start mb-3 sm:mb-6">
+                                        <div className="space-y-0.5 sm:space-y-1">
+                                            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">{item.label}</span>
                                             {selectedRange !== 'all' && (
                                                 <div className={cn(
-                                                    "flex items-center gap-1 text-[10px] font-bold",
+                                                    "flex items-center gap-1 text-[9px] sm:text-[10px] font-bold",
                                                     item.growth >= 0 ? "text-emerald-500" : "text-rose-500"
                                                 )}>
                                                     {item.growth >= 0 ? <TrendingUp className="h-3 w-3" /> : <Activity className="h-3 w-3 rotate-180" />}
@@ -373,19 +373,19 @@ export default function AnalyticsPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-3 bg-slate-100 rounded-2xl border border-slate-200 group-hover:border-primary/20 group-hover:bg-primary/10 transition-all">
-                                            <item.icon className={`h-5 w-5 ${item.color === 'orange' ? 'text-primary' : 'text-slate-400 group-hover:text-primary'}`} />
+                                        <div className="p-2 sm:p-3 bg-slate-100 dark:bg-white/5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-white/10 group-hover:border-primary/20 group-hover:bg-primary/10 transition-all">
+                                            <item.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${item.color === 'orange' ? 'text-primary' : 'text-slate-400 group-hover:text-primary'}`} />
                                         </div>
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className={`text-4xl md:text-6xl font-black italic tracking-tighter ${item.color === 'orange' ? 'text-primary' : 'text-white'}`}>
+                                    <div className="flex items-baseline gap-1.5 sm:gap-2">
+                                        <span className={`text-2xl sm:text-4xl md:text-6xl font-black italic tracking-tighter ${item.color === 'orange' ? 'text-primary' : 'text-white'}`}>
                                             {item.value.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                                         </span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-300">
                                             {item.unit || 'FCFA'}
                                         </span>
                                     </div>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mt-4 tracking-[0.15em]">{item.sub}</p>
+                                    <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase mt-2 sm:mt-4 tracking-[0.1em] sm:tracking-[0.15em]">{item.sub}</p>
                                     <div className="absolute -bottom-6 -right-6 h-24 w-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all" />
                                 </div>
                             ))}

@@ -108,53 +108,53 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto">
-      <h1 className="text-2xl md:text-3xl font-headline text-primary mb-8">Mon Profil</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="container mx-auto max-w-4xl px-1 sm:px-4">
+      <h1 className="text-xl sm:text-3xl font-headline text-primary mb-3 sm:mb-6">Mon Profil</h1>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-6">
         {/* Left Column: Profile Info & Details */}
-        <div className="lg:col-span-2 space-y-8">
-          <Card>
-            <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
-              <Avatar className="h-24 w-24 text-3xl">
+        <div className="lg:col-span-2 space-y-3.5 sm:space-y-6">
+          <Card className="rounded-2xl sm:rounded-3xl">
+            <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 text-xl sm:text-2xl">
                 <AvatarFallback>{getInitials(userProfile?.nom || user.email)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 text-center sm:text-left">
-                <CardTitle className="text-3xl">{userProfile?.nom || "Nom non défini"}</CardTitle>
-                <CardDescription className="text-lg flex items-center justify-center sm:justify-start gap-2 mt-1">
-                  <Mail className="h-4 w-4" />
+                <CardTitle className="text-xl sm:text-2xl">{userProfile?.nom || "Nom non défini"}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm flex items-center justify-center sm:justify-start gap-1.5 mt-0.5">
+                  <Mail className="h-3.5 w-3.5" />
                   {user.email}
                 </CardDescription>
               </div>
-               <Button asChild>
+               <Button asChild size="sm" className="rounded-xl text-xs sm:text-sm">
                   <Link href="/profile/edit">
-                    <Edit className="mr-2" />
+                    <Edit className="mr-1.5 h-3.5 w-3.5" />
                     Modifier
                   </Link>
                 </Button>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Détails du compte</CardTitle>
+          <Card className="rounded-2xl sm:rounded-3xl">
+            <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+              <CardTitle className="text-base sm:text-lg">Détails du compte</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center">
-                <Phone className="h-5 w-5 mr-4 text-muted-foreground" />
+            <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+              <div className="flex items-center text-xs sm:text-sm">
+                <Phone className="h-4 w-4 mr-3 text-muted-foreground shrink-0" />
                 <span className="font-medium">{userProfile?.telephone || "Non défini"}</span>
               </div>
               <Separator />
-              <div className="flex items-start">
-                <MapPin className="h-5 w-5 mr-4 mt-1 text-muted-foreground" />
+              <div className="flex items-start text-xs sm:text-sm">
+                <MapPin className="h-4 w-4 mr-3 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                     <p className="font-medium">{userProfile?.adresseParDefaut || "Non définie"}</p>
-                    <p className="text-sm text-muted-foreground">Adresse par défaut</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Adresse par défaut</p>
                 </div>
               </div>
                  <Separator />
-                 <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" onClick={handleSignOut}>
-                        <LogOut className="mr-2 h-4 w-4" />
+                 <div className="flex flex-wrap gap-2 pt-1">
+                    <Button variant="outline" size="sm" onClick={handleSignOut} className="rounded-xl text-xs">
+                        <LogOut className="mr-1.5 h-3.5 w-3.5" />
                         Se déconnecter
                     </Button>
                  </div>
@@ -164,107 +164,107 @@ export default function ProfilePage() {
 
         {/* Right Column: Stats (only for clients) */}
         {activeRole === 'client' && (
-            <div className="lg:col-span-1 space-y-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Statistiques Client</CardTitle>
-                        <CardDescription>Votre activité sur Yakro Fê.</CardDescription>
+            <div className="lg:col-span-1 space-y-3.5 sm:space-y-6">
+                <Card className="rounded-2xl sm:rounded-3xl">
+                    <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                        <CardTitle className="text-base sm:text-lg">Statistiques Client</CardTitle>
+                        <CardDescription className="text-xs">Votre activité sur Yakro Fê.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-primary/10 rounded-lg">
-                                <ShoppingBag className="h-6 w-6 text-primary"/>
+                    <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 sm:p-2.5 bg-primary/10 rounded-xl">
+                                <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary"/>
                             </div>
                             <div>
-                                <p className="font-bold text-2xl">{stats.orderCount}</p>
-                                <p className="text-sm text-muted-foreground">Commandes passées</p>
+                                <p className="font-bold text-lg sm:text-xl">{stats.orderCount}</p>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground">Commandes passées</p>
                             </div>
                         </div>
-                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-green-500/10 rounded-lg">
-                                <BarChart className="h-6 w-6 text-green-600"/>
+                         <div className="flex items-center gap-3">
+                            <div className="p-2 sm:p-2.5 bg-green-500/10 rounded-xl">
+                                <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-green-600"/>
                             </div>
                             <div>
-                                <p className="font-bold text-2xl">{stats.totalSpent} FCFA</p>
-                                <p className="text-sm text-muted-foreground">Dépenses totales</p>
+                                <p className="font-bold text-lg sm:text-xl">{stats.totalSpent} FCFA</p>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground">Dépenses totales</p>
                             </div>
                         </div>
-                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-red-500/10 rounded-lg">
-                                <Heart className="h-6 w-6 text-red-600"/>
+                         <div className="flex items-center gap-3">
+                            <div className="p-2 sm:p-2.5 bg-red-500/10 rounded-xl">
+                                <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-red-600"/>
                             </div>
                             <div>
-                                <p className="font-bold text-lg">{stats.favoriteRestaurant?.nom || 'Indéfini'}</p>
-                                <p className="text-sm text-muted-foreground">Restaurant favori</p>
+                                <p className="font-bold text-sm sm:text-base truncate max-w-[160px]">{stats.favoriteRestaurant?.nom || 'Indéfini'}</p>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground">Restaurant favori</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Fidélité &amp; Parrainage</CardTitle>
-                        <CardDescription>1000 FCFA commandés = 10 points.</CardDescription>
+                <Card className="rounded-2xl sm:rounded-3xl">
+                    <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                        <CardTitle className="text-base sm:text-lg">Fidélité &amp; Parrainage</CardTitle>
+                        <CardDescription className="text-xs">1000 FCFA commandés = 10 points.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-amber-500/10 rounded-lg">
-                                <Award className="h-6 w-6 text-amber-600"/>
+                    <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 sm:p-2.5 bg-amber-500/10 rounded-xl">
+                                <Award className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600"/>
                             </div>
                             <div>
-                                <p className="font-bold text-2xl">{userProfile?.pointsFidelite ?? 0}</p>
-                                <p className="text-sm text-muted-foreground">Points de fidélité</p>
+                                <p className="font-bold text-lg sm:text-xl">{userProfile?.pointsFidelite ?? 0}</p>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground">Points de fidélité</p>
                             </div>
                         </div>
                         <Separator />
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-sm font-medium">
-                                <Gift className="h-4 w-4 text-primary" />
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium">
+                                <Gift className="h-3.5 w-3.5 text-primary" />
                                 Invitez vos proches
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                Vous gagnez 50 points dès leur première commande livrée.
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">
+                                50 points dès leur 1ère commande livrée.
                             </p>
-                            <Button variant="outline" size="sm" className="w-full" onClick={handleCopyReferralLink}>
-                                <Copy className="mr-2 h-3.5 w-3.5" />
-                                Copier mon lien de parrainage
+                            <Button variant="outline" size="sm" className="w-full rounded-xl text-xs h-8" onClick={handleCopyReferralLink}>
+                                <Copy className="mr-1.5 h-3 w-3" />
+                                Copier mon lien
                             </Button>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Crown className="h-5 w-5 text-amber-500" />
+                <Card className="rounded-2xl sm:rounded-3xl">
+                    <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                        <CardTitle className="flex items-center gap-1.5 text-base sm:text-lg">
+                            <Crown className="h-4 w-4 text-amber-500" />
                             Yakro Premium
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs">
                             {isPremiumActive(userProfile.premiumJusquau)
                                 ? `Vos commandes passent en priorité chez le restaurateur et le livreur.`
-                                : `Vos commandes traitées en priorité, pour ${PREMIUM_PRICE_FCFA.toLocaleString('fr-FR')} FCFA / ${PREMIUM_DURATION_DAYS} jours.`}
+                                : `Traitement prioritaire : ${PREMIUM_PRICE_FCFA.toLocaleString('fr-FR')} FCFA / ${PREMIUM_DURATION_DAYS}j.`}
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-4 sm:p-6 pt-0">
                         {isPremiumActive(userProfile.premiumJusquau) ? (
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-amber-500/10 rounded-lg">
-                                    <Crown className="h-6 w-6 text-amber-500" />
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 sm:p-2.5 bg-amber-500/10 rounded-xl">
+                                    <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-sm">Actif jusqu&apos;au</p>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="font-bold text-xs sm:text-sm">Actif jusqu&apos;au</p>
+                                    <p className="text-xs text-muted-foreground">
                                         {userProfile.premiumJusquau?.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </p>
                                 </div>
                             </div>
                         ) : MOBILE_MONEY_ENABLED ? (
-                            <Button className="w-full bg-amber-500 hover:bg-amber-600" onClick={handleSubscribePremium} disabled={isSubscribing}>
-                                {isSubscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Devenir Premium'}
+                            <Button className="w-full bg-amber-500 hover:bg-amber-600 rounded-xl h-9 text-xs sm:text-sm font-bold" onClick={handleSubscribePremium} disabled={isSubscribing}>
+                                {isSubscribing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Devenir Premium'}
                             </Button>
                         ) : (
-                            <p className="text-xs text-muted-foreground italic">
-                                Bientôt disponible, dès l&apos;activation du paiement Mobile Money.
+                            <p className="text-[11px] sm:text-xs text-muted-foreground italic">
+                                Bientôt disponible avec le paiement Mobile Money.
                             </p>
                         )}
                     </CardContent>

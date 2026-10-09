@@ -155,12 +155,12 @@ export function AvailableDeliveries({
 
 
     return (
-        <div className="container mx-auto pb-20">
-            <div className="flex flex-col gap-6 mb-8">
+        <div className="container mx-auto pb-16 px-1 sm:px-4">
+            <div className="flex flex-col gap-3 sm:gap-6 mb-4 sm:mb-8">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-headline text-primary">Courses</h1>
-                    <div className="flex items-center gap-3 bg-card px-4 py-2 rounded-full border shadow-sm">
-                        <Label htmlFor="service-status" className="text-sm font-semibold">
+                    <h1 className="text-2xl sm:text-3xl font-headline font-bold text-primary">Courses</h1>
+                    <div className="flex items-center gap-2 sm:gap-3 bg-card px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border shadow-sm">
+                        <Label htmlFor="service-status" className="text-xs sm:text-sm font-semibold">
                             {isEnService ? 'En ligne' : 'Hors ligne'}
                         </Label>
                         <Switch id="service-status" checked={isEnService} onCheckedChange={handleStatusToggle} disabled={isUpdatingStatus}/>
@@ -169,84 +169,80 @@ export function AvailableDeliveries({
                 </div>
 
                 {isEnService && (
-                    <Button variant="default" size="lg" className="w-full btn-mobile shadow-lg" onClick={() => setIsScannerOpen(true)}>
-                        <ScanLine className="mr-2" />
+                    <Button variant="default" size="default" className="w-full btn-mobile shadow-lg h-11 text-sm font-bold" onClick={() => setIsScannerOpen(true)}>
+                        <ScanLine className="mr-2 h-4 w-4" />
                         Scanner pour récupérer
                     </Button>
                 )}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
                 {isLoading && isEnService && (
-                    <div className="flex justify-center p-12"><Loader className="animate-spin h-10 w-10 text-primary" /></div>
+                    <div className="flex justify-center p-8"><Loader className="animate-spin h-8 w-8 text-primary" /></div>
                 )}
                 
                 {isEnService && !isLoading && availableDeliveries.length > 0 && availableDeliveries.map(delivery => (
-                    <Card key={delivery.id} className="overflow-hidden rounded-xl hover:shadow-md transition-soft">
-                        <CardContent className="p-4 space-y-4">
+                    <Card key={delivery.id} className="overflow-hidden rounded-2xl hover:shadow-md transition-soft">
+                        <CardContent className="p-3.5 sm:p-4 space-y-3 sm:space-y-4">
                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
+                                <div className="space-y-0.5">
                                     <div className="flex items-center gap-2">
-                                        <p className="font-bold text-lg leading-tight">{delivery.nomRestaurant}</p>
+                                        <p className="font-bold text-base sm:text-lg leading-tight">{delivery.nomRestaurant}</p>
                                         {delivery.prioritaire && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-black uppercase tracking-widest">
-                                                <Crown className="h-3 w-3" /> Prioritaire
+                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[8px] sm:text-[9px] font-black uppercase tracking-widest">
+                                                <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> Prioritaire
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 italic">
+                                    <p className="text-[11px] text-muted-foreground flex items-center gap-1 italic">
                                         Commande n°{delivery.id.slice(0,5)}
                                     </p>
                                 </div>
-                                <Badge variant="secondary" className="text-lg font-bold text-primary">
+                                <Badge variant="secondary" className="text-sm sm:text-base font-bold text-primary px-2 py-0.5">
                                     {delivery.fraisDeLivraison.toLocaleString('fr-FR')} F
                                 </Badge>
                            </div>
 
-                           <div className="space-y-2 py-2 border-y border-dashed">
-                                <div className="flex gap-3">
-                                    <div className="flex flex-col items-center gap-1">
-                                        <div className="w-2 h-2 rounded-full bg-primary" />
-                                        <div className="w-0.5 h-full bg-muted" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-xs text-muted-foreground">Départ</p>
-                                        <p className="text-sm font-medium">{delivery.adresseRestaurant}</p>
+                           <div className="space-y-1.5 py-2 border-y border-dashed">
+                                <div className="flex gap-2.5 items-center">
+                                    <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] text-muted-foreground">Départ</p>
+                                        <p className="text-xs sm:text-sm font-medium truncate">{delivery.adresseRestaurant}</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-3">
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-xs text-muted-foreground">Arrivée</p>
-                                        <p className="text-sm font-medium">{delivery.adresseClient}</p>
+                                <div className="flex gap-2.5 items-center">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] text-muted-foreground">Arrivée</p>
+                                        <p className="text-xs sm:text-sm font-medium truncate">{delivery.adresseClient}</p>
                                     </div>
                                 </div>
                            </div>
 
-                           <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-muted-foreground">
+                           <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-semibold text-muted-foreground">
                                     {delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)
                                 </span>
                                 {delivery.paiement.mode === 'especes' ? (
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-700 text-[11px] font-bold">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 font-bold text-[10px]">
                                         À encaisser : {delivery.total.toLocaleString('fr-FR')} FCFA
                                     </span>
                                 ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 text-[11px] font-bold">
-                                        {delivery.paiement.statut === 'paye' ? 'Déjà payé (Mobile Money)' : 'Paiement Mobile Money en attente'}
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-700 font-bold text-[10px]">
+                                        {delivery.paiement.statut === 'paye' ? 'Déjà payé (MoMo)' : 'Paiement MoMo en attente'}
                                     </span>
                                 )}
                            </div>
 
-                           <div className="flex items-center justify-end pt-2">
+                           <div className="flex items-center justify-end pt-1">
                                <Button
                                  onClick={() => handleAccept(delivery)}
                                  disabled={isAccepting !== null || !canTransitionOrder(delivery.statut, 'En Route', 'livreur')}
                                  size="sm"
+                                 className="h-8 text-xs font-bold"
                                >
-                                 {isAccepting === delivery.id ? <Loader className="animate-spin h-4 w-4" /> : "Prendre la course"}
+                                 {isAccepting === delivery.id ? <Loader className="animate-spin h-3.5 w-3.5" /> : "Prendre la course"}
                                </Button>
                            </div>
                         </CardContent>
@@ -254,25 +250,25 @@ export function AvailableDeliveries({
                 ))}
 
                  {isEnService && !isLoading && availableDeliveries.length === 0 && (
-                    <div className="text-center py-16 px-6 bg-card rounded-2xl border-2 border-dashed flex flex-col items-center gap-4">
-                        <div className="bg-muted p-4 rounded-full">
-                            <Bike className="w-12 h-12 text-muted-foreground"/>
+                    <div className="text-center py-8 sm:py-14 px-4 sm:px-6 bg-card rounded-2xl border-2 border-dashed flex flex-col items-center gap-3">
+                        <div className="bg-muted p-3 sm:p-4 rounded-full">
+                            <Bike className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground"/>
                         </div>
-                        <p className="text-lg font-bold">Zone calme...</p>
-                        <p className="text-sm text-muted-foreground max-w-[200px]">
+                        <p className="text-base sm:text-lg font-bold">Zone calme...</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground max-w-[220px]">
                             Aucune commande prête à proximité. Restez en ligne pour être alerté.
                         </p>
                     </div>
                 )}
 
                 {!isEnService && !isUpdatingStatus && (
-                    <div className="text-center py-16 px-6 bg-primary/5 rounded-2xl border-2 border-primary/20 flex flex-col items-center gap-4">
-                        <div className="bg-primary/10 p-4 rounded-full">
-                            <Bike className="w-12 h-12 text-primary"/>
+                    <div className="text-center py-8 sm:py-14 px-4 sm:px-6 bg-primary/5 rounded-2xl border-2 border-primary/20 flex flex-col items-center gap-3">
+                        <div className="bg-primary/10 p-3 sm:p-4 rounded-full">
+                            <Bike className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
                         </div>
-                        <p className="text-xl font-bold text-primary">Hors ligne</p>
-                        <p className="text-sm text-muted-foreground max-w-[250px]">
-                            Passez en service pour commencer à gagner de l&apos;argent et recevoir des courses.
+                        <p className="text-lg sm:text-xl font-bold text-primary">Hors ligne</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground max-w-[250px]">
+                            Passez en service pour commencer à recevoir des courses.
                         </p>
                     </div>
                 )}

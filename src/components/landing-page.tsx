@@ -213,41 +213,41 @@ export function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-16 sm:py-24 relative overflow-hidden px-4">
+        <section id="features" className="py-10 sm:py-16 md:py-20 relative overflow-hidden px-3 sm:px-4">
           <div className="container">
-            <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center mb-12 sm:mb-16">
-              <h2 className="text-3xl xs:text-4xl font-black tracking-tight sm:text-6xl text-slate-900 dark:text-white leading-tight">
+            <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-2.5 sm:space-y-4 text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                 Une technologie <br /><span className="text-primary">au service du goût</span>
               </h2>
-              <div className="w-16 sm:w-24 h-1.5 sm:h-2 bg-primary rounded-full" />
-              <p className="max-w-[95%] sm:max-w-[85%] leading-relaxed text-slate-600 dark:text-slate-400 text-lg sm:text-xl font-medium mt-4 sm:mt-6">
+              <div className="w-12 sm:w-20 h-1 sm:h-1.5 bg-primary rounded-full" />
+              <p className="max-w-[95%] sm:max-w-[85%] leading-relaxed text-slate-600 dark:text-slate-400 text-sm sm:text-lg font-medium mt-2 sm:mt-4">
                 Nous fusionnons le meilleur de la gastronomie ivoirienne avec une expérience numérique sans couture.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3.5 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
               {featureCategories.map((category, index) => (
                 <motion.div
                   key={category.title}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.08 }}
                 >
-                  <Card className="flex flex-col h-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-primary/10 dark:border-orange-500/20 hover:border-primary/30 hover:scale-[1.02] sm:hover:scale-[1.03] transition-all duration-500 rounded-[2rem] sm:rounded-[2.5rem] p-4 group">
-                    <CardHeader className="flex-col items-start gap-3 sm:gap-4">
-                      <div className={cn("p-4 sm:p-5 rounded-2xl sm:rounded-3xl transition-transform group-hover:rotate-6 duration-300 shadow-sm", category.color)}>
-                        <category.icon className="h-6 w-6 sm:h-8 sm:w-8" />
+                  <Card className="flex flex-col h-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-primary/10 dark:border-orange-500/20 hover:border-primary/30 transition-all duration-300 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 group">
+                    <CardHeader className="flex-col items-start gap-2.5 sm:gap-3 p-2 sm:p-4 pb-1 sm:pb-2">
+                      <div className={cn("p-2.5 sm:p-4 rounded-xl sm:rounded-2xl transition-transform group-hover:rotate-6 duration-300 shadow-sm", category.color)}>
+                        <category.icon className="h-5 w-5 sm:h-7 sm:w-7" />
                       </div>
-                      <CardTitle className="text-xl sm:text-2xl font-black text-slate-900 pt-1 sm:pt-2">
+                      <CardTitle className="text-lg sm:text-xl font-black text-slate-900 dark:text-white pt-1">
                         {category.title}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-1">
-                      <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base text-slate-600 dark:text-slate-400 font-medium">
+                    <CardContent className="flex-1 p-2 sm:p-4 pt-1 sm:pt-2">
+                      <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                         {category.features.map((feature) => (
                           <li key={feature} className="flex items-center group/item">
-                            <div className="mr-3 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary/30 group-hover/item:scale-150 group-hover/item:bg-primary transition-all" />
+                            <div className="mr-2.5 h-1.5 w-1.5 rounded-full bg-primary/30 group-hover/item:scale-150 group-hover/item:bg-primary transition-all" />
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -261,39 +261,39 @@ export function LandingPage() {
         </section>
 
         {/* Stats Section / Presentation */}
-        <section id="about" className="py-16 sm:py-24 bg-slate-900 text-white relative overflow-hidden rounded-[2.5rem] sm:rounded-[4rem] mx-4 sm:mx-10 my-6 sm:my-10">
+        <section id="about" className="py-10 sm:py-16 md:py-20 bg-slate-900 text-white relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[3rem] mx-2.5 sm:mx-6 md:mx-10 my-4 sm:my-8">
           <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-          <div className="container relative z-10 px-6 sm:px-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-16 items-center">
-              <div className="text-left space-y-6 sm:space-y-8">
-                <Badge className="bg-primary hover:bg-primary/90 px-5 sm:px-6 py-1.5 sm:py-2 rounded-full font-black uppercase tracking-widest text-[10px] sm:text-xs">Notre Mission</Badge>
-                <h2 className="text-3xl xs:text-4xl sm:text-5xl md:text-7xl font-black leading-[1] sm:leading-[0.95]">Digitaliser la <br className="hidden sm:block" /><span className="text-primary">capitale</span> avec passion.</h2>
-                <p className="text-base sm:text-xl text-slate-400 leading-relaxed font-light max-w-xl">
-                  Yakro Fê n&apos;est pas qu&apos;une application de livraison. C&apos;est un écosystème conçu pour valoriser les artisans culinaires de Yamoussoukro tout en offrant aux habitants un service de classe mondiale.
+          <div className="container relative z-10 px-4 sm:px-8 md:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
+              <div className="text-left space-y-4 sm:space-y-6">
+                <Badge className="bg-primary hover:bg-primary/90 px-3.5 sm:px-5 py-1 sm:py-1.5 rounded-full font-black uppercase tracking-wider text-[9px] sm:text-xs">Notre Mission</Badge>
+                <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-black leading-[1.05] sm:leading-[0.95]">Digitaliser la <br className="hidden sm:block" /><span className="text-primary">capitale</span> avec passion.</h2>
+                <p className="text-xs sm:text-base md:text-lg text-slate-400 leading-relaxed font-light max-w-xl">
+                  Yakro Fê n&apos;est pas qu&apos;une application de livraison. C&apos;est un écosystème conçu pour valoriser les artisans culinaires de Yamoussoukro tout en offrant aux habitants un service d&apos;excellence.
                 </p>
-                <div className="grid grid-cols-2 gap-6 sm:gap-8 pt-4">
-                  <div className="space-y-1 sm:space-y-2">
-                    <p className="text-4xl sm:text-5xl font-black text-primary">50+</p>
-                    <p className="text-slate-400 font-bold uppercase tracking-tighter text-[10px] sm:text-sm">Partenaires</p>
+                <div className="grid grid-cols-2 gap-4 sm:gap-6 pt-2">
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-2xl sm:text-4xl font-black text-primary">50+</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[9px] sm:text-xs">Partenaires</p>
                   </div>
-                  <div className="space-y-1 sm:space-y-2">
-                    <p className="text-4xl sm:text-5xl font-black text-primary">15min</p>
-                    <p className="text-slate-400 font-bold uppercase tracking-tighter text-[10px] sm:text-sm">Moyenne Livraison</p>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-2xl sm:text-4xl font-black text-primary">15min</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[9px] sm:text-xs">Moyenne Livraison</p>
                   </div>
                 </div>
               </div>
-              <div className="relative aspect-square sm:aspect-video lg:aspect-square mt-8 lg:mt-0">
-                <div className="absolute inset-0 bg-primary/20 rounded-[2rem] sm:rounded-[4rem] blur-2xl sm:blur-3xl" />
-                <div className="relative h-full w-full rounded-[2rem] sm:rounded-[3.5rem] border border-white/10 overflow-hidden shadow-2xl">
+              <div className="relative aspect-video sm:aspect-square mt-4 lg:mt-0">
+                <div className="absolute inset-0 bg-primary/20 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl" />
+                <div className="relative h-full w-full rounded-2xl sm:rounded-3xl border border-white/10 overflow-hidden shadow-xl">
                     <Image 
                         src="/assets/marketing/hero-basilica.png" 
                         alt="Vision Yakro Fê"
                         fill 
-                        className="object-cover opacity-60 hover:opacity-80 transition-opacity duration-700"
+                        className="object-cover opacity-60 hover:opacity-80 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-white/10 backdrop-blur-md p-6 sm:p-10 rounded-full border border-white/20">
-                            <Sparkles className="h-12 w-12 sm:h-20 sm:w-20 text-primary animate-pulse" />
+                        <div className="bg-white/10 backdrop-blur-md p-4 sm:p-8 rounded-full border border-white/20">
+                            <Sparkles className="h-8 w-8 sm:h-16 sm:w-16 text-primary animate-pulse" />
                         </div>
                     </div>
                 </div>
@@ -303,21 +303,21 @@ export function LandingPage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 sm:py-24 text-center px-4">
+        <section className="py-10 sm:py-16 md:py-20 text-center px-3 sm:px-4">
           <div className="container">
-            <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12 bg-white dark:bg-slate-900/50 rounded-[2.5rem] sm:rounded-[3.5rem] p-8 xs:p-12 sm:p-24 shadow-2xl shadow-primary/5 border border-primary/5 dark:border-orange-500/10">
-                <h2 className="text-3xl xs:text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 dark:text-white leading-tight">
+            <div className="max-w-4xl mx-auto space-y-5 sm:space-y-8 bg-white dark:bg-slate-900/50 rounded-2xl sm:rounded-3xl md:rounded-[3rem] p-6 xs:p-8 sm:p-16 shadow-xl shadow-primary/5 border border-primary/5 dark:border-orange-500/10">
+                <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 dark:text-white leading-tight">
                     Prêt à goûter <br /><span className="text-primary">au futur ?</span>
                 </h2>
-                <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
+                <p className="text-sm sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
                     Rejoignez les milliers d&apos;utilisateurs qui font déjà confiance à Yakro Fê pour leurs repas quotidiens.
                 </p>
-                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 pt-4">
-                    <Button size="lg" onClick={() => router.push('/login')} className="bg-primary hover:bg-primary/90 text-white px-8 sm:px-16 h-16 sm:h-20 text-lg sm:text-xl font-black rounded-xl sm:rounded-[2rem] shadow-xl shadow-primary/30 group w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-2">
+                    <Button size="lg" onClick={() => router.push('/login')} className="bg-primary hover:bg-primary/90 text-white px-6 sm:px-12 h-12 sm:h-16 text-sm sm:text-lg font-bold rounded-xl sm:rounded-2xl shadow-lg shadow-primary/30 group w-full sm:w-auto">
                         Commander maintenant
-                        <Zap className="ml-2 h-6 w-6 fill-white" />
+                        <Zap className="ml-2 h-4 w-4 sm:h-5 sm:w-5 fill-white" />
                     </Button>
-                    <Button size="lg" variant="ghost" className="text-slate-900 dark:text-white h-16 sm:h-20 px-8 sm:px-10 text-lg sm:text-xl font-black hover:bg-primary/10 dark:hover:bg-orange-500/10 rounded-xl sm:rounded-[2rem] w-full sm:w-auto">
+                    <Button size="lg" variant="ghost" className="text-slate-900 dark:text-white h-12 sm:h-16 px-6 sm:px-8 text-sm sm:text-lg font-bold hover:bg-primary/10 dark:hover:bg-orange-500/10 rounded-xl sm:rounded-2xl w-full sm:w-auto">
                         En savoir plus
                     </Button>
                 </div>

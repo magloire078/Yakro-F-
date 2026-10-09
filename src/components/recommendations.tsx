@@ -80,9 +80,9 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
         transition={{ delay: index * 0.1 }}
         className="h-full"
       >
-        <Card className="group relative overflow-hidden bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 hover:border-primary/40 transition-all duration-500 h-full flex flex-col rounded-[2.5rem] shadow-sm hover:shadow-2xl">
-          <CardHeader className="p-0 relative h-48 overflow-hidden">
-             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-10" />
+        <Card className="group relative overflow-hidden bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 hover:border-primary/40 transition-all duration-300 h-full flex flex-col rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-xl">
+          <CardHeader className="p-0 relative h-36 sm:h-44 md:h-48 overflow-hidden">
+             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10" />
             {isCloudinary ? (
               <CldImage
                 src={imageSrc}
@@ -91,7 +91,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
                 height={placeholder.height}
                 crop="fill"
                 gravity="auto"
-                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
               <Image
@@ -99,46 +99,46 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
                 alt={rec.item || 'plat recommandé'}
                 width={placeholder.width}
                 height={placeholder.height}
-                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                 data-ai-hint={`${rec.cuisine} food`}
               />
             )}
-            <Badge className="absolute top-4 right-4 z-20 bg-primary/90 backdrop-blur-md border-none shadow-lg">
-                <Sparkles className="w-3 h-3 mr-1 fill-white" /> Recommandé
+            <Badge className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 bg-primary/95 backdrop-blur-md border-none shadow-md text-[10px] sm:text-xs py-0.5 px-2">
+                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 fill-white" /> Recommandé
             </Badge>
-            <div className="absolute bottom-4 left-4 z-20">
-               <span className="text-white font-bold text-lg leading-tight drop-shadow-md">{rec.item}</span>
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 z-20">
+               <span className="text-white font-bold text-base sm:text-lg leading-tight drop-shadow-md">{rec.item}</span>
             </div>
           </CardHeader>
-          <CardContent className="p-6 flex flex-col flex-grow relative">
-            <div className="space-y-4 flex-grow">
+          <CardContent className="p-3.5 sm:p-5 flex flex-col flex-grow relative">
+            <div className="space-y-2.5 sm:space-y-3 flex-grow">
                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-primary uppercase tracking-widest">{rec.cuisine}</span>
-                  <div className="flex items-center gap-1 text-sm font-bold">
-                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                    <span>{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') : '---'} <small className="text-[10px] font-normal">FCFA</small></span>
+                  <span className="text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">{rec.cuisine}</span>
+                  <div className="flex items-center gap-1 text-xs sm:text-sm font-bold">
+                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                    <span>{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') : '---'} <small className="text-[9px] font-normal">FCFA</small></span>
                   </div>
                </div>
                
-               <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed italic line-clamp-2">
+               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-normal italic line-clamp-2">
                  &ldquo;{rec.description}&rdquo;
                </p>
 
-               <div className="flex items-center gap-2 pt-2 text-[10px] text-slate-400">
-                  <div className="flex -space-x-2">
+               <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
+                  <div className="flex -space-x-1.5">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="w-5 h-5 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800" />
+                        <div key={i} className="w-4 h-4 rounded-full border border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800" />
                     ))}
                   </div>
-                  <span>Aimé par d&apos;autres gourmets</span>
+                  <span>Préféré des gourmets</span>
                </div>
             </div>
 
             <Button 
-                className="w-full mt-6 rounded-2xl bg-slate-900 dark:bg-orange-500 hover:bg-primary/90 dark:hover:bg-orange-400 text-white font-bold h-12 gap-2 shadow-lg shadow-primary/10"
+                className="w-full mt-3 sm:mt-4 rounded-xl sm:rounded-2xl bg-slate-900 dark:bg-orange-500 hover:bg-primary/90 dark:hover:bg-orange-400 text-white font-bold h-9 sm:h-11 text-xs sm:text-sm gap-1.5 shadow-md"
                 onClick={() => handleAddToCart(rec.item)}
             >
-                <ShoppingBag className="w-4 h-4" /> Commander
+                <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Commander
             </Button>
           </CardContent>
         </Card>
@@ -147,17 +147,17 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   }
 
   return (
-    <section className="w-full py-8">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div className="space-y-2">
-            <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-[0.2em] text-[10px]">
-               <BrainCircuit className="h-4 w-4" />
-               Personnalisé par Yakro-Fê AI
+    <section className="w-full py-2 sm:py-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-4 mb-3 sm:mb-6">
+        <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-primary font-bold uppercase tracking-widest text-[9px] sm:text-[10px]">
+               <BrainCircuit className="h-3.5 w-3.5" />
+               Personnalisé par Yakro AI
             </div>
-            <h2 className="text-3xl md:text-4xl font-headline text-foreground">Rien que pour vous</h2>
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-headline text-foreground">Rien que pour vous</h2>
         </div>
-        <p className="text-muted-foreground text-sm max-w-sm italic">
-            &ldquo;Basé sur vos préférences pour la cuisine ivoirienne et vos dernières découvertes.&rdquo;
+        <p className="text-muted-foreground text-xs sm:text-sm max-w-sm italic line-clamp-1 md:line-clamp-none">
+            &ldquo;Basé sur vos préférences et découvertes culinaires.&rdquo;
         </p>
       </div>
 
@@ -169,20 +169,20 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
           }}
           className="w-full"
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-3 sm:-ml-4">
             {recommendationsData.recommendations.map((rec, index) => (
-              <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+              <CarouselItem key={index} className="pl-3 sm:pl-4 basis-[82%] sm:basis-1/2 lg:basis-1/3">
                 <RecommendationCard rec={rec} index={index} />
               </CarouselItem>
             ))}
           </CarouselContent>
-          <div className="hidden md:flex justify-end gap-2 mt-6">
-            <CarouselPrevious className="relative inset-0 translate-y-0 h-12 w-12 rounded-2xl border-slate-200" />
-            <CarouselNext className="relative inset-0 translate-y-0 h-12 w-12 rounded-2xl border-slate-200 bg-slate-900 text-white hover:bg-slate-800" />
+          <div className="hidden md:flex justify-end gap-2 mt-4">
+            <CarouselPrevious className="relative inset-0 translate-y-0 h-10 w-10 rounded-xl border-slate-200" />
+            <CarouselNext className="relative inset-0 translate-y-0 h-10 w-10 rounded-xl border-slate-200 bg-slate-900 text-white hover:bg-slate-800" />
           </div>
         </Carousel>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
           {recommendationsData.recommendations.map((rec, index) => (
             <RecommendationCard key={index} rec={rec} index={index} />
           ))}

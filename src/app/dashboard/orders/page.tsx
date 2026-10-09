@@ -216,7 +216,7 @@ export default function DashboardOrdersPage() {
         <div className="min-h-screen bg-transparent pb-24 relative overflow-hidden">
 
             {/* Elite Command Header */}
-            <div className="relative h-[45vh] md:h-[50vh] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative h-[24vh] sm:h-[30vh] md:h-[40vh] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -230,22 +230,22 @@ export default function DashboardOrdersPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/40 z-10" />
                 </div>
                 
-                <div className="relative z-30 text-center space-y-8 px-6 max-w-4xl">
+                <div className="relative z-30 text-center space-y-3 sm:space-y-6 px-4 sm:px-6 max-w-4xl pt-2 sm:pt-0">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl mb-2 shadow-2xl"
+                        className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl mb-1 sm:mb-2 shadow-2xl"
                     >
                         <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[10px] font-black tracking-[0.4em] text-primary uppercase">Live Operations Room</span>
+                        <span className="text-[8px] sm:text-[10px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-primary uppercase">Live Operations Room</span>
                     </motion.div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-1 sm:space-y-3">
                         <motion.h1 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-5xl md:text-9xl font-black tracking-tighter text-white italic leading-none uppercase"
+                            className="text-3xl sm:text-6xl md:text-8xl font-black tracking-tighter text-white italic leading-none uppercase"
                         >
                             Flux <span className="text-primary">Elite</span>
                         </motion.h1>
@@ -253,7 +253,7 @@ export default function DashboardOrdersPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.15 }}
-                            className="text-slate-500 font-bold text-[10px] md:text-xs uppercase tracking-[0.4em]"
+                            className="text-slate-500 font-bold text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em]"
                         >
                             Orchestration en temps réel de votre excellence culinaire
                         </motion.p>
@@ -263,39 +263,39 @@ export default function DashboardOrdersPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex justify-center gap-10 md:gap-20 mt-12"
+                        className="flex justify-center gap-6 sm:gap-10 md:gap-20 mt-4 sm:mt-8"
                     >
                         <div className="text-center group cursor-default">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-primary transition-colors">Nouveaux</p>
-                            <p className="text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
+                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-500 mb-1 sm:mb-2 group-hover:text-primary transition-colors">Nouveaux</p>
+                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
                         </div>
-                        <div className="w-px h-16 md:h-20 bg-white/10 self-center rotate-12" />
+                        <div className="w-px h-10 sm:h-16 md:h-20 bg-white/10 self-center rotate-12" />
                         <div className="text-center group cursor-default">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-emerald-500 transition-colors">Cuisine</p>
-                            <p className="text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
+                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-500 mb-1 sm:mb-2 group-hover:text-emerald-500 transition-colors">Cuisine</p>
+                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
                         </div>
                     </motion.div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl -mt-16 md:-mt-24 relative z-40">
+            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40">
                 {/* Mobile Header Correction */}
-                <div className="md:hidden flex justify-start mb-8">
+                <div className="md:hidden flex justify-start mb-4 sm:mb-6">
                     <MobileBackButton href="/restaurateur" label="Tableau de Bord" />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 items-start">
                     {/* New Orders Section */}
-                    <div className="space-y-10">
-                        <div className="flex items-center gap-6">
-                            <div className="h-10 w-1.5 bg-primary rounded-full" />
-                            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
+                    <div className="space-y-4 sm:space-y-8">
+                        <div className="flex items-center gap-4 sm:gap-6">
+                            <div className="h-6 sm:h-10 w-1.5 bg-primary rounded-full" />
+                            <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
                                 Nouvelles <span className="text-primary italic">Entrées</span>
                             </h2>
                             <div className="h-px flex-1 bg-white/5" />
                         </div>
                         
-                        <div className="space-y-8">
+                        <div className="space-y-4 sm:space-y-6">
                             <AnimatePresence mode="popLayout">
                                 {newOrders.length > 0 ? (
                                     newOrders.map(order => <OrderCard key={order.id} order={order} />)
@@ -303,17 +303,17 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-20 md:p-32 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-[3rem] shadow-2xl"
+                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl"
                                     >
-                                        <div className="relative mb-10">
-                                            <div className="absolute inset-0 bg-primary/10 blur-[50px] rounded-full scale-150 animate-pulse" />
-                                            <div className="relative h-24 w-24 bg-white/5 border border-white/10 flex items-center justify-center rounded-[2rem] backdrop-blur-2xl">
-                                                <UtensilsCrossed className="w-10 h-10 text-slate-600 group-hover:text-primary transition-colors duration-500" />
+                                        <div className="relative mb-6">
+                                            <div className="absolute inset-0 bg-primary/10 blur-[40px] rounded-full scale-150 animate-pulse" />
+                                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 bg-white/5 border border-white/10 flex items-center justify-center rounded-2xl backdrop-blur-2xl">
+                                                <UtensilsCrossed className="w-8 h-8 sm:w-10 sm:h-10 text-slate-600 group-hover:text-primary transition-colors duration-500" />
                                             </div>
                                         </div>
-                                        <div className="space-y-3">
-                                            <p className="text-[12px] font-black uppercase tracking-[0.4em] text-slate-500 italic">Calme Plat</p>
-                                            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest max-w-[200px] leading-relaxed">Le silence avant la tempête culinaire. Aucune nouvelle commande.</p>
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] sm:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-slate-500 italic">Calme Plat</p>
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-slate-600 uppercase tracking-widest max-w-[200px] leading-relaxed">Le silence avant la tempête culinaire. Aucune nouvelle commande.</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -322,16 +322,16 @@ export default function DashboardOrdersPage() {
                     </div>
                     
                     {/* Preparing Section */}
-                    <div className="space-y-10">
-                        <div className="flex items-center gap-6">
-                            <div className="h-10 w-1.5 bg-emerald-500 rounded-full" />
-                            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
+                    <div className="space-y-4 sm:space-y-8">
+                        <div className="flex items-center gap-4 sm:gap-6">
+                            <div className="h-6 sm:h-10 w-1.5 bg-emerald-500 rounded-full" />
+                            <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
                                 Atelier <span className="text-emerald-500 italic">Culinaire</span>
                             </h2>
                             <div className="h-px flex-1 bg-white/5" />
                         </div>
 
-                        <div className="space-y-8">
+                        <div className="space-y-4 sm:space-y-6">
                             <AnimatePresence mode="popLayout">
                                 {preparingOrders.length > 0 ? (
                                     preparingOrders.map(order => <OrderCard key={order.id} order={order} />)
@@ -339,17 +339,17 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-20 md:p-32 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-[3rem] shadow-2xl"
+                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl"
                                     >
-                                        <div className="relative mb-10">
-                                            <div className="absolute inset-0 bg-emerald-500/10 blur-[50px] rounded-full scale-150" />
-                                            <div className="relative h-24 w-24 bg-white/5 border border-white/10 flex items-center justify-center rounded-[2rem] backdrop-blur-2xl">
-                                                <ChefHat className="w-10 h-10 text-slate-600 group-hover:text-emerald-500 transition-colors duration-500" />
+                                        <div className="relative mb-6">
+                                            <div className="absolute inset-0 bg-emerald-500/10 blur-[40px] rounded-full scale-150" />
+                                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 bg-white/5 border border-white/10 flex items-center justify-center rounded-2xl backdrop-blur-2xl">
+                                                <ChefHat className="w-8 h-8 sm:w-10 sm:h-10 text-slate-600 group-hover:text-emerald-500 transition-colors duration-500" />
                                             </div>
                                         </div>
-                                        <div className="space-y-3">
-                                            <p className="text-[12px] font-black uppercase tracking-[0.4em] text-slate-500 italic">Plan de Travail Prêt</p>
-                                            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest max-w-[200px] leading-relaxed">Toutes les préparations en cours ont été finalisées.</p>
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] sm:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-slate-500 italic">Plan de Travail Prêt</p>
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-slate-600 uppercase tracking-widest max-w-[200px] leading-relaxed">Toutes les préparations en cours ont été finalisées.</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -359,9 +359,9 @@ export default function DashboardOrdersPage() {
                 </div>
                 
                 {/* Branding Footer */}
-                <div className="mt-32 text-center opacity-30 group hover:opacity-100 transition-all duration-700 pb-16">
-                    <div className="h-px w-32 bg-gradient-to-r from-transparent via-slate-800 to-transparent mx-auto mb-8" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-600 group-hover:text-primary transition-colors">
+                <div className="mt-12 sm:mt-20 text-center opacity-30 group hover:opacity-100 transition-all duration-700 pb-12">
+                    <div className="h-px w-24 sm:w-32 bg-gradient-to-r from-transparent via-slate-800 to-transparent mx-auto mb-6 sm:mb-8" />
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.4em] sm:tracking-[0.6em] text-slate-600 group-hover:text-primary transition-colors">
                         Yakro Ops Elite Framework v4.2 &bull; Secure Flux
                     </p>
                 </div>

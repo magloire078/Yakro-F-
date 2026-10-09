@@ -348,40 +348,40 @@ export default function CustomerHomePage() {
   }
   
   return (
-    <div className="flex flex-col gap-12 md:gap-16">
+    <div className="flex flex-col gap-5 sm:gap-8 md:gap-12">
       {activeOrder ? (
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
-        <section className="relative overflow-hidden rounded-[2rem] md:rounded-[3rem] min-h-[500px] flex items-center justify-center shadow-2xl bg-slate-900">
+        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[3rem] min-h-[300px] sm:min-h-[380px] md:min-h-[460px] flex items-center justify-center shadow-xl bg-slate-900">
           {/* Background Image with Overlay */}
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-110 bg-[url('/assets/marketing/hero-basilica.png')]"
+            className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-105 bg-[url('/assets/marketing/hero-basilica.png')]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:bg-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
           
-          <div className="relative z-10 w-full px-6 py-12 md:py-24 text-center space-y-8">
+          <div className="relative z-10 w-full px-4 sm:px-6 py-6 sm:py-10 md:py-16 text-center space-y-4 sm:space-y-6">
             <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
             >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-orange text-white text-[10px] font-black uppercase tracking-[0.2em] mb-8 animate-float">
-                    <SparklesIcon className="h-4 w-4 text-primary" />
-                    Propulsé par Yakro Intelligence
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full glass-orange text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-3 sm:mb-6 animate-float">
+                    <SparklesIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+                    Yakro Intelligence
                 </div>
-                <h1 className="text-4xl md:text-7xl font-black text-white leading-[1.1] tracking-tighter uppercase italic">
+                <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.05] tracking-tighter uppercase italic">
                     L&apos;Élite de <span className="text-primary drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">Yakro</span><br />
                     À votre porte.
                 </h1>
-                <p className="mt-6 text-base md:text-xl text-slate-200 max-w-xl mx-auto font-medium leading-relaxed opacity-80">
-                    Découvrez une expérience gastronomique transcendée par l&apos;intelligence artificielle.
+                <p className="mt-2 sm:mt-4 text-xs sm:text-base md:text-lg text-slate-200 max-w-lg mx-auto font-medium leading-relaxed opacity-85 line-clamp-2 sm:line-clamp-none">
+                    L&apos;expérience gastronomique transcendée par l&apos;intelligence artificielle.
                 </p>
             </motion.div>
 
             <motion.div 
                initial={{ opacity: 0, scale: 0.95 }}
                animate={{ opacity: 1, scale: 1 }}
-               transition={{ duration: 0.5, delay: 0.2 }}
+               transition={{ duration: 0.4, delay: 0.15 }}
                className="max-w-2xl mx-auto"
             >
               <IntelligentSearchBar 
@@ -389,55 +389,93 @@ export default function CustomerHomePage() {
                 onInterpretedSearchChange={setInterpretedSearch} 
               />
               
-              <div className="mt-10 flex flex-wrap justify-center gap-3 md:gap-4">
+              <div className="mt-3 sm:mt-6 flex flex-wrap justify-center gap-1.5 sm:gap-2.5">
                 {[
                   { id: 'rating', icon: TrendingUp, label: 'Mieux notés' },
                   { id: 'time', icon: Timer, label: 'Rapides' },
-                  { id: 'delivery', icon: Truck, label: 'Économiques' },
+                  { id: 'delivery', icon: Truck, label: 'Éco' },
                 ].map((filter) => (
                   <Button 
                     key={filter.id}
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-primary/20 transition-all active:scale-95",
-                        activeFilter === filter.id && "bg-primary/80 border-primary/60 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                        "rounded-xl glass-dark text-white border-white/5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:bg-primary/20 transition-all active:scale-95",
+                        activeFilter === filter.id && "bg-primary/80 border-primary/60 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
                     )}
                     onClick={() => setActiveFilter(activeFilter === filter.id ? null : filter.id as SortFilter)}
                   >
-                    <filter.icon className="mr-2 h-4 w-4"/> {filter.label}
+                    <filter.icon className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5"/> {filter.label}
                   </Button>
                 ))}
                 <Button 
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-primary/20 transition-all active:scale-95",
-                        activeFilter === 'distance' && "bg-primary/80 border-primary/60 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                        "rounded-xl glass-dark text-white border-white/5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:bg-primary/20 transition-all active:scale-95",
+                        activeFilter === 'distance' && "bg-primary/80 border-primary/60 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
                     )}
                     onClick={handleLocationFilter}
                 >
-                    <MapPin className="mr-2 h-4 w-4"/> À proximité
+                    <MapPin className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5"/> À proximité
                 </Button>
               </div>
             </motion.div>
           </div>
         </section>
       )}
+
+      {/* Categories Section */}
+      <section>
+        <div className="flex items-center gap-2.5 mb-3 sm:mb-5">
+            <div className="h-5 sm:h-6 w-1 bg-primary rounded-full" />
+            <h2 className="text-lg sm:text-2xl font-headline text-foreground">Explorer par catégories</h2>
+        </div>
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {categories.map((category, index) => (
+            <motion.div
+                key={category.name}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                viewport={{ once: true }}
+            >
+                <Card 
+                    className={cn("group flex flex-col items-center justify-center p-2.5 sm:p-4 glass transition-all duration-300 cursor-pointer rounded-2xl border-white/5",
+                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-primary text-white shadow-lg scale-105 border-primary/60" : "hover:bg-white/10 dark:hover:bg-white/5"
+                    )}
+                    onClick={() => handleCategorySelect(category.name)}
+                >
+                  <div className={cn(
+                    "p-2 sm:p-3 rounded-xl transition-all duration-300 mb-1.5 sm:mb-2 shadow-inner",
+                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-primary"
+                  )}>
+                    <category.icon className={cn(
+                      "w-4 h-4 sm:w-6 sm:h-6 transition-colors duration-300",
+                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-primary group-hover:text-white"
+                    )}/>
+                  </div>
+                  <p className="font-bold uppercase tracking-tight text-[10px] sm:text-xs text-center truncate w-full">{category.name}</p>
+                </Card>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
       {/* Hot Picks Section */}
       {!isLoading && restaurants.length > 0 && !searchQuery && !selectedCategory && (
         <section className="relative">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-               <div className="p-3 bg-red-100 dark:bg-red-950/30 rounded-2xl">
-                 <Flame className="text-red-600 fill-red-600 animate-bounce" size={24} />
+          <div className="flex items-center justify-between mb-3 sm:mb-5">
+            <div className="flex items-center gap-2 sm:gap-3">
+               <div className="p-1.5 sm:p-2 bg-red-100 dark:bg-red-950/30 rounded-xl">
+                 <Flame className="text-red-600 fill-red-600 h-4 w-4 sm:h-5 sm:w-5" />
                </div>
-               <h2 className="text-2xl md:text-3xl font-headline text-foreground">Coups de Cœur</h2>
+               <h2 className="text-lg sm:text-2xl font-headline text-foreground">Coups de Cœur</h2>
             </div>
-            <Badge variant="hot">OFFRES PIMENTÉES</Badge>
+            <Badge variant="hot" className="text-[10px] py-0.5 px-2">OFFRES CHAUDES</Badge>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 md:gap-6">
              {restaurants.filter(r => r.note >= 4.8).slice(0, 4).map(restaurant => (
               <RestaurantCard key={`hot-${restaurant.id}`} restaurant={restaurant} />
             ))}
@@ -452,18 +490,18 @@ export default function CustomerHomePage() {
       )}
       
       {recommendationError && user && (
-          <div className="text-center text-muted-foreground -mt-8">
-              <p className="text-sm">Service de recommandations IA temporairement indisponible.</p>
+          <div className="text-center text-muted-foreground -mt-4">
+              <p className="text-xs">Service de recommandations IA temporairement indisponible.</p>
           </div>
       )}
       
       {featuredRestaurants.length > 0 && !selectedCategory && !searchQuery && (
           <section>
-             <div className="flex items-center gap-4 mb-6">
-                <Star className="text-primary fill-primary" />
-                <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants en vedette</h2>
+             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
+                <Star className="text-primary fill-primary h-4 w-4 sm:h-5 sm:w-5" />
+                <h2 className="text-lg sm:text-2xl font-headline text-foreground">Restaurants en vedette</h2>
              </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 md:gap-6">
                {featuredRestaurants.map(restaurant => (
                 <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
               ))}
@@ -471,60 +509,24 @@ export default function CustomerHomePage() {
           </section>
       )}
 
-      <section>
-        <div className="flex items-center gap-4 mb-8">
-            <div className="h-8 w-1 bg-primary rounded-full" />
-            <h2 className="text-2xl md:text-3xl font-headline text-foreground">Explorer par catégories</h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {categories.map((category, index) => (
-            <motion.div
-                key={category.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-            >
-                <Card 
-                    className={cn("group flex flex-col items-center justify-center p-6 md:p-8 glass transition-all duration-500 cursor-pointer rounded-[2rem] border-white/5 dark:border-white/5",
-                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-primary text-white shadow-[0_20px_40px_rgba(249,115,22,0.3)] scale-105 border-primary/60" : "hover:bg-white/10 dark:hover:bg-white/5"
-                    )}
-                    onClick={() => handleCategorySelect(category.name)}
-                >
-                  <div className={cn(
-                    "p-4 rounded-2xl transition-all duration-500 mb-4 shadow-inner",
-                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-primary"
-                  )}>
-                    <category.icon className={cn(
-                      "w-8 h-8 transition-colors duration-500",
-                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-primary group-hover:text-white"
-                    )}/>
-                  </div>
-                  <p className="font-black uppercase tracking-tighter text-sm md:text-base">{category.name}</p>
-                </Card>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
       <section id="restaurants">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl md:text-3xl font-headline text-foreground">
+        <div className="flex items-center justify-between mb-3 sm:mb-5">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <h2 className="text-lg sm:text-2xl font-headline text-foreground">
               {searchQuery || interpretedSearch || activeFilter || selectedCategory ? 'Résultats de recherche' : 'Tous les Restaurants'}
             </h2>
-            {getFilterLabel() && <Badge variant="secondary" className="px-3 py-1 font-medium">{getFilterLabel()}</Badge>}
+            {getFilterLabel() && <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">{getFilterLabel()}</Badge>}
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 md:gap-6">
            {normalRestaurants.map(restaurant => (
             <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} />
           ))}
         </div>
          {normalRestaurants.length === 0 && (
-            <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg italic">Aucun restaurant ne correspond à votre recherche.</p>
-                <Button variant="link" onClick={() => { setSearchQuery(''); setInterpretedSearch(null); setSelectedCategory(null); setActiveFilter(null); }} className="mt-2">
+            <div className="text-center py-8">
+                <p className="text-muted-foreground text-sm italic">Aucun restaurant ne correspond à votre recherche.</p>
+                <Button variant="link" onClick={() => { setSearchQuery(''); setInterpretedSearch(null); setSelectedCategory(null); setActiveFilter(null); }} className="mt-1 text-xs">
                     Réinitialiser les filtres
                 </Button>
             </div>
@@ -532,12 +534,12 @@ export default function CustomerHomePage() {
       </section>
 
       <section>
-        <Card className="bg-primary text-primary-foreground p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+        <Card className="bg-primary text-primary-foreground p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 shadow-lg">
           <div className="text-center md:text-left">
-            <h2 className="text-2xl md:text-3xl font-headline">Vous êtes un restaurateur ?</h2>
-            <p className="mt-2 max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité à Yamoussoukro.</p>
+            <h2 className="text-xl sm:text-2xl font-headline">Vous êtes un restaurateur ?</h2>
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité à Yamoussoukro.</p>
           </div>
-          <Button variant="secondary" size="lg" className="shrink-0 font-bold" asChild>
+          <Button variant="secondary" size="sm" className="shrink-0 font-bold rounded-xl px-5 h-10 text-xs sm:text-sm" asChild>
             <Link href="/dashboard/new-restaurant">Rejoindre l&apos;aventure</Link>
           </Button>
         </Card>

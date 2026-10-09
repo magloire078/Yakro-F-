@@ -143,26 +143,26 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
           boxShadow: isFocused ? "0 10px 25px -5px rgb(0 0 0 / 0.1)" : "0 4px 6px -1px rgb(0 0 0 / 0.1)"
         }}
         className={cn(
-          "relative overflow-hidden transition-all duration-500 rounded-2xl p-[1.5px]",
-          isFocused ? "bg-gradient-to-r from-primary via-primary to-primary" : "bg-slate-200 dark:bg-slate-800"
+          "relative overflow-hidden transition-all duration-500 rounded-xl sm:rounded-2xl p-[1.5px]",
+          isFocused ? "bg-gradient-to-r from-primary via-primary to-primary" : "bg-slate-200/80 dark:bg-slate-800/80"
         )}
       >
-        <div className="relative flex items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl overflow-hidden">
-          <div className="pl-4 flex items-center justify-center">
-             <Search className={cn("h-5 w-5 transition-colors duration-300", isFocused ? "text-primary" : "text-slate-400")} />
+        <div className="relative flex items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden">
+          <div className="pl-3 sm:pl-4 flex items-center justify-center">
+             <Search className={cn("h-4 w-4 sm:h-5 sm:w-5 transition-colors duration-300", isFocused ? "text-primary" : "text-slate-400")} />
           </div>
           
           <Input
             type="search"
             placeholder="Kedjenou, burger, pas cher..."
-            className="w-full border-none bg-transparent h-12 sm:h-14 text-base sm:text-lg focus-visible:ring-0 placeholder:text-slate-400/70 placeholder:italic dark:text-white"
+            className="w-full border-none bg-transparent h-10 sm:h-12 text-sm sm:text-base focus-visible:ring-0 placeholder:text-slate-400/70 placeholder:italic dark:text-white px-2.5 sm:px-3"
             value={searchTerm}
             onChange={handleInputChange}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
           />
 
-          <div className="pr-3 flex items-center gap-2 sm:gap-3">
+          <div className="pr-2 sm:pr-3 flex items-center gap-1 sm:gap-2">
              <AnimatePresence mode="wait">
                 {isAiLoading ? (
                   <motion.div
@@ -172,7 +172,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   >
-                    <Loader className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    <Loader className="h-4 w-4 text-primary" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -181,7 +181,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
                     animate={{ opacity: 1, scale: 1 }}
                     whileHover={{ scale: 1.2, rotate: 10 }}
                   >
-                    <Sparkles className={cn("h-4 w-4 sm:h-5 sm:w-5 transition-colors", searchTerm ? "text-primary fill-primary/20" : "text-slate-300")} />
+                    <Sparkles className={cn("h-4 w-4 transition-colors", searchTerm ? "text-primary fill-primary/20" : "text-slate-300")} />
                   </motion.div>
                 )}
              </AnimatePresence>
@@ -189,18 +189,18 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
               {searchTerm && (
                   <button 
                     onClick={clearSearch}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
                     title="Effacer"
                     aria-label="Effacer la recherche"
                   >
-                  <X className="h-4 w-4 text-slate-500" />
+                  <X className="h-3.5 w-3.5 text-slate-500" />
                 </button>
               )}
 
               <button 
                 onClick={toggleListening}
                 className={cn(
-                  "p-2 rounded-full transition-all duration-300 relative",
+                  "p-1.5 sm:p-2 rounded-full transition-all duration-300 relative",
                   isListening ? "bg-primary text-white shadow-[0_0_15px_rgba(249,115,22,0.5)]" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
                 )}
                 title={isListening ? "Arrêter l'écoute" : "Recherche vocale"}
@@ -208,11 +208,11 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
               >
                 {isListening ? (
                   <>
-                    <Mic className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
+                    <Mic className="h-4 w-4 animate-pulse" />
                     <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
                   </>
                 ) : (
-                  <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <Mic className="h-4 w-4" />
                 )}
               </button>
           </div>

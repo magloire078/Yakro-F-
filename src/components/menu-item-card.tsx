@@ -25,8 +25,8 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
   const isCloudinary = imageSrc.includes('res.cloudinary.com');
 
   return (
-    <Card className="flex items-center p-4 gap-5 glass transition-all duration-500 group rounded-[2rem] border-white/5 hover:border-primary/30 hover:bg-white/10 shadow-lg hover:shadow-primary/10">
-      <div className="relative w-28 h-28 shrink-0 overflow-hidden rounded-2xl shadow-inner bg-slate-100 dark:bg-slate-800">
+    <Card className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4 glass transition-all duration-300 group rounded-2xl border-white/5 hover:border-primary/30 hover:bg-white/10 shadow-sm hover:shadow-lg">
+      <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 overflow-hidden rounded-xl sm:rounded-2xl shadow-inner bg-slate-100 dark:bg-slate-800">
         {isCloudinary ? (
           <CldImage
             src={imageSrc}
@@ -35,7 +35,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             height={placeholder.height}
             crop="fill"
             gravity="auto"
-            className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
+            className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         ) : (
           <Image
@@ -43,20 +43,20 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             alt={item.nom}
             width={placeholder.width}
             height={placeholder.height}
-            className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
+            className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500 ease-out"
             data-ai-hint={item.indiceImage}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-      <div className="flex-1 space-y-2">
-        <h4 className="font-black uppercase tracking-tighter text-base md:text-lg group-hover:text-primary transition-colors duration-300">{item.nom}</h4>
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed opacity-70">{item.description}</p>
-        <div className="flex justify-between items-center pt-2">
-          <p className="text-xl font-black text-primary tracking-tighter">{item.prix.toLocaleString('fr-FR')} <span className="text-[10px] opacity-60">FCFA</span></p>
+      <div className="flex-1 min-w-0 space-y-1">
+        <h4 className="font-bold uppercase tracking-tight text-sm sm:text-base group-hover:text-primary transition-colors duration-200 truncate">{item.nom}</h4>
+        <p className="text-xs text-muted-foreground line-clamp-1 leading-normal opacity-80">{item.description}</p>
+        <div className="flex justify-between items-center pt-1">
+          <p className="text-sm sm:text-base font-black text-primary tracking-tight">{item.prix.toLocaleString('fr-FR')} <span className="text-[10px] opacity-70">FCFA</span></p>
           <AddToCartDialog item={item}>
-            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl glass-orange text-white hover:scale-110 transition-all shadow-lg active:scale-95">
-              <PlusCircle className="w-6 h-6" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl glass-orange text-white hover:scale-105 transition-all shadow-sm active:scale-95">
+              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </AddToCartDialog>
         </div>
