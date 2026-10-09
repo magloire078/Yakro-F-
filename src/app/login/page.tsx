@@ -51,7 +51,7 @@ export default function LoginPage() {
                 <div className="relative z-20 flex items-center">
                     <Logo size="lg" className="invert brightness-0" />
                 </div>
-                <div className="relative z-20 mt-auto glass-dark p-10 rounded-[3rem] border-white/10 shadow-2xl animate-float">
+                <div className="relative z-20 mt-auto bg-black/40 backdrop-blur-2xl border border-white/10 p-10 rounded-[3rem] shadow-2xl animate-float">
                     <blockquote className="space-y-6">
                         <p className="text-3xl font-black italic leading-[1.1] tracking-tighter uppercase">
                             &ldquo;L&apos;excellence n&apos;est pas un service, c&apos;est une promesse. Yakro Fê redéfinit l&apos;art de vivre à Yamoussoukro.&rdquo;
@@ -77,7 +77,7 @@ export default function LoginPage() {
                  </div>
                  <div className="absolute inset-0 bg-slate-50/50 dark:bg-slate-950/50 backdrop-blur-3xl lg:hidden" />
 
-                 <div className="mx-auto flex w-full flex-col justify-center space-y-5 sm:space-y-8 sm:w-[500px] glass-dark lg:glass p-5 sm:p-10 md:p-14 rounded-2xl sm:rounded-[2.5rem] border-white/10 lg:border-slate-200/50 shadow-2xl">
+                 <div className="mx-auto flex w-full flex-col justify-center space-y-5 sm:space-y-8 sm:w-[500px] glass-dark lg:glass p-5 sm:p-10 md:p-14 rounded-2xl sm:rounded-[2.5rem] border-border dark:border-white/10 shadow-2xl">
                     <div className="flex flex-col space-y-2 sm:space-y-3 text-center">
                         <div className="lg:hidden flex justify-center mb-1 sm:mb-2">
                             <Logo size="md" />

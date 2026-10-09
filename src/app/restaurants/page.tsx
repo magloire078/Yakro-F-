@@ -212,7 +212,7 @@ function RestaurantPageContent() {
                 {/* Back Button */}
                 <Button 
                     variant="ghost" 
-                    className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 glass text-white border-white/10 rounded-xl sm:rounded-2xl h-9 w-9 sm:h-11 sm:w-11 p-0 active:scale-90 transition-transform"
+                    className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 bg-black/30 hover:bg-black/50 hover:text-white backdrop-blur-md border border-white/15 text-white rounded-xl sm:rounded-2xl h-9 w-9 sm:h-11 sm:w-11 p-0 active:scale-90 transition-transform"
                     onClick={() => router.back()}
                 >
                     <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -228,7 +228,7 @@ function RestaurantPageContent() {
                         <Badge className="glass-orange text-white font-black uppercase tracking-wider py-0.5 sm:py-1 px-2.5 sm:px-3.5 text-[10px] sm:text-xs rounded-full border-none">
                             {restaurant.cuisine}
                         </Badge>
-                        <div className="flex items-center gap-1 glass text-white py-0.5 sm:py-1 px-2.5 sm:px-3.5 rounded-full text-[10px] sm:text-xs font-bold border-white/10">
+                        <div className="flex items-center gap-1 bg-black/30 backdrop-blur-md border border-white/15 text-white py-0.5 sm:py-1 px-2.5 sm:px-3.5 rounded-full text-[10px] sm:text-xs font-bold">
                             <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                             {averageRating}
                         </div>
@@ -318,7 +318,7 @@ function RestaurantPageContent() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
                             <div className="lg:col-span-2 space-y-6 sm:space-y-10">
                                 {/* AI Experience Generator */}
-                                <section className="relative overflow-hidden p-4 sm:p-8 glass-dark rounded-2xl sm:rounded-3xl text-white border-white/5">
+                                <section className="relative overflow-hidden p-4 sm:p-8 glass-dark rounded-2xl sm:rounded-3xl text-foreground">
                                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px]" />
                                     <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 sm:gap-8">
                                         <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left">
@@ -326,7 +326,7 @@ function RestaurantPageContent() {
                                                 <Sparkles className="h-3 w-3" /> Yakro Intelligence
                                             </div>
                                             <h3 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">Pas encore d&apos;idée ?</h3>
-                                            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-sm opacity-80">
+                                            <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed max-w-sm">
                                                 Laissez notre IA transcender votre choix. Simulez l&apos;ambiance et écoutez le récit sensoriel des saveurs.
                                             </p>
                                             <div className="flex flex-wrap gap-2.5 sm:gap-4 justify-center md:justify-start pt-2">
@@ -342,14 +342,14 @@ function RestaurantPageContent() {
                                                     onClick={handleGenerateAudio} 
                                                     disabled={isGeneratingAudio || aiReviews.length === 0}
                                                     variant="ghost"
-                                                    className="glass text-white rounded-xl sm:rounded-2xl h-10 sm:h-12 px-5 sm:px-6 font-bold uppercase tracking-wider text-xs border-white/10 hover:bg-white/10"
+                                                    className="glass text-foreground rounded-xl sm:rounded-2xl h-10 sm:h-12 px-5 sm:px-6 font-bold uppercase tracking-wider text-xs border-border dark:border-white/10 hover:bg-muted dark:hover:bg-white/10"
                                                 >
                                                     {isGeneratingAudio ? <Loader className="animate-spin mr-1.5 h-3.5 w-3.5" /> : <Ear className="mr-1.5 h-3.5 w-3.5" />}
                                                     Narrateur Audio
                                                 </Button>
                                             </div>
                                         </div>
-                                        <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center glass rounded-full border-white/10 shadow-lg animate-float">
+                                        <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center glass rounded-full border-border dark:border-white/10 shadow-lg animate-float">
                                             <Wand2 className={cn("w-8 h-8 sm:w-10 sm:h-10 text-primary", loadingAiReviews && "animate-pulse")} />
                                         </div>
                                     </div>
@@ -360,9 +360,9 @@ function RestaurantPageContent() {
                                                 initial={{ opacity: 0, height: 0 }}
                                                 animate={{ opacity: 1, height: 'auto' }}
                                                 exit={{ opacity: 0, height: 0 }}
-                                                className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10"
+                                                className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border dark:border-white/10"
                                             >
-                                                <audio controls src={audioUrl} className="w-full brightness-0 invert opacity-60">
+                                                <audio controls src={audioUrl} className="w-full opacity-80 dark:brightness-0 dark:invert dark:opacity-60">
                                                     Votre navigateur ne supporte pas l&apos;élément audio.
                                                 </audio>
                                             </motion.div>
