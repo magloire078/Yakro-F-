@@ -71,6 +71,7 @@ export function DashboardHero({
                         animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-1 shadow-2xl"
                     >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         {badgeIcon && <span className="text-orange-500">{badgeIcon}</span>}
                         <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-orange-500">
                             {badgeText}

@@ -29,13 +29,20 @@ export function Logo({ className, size = 'md', disableLink = false, compact = fa
 
   const content = (
     <div className={cn("flex items-center gap-2 font-black italic tracking-tighter", className)}>
-      <div className={cn("bg-primary text-white rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-primary/20", iconSizes[size])}>
+      <div className={cn("bg-gradient-to-br from-orange-500 via-amber-500 to-emerald-600 text-white rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-orange-500/25", iconSizes[size])}>
         <Sparkles className="h-2/3 w-2/3" />
       </div>
       {!compact && (
-        <span className={cn("bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300", sizes[size])}>
-          Yakro<span className="text-primary">Fê</span>
-        </span>
+        <div className="flex flex-col leading-none">
+          <span className={cn("bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-300", sizes[size])}>
+            Yakro<span className="text-orange-500">F</span><span className="text-emerald-500 dark:text-emerald-400">ê</span>
+          </span>
+          <div className="flex h-0.5 w-full rounded-full overflow-hidden mt-0.5 opacity-90 shadow-xs">
+            <div className="flex-1 bg-orange-500" />
+            <div className="flex-1 bg-white dark:bg-slate-200" />
+            <div className="flex-1 bg-emerald-500" />
+          </div>
+        </div>
       )}
     </div>
   );

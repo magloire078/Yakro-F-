@@ -149,12 +149,24 @@
     @apply bg-orange-500/10 backdrop-blur-md border border-orange-500/20;
   }
 
+  .glass-emerald {
+    @apply bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20;
+  }
+
   .premium-card {
     @apply bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 overflow-hidden;
   }
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400;
+  }
+
+  .text-gradient-ci {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-amber-400 to-emerald-500;
+  }
+
+  .bg-tricolor-ci {
+    @apply bg-gradient-to-r from-orange-500 via-white dark:via-slate-200 to-emerald-500;
   }
 
   /* ── Premium Food Typography Utilities ── */

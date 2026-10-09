@@ -16,25 +16,25 @@ const featureCategories = [
   {
     title: "Gastronomie Locale",
     icon: Utensils,
-    color: "bg-primary/10 text-primary",
+    color: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20",
     features: ["Le meilleur de Yakro", "Produits frais & locaux", "Recettes traditionnelles", "Restaurants vérifiés"]
   },
   {
     title: "Livraison Éclair",
     icon: Bike,
-    color: "bg-amber-500/10 text-amber-600",
+    color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
     features: ["Suivi en temps réel", "Livreurs professionnels", "Emballage premium", "Respect des délais"]
   },
   {
     title: "IA Intelligente",
     icon: Sparkles,
-    color: "bg-primary/10 text-primary",
+    color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
     features: ["Recherche naturelle", "Recommandations personnalisées", "Assistant vocal (bientôt)", "Analyse des goûts"]
   },
   {
     title: "Service Premium",
     icon: Heart,
-    color: "bg-red-500/10 text-red-600",
+    color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
     features: ["Support 24/7", "Paiement sécurisé", "Programme fidélité", "Qualité garantie"]
   }
 ];
@@ -104,9 +104,15 @@ export function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <Badge variant="outline" className="mb-6 px-4 py-1.5 text-primary border-primary/30 bg-primary/5 backdrop-blur-sm rounded-full font-bold uppercase tracking-wider text-[9px] sm:text-[10px]">
-                <Sparkles className="w-3 h-3 mr-2" />
-                L&apos;expérience food-tech ultime à Yakro
+              <Badge variant="outline" className="mb-6 px-4 py-1.5 border-orange-500/30 bg-gradient-to-r from-orange-500/10 via-white/10 to-emerald-500/10 backdrop-blur-sm rounded-full font-bold uppercase tracking-wider text-[9px] sm:text-[10px] shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
+                <span className="text-primary font-black">Orange</span>
+                <span className="text-slate-400 mx-1">•</span>
+                <span className="text-slate-700 dark:text-white font-black">Blanc</span>
+                <span className="text-slate-400 mx-1">•</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-black">Vert</span>
+                <span className="text-slate-400 mx-2">|</span>
+                <span className="text-slate-700 dark:text-slate-300">L&apos;expérience food-tech ultime à Yakro</span>
               </Badge>
               <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-slate-900 dark:text-white leading-[0.9] mb-6 sm:mb-8">
                 Savourez <br className="hidden xs:block" />
@@ -219,7 +225,11 @@ export function LandingPage() {
               <h2 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                 Une technologie <br /><span className="text-primary">au service du goût</span>
               </h2>
-              <div className="w-12 sm:w-20 h-1 sm:h-1.5 bg-primary rounded-full" />
+              <div className="flex h-1.5 w-24 sm:w-32 rounded-full overflow-hidden shadow-xs">
+                <div className="flex-1 bg-orange-500" />
+                <div className="flex-1 bg-white dark:bg-slate-300" />
+                <div className="flex-1 bg-emerald-500" />
+              </div>
               <p className="max-w-[95%] sm:max-w-[85%] leading-relaxed text-slate-600 dark:text-slate-400 text-sm sm:text-lg font-medium mt-2 sm:mt-4">
                 Nous fusionnons le meilleur de la gastronomie ivoirienne avec une expérience numérique sans couture.
               </p>
@@ -266,19 +276,23 @@ export function LandingPage() {
           <div className="container relative z-10 px-4 sm:px-8 md:px-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
               <div className="text-left space-y-4 sm:space-y-6">
-                <Badge className="bg-primary hover:bg-primary/90 px-3.5 sm:px-5 py-1 sm:py-1.5 rounded-full font-black uppercase tracking-wider text-[9px] sm:text-xs">Notre Mission</Badge>
+                <Badge className="bg-gradient-to-r from-orange-500 to-emerald-600 text-white hover:opacity-95 px-3.5 sm:px-5 py-1 sm:py-1.5 rounded-full font-black uppercase tracking-wider text-[9px] sm:text-xs shadow-lg shadow-orange-500/20">Notre Mission</Badge>
                 <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-black leading-[1.05] sm:leading-[0.95]">Digitaliser la <br className="hidden sm:block" /><span className="text-primary">capitale</span> avec passion.</h2>
                 <p className="text-xs sm:text-base md:text-lg text-slate-400 leading-relaxed font-light max-w-xl">
                   Yakro Fê n&apos;est pas qu&apos;une application de livraison. C&apos;est un écosystème conçu pour valoriser les artisans culinaires de Yamoussoukro tout en offrant aux habitants un service d&apos;excellence.
                 </p>
-                <div className="grid grid-cols-2 gap-4 sm:gap-6 pt-2">
+                <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-2">
                   <div className="space-y-0.5 sm:space-y-1">
-                    <p className="text-2xl sm:text-4xl font-black text-primary">50+</p>
-                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[9px] sm:text-xs">Partenaires</p>
+                    <p className="text-2xl sm:text-4xl font-black text-orange-500">50+</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[8px] sm:text-xs">Partenaires</p>
                   </div>
                   <div className="space-y-0.5 sm:space-y-1">
-                    <p className="text-2xl sm:text-4xl font-black text-primary">15min</p>
-                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[9px] sm:text-xs">Moyenne Livraison</p>
+                    <p className="text-2xl sm:text-4xl font-black text-white">100%</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[8px] sm:text-xs">Fait Maison</p>
+                  </div>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <p className="text-2xl sm:text-4xl font-black text-emerald-400">15min</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[8px] sm:text-xs">Livraison</p>
                   </div>
                 </div>
               </div>

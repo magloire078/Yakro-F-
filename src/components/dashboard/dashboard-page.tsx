@@ -40,10 +40,14 @@ export function DashboardPage({
                 {children}
 
                 {/* Unified Branding Footer */}
-                <div className="mt-8 md:mt-12 text-center opacity-20 group hover:opacity-100 transition-all duration-700 pb-8">
-                    <div className="h-px w-24 md:w-32 bg-gradient-to-r from-transparent via-border to-transparent mx-auto mb-6 md:mb-8" />
-                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-muted-foreground group-hover:text-orange-500 transition-colors">
-                        {brandingText} &bull; SECURE FLUX
+                <div className="mt-8 md:mt-12 text-center opacity-40 group hover:opacity-100 transition-all duration-700 pb-8">
+                    <div className="flex h-0.5 w-24 md:w-32 rounded-full overflow-hidden mx-auto mb-6 md:mb-8 opacity-70">
+                        <div className="flex-1 bg-orange-500" />
+                        <div className="flex-1 bg-white dark:bg-slate-300" />
+                        <div className="flex-1 bg-emerald-500" />
+                    </div>
+                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-muted-foreground group-hover:text-foreground transition-colors">
+                        {brandingText} &bull; 🇨🇮 YAKRO ÉLITE
                     </p>
                 </div>
             </motion.div>

@@ -3,7 +3,6 @@
  
 import * as React from 'react';
 import { Menu } from 'lucide-react';
-import Link from 'next/link';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { Sidebar } from './sidebar';
@@ -13,6 +12,8 @@ import { NotificationsBell } from './notifications-bell';
 import { useCart } from '@/contexts/cart-context';
 import { useAuth } from '@/contexts/auth-context';
 import { ThemeToggle } from './theme-toggle';
+
+import { Logo } from './logo';
 
 export function MobileHeader() {
   const { cartCount } = useCart();
@@ -33,9 +34,7 @@ export function MobileHeader() {
         </SheetContent>
       </Sheet>
       <div className="flex-1 flex justify-center">
-         <Link href="/" className="flex items-center space-x-2 active:scale-95 transition-transform">
-            <Icons.logo className="h-8 w-8 text-primary" />
-          </Link>
+         <Logo size="sm" />
       </div>
       <div className="flex items-center gap-0.5">
         <ThemeToggle />

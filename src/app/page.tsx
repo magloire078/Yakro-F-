@@ -365,12 +365,18 @@ export default function CustomerHomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
             >
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 backdrop-blur-md border border-primary/40 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2.5 sm:mb-4 animate-float">
-                    <SparklesIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-                    Yakro Intelligence
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-orange-500/30 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2.5 sm:mb-4 animate-float shadow-lg">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-orange-400">Orange</span>
+                    <span className="opacity-40">•</span>
+                    <span className="text-white">Blanc</span>
+                    <span className="opacity-40">•</span>
+                    <span className="text-emerald-400">Vert</span>
+                    <span className="opacity-40 mx-1">|</span>
+                    <span>Yakro Intelligence</span>
                 </div>
                 <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.02] tracking-tighter uppercase italic drop-shadow-lg">
-                    L&apos;Élite de <span className="text-primary drop-shadow-[0_0_20px_rgba(249,115,22,0.6)]">Yakro</span><br />
+                    L&apos;Élite de <span className="text-primary drop-shadow-[0_0_20px_rgba(249,115,22,0.6)]">Yakro</span> <span className="text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.6)]">Fê</span><br />
                     À votre porte.
                 </h1>
                 <p className="mt-1.5 sm:mt-3 text-xs sm:text-base md:text-lg text-slate-200 max-w-lg mx-auto font-medium leading-relaxed opacity-90 line-clamp-2 sm:line-clamp-none">
@@ -428,7 +434,11 @@ export default function CustomerHomePage() {
       {/* Categories Section */}
       <section>
         <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
-            <div className="h-4 sm:h-5 w-1 bg-primary rounded-full" />
+            <div className="flex h-4 sm:h-5 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
+                <div className="flex-1 bg-orange-500" />
+                <div className="flex-1 bg-white dark:bg-slate-300" />
+                <div className="flex-1 bg-emerald-500" />
+            </div>
             <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Explorer par catégories</h2>
         </div>
         <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">

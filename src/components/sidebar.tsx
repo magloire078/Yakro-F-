@@ -82,12 +82,19 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
        <div className="flex justify-between items-center mb-10">
             <Link href={homeLink} onClick={onNavigate} className="flex items-center space-x-3 group">
-                <div className="bg-primary/10 p-2.5 rounded-xl group-hover:bg-primary/20 transition-all border border-primary/10">
+                <div className="bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-emerald-500/20 p-2.5 rounded-xl group-hover:scale-105 transition-all border border-orange-500/20 shadow-sm">
                     <Icons.logo className="h-8 w-8 text-primary" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-headline text-2xl font-black text-primary leading-none tracking-tighter italic uppercase">Yakro</span>
-                    <span className="font-headline text-2xl font-black text-primary leading-none tracking-tighter italic uppercase ml-1">Fê</span>
+                    <div className="flex items-center font-headline text-2xl font-black leading-none tracking-tighter italic uppercase">
+                        <span className="text-primary">Yakro</span>
+                        <span className="text-emerald-500 dark:text-emerald-400 ml-1">Fê</span>
+                    </div>
+                    <div className="flex h-0.5 w-16 rounded-full overflow-hidden mt-1 opacity-90 shadow-xs">
+                        <div className="flex-1 bg-orange-500" />
+                        <div className="flex-1 bg-white dark:bg-slate-200" />
+                        <div className="flex-1 bg-emerald-500" />
+                    </div>
                 </div>
             </Link>
             <div className="hidden md:flex items-center gap-1">
