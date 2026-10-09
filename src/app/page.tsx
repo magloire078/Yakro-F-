@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { getCurrentLocation, YAKRO_DEFAULT_COORDS } from '@/lib/geolocation';
 
 interface Category {
     name: string;
@@ -295,29 +296,33 @@ export default function CustomerHomePage() {
 
   }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation, selectedCategory]);
 
-  const handleLocationFilter = () => {
+  const handleLocationFilter = async () => {
     if (activeFilter === 'distance') {
       setActiveFilter(null);
       return;
     }
 
-    if (!navigator.geolocation) {
-      toast({ variant: 'destructive', title: 'Géolocalisation non supportée' });
-      return;
+    try {
+      const coords = await getCurrentLocation();
+      setUserLocation({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
+      setActiveFilter('distance');
+      toast({
+        title: '📍 Position détectée',
+        description: 'Les restaurants sont triés par distance réelle.',
+      });
+    } catch (error) {
+      // Si la permission est refusée ou non disponible, bascule automatique sur le centre-ville de Yakro
+      console.warn('Geolocation fallback to Yakro center:', error);
+      setUserLocation(YAKRO_DEFAULT_COORDS);
+      setActiveFilter('distance');
+      toast({
+        title: '📍 Position par défaut activée (Yakro Centre)',
+        description: 'Autorisez la localisation dans votre navigateur pour une précision exacte.',
+      });
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        setActiveFilter('distance');
-      },
-      () => {
-        toast({ variant: 'destructive', title: "L'accès à la localisation a été refusé." });
-      }
-    );
   };
   
   const handleCategorySelect = (categoryName: string) => {
