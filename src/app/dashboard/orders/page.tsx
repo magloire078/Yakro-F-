@@ -227,7 +227,7 @@ export default function DashboardOrdersPage() {
                             onError={() => setBgImageFailed(true)}
                         />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/40 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40 z-10" />
                 </div>
                 
                 <div className="relative z-30 text-center space-y-3 sm:space-y-6 px-4 sm:px-6 max-w-4xl pt-2 sm:pt-0">
@@ -245,7 +245,7 @@ export default function DashboardOrdersPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-3xl sm:text-6xl md:text-8xl font-black tracking-tighter text-white italic leading-none uppercase"
+                            className="text-3xl sm:text-6xl md:text-8xl font-black tracking-tighter text-foreground italic leading-none uppercase"
                         >
                             Flux <span className="text-primary">Elite</span>
                         </motion.h1>
@@ -253,7 +253,7 @@ export default function DashboardOrdersPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.15 }}
-                            className="text-slate-500 font-bold text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em]"
+                            className="text-muted-foreground font-bold text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em]"
                         >
                             Orchestration en temps réel de votre excellence culinaire
                         </motion.p>
@@ -266,13 +266,13 @@ export default function DashboardOrdersPage() {
                         className="flex justify-center gap-6 sm:gap-10 md:gap-20 mt-4 sm:mt-8"
                     >
                         <div className="text-center group cursor-default">
-                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-500 mb-1 sm:mb-2 group-hover:text-primary transition-colors">Nouveaux</p>
-                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
+                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground mb-1 sm:mb-2 group-hover:text-primary transition-colors">Nouveaux</p>
+                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-foreground tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
                         </div>
-                        <div className="w-px h-10 sm:h-16 md:h-20 bg-white/10 self-center rotate-12" />
+                        <div className="w-px h-10 sm:h-16 md:h-20 bg-border self-center rotate-12" />
                         <div className="text-center group cursor-default">
-                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-slate-500 mb-1 sm:mb-2 group-hover:text-emerald-500 transition-colors">Cuisine</p>
-                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
+                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground mb-1 sm:mb-2 group-hover:text-emerald-500 transition-colors">Cuisine</p>
+                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-foreground tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
                         </div>
                     </motion.div>
                 </div>
@@ -289,10 +289,10 @@ export default function DashboardOrdersPage() {
                     <div className="space-y-4 sm:space-y-8">
                         <div className="flex items-center gap-4 sm:gap-6">
                             <div className="h-6 sm:h-10 w-1.5 bg-primary rounded-full" />
-                            <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
+                            <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-foreground uppercase">
                                 Nouvelles <span className="text-primary italic">Entrées</span>
                             </h2>
-                            <div className="h-px flex-1 bg-white/5" />
+                            <div className="h-px flex-1 bg-border" />
                         </div>
                         
                         <div className="space-y-4 sm:space-y-6">
@@ -303,17 +303,17 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl"
+                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-border rounded-2xl sm:rounded-3xl shadow-2xl"
                                     >
                                         <div className="relative mb-6">
                                             <div className="absolute inset-0 bg-primary/10 blur-[40px] rounded-full scale-150 animate-pulse" />
-                                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 bg-white/5 border border-white/10 flex items-center justify-center rounded-2xl backdrop-blur-2xl">
-                                                <UtensilsCrossed className="w-8 h-8 sm:w-10 sm:h-10 text-slate-600 group-hover:text-primary transition-colors duration-500" />
+                                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 bg-muted/50 border border-border flex items-center justify-center rounded-2xl backdrop-blur-2xl">
+                                                <UtensilsCrossed className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground group-hover:text-primary transition-colors duration-500" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <p className="text-[10px] sm:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-slate-500 italic">Calme Plat</p>
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-slate-600 uppercase tracking-widest max-w-[200px] leading-relaxed">Le silence avant la tempête culinaire. Aucune nouvelle commande.</p>
+                                            <p className="text-[10px] sm:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted-foreground italic">Calme Plat</p>
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[200px] leading-relaxed">Le silence avant la tempête culinaire. Aucune nouvelle commande.</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -325,10 +325,10 @@ export default function DashboardOrdersPage() {
                     <div className="space-y-4 sm:space-y-8">
                         <div className="flex items-center gap-4 sm:gap-6">
                             <div className="h-6 sm:h-10 w-1.5 bg-emerald-500 rounded-full" />
-                            <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
+                            <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-foreground uppercase">
                                 Atelier <span className="text-emerald-500 italic">Culinaire</span>
                             </h2>
-                            <div className="h-px flex-1 bg-white/5" />
+                            <div className="h-px flex-1 bg-border" />
                         </div>
 
                         <div className="space-y-4 sm:space-y-6">
@@ -339,17 +339,17 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl"
+                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-border rounded-2xl sm:rounded-3xl shadow-2xl"
                                     >
                                         <div className="relative mb-6">
                                             <div className="absolute inset-0 bg-emerald-500/10 blur-[40px] rounded-full scale-150" />
-                                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 bg-white/5 border border-white/10 flex items-center justify-center rounded-2xl backdrop-blur-2xl">
-                                                <ChefHat className="w-8 h-8 sm:w-10 sm:h-10 text-slate-600 group-hover:text-emerald-500 transition-colors duration-500" />
+                                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 bg-muted/50 border border-border flex items-center justify-center rounded-2xl backdrop-blur-2xl">
+                                                <ChefHat className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground group-hover:text-emerald-500 transition-colors duration-500" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <p className="text-[10px] sm:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-slate-500 italic">Plan de Travail Prêt</p>
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-slate-600 uppercase tracking-widest max-w-[200px] leading-relaxed">Toutes les préparations en cours ont été finalisées.</p>
+                                            <p className="text-[10px] sm:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted-foreground italic">Plan de Travail Prêt</p>
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest max-w-[200px] leading-relaxed">Toutes les préparations en cours ont été finalisées.</p>
                                         </div>
                                     </motion.div>
                                 )}

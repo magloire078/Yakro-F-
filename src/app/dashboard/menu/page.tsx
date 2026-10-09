@@ -196,7 +196,7 @@ export default function DashboardMenuPage() {
                                         initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className="group relative glass-dark border border-white/5 overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 flex flex-col h-full rounded-[1.5rem] md:rounded-[2rem] shadow-2xl"
+                                        className="group relative glass-dark border border-border overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 flex flex-col h-full rounded-[1.5rem] md:rounded-[2rem] shadow-2xl"
                                     >
                                         <div className="aspect-[16/10] relative overflow-hidden">
                                             {item.image ? (
@@ -254,7 +254,7 @@ export default function DashboardMenuPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="max-w-2xl mx-auto glass-dark border border-white/5 p-12 md:p-20 text-center shadow-2xl relative overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] mt-12">
+                            <div className="max-w-2xl mx-auto glass-dark border border-border p-12 md:p-20 text-center shadow-2xl relative overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] mt-12">
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent" />
                                 <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-primary/20">
                                     <BookOpenCheck className="h-8 w-8 text-primary" />

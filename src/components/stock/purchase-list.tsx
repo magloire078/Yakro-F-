@@ -67,19 +67,19 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Logistique d&apos;Élite</span>
                     </div>
-                    <h3 className="text-4xl font-black italic tracking-tighter text-white leading-none">
+                    <h3 className="text-4xl font-black italic tracking-tighter text-foreground leading-none">
                         Plan de <span className="text-primary">Ravitaillement</span>
                     </h3>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Intelligence prédictive basée sur vos seuils de vigilance.</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Intelligence prédictive basée sur vos seuils de vigilance.</p>
                 </div>
                 <Button 
                     onClick={handleCopy}
-                    className="h-16 px-10 bg-white text-[#0A0A0B] hover:bg-white/90 rounded-2xl font-black italic tracking-tight text-lg shadow-2xl transition-all hover:scale-105 active:scale-95 group"
+                    className="h-16 px-10 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-2xl transition-all hover:scale-105 active:scale-95 group"
                 >
                     {copied ? (
-                        <Check className="mr-3 h-5 w-5 text-emerald-600 animate-in zoom-in" />
+                        <Check className="mr-3 h-5 w-5 text-white animate-in zoom-in" />
                     ) : (
-                        <Copy className="mr-3 h-5 w-5 text-primary group-hover:rotate-12 transition-transform" />
+                        <Copy className="mr-3 h-5 w-5 text-white group-hover:rotate-12 transition-transform" />
                     )}
                     {copied ? 'Liste Sécurisée' : 'Exporter le Plan'}
                 </Button>
@@ -94,7 +94,7 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.05 }}
                         >
-                            <div className="bg-[#121214]/60 backdrop-blur-xl border border-white/5 rounded-[2.5rem] relative group overflow-hidden shadow-2xl hover:border-primary/20 transition-all">
+                            <div className="bg-card border border-border rounded-[2.5rem] relative group overflow-hidden shadow-2xl hover:border-primary/20 transition-all">
                                 <div className={`absolute top-0 left-0 w-2 h-full transition-colors ${item.quantite === 0 ? 'bg-red-500' : 'bg-primary'}`} />
                                 
                                 <div className="p-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
@@ -103,10 +103,10 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                                             <AlertCircle className={`h-10 w-10 ${item.quantite === 0 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="text-3xl font-black italic tracking-tighter text-white leading-none group-hover:text-primary transition-colors">
+                                            <h4 className="text-3xl font-black italic tracking-tighter text-foreground leading-none group-hover:text-primary transition-colors">
                                                 {item.nom}
                                             </h4>
-                                            <div className="flex items-center gap-2 text-white/30">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
                                                 <MapPin className="h-3 w-3 text-primary" />
                                                 <p className="text-[10px] font-black uppercase tracking-widest">{item.restaurantName}</p>
                                             </div>
@@ -115,12 +115,12 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
 
                                     <div className="flex items-center gap-12 md:gap-20">
                                         <div className="text-right">
-                                            <p className="text-[10px] uppercase font-black text-white/30 tracking-[0.2em] mb-2">État Actuel</p>
+                                            <p className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em] mb-2">État Actuel</p>
                                             <p className={`text-4xl font-black italic tracking-tighter leading-none ${item.quantite === 0 ? 'text-red-500' : 'text-primary'}`}>
                                                 {item.quantite} <span className="text-xs uppercase tracking-normal font-bold opacity-40 ml-1">{item.unite}</span>
                                             </p>
                                         </div>
-                                        <div className="h-16 w-px bg-white/5 hidden md:block" />
+                                        <div className="h-16 w-px bg-border hidden md:block" />
                                         <div className="text-right">
                                             <p className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mb-2">Cible Recommandée</p>
                                             <div className="inline-flex items-center h-10 px-6 bg-primary text-white rounded-xl text-sm font-black italic shadow-lg shadow-primary/20">
@@ -138,17 +138,17 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                 </AnimatePresence>
             </div>
 
-            <div className="p-10 bg-white/5 rounded-[3rem] border border-white/10 flex flex-col md:flex-row items-start md:items-center gap-8 relative overflow-hidden group">
+            <div className="p-10 bg-muted/50 rounded-[3rem] border border-border flex flex-col md:flex-row items-start md:items-center gap-8 relative overflow-hidden group">
                 {/* Decorative background scanline */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
                 
-                <div className="h-16 w-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                <div className="h-16 w-16 bg-card border border-border rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
                     <Sparkles className="h-8 w-8 text-primary animate-pulse" />
                 </div>
                 <div className="space-y-3 relative z-10">
                     <h4 className="text-xs font-black uppercase tracking-[0.4em] text-primary">Intelligence Logistique Yakro</h4>
-                    <p className="text-sm font-bold text-white/40 leading-relaxed italic uppercase tracking-wider">
-                        &ldquo;Ce plan est calculé pour restaurer un stock de sécurité optimal correspondant à <span className="text-white italic">3 cycles opérationnels</span>. Exportez cette liste pour maintenir l&apos;excellence.&rdquo;
+                    <p className="text-sm font-bold text-muted-foreground leading-relaxed italic uppercase tracking-wider">
+                        &ldquo;Ce plan est calculé pour restaurer un stock de sécurité optimal correspondant à <span className="text-foreground italic">3 cycles opérationnels</span>. Exportez cette liste pour maintenir l&apos;excellence.&rdquo;
                     </p>
                 </div>
             </div>

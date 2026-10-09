@@ -181,17 +181,17 @@ export default function NewMenuItemPage() {
 
     if (myRestaurants.length === 0) {
         return (
-            <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-6">
-                <div className="max-w-lg w-full bg-[#121214] border border-white/5 p-12 text-center relative overflow-hidden">
+            <div className="min-h-screen bg-background flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-card border border-border p-12 text-center relative overflow-hidden rounded-2xl shadow-xl">
                     <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
-                    <ChefHat className="h-20 w-20 mx-auto text-gray-800 mb-8" />
-                    <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white mb-4">Infrastructure Requise</h2>
-                    <p className="text-gray-500 font-medium mb-10 text-sm">
+                    <ChefHat className="h-20 w-20 mx-auto text-muted-foreground mb-8" />
+                    <h2 className="text-3xl font-black italic uppercase tracking-tighter text-foreground mb-4">Infrastructure Requise</h2>
+                    <p className="text-muted-foreground font-medium mb-10 text-sm">
                         L&apos;IA culinaire nécessite un établissement hôte pour initialiser la génération de menus.
                     </p>
                     <Button 
                         asChild
-                        className="h-16 w-full bg-primary hover:bg-primary/90 text-white rounded-none font-black italic uppercase tracking-tighter transition-all"
+                        className="h-14 w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black italic uppercase tracking-tighter rounded-xl"
                     >
                         <Link href="/dashboard/new-restaurant">Fonder mon Établissement</Link>
                     </Button>
@@ -203,68 +203,68 @@ export default function NewMenuItemPage() {
     const isGenerated = !!form.getValues('nom');
 
     return (
-        <div className="min-h-screen bg-[#0A0A0B] text-white">
+        <div className="min-h-screen bg-background text-foreground">
             {/* Cinematic Hero */}
-            <div className="relative h-[40vh] min-h-[400px] w-full overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 bg-black/60 z-10" />
+            <div className="relative h-[30vh] sm:h-[40vh] min-h-[300px] w-full overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 bg-background/60 z-10" />
                 <div 
                     className="absolute inset-0 bg-cover bg-center animate-slow-zoom bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop')]" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent z-20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-20" />
                 
                 {/* Mobile Navigation */}
-                <div className="md:hidden absolute top-6 left-4 z-50">
+                <div className="md:hidden absolute top-4 left-3 z-50">
                     <MobileBackButton label="Menu" href="/dashboard/menu" />
                 </div>
 
-                <div className="relative z-30 text-center px-4 pt-12 md:pt-0">
+                <div className="relative z-30 text-center px-4 pt-8 md:pt-0">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 backdrop-blur-md border border-primary/30 mb-6"
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 backdrop-blur-md border border-primary/30 mb-4 rounded-full"
                     >
                         <Sparkles className="h-4 w-4 text-primary" />
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Moteur Neural Yakro AI</span>
                     </motion.div>
-                    <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter mb-4">
+                    <h1 className="text-3xl sm:text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-foreground mb-2 sm:mb-4">
                         Créateur <span className="text-primary">Elite</span>
                     </h1>
-                    <p className="max-w-xl mx-auto text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-gray-500 italic">
+                    <p className="max-w-xl mx-auto text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted-foreground italic">
                         Sublimez votre carte par l&apos;intelligence artificielle prédictive.
                     </p>
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-6 -mt-20 relative z-40 pb-32">
-                <div className="grid lg:grid-cols-2 gap-10">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-10 sm:-mt-20 relative z-40 pb-24">
+                <div className="grid lg:grid-cols-2 gap-6 sm:gap-10">
                     {/* Step 1: Input Analysis */}
-                    <div className="space-y-8">
-                        <div className="bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-10 relative overflow-hidden h-full flex flex-col">
+                    <div className="space-y-6 sm:space-y-8">
+                        <div className="bg-card/80 backdrop-blur-xl border border-border p-6 sm:p-10 relative overflow-hidden h-full flex flex-col rounded-2xl shadow-xl">
                             <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
                             
-                            <div className="flex items-center gap-4 mb-10">
-                                <div className="h-12 w-12 bg-white/5 border border-white/5 flex items-center justify-center">
-                                    <span className="text-xl font-black italic text-primary">01</span>
+                            <div className="flex items-center gap-4 mb-6 sm:mb-10">
+                                <div className="h-10 w-10 sm:h-12 sm:w-12 bg-muted border border-border flex items-center justify-center rounded-xl">
+                                    <span className="text-lg sm:text-xl font-black italic text-primary">01</span>
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black uppercase tracking-tighter italic text-white">Analyse Conceptuelle</h2>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-600">Définissez l&apos;essence du plat</p>
+                                    <h2 className="text-lg sm:text-xl font-black uppercase tracking-tighter italic text-foreground">Analyse Conceptuelle</h2>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Définissez l&apos;essence du plat</p>
                                 </div>
                             </div>
 
-                            <div className="space-y-8 flex-grow">
-                                <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500 italic">Établissement Hôte</Label>
+                            <div className="space-y-6 flex-grow">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">Établissement Hôte</Label>
                                     <Select
                                         onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
                                         value={selectedRestaurant?.id || ''}
                                     >
-                                        <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-none text-sm font-bold uppercase tracking-tight focus:ring-primary/50">
+                                        <SelectTrigger className="h-12 bg-muted/40 border-border rounded-xl text-sm font-bold uppercase tracking-tight focus:ring-primary/50">
                                             <SelectValue placeholder="SÉLECTIONNER L'ÉTABLISSEMENT" />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#121214] border-white/10 text-white rounded-none">
+                                        <SelectContent className="bg-card border-border text-foreground rounded-xl">
                                             {myRestaurants.map(r => (
-                                                <SelectItem key={r.id} value={r.id} className="focus:bg-primary focus:text-white uppercase font-bold text-xs tracking-widest py-3">
+                                                <SelectItem key={r.id} value={r.id} className="focus:bg-primary/10 focus:text-primary uppercase font-bold text-xs tracking-widest py-2.5">
                                                     {r.nom}
                                                 </SelectItem>
                                             ))}
@@ -272,12 +272,12 @@ export default function NewMenuItemPage() {
                                     </Select>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-gray-500 italic">Vision Culinaire</Label>
+                                <div className="space-y-2">
+                                    <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">Vision Culinaire</Label>
                                     <Textarea
                                         id="description"
                                         placeholder="EX: POULET BRAISÉ AUX ÉPICES RARES ET ATTIÉKÉ ROYAL..."
-                                        className="min-h-[150px] bg-white/5 border-white/10 rounded-none text-sm font-medium focus:ring-primary/50 resize-none p-5 uppercase tracking-tight placeholder:opacity-20"
+                                        className="min-h-[130px] bg-muted/40 border-border rounded-xl text-sm font-medium focus:ring-primary/50 resize-none p-4 uppercase tracking-tight placeholder:opacity-40"
                                         value={description}
                                         onChange={e => setDescription(e.target.value)}
                                     />

@@ -159,7 +159,7 @@ export default function StockPage() {
                 </div>
 
                 <div className="relative mb-8 z-10">
-                    <div className="h-24 w-24 glass-dark border border-white/10 rounded-[2rem] flex items-center justify-center shadow-2xl relative">
+                    <div className="h-24 w-24 glass-dark border border-border rounded-[2rem] flex items-center justify-center shadow-2xl relative">
                         <Warehouse className="h-10 w-10 text-primary/50" />
                         <div className="absolute -bottom-1 -right-1 h-8 w-8 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
                             <Plus className="h-5 w-5 text-white" />
@@ -168,16 +168,16 @@ export default function StockPage() {
                 </div>
 
                 <div className="relative z-10 space-y-6 max-w-lg">
-                    <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white leading-[0.9] uppercase">
+                    <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-foreground leading-[0.9] uppercase">
                         Stockage <span className="text-primary italic">Non Configuré</span>
                     </h1>
-                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] leading-relaxed italic">
-                        Vous devez posséder un établissement actif pour commencer à gérer votre <span className="text-white font-black">Inventaire d&apos;Excellence</span>.
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] leading-relaxed italic">
+                        Vous devez posséder un établissement actif pour commencer à gérer votre <span className="text-foreground font-black">Inventaire d&apos;Excellence</span>.
                     </p>
                     <div className="pt-6">
                         <Button 
                             onClick={() => router.push('/dashboard/new-restaurant')}
-                            className="h-14 px-10 bg-white text-black hover:bg-white/90 rounded-2xl font-black italic tracking-tight text-base shadow-2xl transition-all hover:scale-105"
+                            className="h-14 px-10 bg-primary text-white hover:bg-primary/90 rounded-2xl font-black italic tracking-tight text-base shadow-2xl transition-all hover:scale-105"
                         >
                             Inaugurer un Restaurant
                         </Button>
@@ -228,8 +228,8 @@ export default function StockPage() {
                                     Nouvelle Acquisition
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[500px] bg-[#0A0A0B] border border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl">
-                                <div className="relative p-6 border-b border-white/5 bg-white/5 backdrop-blur-xl">
+                            <DialogContent className="sm:max-w-[500px] bg-background border border-border rounded-[2rem] p-0 overflow-hidden shadow-2xl">
+                                <div className="relative p-6 border-b border-border bg-card backdrop-blur-xl">
                                     <DialogHeader>
                                         <div className="inline-flex items-center gap-2 mb-4">
                                             <div className="p-2 bg-primary/20 rounded-xl">
@@ -237,18 +237,18 @@ export default function StockPage() {
                                             </div>
                                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Logistique Culinaire</span>
                                         </div>
-                                        <DialogTitle className="text-2xl font-black italic tracking-tighter text-white leading-none">Ajouter au Stock</DialogTitle>
-                                        <DialogDescription className="text-white/40 font-medium text-sm">Référencez un nouvel article dans votre inventaire.</DialogDescription>
+                                        <DialogTitle className="text-2xl font-black italic tracking-tighter text-foreground leading-none">Ajouter au Stock</DialogTitle>
+                                        <DialogDescription className="text-muted-foreground font-medium text-sm">Référencez un nouvel article dans votre inventaire.</DialogDescription>
                                     </DialogHeader>
                                 </div>
                                 <div className="p-6 space-y-6">
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1">Établissement Cible</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Établissement Cible</Label>
                                         <Select value={newItem.restaurantId} onValueChange={(v) => setNewItem({...newItem, restaurantId: v})}>
-                                        <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl text-white focus:ring-primary font-bold italic">
+                                        <SelectTrigger className="h-12 bg-muted/40 border-border rounded-xl text-foreground focus:ring-primary font-bold italic">
                                                 <SelectValue placeholder="Séléctionnez un lieu" />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-[#0A0A0B] border-white/10 text-white rounded-2xl">
+                                            <SelectContent className="bg-card border-border text-foreground rounded-2xl">
                                                 {myRestaurants.map(r => (
                                                     <SelectItem key={r.id} value={r.id} className="focus:bg-primary/20 rounded-xl font-bold italic">{r.nom}</SelectItem>
                                                 ))}
@@ -256,31 +256,31 @@ export default function StockPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1">Désignation</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Désignation</Label>
                                         <Input 
                                             placeholder="Ex: Riz Parfumé, Huile d'Olive..." 
-                                            className="h-12 bg-white/5 border-white/10 rounded-xl text-white placeholder:text-white/20 font-bold italic text-base focus:border-primary/50"
+                                            className="h-12 bg-muted/40 border-border rounded-xl text-foreground placeholder:text-muted-foreground/40 font-bold italic text-base focus:border-primary/50"
                                             value={newItem.nom}
                                             onChange={(e) => setNewItem({...newItem, nom: e.target.value})}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1">Quantité Initiale</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Quantité Initiale</Label>
                                             <Input 
                                                 type="number" 
-                                                className="h-12 bg-white/5 border-white/10 rounded-xl text-white font-black italic text-lg"
+                                                className="h-12 bg-muted/40 border-border rounded-xl text-foreground font-black italic text-lg"
                                                 value={newItem.quantite}
                                                 onChange={(e) => setNewItem({...newItem, quantite: Number(e.target.value)})}
                                             />
                                         </div>
                                         <div className="space-y-3">
-                                            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1">Unité</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Unité</Label>
                                             <Select value={newItem.unite} onValueChange={(v) => setNewItem({...newItem, unite: v})}>
-                                                <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl text-white font-bold italic">
+                                                <SelectTrigger className="h-12 bg-muted/40 border-border rounded-xl text-foreground font-bold italic">
                                                     <SelectValue />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-[#0A0A0B] border-white/10 text-white rounded-2xl">
+                                                <SelectContent className="bg-card border-border text-foreground rounded-2xl">
                                                     {['unités', 'kg', 'g', 'l', 'ml', 'caisses', 'sacs'].map(u => (
                                                         <SelectItem key={u} value={u} className="focus:bg-primary/20 rounded-xl uppercase text-[10px] font-black">{u}</SelectItem>
                                                     ))}
@@ -289,18 +289,18 @@ export default function StockPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1">Seuil de Vigilance</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Seuil de Vigilance</Label>
                                         <Input 
                                             type="number" 
-                                            className="h-12 bg-white/5 border-white/10 rounded-xl text-white font-black italic text-lg"
+                                            className="h-12 bg-muted/40 border-border rounded-xl text-foreground font-black italic text-lg"
                                             value={newItem.seuilAlerte}
                                             onChange={(e) => setNewItem({...newItem, seuilAlerte: Number(e.target.value)})}
                                         />
                                     </div>
                                 </div>
                                 <DialogFooter className="p-6 pt-0 gap-3">
-                                    <Button variant="ghost" onClick={() => setIsAddDialogOpen(false)} className="h-12 px-6 rounded-xl font-black italic text-white/40 hover:bg-white/5 hover:text-white transition-all">Annuler</Button>
-                                    <Button onClick={handleAddStock} disabled={isSubmitting} className="h-12 px-8 bg-primary hover:bg-primary/90 text-white rounded-xl font-black italic tracking-tight text-base shadow-xl shadow-primary/20">
+                                    <Button variant="ghost" onClick={() => setIsAddDialogOpen(false)} className="h-12 px-6 rounded-xl font-black italic text-muted-foreground hover:bg-muted hover:text-foreground transition-all">Annuler</Button>
+                                    <Button onClick={handleAddStock} disabled={isSubmitting} className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-black italic tracking-tight text-base shadow-xl shadow-primary/20">
                                         {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirmer l\'Ajout'}
                                     </Button>
                                 </DialogFooter>
@@ -312,21 +312,21 @@ export default function StockPage() {
                         {/* Filters & Search */}
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                             <div className="md:col-span-8 relative group">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-hover:text-primary transition-colors" />
+                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
                                 <Input 
                                     placeholder="Rechercher une référence..." 
-                                    className="pl-14 h-14 bg-white/5 backdrop-blur-xl border-white/10 rounded-2xl text-white font-bold italic text-base placeholder:text-white/20 focus:ring-primary/20 shadow-2xl" 
+                                    className="pl-14 h-14 bg-card/60 backdrop-blur-xl border-border rounded-2xl text-foreground font-bold italic text-base placeholder:text-muted-foreground/40 focus:ring-primary/20 shadow-2xl" 
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
                             <div className="md:col-span-4 relative group">
-                                <Filter className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-hover:text-primary transition-colors" />
+                                <Filter className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
                                 <Select value={selectedRestaurant} onValueChange={setSelectedRestaurant}>
-                                    <SelectTrigger className="pl-14 h-14 bg-white/5 backdrop-blur-xl border-white/10 rounded-2xl text-white font-bold italic shadow-2xl">
+                                    <SelectTrigger className="pl-14 h-14 bg-card/60 backdrop-blur-xl border-border rounded-2xl text-foreground font-bold italic shadow-2xl">
                                         <SelectValue placeholder="Filtrer par lieu" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#0A0A0B] border-white/10 text-white rounded-2xl">
+                                    <SelectContent className="bg-card border-border text-foreground rounded-2xl">
                                         <SelectItem value="all" className="focus:bg-primary/20 rounded-xl font-bold italic">Tous les établissements</SelectItem>
                                         {myRestaurants.map(r => (
                                             <SelectItem key={r.id} value={r.id} className="focus:bg-primary/20 rounded-xl font-bold italic">{r.nom}</SelectItem>
@@ -337,17 +337,17 @@ export default function StockPage() {
                         </div>
 
                         {/* Inventory Container */}
-                        <div className="bg-white/5 backdrop-blur-xl border border-white/5 rounded-[2rem] shadow-2xl relative overflow-hidden p-2 md:p-4">
+                        <div className="bg-card border border-border rounded-[2rem] shadow-2xl relative overflow-hidden p-2 md:p-4">
                             {/* Desktop View */}
                             <div className="hidden md:block">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="hover:bg-transparent border-white/5">
-                                            <TableHead className="py-4 px-6 text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Référence</TableHead>
-                                            <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Statut</TableHead>
-                                            <TableHead className="text-center text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Volume</TableHead>
-                                            <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Mise à jour</TableHead>
-                                            <TableHead className="text-right px-6 text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Actions</TableHead>
+                                        <TableRow className="hover:bg-transparent border-border">
+                                            <TableHead className="py-4 px-6 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Référence</TableHead>
+                                            <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Statut</TableHead>
+                                            <TableHead className="text-center text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Volume</TableHead>
+                                            <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Mise à jour</TableHead>
+                                            <TableHead className="text-right px-6 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -365,12 +365,12 @@ export default function StockPage() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             exit={{ opacity: 0, scale: 0.98 }}
                                                             transition={{ delay: index * 0.03 }}
-                                                            className="group border-white/5 hover:bg-white/[0.02] transition-all py-4"
+                                                            className="group border-border hover:bg-muted/30 transition-all py-4"
                                                         >
                                                             <TableCell className="py-4 px-6">
                                                                 <div className="flex flex-col">
-                                                                    <span className="font-black text-xl italic tracking-tighter text-white group-hover:text-primary transition-colors">{item.nom}</span>
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/30 mt-1 flex items-center gap-2">
+                                                                    <span className="font-black text-xl italic tracking-tighter text-foreground group-hover:text-primary transition-colors">{item.nom}</span>
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1 flex items-center gap-2">
                                                                         <div className="h-1 w-1 rounded-full bg-primary shadow-sm shadow-primary/20" /> {restaurantName}
                                                                     </span>
                                                                 </div>
@@ -388,17 +388,17 @@ export default function StockPage() {
                                                             <TableCell className="text-center">
                                                                 <div className="flex items-center justify-center gap-4">
                                                                     <button 
-                                                                        className="h-8 w-8 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-white/40 hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/10 transition-all font-black text-xl"
+                                                                        className="h-8 w-8 bg-muted/50 border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/10 transition-all font-black text-xl"
                                                                         onClick={() => handleUpdateQuantity(item.id, item.quantite - 1)}
                                                                     >
                                                                         -
                                                                     </button>
                                                                     <div className="min-w-[60px] group-hover:scale-110 transition-transform">
-                                                                        <span className="text-2xl font-black italic tracking-tighter text-white">{item.quantite}</span>
-                                                                        <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">{item.unite}</p>
+                                                                        <span className="text-2xl font-black italic tracking-tighter text-foreground">{item.quantite}</span>
+                                                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{item.unite}</p>
                                                                     </div>
                                                                     <button 
-                                                                        className="h-8 w-8 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-white/40 hover:text-emerald-500 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all font-black text-xl"
+                                                                        className="h-8 w-8 bg-muted/50 border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-emerald-500 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all font-black text-xl"
                                                                         onClick={() => handleUpdateQuantity(item.id, item.quantite + 1)}
                                                                     >
                                                                         +
@@ -406,7 +406,7 @@ export default function StockPage() {
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell>
-                                                                <div className="flex items-center gap-2 text-white/30 font-bold italic">
+                                                                <div className="flex items-center gap-2 text-muted-foreground font-bold italic">
                                                                     <History className="h-3 w-3 opacity-30" />
                                                                     <span className="text-xs">{format(new Date(item.derniereMiseAJour), "dd MMM, HH:mm")}</span>
                                                                 </div>
@@ -415,7 +415,7 @@ export default function StockPage() {
                                                                 <Button 
                                                                     variant="ghost" 
                                                                     size="icon" 
-                                                                    className="h-8 w-8 text-white/5 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all" 
+                                                                    className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all" 
                                                                     onClick={() => handleDelete(item.id)}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
@@ -430,17 +430,17 @@ export default function StockPage() {
                                                         <div className="flex flex-col items-center justify-center space-y-8">
                                                             <div className="relative">
                                                                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                                                                <div className="bg-white/5 p-10 rounded-full border border-white/10 backdrop-blur-xl relative">
-                                                                    <Package className="h-20 w-20 text-white/10" />
+                                                                <div className="bg-card p-10 rounded-full border border-border backdrop-blur-xl relative">
+                                                                    <Package className="h-20 w-20 text-muted-foreground/30" />
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-3">
-                                                                <h3 className="text-2xl font-black italic tracking-tight text-slate-900 uppercase">Aucune référence</h3>
-                                                                <p className="text-slate-400 font-medium max-w-xs mx-auto">Ajustez vos filtres ou effectuez une nouvelle acquisition.</p>
+                                                                <h3 className="text-2xl font-black italic tracking-tight text-foreground uppercase">Aucune référence</h3>
+                                                                <p className="text-muted-foreground font-medium max-w-xs mx-auto">Ajustez vos filtres ou effectuez une nouvelle acquisition.</p>
                                                             </div>
                                                             <Button 
                                                                 variant="outline" 
-                                                                className="rounded-2xl h-14 px-12 border-white/10 bg-white/5 text-white/40 hover:text-white hover:bg-white/10 font-black italic transition-all" 
+                                                                className="rounded-2xl h-14 px-12 border-border bg-card text-foreground hover:bg-muted font-black italic transition-all" 
                                                                 onClick={() => { setSearchQuery(''); setSelectedRestaurant('all'); }}
                                                             >
                                                                 Réinitialiser Flux
@@ -468,14 +468,14 @@ export default function StockPage() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: index * 0.05 }}
-                                                className="bg-white/5 border border-white/5 p-4 rounded-2xl flex flex-col gap-4 shadow-2xl backdrop-blur-md"
+                                                className="bg-card border border-border p-4 rounded-2xl flex flex-col gap-4 shadow-2xl backdrop-blur-md"
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <div>
-                                                        <h3 className="font-black text-lg italic tracking-tighter text-white leading-tight">{item.nom}</h3>
+                                                        <h3 className="font-black text-lg italic tracking-tighter text-foreground leading-tight">{item.nom}</h3>
                                                         <div className="flex items-center gap-1.5 mt-1">
                                                             <MapPin className="h-2.5 w-2.5 text-primary" />
-                                                            <span className="text-[8px] font-black uppercase tracking-widest text-white/30">{restaurantName}</span>
+                                                            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{restaurantName}</span>
                                                         </div>
                                                     </div>
                                                     <Badge className={cn(
@@ -488,20 +488,20 @@ export default function StockPage() {
                                                     </Badge>
                                                 </div>
 
-                                                <div className="flex items-center justify-between bg-white/[0.03] rounded-xl p-3 border border-white/5">
+                                                <div className="flex items-center justify-between bg-muted/30 rounded-xl p-3 border border-border">
                                                     <div className="flex items-center gap-3">
                                                         <button 
-                                                            className="h-8 w-8 bg-white/5 rounded-lg flex items-center justify-center text-white/20 active:text-red-500 active:bg-red-500/10 transition-colors font-black text-lg border border-white/5"
+                                                            className="h-8 w-8 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground active:text-red-500 active:bg-red-500/10 transition-colors font-black text-lg border border-border"
                                                             onClick={() => handleUpdateQuantity(item.id, item.quantite - 1)}
                                                         >
                                                             -
                                                         </button>
                                                         <div className="text-center min-w-[50px]">
-                                                            <span className="text-xl font-black italic tracking-tighter text-white">{item.quantite}</span>
-                                                            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">{item.unite}</p>
+                                                            <span className="text-xl font-black italic tracking-tighter text-foreground">{item.quantite}</span>
+                                                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{item.unite}</p>
                                                         </div>
                                                         <button 
-                                                            className="h-8 w-8 bg-white/5 rounded-lg flex items-center justify-center text-white/20 active:text-emerald-500 active:bg-emerald-500/10 transition-colors font-black text-lg border border-white/5"
+                                                            className="h-8 w-8 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground active:text-emerald-500 active:bg-emerald-500/10 transition-colors font-black text-lg border border-border"
                                                             onClick={() => handleUpdateQuantity(item.id, item.quantite + 1)}
                                                         >
                                                             +
@@ -509,14 +509,14 @@ export default function StockPage() {
                                                     </div>
                                                     
                                                     <div className="flex flex-col items-end gap-1">
-                                                        <div className="flex items-center gap-1 text-white/20 text-[8px] font-black italic uppercase">
+                                                        <div className="flex items-center gap-1 text-muted-foreground text-[8px] font-black italic uppercase">
                                                             <History className="h-2.5 w-2.5" />
                                                             {format(new Date(item.derniereMiseAJour), "dd MMM")}
                                                         </div>
                                                         <Button 
                                                             variant="ghost" 
                                                             size="icon" 
-                                                            className="h-8 w-8 text-white/5 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all" 
+                                                            className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all" 
                                                             onClick={() => handleDelete(item.id)}
                                                         >
                                                             <Trash2 className="h-3.5 w-3.5" />
@@ -528,7 +528,7 @@ export default function StockPage() {
                                     })
                                 ) : (
                                     <div className="py-20 text-center">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Aucune référence</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Aucune référence</p>
                                     </div>
                                 )}
                             </div>
@@ -547,7 +547,7 @@ export default function StockPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="p-6 md:p-8 bg-white/5 backdrop-blur-2xl border border-white/5 rounded-[2rem] relative overflow-hidden group shadow-2xl"
+                            className="p-6 md:p-8 bg-card border border-border rounded-[2rem] relative overflow-hidden group shadow-2xl"
                         >
                             <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
                             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 relative z-10">
@@ -555,14 +555,14 @@ export default function StockPage() {
                                     <AlertTriangle className="h-7 w-7 text-primary animate-pulse" />
                                 </div>
                                 <div className="flex-1 text-center md:text-left space-y-2">
-                                    <h4 className="text-2xl font-black italic tracking-tighter text-white leading-none">Vigilance Approvisionnement</h4>
-                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
+                                    <h4 className="text-2xl font-black italic tracking-tighter text-foreground leading-none">Vigilance Approvisionnement</h4>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
                                         Plusieurs références ont franchi le seuil critique de sécurité. <span className="text-primary font-black italic">Urgence Logistique</span> détectée.
                                     </p>
                                 </div>
                                 <Button 
                                     onClick={() => (document.querySelector('[value="courses"]') as HTMLElement)?.click()}
-                                    className="w-full md:w-auto h-12 md:h-14 px-8 bg-white text-[#0A0A0B] hover:bg-white/90 rounded-xl font-black italic tracking-tight text-base shadow-xl transition-all hover:scale-105 active:scale-95"
+                                    className="w-full md:w-auto h-12 md:h-14 px-8 bg-primary hover:bg-primary/90 text-white rounded-xl font-black italic tracking-tight text-base shadow-xl transition-all hover:scale-105 active:scale-95"
                                 >
                                     Générer Liste de Frais
                                 </Button>

@@ -84,7 +84,7 @@ export function DashboardHero({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black italic uppercase tracking-tighter text-white mb-0.5 leading-[0.9] md:leading-none"
+                        className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black italic uppercase tracking-tighter text-foreground mb-0.5 leading-[0.9] md:leading-none"
                     >
                         {title}
                     </motion.h1>
