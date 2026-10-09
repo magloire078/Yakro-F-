@@ -81,7 +81,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
         className="h-full"
       >
         <Card className="group relative overflow-hidden bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 hover:border-primary/40 transition-all duration-300 h-full flex flex-col rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-xl">
-          <CardHeader className="p-0 relative h-36 sm:h-44 md:h-48 overflow-hidden">
+          <CardHeader className="p-0 relative h-36 xs:h-40 sm:h-44 md:h-48 overflow-hidden">
              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10" />
             {isCloudinary ? (
               <CldImage
@@ -91,6 +91,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
                 height={placeholder.height}
                 crop="fill"
                 gravity="auto"
+                sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
@@ -99,35 +100,36 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
                 alt={rec.item || 'plat recommandé'}
                 width={placeholder.width}
                 height={placeholder.height}
+                sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                 data-ai-hint={`${rec.cuisine} food`}
               />
             )}
-            <Badge className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 bg-primary/95 backdrop-blur-md border-none shadow-md text-[10px] sm:text-xs py-0.5 px-2">
+            <Badge className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 bg-primary/95 backdrop-blur-md border-none shadow-md text-[9px] xs:text-[10px] sm:text-xs py-0.5 px-2">
                 <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 fill-white" /> Recommandé
             </Badge>
             <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 z-20">
-               <span className="text-white font-bold text-base sm:text-lg leading-tight drop-shadow-md">{rec.item}</span>
+               <span className="text-white font-bold text-sm xs:text-base sm:text-lg leading-tight drop-shadow-md">{rec.item}</span>
             </div>
           </CardHeader>
-          <CardContent className="p-3.5 sm:p-5 flex flex-col flex-grow relative">
-            <div className="space-y-2.5 sm:space-y-3 flex-grow">
+          <CardContent className="p-3 xs:p-3.5 sm:p-4 md:p-5 flex flex-col flex-grow relative justify-between">
+            <div className="space-y-1.5 xs:space-y-2 sm:space-y-2.5 flex-grow">
                <div className="flex items-center justify-between">
-                  <span className="text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">{rec.cuisine}</span>
+                  <span className="text-[9px] xs:text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">{rec.cuisine}</span>
                   <div className="flex items-center gap-1 text-xs sm:text-sm font-bold">
                     <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                    <span>{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') : '---'} <small className="text-[9px] font-normal">FCFA</small></span>
+                    <span>{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') : '---'} <small className="text-[8px] xs:text-[9px] font-normal">FCFA</small></span>
                   </div>
                </div>
                
-               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-normal italic line-clamp-2">
+               <p className="text-[11px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-normal italic line-clamp-2">
                  &ldquo;{rec.description}&rdquo;
                </p>
 
-               <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
+               <div className="flex items-center gap-1.5 pt-0.5 text-[9px] xs:text-[10px] text-slate-400">
                   <div className="flex -space-x-1.5">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="w-4 h-4 rounded-full border border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800" />
+                        <div key={i} className="w-3.5 h-3.5 xs:w-4 xs:h-4 rounded-full border border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800" />
                     ))}
                   </div>
                   <span>Préféré des gourmets</span>
@@ -135,7 +137,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
             </div>
 
             <Button 
-                className="w-full mt-3 sm:mt-4 rounded-xl sm:rounded-2xl bg-slate-900 dark:bg-orange-500 hover:bg-primary/90 dark:hover:bg-orange-400 text-white font-bold h-9 sm:h-11 text-xs sm:text-sm gap-1.5 shadow-md"
+                className="w-full mt-2.5 xs:mt-3 sm:mt-4 rounded-xl sm:rounded-2xl bg-slate-900 dark:bg-orange-500 hover:bg-primary/90 dark:hover:bg-orange-400 text-white font-bold h-8 xs:h-9 sm:h-11 text-xs sm:text-sm gap-1.5 shadow-md active:scale-95 transition-all"
                 onClick={() => handleAddToCart(rec.item)}
             >
                 <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Commander
