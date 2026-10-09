@@ -342,26 +342,26 @@ export function LandingPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-12 w-full md:w-auto">
             <div className="space-y-4">
-                <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] sm:text-xs">Produit</h4>
+                <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-[10px] sm:text-xs">Produit</h4>
                 <nav className="flex flex-col gap-2 sm:gap-3">
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Restaurants</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Livreurs</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Partenaires</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Restaurants</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Livreurs</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Partenaires</Link>
                 </nav>
             </div>
             <div className="space-y-4">
-                <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] sm:text-xs">Compagnie</h4>
+                <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-[10px] sm:text-xs">Compagnie</h4>
                 <nav className="flex flex-col gap-2 sm:gap-3">
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">À propos</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Contact</Link>
-                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary">Blog</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">À propos</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Contact</Link>
+                    <Link href="#" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Blog</Link>
                 </nav>
             </div>
             <div className="space-y-4">
                 <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-[10px] sm:text-xs">Légal</h4>
                 <nav className="flex flex-col gap-2 sm:gap-3">
-                    <Link href="/terms" prefetch={false} className="text-sm font-bold text-slate-500 hover:text-primary">Conditions (CGU)</Link>
-                    <Link href="/privacy" prefetch={false} className="text-sm font-bold text-slate-500 hover:text-primary">Confidentialité</Link>
+                    <Link href="/terms" prefetch={false} className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Conditions (CGU)</Link>
+                    <Link href="/privacy" prefetch={false} className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Confidentialité</Link>
                 </nav>
             </div>
           </div>

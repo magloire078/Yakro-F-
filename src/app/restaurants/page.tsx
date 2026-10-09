@@ -322,7 +322,7 @@ function RestaurantPageContent() {
                                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px]" />
                                     <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 sm:gap-8">
                                         <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left">
-                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 glass-orange rounded-full text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
+                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 glass-orange rounded-full text-primary text-[10px] sm:text-[10px] font-black uppercase tracking-wider">
                                                 <Sparkles className="h-3 w-3" /> Yakro Intelligence
                                             </div>
                                             <h3 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">Pas encore d&apos;idée ?</h3>

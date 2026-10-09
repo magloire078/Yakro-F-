@@ -20,13 +20,13 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-card/95 backdrop-blur-3xl border border-border p-5 shadow-3xl rounded-[1.5rem]">
-                <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[8px] mb-3">{label}</p>
+                <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px] mb-3">{label}</p>
                 <p className="text-primary font-black text-lg italic tracking-tighter">
                     {`${payload[0].value.toLocaleString()} FCFA`}
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                    <span className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest">Flux Capturé</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Flux Capturé</span>
                 </div>
             </div>
         );
@@ -220,7 +220,7 @@ function StatCard({ title, value, unit, change, isUp, icon, delay }: { title: st
                     </div>
                     {change && (
                         <div className={cn(
-                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black tracking-widest",
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest",
                             isUp ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
                         )}>
                             {isUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}

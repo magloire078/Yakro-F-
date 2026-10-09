@@ -348,40 +348,40 @@ export default function CustomerHomePage() {
   }
   
   return (
-    <div className="flex flex-col gap-5 sm:gap-8 md:gap-12">
+    <div className="flex flex-col gap-4 sm:gap-6 md:gap-8">
       {activeOrder ? (
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
-        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[3rem] min-h-[300px] sm:min-h-[380px] md:min-h-[460px] flex items-center justify-center shadow-xl bg-slate-900">
+        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] min-h-[280px] sm:min-h-[360px] md:min-h-[420px] flex items-center justify-center shadow-2xl bg-slate-950">
           {/* Background Image with Overlay */}
           <div 
             className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-105 bg-[url('/assets/marketing/hero-basilica.png')]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/30" />
           
-          <div className="relative z-10 w-full px-4 sm:px-6 py-6 sm:py-10 md:py-16 text-center space-y-4 sm:space-y-6">
+          <div className="relative z-10 w-full px-4 sm:px-6 py-6 sm:py-10 md:py-14 text-center space-y-3.5 sm:space-y-5">
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
             >
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full glass-orange text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-3 sm:mb-6 animate-float">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 backdrop-blur-md border border-primary/40 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2.5 sm:mb-4 animate-float">
                     <SparklesIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                     Yakro Intelligence
                 </div>
-                <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.05] tracking-tighter uppercase italic">
-                    L&apos;Élite de <span className="text-primary drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">Yakro</span><br />
+                <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.02] tracking-tighter uppercase italic drop-shadow-lg">
+                    L&apos;Élite de <span className="text-primary drop-shadow-[0_0_20px_rgba(249,115,22,0.6)]">Yakro</span><br />
                     À votre porte.
                 </h1>
-                <p className="mt-2 sm:mt-4 text-xs sm:text-base md:text-lg text-slate-200 max-w-lg mx-auto font-medium leading-relaxed opacity-85 line-clamp-2 sm:line-clamp-none">
+                <p className="mt-1.5 sm:mt-3 text-xs sm:text-base md:text-lg text-slate-200 max-w-lg mx-auto font-medium leading-relaxed opacity-90 line-clamp-2 sm:line-clamp-none">
                     L&apos;expérience gastronomique transcendée par l&apos;intelligence artificielle.
                 </p>
             </motion.div>
 
             <motion.div 
-               initial={{ opacity: 0, scale: 0.95 }}
+               initial={{ opacity: 0, scale: 0.96 }}
                animate={{ opacity: 1, scale: 1 }}
-               transition={{ duration: 0.4, delay: 0.15 }}
+               transition={{ duration: 0.4, delay: 0.1 }}
                className="max-w-2xl mx-auto"
             >
               <IntelligentSearchBar 
@@ -389,7 +389,7 @@ export default function CustomerHomePage() {
                 onInterpretedSearchChange={setInterpretedSearch} 
               />
               
-              <div className="mt-3 sm:mt-6 flex flex-wrap justify-center gap-1.5 sm:gap-2.5">
+              <div className="mt-3 sm:mt-5 flex flex-wrap justify-center gap-1.5 sm:gap-2">
                 {[
                   { id: 'rating', icon: TrendingUp, label: 'Mieux notés' },
                   { id: 'time', icon: Timer, label: 'Rapides' },
@@ -400,8 +400,8 @@ export default function CustomerHomePage() {
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:bg-primary/20 transition-all active:scale-95",
-                        activeFilter === filter.id && "bg-primary/80 border-primary/60 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                        "rounded-xl bg-black/40 hover:bg-black/60 text-white border border-white/15 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:border-primary/50 transition-all active:scale-95",
+                        activeFilter === filter.id && "bg-primary hover:bg-primary/90 text-white border-primary shadow-[0_0_15px_rgba(249,115,22,0.4)]"
                     )}
                     onClick={() => setActiveFilter(activeFilter === filter.id ? null : filter.id as SortFilter)}
                   >
@@ -412,8 +412,8 @@ export default function CustomerHomePage() {
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:bg-primary/20 transition-all active:scale-95",
-                        activeFilter === 'distance' && "bg-primary/80 border-primary/60 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                        "rounded-xl bg-black/40 hover:bg-black/60 text-white border border-white/15 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:border-primary/50 transition-all active:scale-95",
+                        activeFilter === 'distance' && "bg-primary hover:bg-primary/90 text-white border-primary shadow-[0_0_15px_rgba(249,115,22,0.4)]"
                     )}
                     onClick={handleLocationFilter}
                 >
@@ -427,9 +427,9 @@ export default function CustomerHomePage() {
 
       {/* Categories Section */}
       <section>
-        <div className="flex items-center gap-2.5 mb-3 sm:mb-5">
-            <div className="h-5 sm:h-6 w-1 bg-primary rounded-full" />
-            <h2 className="text-lg sm:text-2xl font-headline text-foreground">Explorer par catégories</h2>
+        <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
+            <div className="h-4 sm:h-5 w-1 bg-primary rounded-full" />
+            <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Explorer par catégories</h2>
         </div>
         <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {categories.map((category, index) => (
@@ -437,25 +437,25 @@ export default function CustomerHomePage() {
                 key={category.name}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.04 }}
                 viewport={{ once: true }}
             >
                 <Card 
-                    className={cn("group flex flex-col items-center justify-center p-2.5 sm:p-4 glass transition-all duration-300 cursor-pointer rounded-2xl border-white/5",
-                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-primary text-white shadow-lg scale-105 border-primary/60" : "hover:bg-white/10 dark:hover:bg-white/5"
+                    className={cn("group flex flex-col items-center justify-center p-2.5 sm:p-4 bg-card hover:bg-accent/10 transition-all duration-300 cursor-pointer rounded-2xl border border-border shadow-sm",
+                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-primary text-white shadow-lg scale-105 border-primary" : "hover:border-primary/40"
                     )}
                     onClick={() => handleCategorySelect(category.name)}
                 >
                   <div className={cn(
-                    "p-2 sm:p-3 rounded-xl transition-all duration-300 mb-1.5 sm:mb-2 shadow-inner",
-                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-primary"
+                    "p-2 sm:p-3 rounded-xl transition-all duration-300 mb-1 sm:mb-2 shadow-inner",
+                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-muted group-hover:bg-primary/20"
                   )}>
                     <category.icon className={cn(
-                      "w-4 h-4 sm:w-6 sm:h-6 transition-colors duration-300",
-                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-primary group-hover:text-white"
+                      "w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300",
+                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-primary"
                     )}/>
                   </div>
-                  <p className="font-bold uppercase tracking-tight text-[10px] sm:text-xs text-center truncate w-full">{category.name}</p>
+                  <p className="font-black uppercase tracking-tight text-[9px] sm:text-xs text-center truncate w-full">{category.name}</p>
                 </Card>
             </motion.div>
           ))}
@@ -465,17 +465,17 @@ export default function CustomerHomePage() {
       {/* Hot Picks Section */}
       {!isLoading && restaurants.length > 0 && !searchQuery && !selectedCategory && (
         <section className="relative">
-          <div className="flex items-center justify-between mb-3 sm:mb-5">
-            <div className="flex items-center gap-2 sm:gap-3">
-               <div className="p-1.5 sm:p-2 bg-red-100 dark:bg-red-950/30 rounded-xl">
-                 <Flame className="text-red-600 fill-red-600 h-4 w-4 sm:h-5 sm:w-5" />
+          <div className="flex items-center justify-between mb-2.5 sm:mb-4">
+            <div className="flex items-center gap-2">
+               <div className="p-1 sm:p-1.5 bg-red-500/10 rounded-lg">
+                 <Flame className="text-red-500 fill-red-500 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                </div>
-               <h2 className="text-lg sm:text-2xl font-headline text-foreground">Coups de Cœur</h2>
+               <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Coups de Cœur</h2>
             </div>
-            <Badge variant="hot" className="text-[10px] py-0.5 px-2">OFFRES CHAUDES</Badge>
+            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest text-red-500 border-red-500/30 bg-red-500/5 py-0.5 px-2">OFFRES CHAUDES</Badge>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
              {restaurants.filter(r => r.note >= 4.8).slice(0, 4).map(restaurant => (
               <RestaurantCard key={`hot-${restaurant.id}`} restaurant={restaurant} />
             ))}
@@ -490,18 +490,18 @@ export default function CustomerHomePage() {
       )}
       
       {recommendationError && user && (
-          <div className="text-center text-muted-foreground -mt-4">
+          <div className="text-center text-muted-foreground -mt-2">
               <p className="text-xs">Service de recommandations IA temporairement indisponible.</p>
           </div>
       )}
       
       {featuredRestaurants.length > 0 && !selectedCategory && !searchQuery && (
           <section>
-             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
-                <Star className="text-primary fill-primary h-4 w-4 sm:h-5 sm:w-5" />
-                <h2 className="text-lg sm:text-2xl font-headline text-foreground">Restaurants en vedette</h2>
+             <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
+                <Star className="text-primary fill-primary h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Restaurants en vedette</h2>
              </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                {featuredRestaurants.map(restaurant => (
                 <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
               ))}
@@ -510,23 +510,26 @@ export default function CustomerHomePage() {
       )}
 
       <section id="restaurants">
-        <div className="flex items-center justify-between mb-3 sm:mb-5">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <h2 className="text-lg sm:text-2xl font-headline text-foreground">
+        <div className="flex items-center justify-between mb-2.5 sm:mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">
               {searchQuery || interpretedSearch || activeFilter || selectedCategory ? 'Résultats de recherche' : 'Tous les Restaurants'}
             </h2>
-            {getFilterLabel() && <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">{getFilterLabel()}</Badge>}
+            {getFilterLabel() && <Badge variant="secondary" className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">{getFilterLabel()}</Badge>}
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
            {normalRestaurants.map(restaurant => (
             <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} />
           ))}
         </div>
          {normalRestaurants.length === 0 && (
-            <div className="text-center py-8">
-                <p className="text-muted-foreground text-sm italic">Aucun restaurant ne correspond à votre recherche.</p>
-                <Button variant="link" onClick={() => { setSearchQuery(''); setInterpretedSearch(null); setSelectedCategory(null); setActiveFilter(null); }} className="mt-1 text-xs">
+            <div className="text-center py-10 bg-card rounded-2xl border border-border p-6 space-y-3">
+                <p className="text-muted-foreground text-sm font-medium italic">Aucun restaurant ne correspond à votre recherche.</p>
+                <Button 
+                  onClick={() => { setSearchQuery(''); setInterpretedSearch(null); setSelectedCategory(null); setActiveFilter(null); }} 
+                  className="h-10 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl font-black italic text-xs uppercase tracking-wider shadow-lg shadow-primary/20"
+                >
                     Réinitialiser les filtres
                 </Button>
             </div>
@@ -534,12 +537,12 @@ export default function CustomerHomePage() {
       </section>
 
       <section>
-        <Card className="bg-primary text-primary-foreground p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 shadow-lg">
-          <div className="text-center md:text-left">
-            <h2 className="text-xl sm:text-2xl font-headline">Vous êtes un restaurateur ?</h2>
-            <p className="mt-1 sm:mt-2 text-xs sm:text-sm max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité à Yamoussoukro.</p>
+        <Card className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 text-white p-5 sm:p-7 md:p-8 rounded-2xl sm:rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+          <div className="text-center md:text-left space-y-1">
+            <h2 className="text-xl sm:text-2xl font-black italic uppercase tracking-tight">Vous êtes un restaurateur ?</h2>
+            <p className="text-xs sm:text-sm max-w-lg text-white/90 font-medium leading-relaxed">Rejoignez notre plateforme d&apos;élite pour atteindre plus de clients et décupler votre chiffre d&apos;affaires à Yamoussoukro.</p>
           </div>
-          <Button variant="secondary" size="sm" className="shrink-0 font-bold rounded-xl px-5 h-10 text-xs sm:text-sm" asChild>
+          <Button size="lg" className="shrink-0 font-black italic uppercase tracking-tight rounded-xl px-6 h-12 text-xs sm:text-sm bg-slate-950 hover:bg-slate-900 text-white shadow-2xl border border-white/10 transition-all hover:scale-105 active:scale-95" asChild>
             <Link href="/dashboard/new-restaurant">Rejoindre l&apos;aventure</Link>
           </Button>
         </Card>

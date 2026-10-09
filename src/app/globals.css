@@ -205,3 +205,14 @@
     100% { transform: translateY(0px); }
   }
 }
+@layer utilities {
+  /* Défilement horizontal/vertical sans barre visible (onglets, flux live) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

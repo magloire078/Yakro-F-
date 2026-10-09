@@ -194,7 +194,7 @@ export default function BoostPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.7 }}
-                        className="bg-card/40 backdrop-blur-xl border border-border p-8 flex items-start gap-6 group hover:border-white/20 transition-all duration-500 rounded-[2rem] shadow-2xl"
+                        className="bg-card/40 backdrop-blur-xl border border-border p-8 flex items-start gap-6 group hover:border-primary/30 transition-all duration-500 rounded-[2rem] shadow-2xl"
                     >
                         <div className="h-12 w-12 bg-muted border border-border flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform rounded-2xl">
                             <ShieldCheck className="h-6 w-6 text-muted-foreground" />

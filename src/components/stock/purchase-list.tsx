@@ -41,15 +41,15 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
 
     if (lowStocks.length === 0) {
         return (
-            <div className="bg-white/5 backdrop-blur-xl border border-dashed border-white/10 p-24 rounded-[3rem] text-center flex flex-col items-center justify-center relative overflow-hidden group shadow-2xl">
+            <div className="bg-muted/50 dark:bg-white/5 backdrop-blur-xl border border-dashed border-border dark:border-white/10 p-24 rounded-[3rem] text-center flex flex-col items-center justify-center relative overflow-hidden group shadow-2xl">
                 <div className="relative mb-8">
                     <div className="absolute inset-0 bg-emerald-500/10 blur-3xl rounded-full scale-150 group-hover:scale-175 transition-transform duration-1000" />
-                    <div className="h-20 w-20 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center shadow-inner relative">
+                    <div className="h-20 w-20 bg-muted/50 dark:bg-white/5 border border-border dark:border-white/10 rounded-3xl flex items-center justify-center shadow-inner relative">
                         <Check className="h-10 w-10 text-emerald-500 transition-transform group-hover:scale-110" />
                     </div>
                 </div>
-                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 italic mb-2">Efficience Optimale</p>
-                <p className="text-lg font-black italic text-white tracking-tighter">
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/60 italic mb-2">Efficience Optimale</p>
+                <p className="text-lg font-black italic text-foreground tracking-tighter">
                     Tous vos stocks respectent les standards d&apos;excellence. <br />
                     <span className="text-emerald-500 underline decoration-2 underline-offset-4 decoration-emerald-500/20">Zéro Rupture</span> détectée.
                 </p>

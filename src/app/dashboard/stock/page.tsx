@@ -200,8 +200,8 @@ export default function StockPage() {
         >
             <div className="space-y-8 md:space-y-12">
                 <Tabs defaultValue="inventaire" className="w-full">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-card/40 backdrop-blur-xl border border-white/5 p-2 rounded-3xl shadow-2xl">
-                        <TabsList className="bg-white/5 h-12 md:h-14 p-1 w-full md:w-auto rounded-2xl border border-white/5">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-card/40 backdrop-blur-xl border border-border dark:border-white/5 p-2 rounded-3xl shadow-2xl">
+                        <TabsList className="bg-muted/50 dark:bg-white/5 h-12 md:h-14 p-1 w-full md:w-auto rounded-2xl border border-border dark:border-white/5">
                             <TabsTrigger 
                                 value="inventaire" 
                                 className="flex-1 md:flex-none h-full px-6 rounded-xl font-black italic text-[10px] md:text-xs data-[state=active]:bg-primary data-[state=active]:text-white transition-all"

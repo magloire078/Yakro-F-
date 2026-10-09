@@ -157,7 +157,7 @@ export function ReportCenter() {
                                         <div className="flex flex-col items-start gap-1">
                                             <span className="font-black uppercase italic tracking-tighter text-xs">{format(month, 'MMMM yyyy', { locale: fr })}</span>
                                             <span className={cn(
-                                                "text-[8px] font-bold uppercase tracking-widest",
+                                                "text-[10px] font-bold uppercase tracking-widest",
                                                 isSelected ? "text-orange-100" : "text-muted-foreground/50"
                                             )}>Période Archive</span>
                                         </div>
@@ -199,7 +199,7 @@ export function ReportCenter() {
                             <div className="space-y-4">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
                                     <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-primary">Document Certifié</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">Document Certifié</span>
                                 </div>
                                 <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground leading-none">
                                     Rapport <span className="text-primary italic">Administratif</span>
@@ -211,7 +211,7 @@ export function ReportCenter() {
                             
                             <div className="flex gap-4">
                                 <div className="text-right hidden md:block">
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">GÉNÉRÉ LE</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">GÉNÉRÉ LE</p>
                                     <p className="text-sm font-black italic text-muted-foreground">{format(new Date(), 'dd MMMM yyyy', { locale: fr })}</p>
                                 </div>
                             </div>
@@ -259,11 +259,11 @@ export function ReportCenter() {
                                             if (active && payload && payload.length) {
                                                 return (
                                                     <div className="bg-card/90 backdrop-blur-3xl border border-border/50 p-5 shadow-3xl rounded-[1.5rem]">
-                                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-3">{payload[0].payload.fullDate}</p>
+                                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">{payload[0].payload.fullDate}</p>
                                                         <p className="text-primary font-black text-lg italic tracking-tighter">{(payload[0].value || 0).toLocaleString()} FCFA</p>
                                                         <div className="mt-2 flex items-center gap-2">
                                                             <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                                                            <span className="text-[7px] font-bold text-muted-foreground/60 uppercase tracking-widest">{payload[0].payload.count} OPÉRATIONS</span>
+                                                            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">{payload[0].payload.count} OPÉRATIONS</span>
                                                         </div>
                                                     </div>
                                                 );
@@ -309,7 +309,7 @@ export function ReportCenter() {
                                                 </td>
                                                 <td className="py-6 px-4 text-right">
                                                     <span className="text-sm font-black text-foreground">{r.total.toLocaleString()}</span>
-                                                    <span className="ml-2 text-[9px] font-bold text-primary uppercase">FCFA</span>
+                                                    <span className="ml-2 text-[10px] font-bold text-primary uppercase">FCFA</span>
                                                 </td>
                                                 <td className="py-6 px-4 text-right">
                                                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{r.count} unités</span>
@@ -323,7 +323,7 @@ export function ReportCenter() {
 
                         {/* Footer decorative text */}
                         <div className="mt-20 pt-10 border-t border-border/50 text-center opacity-20">
-                            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-muted-foreground">
+                            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground">
                                 YAKRO FÊ SUPREME AUTHORITY &bull; PROTOCOLE DE RAPPORT V9.4
                             </p>
                         </div>

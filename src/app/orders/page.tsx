@@ -56,7 +56,7 @@ export default function OrdersPage() {
                             <OrderHistoryItem key={order.id} order={order} />
                         ))
                     ) : (
-                        <div className="text-center py-12 sm:py-20 glass rounded-2xl sm:rounded-3xl border-white/5 flex flex-col items-center gap-4 sm:gap-6 animate-in fade-in slide-in-from-bottom-6 duration-500">
+                        <div className="text-center py-12 sm:py-20 glass rounded-2xl sm:rounded-3xl border-border dark:border-white/5 flex flex-col items-center gap-4 sm:gap-6 animate-in fade-in slide-in-from-bottom-6 duration-500">
                             <div className="p-4 sm:p-6 rounded-full bg-primary/10 border border-primary/20">
                                 <History className="w-10 h-10 sm:w-14 sm:h-14 text-primary animate-pulse"/>
                             </div>
@@ -64,7 +64,7 @@ export default function OrdersPage() {
                                 <p className="text-lg sm:text-xl font-black uppercase tracking-tight">Silence Gastronomique</p>
                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider opacity-70">Votre table est encore vide</p>
                             </div>
-                            <Button asChild className="rounded-xl sm:rounded-2xl glass-orange text-white font-bold uppercase tracking-wider px-6 sm:px-8 h-10 sm:h-12 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 text-xs sm:text-sm">
+                            <Button asChild className="rounded-xl sm:rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-wider px-6 sm:px-8 h-10 sm:h-12 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 text-xs sm:text-sm">
                                 <Link href="/">Explorer la Carte</Link>
                             </Button>
                         </div>

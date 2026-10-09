@@ -276,7 +276,7 @@ export default function AdminPage() {
     return (
         <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-body">
             {/* Cinematic Hero Header */}
-            <div className="relative h-[30vh] md:h-[35vh] min-h-[350px] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[350px] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -291,7 +291,7 @@ export default function AdminPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/60 z-10" />
                 </div>
 
-                <div className="relative z-30 text-center space-y-8 px-6 max-w-5xl pt-10 md:pt-0">
+                <div className="relative z-30 text-center space-y-5 md:space-y-8 px-4 md:px-6 max-w-5xl pt-8 md:pt-0">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -306,7 +306,7 @@ export default function AdminPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-3xl md:text-5xl font-headline font-bold tracking-tight text-foreground leading-tight mb-4"
+                            className="text-3xl md:text-5xl font-headline font-bold tracking-tight text-foreground leading-tight mb-2 md:mb-4"
                         >
                             Centre de <span className="text-primary italic">Contrôle</span>
                         </motion.h1>
@@ -314,7 +314,7 @@ export default function AdminPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-slate-500 font-body text-[10px] md:text-xs tracking-wider opacity-80"
+                            className="text-muted-foreground font-body text-[11px] md:text-xs tracking-wider"
                         >
                             Supervision intégrale et commandement de l&apos;écosystème
                         </motion.p>
@@ -324,7 +324,7 @@ export default function AdminPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="flex flex-wrap items-center justify-center gap-3 mt-8"
+                        className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-4 md:mt-8"
                     >
                         <Sheet>
                             <SheetTrigger asChild>
@@ -334,12 +334,12 @@ export default function AdminPage() {
                                 </Button>
                             </SheetTrigger>
                             <SheetContent className="w-full sm:max-w-md bg-background/95 backdrop-blur-3xl border-border text-foreground shadow-2xl">
-                                <SheetHeader className="pb-8 border-b border-white/5">
+                                <SheetHeader className="pb-8 border-b border-border dark:border-white/5">
                                     <SheetTitle className="text-2xl font-headline font-bold tracking-tight flex items-center gap-3">
                                         <Bell className="h-7 w-7 text-primary" />
                                         Alertes <span className="text-primary italic">Système</span>
                                     </SheetTitle>
-                                    <SheetDescription className="text-slate-500 font-body text-[11px] tracking-widest opacity-80">ANOMALIES ET ÉVÉNEMENTS CRITIQUES</SheetDescription>
+                                    <SheetDescription className="text-muted-foreground font-body text-[11px] tracking-widest opacity-80">ANOMALIES ET ÉVÉNEMENTS CRITIQUES</SheetDescription>
                                 </SheetHeader>
                                 <ScrollArea className="h-[calc(100vh-150px)] mt-6 pr-4">
                                     <AdminAlerts />
@@ -362,9 +362,9 @@ export default function AdminPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-6 -mt-12 relative z-40 pb-32">
+            <div className="container mx-auto px-4 md:px-6 -mt-10 md:-mt-12 relative z-40 pb-32">
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-10 md:mb-16">
                     {[
                         { title: 'Citoyens', value: allUsers.length, icon: Users, color: 'orange' },
                         { title: 'Bastions', value: restaurants.length, icon: Store, color: 'white' },
@@ -377,28 +377,27 @@ export default function AdminPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.4 + (idx * 0.1), duration: 0.5, ease: "easeOut" }}
                             whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                            className={`bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 relative group overflow-hidden rounded-3xl shadow-2xl transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 animate-float`}
-                            style={{ animationDelay: `${idx * 1.5}s` } as React.CSSProperties}
+                            className="bg-card/70 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-4 md:p-6 relative group overflow-hidden rounded-2xl md:rounded-3xl shadow-lg dark:shadow-2xl transition-colors duration-500 hover:border-primary/50 hover:shadow-primary/10"
                         >
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
-                            <div className="flex justify-between items-start mb-6 relative z-10">
-                                <span className="text-[11px] font-body font-semibold tracking-wider text-slate-500/80 group-hover:text-primary transition-colors">{stat.title}</span>
-                                <div className={`p-2 rounded-xl ${stat.color === 'orange' ? 'bg-primary/10' : 'bg-white/5'}`}>
-                                    <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-primary' : 'text-slate-400'}`} />
+                            <div className="flex justify-between items-start mb-3 md:mb-6 relative z-10">
+                                <span className="text-[11px] font-body font-semibold tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{stat.title}</span>
+                                <div className={`p-2 rounded-xl ${stat.color === 'orange' ? 'bg-primary/10' : 'bg-muted dark:bg-white/5'}`}>
+                                    <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-primary' : 'text-muted-foreground'}`} />
                                 </div>
                             </div>
-                            <div className="text-3xl md:text-5xl font-headline font-bold tracking-tight text-foreground group-hover:scale-105 transition-transform duration-500 relative z-10">
+                            <div className="text-2xl sm:text-3xl md:text-5xl font-headline font-bold tracking-tight text-foreground group-hover:scale-105 transition-transform duration-500 relative z-10">
                                 {stat.value}
                             </div>
                         </motion.div>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
-                    <div className="lg:col-span-3 space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
+                    <div className="lg:col-span-3 min-w-0 space-y-10">
                         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
-                            <TabsList className="h-auto bg-card/50 dark:bg-white/5 border border-border dark:border-white/5 p-1 rounded-2xl flex-wrap justify-start gap-1 backdrop-blur-3xl">
+                            <TabsList className="h-auto w-full bg-card/70 dark:bg-white/5 border border-border dark:border-white/5 p-1 rounded-2xl flex-nowrap md:flex-wrap justify-start gap-1 backdrop-blur-3xl overflow-x-auto scrollbar-hide">
                                 {[
                                     { id: 'live', icon: Navigation2, label: 'Supervision' },
                                     { id: 'restaurants', icon: Store, label: 'Établissements' },
@@ -411,9 +410,9 @@ export default function AdminPage() {
                                     <TabsTrigger 
                                         key={tab.id}
                                         value={tab.id} 
-                                        className="h-10 px-5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white font-body font-bold text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-card/50 dark:hover:bg-white/5"
+                                        className="h-10 px-4 md:px-5 shrink-0 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white font-body font-bold text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-card/50 dark:hover:bg-white/5"
                                     >
-                                        <tab.icon className="h-4 w-4 mr-3" />
+                                        <tab.icon className="h-4 w-4 mr-2" />
                                         {tab.label}
                                     </TabsTrigger>
                                 ))}
@@ -432,11 +431,11 @@ export default function AdminPage() {
                                 <TabsContent value="security" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
-                                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
+                                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 md:mb-12 relative z-10">
                                             <div className="space-y-2">
-                                                <h2 className="text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Journal d&apos;Audit <span className="text-primary">Sécurisé</span></h2>
-                                                <p className="text-[11px] font-body font-medium text-slate-500/70 uppercase tracking-widest">TRAÇABILITÉ TOTALE DES OPÉRATIONS DE COMMANDEMENT</p>
-                                                <p className="text-[10px] font-body text-slate-500/60 normal-case tracking-normal max-w-md">
+                                                <h2 className="text-2xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Journal d&apos;Audit <span className="text-primary">Sécurisé</span></h2>
+                                                <p className="text-[11px] font-body font-medium text-muted-foreground uppercase tracking-widest">TRAÇABILITÉ TOTALE DES OPÉRATIONS DE COMMANDEMENT</p>
+                                                <p className="text-[11px] font-body text-muted-foreground/80 normal-case tracking-normal max-w-md">
                                                     Journal immuable — même un Super Administrateur ne peut pas modifier ou supprimer une entrée. Les entrées de plus de 30 jours sont purgées automatiquement.
                                                 </p>
                                             </div>
@@ -445,7 +444,7 @@ export default function AdminPage() {
                                                     value={logSearchQuery}
                                                     onChange={(e) => setLogSearchQuery(e.target.value)}
                                                     placeholder="Filtrer les actions..."
-                                                    className="h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-2xl text-[10px] font-body font-medium tracking-wide min-w-[250px] focus:ring-primary/50"
+                                                    className="h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-2xl text-[10px] font-body font-medium tracking-wide w-full md:w-auto md:min-w-[250px] focus:ring-primary/50"
                                                 />
                                                 <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
                                                     <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
@@ -455,36 +454,36 @@ export default function AdminPage() {
                                         </div>
                                         <div className="overflow-x-auto">
                                             <Table>
-                                                <TableHeader className="border-white/5">
+                                                <TableHeader className="border-border dark:border-white/5">
                                                     <TableRow className="hover:bg-transparent border-border dark:border-white/5">
-                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest opacity-60 py-6">Horodatage</TableHead>
-                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest opacity-60 py-6">Administrateur</TableHead>
-                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest opacity-60 py-6">Action</TableHead>
-                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest opacity-60 py-6">Cible</TableHead>
-                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest opacity-60 py-6">Détails</TableHead>
+                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest text-muted-foreground py-4 md:py-6">Horodatage</TableHead>
+                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest text-muted-foreground py-4 md:py-6">Administrateur</TableHead>
+                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest text-muted-foreground py-4 md:py-6">Action</TableHead>
+                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest text-muted-foreground py-4 md:py-6">Cible</TableHead>
+                                                        <TableHead className="text-[11px] font-body font-medium tracking-widest text-muted-foreground py-4 md:py-6">Détails</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
                                                     {displayedLogs.map((log) => (
                                                         <TableRow key={log.id} className="border-border dark:border-white/5 hover:bg-card/80 dark:hover:bg-white/5 transition-colors group">
-                                                            <TableCell className="py-6 text-[11px] font-mono text-gray-500">
-                                                                {(log.timestamp as Timestamp)?.toDate ? (log.timestamp as Timestamp).toDate().toLocaleString() : 'RECORDER...'}
+                                                            <TableCell className="py-4 md:py-6 text-[11px] font-mono text-muted-foreground whitespace-nowrap">
+                                                                {(log.timestamp as Timestamp)?.toDate ? (log.timestamp as Timestamp).toDate().toLocaleString() : 'En cours…'}
                                                             </TableCell>
-                                                            <TableCell className="py-6">
+                                                            <TableCell className="py-4 md:py-6">
                                                                 <div className="flex flex-col">
                                                                     <span className="font-body font-bold text-xs text-foreground">{log.adminEmail}</span>
-                                                                    <span className="text-[10px] font-body font-medium text-gray-600 tracking-wider">ID: {log.adminId.substring(0, 8)}...</span>
+                                                                    <span className="text-[10px] font-body font-medium text-muted-foreground tracking-wider">ID: {log.adminId.substring(0, 8)}...</span>
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell className="py-6">
+                                                            <TableCell className="py-4 md:py-6">
                                                                 <Badge variant="outline" className="rounded-xl border-primary/50 text-primary bg-primary/10 text-[10px] font-body font-bold tracking-widest py-1.5 px-3">
                                                                     {log.action}
                                                                 </Badge>
                                                             </TableCell>
-                                                            <TableCell className="py-6 text-[11px] font-bold text-gray-400">
+                                                            <TableCell className="py-4 md:py-6 text-[11px] font-bold text-muted-foreground">
                                                                 {log.targetId}
                                                             </TableCell>
-                                                            <TableCell className="py-6 text-[11px] text-gray-500">
+                                                            <TableCell className="py-4 md:py-6 text-[11px] text-muted-foreground min-w-[200px]">
                                                                 {log.details}
                                                             </TableCell>
                                                         </TableRow>
@@ -498,7 +497,7 @@ export default function AdminPage() {
                                                 <Button 
                                                     onClick={() => setLogDisplayLimit(prev => prev + 50)}
                                                     variant="outline"
-                                                    className="rounded-2xl border-white/10 hover:bg-primary hover:text-white font-body font-bold text-[10px] h-12 px-8 transition-all hover:scale-105"
+                                                    className="rounded-2xl border-border dark:border-white/10 hover:bg-primary hover:text-white font-body font-bold text-[10px] h-12 px-8 transition-all hover:scale-105"
                                                 >
                                                     Charger plus de journaux
                                                 </Button>
@@ -509,20 +508,20 @@ export default function AdminPage() {
                                 <TabsContent value="reports" className="m-0 outline-none animate-in fade-in duration-700"><ReportCenter /></TabsContent>
                                 
                                 <TabsContent value="users" className="m-0 outline-none animate-in fade-in duration-700">
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
                                         <div className="lg:col-span-2 bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                                             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
-                                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 relative z-10 gap-6">
+                                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-12 relative z-10 gap-6">
                                                 <div className="space-y-2">
-                                                    <h2 className="text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Registre des <span className="text-primary">Comptes</span></h2>
-                                                    <p className="text-[11px] font-body font-medium text-slate-500/70 tracking-widest">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
+                                                    <h2 className="text-2xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Registre des <span className="text-primary">Comptes</span></h2>
+                                                    <p className="text-[11px] font-body font-medium text-muted-foreground tracking-widest">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
                                                 </div>
                                                 <div className="flex items-center gap-4 w-full md:w-auto">
                                                     <Input 
                                                         value={userSearchQuery}
                                                         onChange={(e) => setUserSearchQuery(e.target.value)}
                                                         placeholder="Rechercher un citoyen..."
-                                                        className="h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-2xl text-[10px] font-body font-medium tracking-wide min-w-[200px] focus:ring-primary/50"
+                                                        className="h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-2xl text-[10px] font-body font-medium tracking-wide flex-1 min-w-0 md:min-w-[200px] focus:ring-primary/50"
                                                     />
                                                     <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-2xl font-body font-bold tracking-tight transition-all hover:scale-105 shadow-xl whitespace-nowrap">
                                                         <UserPlus className="mr-2 h-4 w-4" />
@@ -532,28 +531,28 @@ export default function AdminPage() {
                                             </div>
                                             <div className="overflow-x-auto">
                                                 <Table>
-                                                    <TableHeader className="border-white/5">
+                                                    <TableHeader className="border-border dark:border-white/5">
                                                         <TableRow className="hover:bg-transparent border-border dark:border-white/5">
-                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest opacity-40 py-6">Identité</TableHead>
-                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest opacity-40 py-6">Privilèges</TableHead>
-                                                            <TableHead className="text-right text-[10px] font-body font-bold tracking-widest opacity-40 py-6">Actions</TableHead>
+                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest text-muted-foreground py-4 md:py-6">Identité</TableHead>
+                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest text-muted-foreground py-4 md:py-6">Privilèges</TableHead>
+                                                            <TableHead className="text-right text-[10px] font-body font-bold tracking-widest text-muted-foreground py-4 md:py-6">Actions</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {displayedUsers.map((u) => (
                                                             <TableRow key={u.uid} className="border-border dark:border-white/5 hover:bg-card/80 dark:hover:bg-white/5 transition-colors group">
-                                                                <TableCell className="py-6">
+                                                                <TableCell className="py-4 md:py-6">
                                                                     <div className="flex items-center gap-4">
-                                                                        <Avatar className="h-12 w-12 rounded-2xl border border-white/10 group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg">
+                                                                        <Avatar className="h-10 w-10 md:h-12 md:w-12 shrink-0 rounded-2xl border border-border dark:border-white/10 group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg">
                                                                             <AvatarFallback className="bg-card dark:bg-white/10 text-xs font-body font-bold text-primary">{getInitials(u.nom || u.email)}</AvatarFallback>
                                                                         </Avatar>
-                                                                        <div className="flex flex-col">
-                                                                            <span className="font-body font-bold text-sm text-foreground">{u.nom || 'UTILISATEUR ANONYME'}</span>
-                                                                            <span className="text-[9px] font-body font-medium text-gray-600 tracking-wider">{u.email}</span>
+                                                                        <div className="flex flex-col min-w-0">
+                                                                            <span className="font-body font-bold text-sm text-foreground truncate">{u.nom || 'UTILISATEUR ANONYME'}</span>
+                                                                            <span className="text-[11px] font-body font-medium text-muted-foreground tracking-wide truncate">{u.email}</span>
                                                                         </div>
                                                                     </div>
                                                                 </TableCell>
-                                                                <TableCell className="py-6">
+                                                                <TableCell className="py-4 md:py-6">
                                                                     <Select
                                                                         value={u.roleSysteme || 'User'}
                                                                         onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}
@@ -569,7 +568,7 @@ export default function AdminPage() {
                                                                         </SelectContent>
                                                                     </Select>
                                                                 </TableCell>
-                                                                <TableCell className="text-right py-6">
+                                                                <TableCell className="text-right py-4 md:py-6">
                                                                     <div className="flex justify-end gap-2">
                                                                         <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} aria-label="Modifier l'utilisateur" className="h-12 w-12 hover:bg-primary/10 hover:text-primary rounded-2xl border border-transparent hover:border-primary/20 transition-all hover:scale-110">
                                                                             <Edit className="h-5 w-5" />
@@ -597,7 +596,7 @@ export default function AdminPage() {
                                                     <Button 
                                                         onClick={() => setUserDisplayLimit(prev => prev + 20)}
                                                         variant="outline"
-                                                        className="rounded-2xl border-white/10 hover:bg-primary hover:text-white font-body font-bold text-[10px] h-12 px-8 transition-all hover:scale-105"
+                                                        className="rounded-2xl border-border dark:border-white/10 hover:bg-primary hover:text-white font-body font-bold text-[10px] h-12 px-8 transition-all hover:scale-105"
                                                     >
                                                         Charger plus d&apos;utilisateurs
                                                     </Button>
@@ -609,7 +608,7 @@ export default function AdminPage() {
                                                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                                                     <UserPlus className="h-12 w-12 text-primary" />
                                                 </div>
-                                                <h3 className="text-[11px] font-body font-semibold tracking-wider text-slate-500/80 mb-10">FLUX D&apos;ENRÔLEMENT RÉCENT</h3>
+                                                <h3 className="text-[11px] font-body font-semibold tracking-wider text-muted-foreground mb-8">FLUX D&apos;ENRÔLEMENT RÉCENT</h3>
                                                 <div className="space-y-8 relative z-10">
                                                     {latestUsers.map((u, i) => (
                                                         <motion.div 
@@ -624,7 +623,7 @@ export default function AdminPage() {
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-body font-bold text-foreground tracking-tight group-hover/item:text-primary transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
-                                                                <span className="text-[9px] font-body font-medium text-slate-600 tracking-widest">IDENTIFIÉ RÉCEMMENT</span>
+                                                                <span className="text-[10px] font-body font-medium text-muted-foreground tracking-widest">IDENTIFIÉ RÉCEMMENT</span>
                                                             </div>
                                                         </motion.div>
                                                     ))}
@@ -639,7 +638,7 @@ export default function AdminPage() {
                         </Tabs>
                     </div>
 
-                    <div className="lg:col-span-1 space-y-10">
+                    <div className="lg:col-span-1 min-w-0 space-y-10">
                         <AdminAlerts />
                         
                         <div className="bg-primary p-8 rounded-[2rem] relative overflow-hidden group shadow-[0_30px_60px_rgba(249,115,22,0.3)] animate-float [animation-delay:1000ms]">
@@ -655,8 +654,8 @@ export default function AdminPage() {
                             </Button>
                         </div>
                         
-                        <div className="text-center opacity-10 py-10">
-                                <p className="text-[10px] font-body tracking-[0.3em] text-gray-500">
+                        <div className="text-center opacity-50 py-10">
+                                <p className="text-[10px] font-body tracking-[0.3em] text-muted-foreground">
                                 Protocol Zero v9.2 &bull; Yakro Supreme Authority
                             </p>
                         </div>
@@ -672,7 +671,7 @@ export default function AdminPage() {
                 <AlertDialogContent className="bg-card/95 backdrop-blur-3xl border-border rounded-3xl shadow-2xl">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-2xl font-headline font-bold tracking-tight">Suppression <span className="text-red-500 italic">Définitive</span></AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-500 font-body text-xs tracking-wide py-4 leading-relaxed">
+                        <AlertDialogDescription className="text-muted-foreground font-body text-xs tracking-wide py-4 leading-relaxed">
                             Êtes-vous absolument certain de vouloir révoquer tous les accès de <span className="font-bold text-foreground"> {userToDelete?.email}</span> ? 
                             <br /><br />
                             Cette action détruira définitivement le profil citoyen et est irréversible.

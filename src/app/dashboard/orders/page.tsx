@@ -102,7 +102,7 @@ export default function DashboardOrdersPage() {
                             )}
                             <span className="text-[10px] font-bold text-slate-500">#{order.id.slice(-6).toUpperCase()}</span>
                         </div>
-                        <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-white group-hover:text-primary transition-colors uppercase leading-none">
+                        <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors uppercase leading-none">
                             {order.nomRestaurant}
                         </h3>
                     </div>
@@ -114,7 +114,7 @@ export default function DashboardOrdersPage() {
                         }`}>
                             {order.statut === 'Placée' ? 'Nouveau' : 'En Cuisine'}
                         </Badge>
-                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 dark:bg-white/5 border border-border dark:border-white/5">
                             <Clock className="h-3 w-3 text-slate-500" />
                             <span className="text-[10px] font-black text-slate-400 italic">
                                 {new Date(order.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
@@ -123,20 +123,20 @@ export default function DashboardOrdersPage() {
                     </div>
                 </div>
 
-                <Accordion type="single" collapsible className="border-t border-white/5">
+                <Accordion type="single" collapsible className="border-t border-border dark:border-white/5">
                     <AccordionItem value="details" className="border-none">
                         <AccordionTrigger className="py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:no-underline hover:text-white transition-colors">
                             Détails du Festin
                         </AccordionTrigger>
                         <AccordionContent className="space-y-5 pb-6">
                             {order.plats.map((item, idx) => (
-                                <div key={idx} className="flex justify-between items-center group/item p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <div key={idx} className="flex justify-between items-center group/item p-4 rounded-2xl bg-muted/30 dark:bg-white/[0.02] border border-border dark:border-white/5 hover:bg-muted/50 dark:hover:bg-white/[0.04] transition-colors">
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center gap-3">
                                             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
                                                 <span className="text-primary font-black italic text-[10px]">{item.quantite}</span>
                                             </div>
-                                            <span className="font-black text-xs md:text-sm tracking-tight text-white">{item.nom}</span>
+                                            <span className="font-black text-xs md:text-sm tracking-tight text-foreground">{item.nom}</span>
                                         </div>
                                         {item.accompagnementSelectionne && (
                                             <span className="text-[9px] text-slate-500 font-bold tracking-widest ml-9 uppercase italic">
@@ -157,7 +157,7 @@ export default function DashboardOrdersPage() {
                                 </div>
                             )}
 
-                            <div className="pt-6 mt-2 border-t border-white/5 space-y-4">
+                            <div className="pt-6 mt-2 border-t border-border dark:border-white/5 space-y-4">
                                 <div className="flex justify-between items-center px-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                                     <span>Paiement</span>
                                     <span className={order.paiement.statut === 'echoue' ? 'text-rose-500' : order.paiement.statut === 'en_attente' ? 'text-amber-500' : 'text-emerald-500'}>
@@ -174,7 +174,7 @@ export default function DashboardOrdersPage() {
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
                                     <div className="space-y-1 relative z-10">
                                         <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/60">Revenu Net Garanti</p>
-                                        <p className="text-3xl md:text-4xl font-black italic tracking-tighter text-white">
+                                        <p className="text-3xl md:text-4xl font-black italic tracking-tighter text-foreground">
                                             {order.revenuNet.toLocaleString('fr-FR')} <span className="text-[12px] opacity-40 normal-case font-bold ml-1">FCFA</span>
                                         </p>
                                     </div>

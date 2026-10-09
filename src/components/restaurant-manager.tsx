@@ -143,7 +143,7 @@ export function RestaurantManager() {
                     
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="px-6 py-3 bg-card/50 border border-border/50 rounded-2xl flex flex-col items-end">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">CAPACITÉ RÉSEAU</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CAPACITÉ RÉSEAU</span>
                         <span className="text-xl font-black italic text-foreground">{restaurants.length} UNITÉS</span>
                     </div>
                     <Button variant="outline" aria-label="Filtrer les bastions" className="h-14 w-14 rounded-2xl bg-card/50 border-border/50 hover:bg-primary/10 hover:text-primary text-foreground transition-all">
@@ -186,12 +186,12 @@ export function RestaurantManager() {
                                                 </div>
                                                 <div className="flex flex-col gap-1 min-w-0">
                                                     <span className="font-black text-sm text-foreground uppercase italic tracking-tight group-hover:text-primary transition-colors">{restaurant.nom}</span>
-                                                    <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest truncate">{restaurant.adresse || 'ZONE YAKRO CENTRALE'}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">{restaurant.adresse || 'ZONE YAKRO CENTRALE'}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-6">
-                                            <Badge variant="outline" className="rounded-xl border-primary/30 text-primary bg-primary/5 text-[9px] font-black uppercase tracking-widest py-1.5 px-3">
+                                            <Badge variant="outline" className="rounded-xl border-primary/30 text-primary bg-primary/5 text-[10px] font-black uppercase tracking-widest py-1.5 px-3">
                                                 {restaurant.cuisine}
                                             </Badge>
                                         </TableCell>
@@ -205,7 +205,7 @@ export function RestaurantManager() {
                                                     </div>
                                                     <span className="text-[10px] font-black text-foreground italic">{restaurant.note.toFixed(1)}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                                     <Clock className="h-2.5 w-2.5" />
                                                     {restaurant.tempsDeLivraison} MIN
                                                 </div>
@@ -218,7 +218,7 @@ export function RestaurantManager() {
                                                     restaurant.suspendu ? "bg-red-500 shadow-red-500" : "bg-green-500 shadow-green-500"
                                                 )} />
                                                 <span className={cn(
-                                                    "text-[9px] font-black uppercase tracking-widest",
+                                                    "text-[10px] font-black uppercase tracking-widest",
                                                     restaurant.suspendu ? "text-red-500" : "text-green-500"
                                                 )}>
                                                     {restaurant.suspendu ? 'SUSPENDU' : 'ACTIF'}
@@ -279,10 +279,10 @@ export function RestaurantManager() {
             </div>
             
             <div className="p-8 bg-card/30 flex justify-between items-center border-t border-border/50 relative z-10 mt-6">
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">Protocol: BASTION-CONTROL-v2.1</span>
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Protocol: BASTION-CONTROL-v2.1</span>
                 <div className="flex gap-3">
-                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">PRÉCÉDENT</Button>
-                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[9px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">SUIVANT</Button>
+                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[10px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">PRÉCÉDENT</Button>
+                    <Button variant="outline" size="sm" className="h-10 rounded-xl bg-card/50 border-border/50 text-[10px] font-black uppercase tracking-widest px-6 hover:bg-card transition-all">SUIVANT</Button>
                 </div>
             </div>
 
@@ -291,14 +291,14 @@ export function RestaurantManager() {
                 <AlertDialogContent className="bg-card/95 backdrop-blur-3xl border-border rounded-[2rem] shadow-2xl">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Destruction du <span className="text-red-500 italic">Bastion</span></AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-500 font-black uppercase tracking-[0.2em] text-[9px] py-4 leading-relaxed">
+                        <AlertDialogDescription className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px] py-4 leading-relaxed">
                             Êtes-vous certain de vouloir raser définitivement <span className="text-foreground"> {restaurantToDelete?.nom}</span> ? 
                             <br /><br />
                             Toutes les données associées seront purgées du réseau Yakro. Cette action est irréversible.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-3 mt-6">
-                        <AlertDialogCancel className="rounded-xl h-12 bg-card/50 border-border text-[9px] font-black uppercase tracking-widest px-8">ANNULER</AlertDialogCancel>
+                        <AlertDialogCancel className="rounded-xl h-12 bg-card/50 border-border text-[10px] font-black uppercase tracking-widest px-8">ANNULER</AlertDialogCancel>
                         <AlertDialogAction 
                             onClick={() => restaurantToDelete && handleAction(restaurantToDelete, 'DELETE_RESTAURANT')}
                             disabled={isDeleting}

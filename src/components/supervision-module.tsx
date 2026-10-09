@@ -147,7 +147,7 @@ export function SupervisionModule() {
                     </Button>
                 </div>
 
-                <div className="min-h-[600px] relative">
+                <div className="min-h-[400px] md:min-h-[600px] relative">
                     <AnimatePresence mode="wait">
                         {view === 'list' ? (
                             <motion.div 
@@ -162,7 +162,7 @@ export function SupervisionModule() {
                                         <OrderListItem key={order.id} order={order} index={idx} />
                                     ))
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-32 text-gray-700">
+                                    <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
                                         <Activity className="h-16 w-16 mb-6 opacity-20 animate-pulse" />
                                         <p className="font-headline text-xs font-bold uppercase tracking-widest opacity-50">Secteur Pacifié: Aucun flux détecté</p>
                                     </div>
@@ -174,12 +174,12 @@ export function SupervisionModule() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="h-[650px] relative bg-background/40 overflow-hidden flex"
+                                className="h-[420px] md:h-[650px] relative bg-background/40 overflow-hidden flex"
                             >
                                 <div className="flex-1 relative">
                                     <MapSimulation orders={filteredOrders} />
                                 </div>
-                                <div className="w-80 border-l border-foreground/5 glass overflow-hidden flex flex-col">
+                                <div className="hidden md:flex w-80 border-l border-foreground/5 glass overflow-hidden flex-col">
                                     <div className="p-4 border-b border-foreground/5">
                                         <h3 className="text-[10px] font-headline font-bold uppercase tracking-widest text-primary">Flux d&apos;Événements Live</h3>
                                     </div>
@@ -195,7 +195,7 @@ export function SupervisionModule() {
                                                 >
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                                        <span className="text-[8px] font-bold text-gray-600 tabular-nums">{event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                                        <span className="text-[10px] font-bold text-muted-foreground tabular-nums">{event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                                     </div>
                                                     <p className="text-[10px] font-body font-medium uppercase tracking-tight text-muted-foreground group-hover:text-foreground dark:group-hover:text-white transition-colors leading-relaxed">
                                                         {event.msg}
@@ -215,10 +215,10 @@ export function SupervisionModule() {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
-                        <span className="text-[9px] font-body font-bold text-gray-500 uppercase tracking-[0.2em]">TRANSMISSION TEMPS RÉEL ACTIVE</span>
+                        <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-[0.2em]">TRANSMISSION TEMPS RÉEL ACTIVE</span>
                     </div>
                 </div>
-                <span className="text-[9px] font-headline font-bold text-gray-700 uppercase tracking-widest">YAKRO COMMAND CENTER v4.0</span>
+                <span className="text-[10px] font-headline font-bold text-muted-foreground uppercase tracking-widest">YAKRO COMMAND CENTER v4.0</span>
             </div>
         </Card>
     );
@@ -240,32 +240,32 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.03 }}
-            className="p-5 hover:bg-foreground/5 transition-all group relative overflow-hidden"
+            className="p-4 md:p-5 hover:bg-foreground/5 transition-all group relative overflow-hidden"
         >
             <div className="absolute top-0 left-0 h-full w-1 bg-foreground/5 group-hover:bg-primary transition-colors" />
             
-            <div className="flex items-center justify-between gap-10">
-                <div className="flex items-center gap-8 flex-1">
-                    <div className={cn("h-12 w-12 flex items-center justify-center border group-hover:scale-105 transition-transform", currentStatus.bg, currentStatus.border)}>
-                        <StatusIcon className={cn("h-6 w-6", currentStatus.color)} />
+            <div className="flex items-center justify-between gap-3 md:gap-10">
+                <div className="flex items-center gap-3 md:gap-8 flex-1 min-w-0">
+                    <div className={cn("h-10 w-10 md:h-12 md:w-12 shrink-0 flex items-center justify-center border group-hover:scale-105 transition-transform", currentStatus.bg, currentStatus.border)}>
+                        <StatusIcon className={cn("h-5 w-5 md:h-6 md:w-6", currentStatus.color)} />
                     </div>
                     
                     <div className="flex-1 min-w-0 space-y-2">
-                        <div className="flex items-center gap-4">
-                             <span className="text-lg font-headline font-bold text-foreground tracking-tight">#{order.id.slice(-6).toUpperCase()}</span>
+                        <div className="flex flex-wrap items-center gap-2 md:gap-4">
+                             <span className="text-base md:text-lg font-headline font-bold text-foreground tracking-tight">#{order.id.slice(-6).toUpperCase()}</span>
                              <Badge className={cn("rounded-none text-[10px] font-headline font-bold px-3 py-1 border", currentStatus.bg, currentStatus.border, currentStatus.color)}>
                                  {currentStatus.label}
                              </Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-[11px] font-body font-medium uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-body font-medium uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
                             <Link 
                                 href={`/restaurants?id=${order.restaurantId}`}
-                                className="flex items-center gap-2 hover:text-primary transition-colors"
+                                className="flex items-center gap-2 min-w-0 hover:text-primary transition-colors"
                             >
-                                <Store className="h-3.5 w-3.5 text-primary/50" />
-                                <span>{order.nomRestaurant}</span>
+                                <Store className="h-3.5 w-3.5 shrink-0 text-primary/50" />
+                                <span className="truncate">{order.nomRestaurant}</span>
                             </Link>
-                            <span className="opacity-20">|</span>
+                            <span className="hidden sm:inline opacity-20">|</span>
                             <span className="text-primary font-headline">{(order.total || 0).toLocaleString()} FCFA</span>
                         </div>
                     </div>
@@ -289,7 +289,7 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
                     <Button variant="ghost" size="icon" aria-label="Agrandir la vue" className="h-10 w-10 rounded-none hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all border border-transparent hover:border-primary/20">
                         <Maximize2 className="h-5 w-5" />
                     </Button>
@@ -427,16 +427,16 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                                 <div className="glass p-4 border border-foreground/10 dark:border-white/10 rounded-none shadow-3xl min-w-[180px]">
                                     <div className="flex items-center justify-between mb-2 text-foreground dark:text-white">
                                         <div className="text-[10px] font-black uppercase italic tracking-tighter text-primary">UNITÉ ACTIVÉE</div>
-                                        {marker.isNew && <span className="text-[8px] font-black bg-primary px-1 text-white animate-pulse">NEW</span>}
+                                        {marker.isNew && <span className="text-[10px] font-black bg-primary px-1 text-white animate-pulse">NEW</span>}
                                     </div>
                                     <div className="text-sm font-headline font-bold tracking-tight uppercase mb-2 text-foreground dark:text-white">#{marker.id.slice(-6)}</div>
                                     <div className="h-px bg-foreground/5 dark:bg-white/5 mb-2" />
                                     <div className="flex items-center gap-2">
                                         <div className={cn("h-1.5 w-1.5 rounded-full", marker.status === 'En Route' ? 'bg-purple-500' : 'bg-primary')} />
-                                        <div className="text-[9px] font-body font-bold text-gray-500 uppercase tracking-widest">{marker.status}</div>
+                                        <div className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">{marker.status}</div>
                                     </div>
                                     {marker.status === 'En Route' && (
-                                        <div className="mt-2 pt-2 border-t border-foreground/5 dark:border-white/5 flex items-center gap-2 text-[8px] font-body font-bold text-muted-foreground">
+                                        <div className="mt-2 pt-2 border-t border-foreground/5 dark:border-white/5 flex items-center gap-2 text-[10px] font-body font-bold text-muted-foreground">
                                             <Navigation2 className="h-2 w-2" />
                                             VECTEUR DE TRANSIT CALCULÉ
                                         </div>
@@ -447,33 +447,33 @@ function MapSimulation({ orders }: { orders: Order[] }) {
                     </motion.div>
                 ))}
 
-                <div className="absolute top-10 left-10 flex flex-col gap-4">
-                    <div className="glass p-6 border border-foreground/5 dark:border-white/5 space-y-4">
+                <div className="absolute top-4 left-4 md:top-10 md:left-10 flex flex-col gap-4">
+                    <div className="glass p-4 md:p-6 border border-foreground/5 dark:border-white/5 space-y-4">
                         <div className="flex items-center gap-3">
                             <Zap className="h-4 w-4 text-primary" />
                             <span className="text-[10px] font-headline font-bold uppercase tracking-wider text-foreground dark:text-white">YAM-NET ALPHA</span>
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between gap-10">
-                                <span className="text-[9px] font-body font-bold text-gray-600 uppercase tracking-widest">SIGNAL</span>
-                                <span className="text-[9px] font-headline font-bold text-green-500">STABLE</span>
+                                <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">SIGNAL</span>
+                                <span className="text-[10px] font-headline font-bold text-green-500">STABLE</span>
                             </div>
                             <div className="flex items-center justify-between gap-10">
-                                <span className="text-[9px] font-body font-bold text-muted-foreground uppercase tracking-widest">SYNC</span>
-                                <span className="text-[9px] font-headline font-bold text-foreground dark:text-white">100%</span>
+                                <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">SYNC</span>
+                                <span className="text-[10px] font-headline font-bold text-foreground dark:text-white">100%</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="absolute bottom-10 right-10 flex gap-6 glass p-6 border border-foreground/5 dark:border-white/5">
+                <div className="absolute bottom-4 right-4 md:bottom-10 md:right-10 flex gap-4 md:gap-6 glass p-3 md:p-6 border border-foreground/5 dark:border-white/5">
                     <div className="flex items-center gap-3">
                         <div className="h-2 w-2 bg-primary rotate-45 shadow-[0_0_10px_rgba(249,115,22,1)]" />
-                        <span className="text-[9px] font-body font-bold text-foreground dark:text-white uppercase tracking-widest">BASTION</span>
+                        <span className="text-[10px] font-body font-bold text-foreground dark:text-white uppercase tracking-widest">BASTION</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="h-2 w-2 bg-purple-500 rotate-45 shadow-[0_0_10px_rgba(168,85,247,1)]" />
-                        <span className="text-[9px] font-body font-bold text-foreground dark:text-white uppercase tracking-widest"> UNITÉ TRANSIT</span>
+                        <span className="text-[10px] font-body font-bold text-foreground dark:text-white uppercase tracking-widest"> UNITÉ TRANSIT</span>
                     </div>
                 </div>
             </div>

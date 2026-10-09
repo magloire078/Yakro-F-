@@ -122,7 +122,7 @@ export default function MyRestaurantsPage() {
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 className="group relative h-full"
                             >
-                                <div className="glass-dark border border-white/5 transition-all duration-500 group-hover:border-primary/50 overflow-hidden h-full flex flex-col shadow-2xl group-hover:shadow-primary/10 rounded-2xl md:rounded-[2rem]">
+                                <div className="glass-dark border border-border dark:border-white/5 transition-all duration-500 group-hover:border-primary/50 overflow-hidden h-full flex flex-col shadow-2xl group-hover:shadow-primary/10 rounded-2xl md:rounded-[2rem]">
                                     {/* Image Area */}
                                     <div className="relative h-24 md:h-40 w-full overflow-hidden">
                                         {imageSrc.includes('res.cloudinary.com') ? (
@@ -148,7 +148,7 @@ export default function MyRestaurantsPage() {
                                         <div className="absolute top-2.5 md:top-6 left-3 md:left-6">
                                             <div className="px-2 py-0.5 md:px-4 md:py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full flex items-center gap-1.5 md:gap-2 shadow-2xl">
                                                 <div className="h-1 w-1 md:h-2 md:w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                <span className="text-[6px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white">LIVE</span>
+                                                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white">LIVE</span>
                                             </div>
                                         </div>
 
@@ -280,13 +280,13 @@ export default function MyRestaurantsPage() {
                             ) : (
                                 <>
                                     Cette action est irréversible. Vous êtes sur le point de dissoudre 
-                                    <strong className="text-white uppercase tracking-tighter"> {restaurantToDelete?.nom}</strong> et d&apos;effacer son héritage numérique du registre Yakro.
+                                    <strong className="text-foreground uppercase tracking-tighter"> {restaurantToDelete?.nom}</strong> et d&apos;effacer son héritage numérique du registre Yakro.
                                 </>
                             )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="mt-8 md:mt-10 gap-3 md:gap-4">
-                        <AlertDialogCancel className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white uppercase font-bold tracking-widest text-[9px] md:text-[10px] h-10 md:h-12">ANNULER</AlertDialogCancel>
+                        <AlertDialogCancel className="rounded-xl border-border dark:border-white/10 bg-muted/50 dark:bg-white/5 hover:bg-muted dark:hover:bg-white/10 text-foreground uppercase font-bold tracking-widest text-[9px] md:text-[10px] h-10 md:h-12">ANNULER</AlertDialogCancel>
                         {restaurantToDelete && menuItems.some(p => p.restaurantId === restaurantToDelete.id) ? (
                             <AlertDialogAction asChild className="rounded-xl bg-primary hover:bg-primary/90 text-white uppercase font-black tracking-widest text-[9px] md:text-[10px] h-10 md:h-12">
                                 <Link href="/dashboard/menu">GÉRER LE MENU</Link>

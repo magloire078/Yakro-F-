@@ -89,7 +89,7 @@ export default function EarningsPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
-                            className="group glass-dark border border-white/5 p-4 md:p-6 relative overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50 rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl"
+                            className="group glass-dark border border-border dark:border-white/5 p-4 md:p-6 relative overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:border-primary/50 rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl"
                         >
                             <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="flex justify-between items-start mb-8">
@@ -104,7 +104,7 @@ export default function EarningsPage() {
                             <div className="flex items-baseline gap-2">
                                 <span className={cn(
                                     "text-3xl md:text-4xl font-black italic tracking-tighter",
-                                    item.color === 'orange' ? 'text-primary' : 'text-white'
+                                    item.color === 'orange' ? 'text-primary' : 'text-foreground'
                                 )}>
                                     {item.value.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                                 </span>
@@ -122,14 +122,14 @@ export default function EarningsPage() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="glass-dark border border-white/5 p-5 md:p-10 relative overflow-hidden rounded-[2rem] md:rounded-[3rem] shadow-2xl"
+                    className="glass-dark border border-border dark:border-white/5 p-5 md:p-10 relative overflow-hidden rounded-[2rem] md:rounded-[3rem] shadow-2xl"
                 >
                     <div className="flex items-center justify-between mb-6 md:mb-10">
                         <div>
-                            <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-white">Journal des <span className="text-primary">Missions</span></h2>
+                            <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-foreground">Journal des <span className="text-primary">Missions</span></h2>
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mt-2 italic">Historique complet des opérations validées</p>
                         </div>
-                        <div className="bg-white/5 p-4 border border-white/10 rounded-2xl">
+                        <div className="bg-muted/50 dark:bg-white/5 p-4 border border-border dark:border-white/10 rounded-2xl">
                             <History className="h-6 w-6 text-primary" />
                         </div>
                     </div>
@@ -140,8 +140,8 @@ export default function EarningsPage() {
                                 {/* Desktop View */}
                                 <div className="hidden md:block overflow-x-auto">
                                     <Table>
-                                        <TableHeader className="border-white/5">
-                                            <TableRow className="hover:bg-transparent border-white/5">
+                                        <TableHeader className="border-border dark:border-white/5">
+                                            <TableRow className="hover:bg-transparent border-border dark:border-white/5">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground py-6">Opération</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground py-6">Établissement</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground py-6 text-center">Statut</TableHead>
@@ -155,20 +155,20 @@ export default function EarningsPage() {
                                                     initial={{ opacity: 0, x: -20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ delay: index * 0.05 }}
-                                                    className="border-white/5 hover:bg-white/[0.02] transition-colors group"
+                                                    className="border-border dark:border-white/5 hover:bg-muted/50 dark:hover:bg-white/[0.02] transition-colors group"
                                                 >
                                                     <TableCell className="py-4 md:py-6">
                                                         <div className="flex flex-col">
-                                                            <span className="font-black italic text-white uppercase">{new Date(order.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                                            <span className="font-black italic text-foreground uppercase">{new Date(order.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                                             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Ref. #{order.id.slice(-6).toUpperCase()}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-4 md:py-6">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="h-12 w-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-primary/30 transition-colors">
+                                                            <div className="h-12 w-12 bg-muted/50 dark:bg-white/5 rounded-xl flex items-center justify-center border border-border dark:border-white/10 group-hover:border-primary/30 transition-colors">
                                                                 <MapPin className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                                                             </div>
-                                                            <span className="font-black italic text-white text-lg uppercase">{order.nomRestaurant}</span>
+                                                            <span className="font-black italic text-foreground text-lg uppercase">{order.nomRestaurant}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-6 text-center">
@@ -195,12 +195,12 @@ export default function EarningsPage() {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: index * 0.05 }}
-                                            className="glass border border-white/5 p-6 relative overflow-hidden group rounded-2xl"
+                                            className="glass border border-border dark:border-white/5 p-6 relative overflow-hidden group rounded-2xl"
                                         >
                                             <div className="flex justify-between items-start mb-6">
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{new Date(order.date).toLocaleDateString('fr-FR')}</span>
-                                                    <span className="font-black italic text-white uppercase text-xs">Mission #{order.id.slice(-6).toUpperCase()}</span>
+                                                    <span className="font-black italic text-foreground uppercase text-xs">Mission #{order.id.slice(-6).toUpperCase()}</span>
                                                 </div>
                                                 <Badge className="rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1 font-black italic text-[8px] tracking-tight uppercase">
                                                     Validée
@@ -209,10 +209,10 @@ export default function EarningsPage() {
                                             
                                             <div className="flex items-center justify-between mt-8">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 bg-white/5 rounded-xl flex items-center justify-center border border-white/10">
+                                                    <div className="h-10 w-10 bg-muted/50 dark:bg-white/5 rounded-xl flex items-center justify-center border border-border dark:border-white/10">
                                                         <Navigation2 className="h-4 w-4 text-primary" />
                                                     </div>
-                                                    <span className="font-black italic text-white text-sm uppercase truncate max-w-[150px]">{order.nomRestaurant}</span>
+                                                    <span className="font-black italic text-foreground text-sm uppercase truncate max-w-[150px]">{order.nomRestaurant}</span>
                                                 </div>
                                                 <div className="text-right">
                                                     <span className="text-xl font-black italic tracking-tighter text-primary">
@@ -232,12 +232,12 @@ export default function EarningsPage() {
                             >
                                 <div className="relative">
                                     <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full scale-150 animate-pulse" />
-                                    <div className="bg-white/5 p-10 border border-white/10 relative rounded-[2rem]">
+                                    <div className="bg-muted/50 dark:bg-white/5 p-10 border border-border dark:border-white/10 relative rounded-[2rem]">
                                         <Bike className="h-16 w-16 text-muted-foreground" />
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <h3 className="text-2xl font-black italic tracking-tight text-white uppercase">Aucune Activité</h3>
+                                    <h3 className="text-2xl font-black italic tracking-tight text-foreground uppercase">Aucune Activité</h3>
                                     <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px] max-w-xs mx-auto italic">
                                         Rejoignez le réseau de livraison et validez votre première course.
                                     </p>

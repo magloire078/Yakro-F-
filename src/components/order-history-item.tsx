@@ -198,7 +198,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 ) : null}
                 <Button
                   onClick={handleReorder}
-                  className="rounded-2xl glass-orange text-white font-black uppercase tracking-widest px-8 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                  className="rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest px-8 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
                 >
                   Commander à nouveau
                 </Button>

@@ -318,7 +318,7 @@ export default function AnalyticsPage() {
 
             <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40 space-y-6 sm:space-y-10 md:space-y-12">
                 {/* Time Range Selector — sticky scrollable on mobile */}
-                <div className="sticky top-0 z-40 -mx-3 sm:-mx-6 lg:-mx-8 px-3 py-2.5 mb-2 flex overflow-x-auto gap-2 sm:gap-3 no-scrollbar scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
+                <div className="sticky top-0 z-40 -mx-3 sm:-mx-6 lg:-mx-8 px-3 py-2.5 mb-2 flex overflow-x-auto gap-2 sm:gap-3 scrollbar-hide scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
                     {ranges.map((range, idx) => (
                         <motion.button
                             key={range.id}
@@ -394,10 +394,10 @@ export default function AnalyticsPage() {
                         {/* Detailed Analytics Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             {/* Revenue Trend Chart - Full Width */}
-                            <div className="lg:col-span-12 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="lg:col-span-12 glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Évolution de l&apos;Empire</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Évolution de l&apos;Empire</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Revenu net actuel vs période précédente</p>
                                     </div>
                                     <div className="flex items-center gap-6">
@@ -406,10 +406,10 @@ export default function AnalyticsPage() {
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Actuel</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-slate-200" />
+                                            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Précédent</span>
                                         </div>
-                                        <div className="p-3 bg-slate-100 rounded-2xl">
+                                        <div className="p-3 bg-muted rounded-2xl">
                                             <Activity className="h-6 w-6 text-primary" />
                                         </div>
                                     </div>
@@ -482,14 +482,14 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Prévision de demande */}
-                            <div className="lg:col-span-12 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl border border-primary/10">
+                            <div className="lg:col-span-12 glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl border border-primary/10">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                                     <div className="flex items-center gap-5">
                                         <div className="p-4 bg-primary/10 rounded-2xl shrink-0">
                                             <Sparkles className="h-7 w-7 text-primary" />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter text-white">Prévision de demande</h2>
+                                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter text-foreground">Prévision de demande</h2>
                                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">
                                                 Estimation pour {nextPeriodLabel}, basée sur la tendance récente — pas une garantie
                                             </p>
@@ -498,7 +498,7 @@ export default function AnalyticsPage() {
                                     <div className="text-right shrink-0">
                                         <p className="text-4xl md:text-5xl font-black italic tracking-tighter text-primary">
                                             {revenueForecast.toLocaleString('fr-FR')}
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-300 ml-2">FCFA</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">FCFA</span>
                                         </p>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">Revenu net projeté</p>
                                     </div>
@@ -506,13 +506,13 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Revenue by Restaurant */}
-                            <div className="lg:col-span-7 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="lg:col-span-7 glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Répartition Elite</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Répartition Elite</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Revenu net par établissement</p>
                                     </div>
-                                    <div className="p-3 bg-slate-100 rounded-2xl">
+                                    <div className="p-3 bg-muted rounded-2xl">
                                         <BarChart3 className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
@@ -576,7 +576,7 @@ export default function AnalyticsPage() {
                                     ) : (
                                         <div className="h-full flex items-center justify-center text-center">
                                             <div className="space-y-4">
-                                                <BarChart3 className="h-16 w-16 text-slate-200 mx-auto" />
+                                                <BarChart3 className="h-16 w-16 text-muted-foreground/30 mx-auto" />
                                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Aucune donnée pour cette période</p>
                                             </div>
                                         </div>
@@ -585,13 +585,13 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Top Sellers Table */}
-                            <div className="lg:col-span-5 glass-dark p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="lg:col-span-5 glass-dark p-5 md:p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Palmarès de Signature</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Palmarès de Signature</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Les 5 créations les plus dominantes</p>
                                     </div>
-                                    <div className="p-3 bg-slate-100 rounded-2xl">
+                                    <div className="p-3 bg-muted rounded-2xl">
                                         <PieChart className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
@@ -601,15 +601,15 @@ export default function AnalyticsPage() {
                                         topSellingItems.map((item, index) => (
                                             <div key={item.name} className="group relative flex items-center justify-between py-2">
                                                 <div className="flex items-center gap-5">
-                                                    <span className="text-lg font-black italic text-slate-200 group-hover:text-primary transition-colors w-6">0{index + 1}</span>
+                                                    <span className="text-lg font-black italic text-muted-foreground/40 group-hover:text-primary transition-colors w-6">0{index + 1}</span>
                                                     <div>
-                                                        <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{item.name}</p>
+                                                        <p className="text-sm font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors">{item.name}</p>
                                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.count} Unités vendues</p>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-lg font-black italic tracking-tighter text-primary">{item.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40">F</span></p>
-                                                    <div className="h-1 w-24 bg-slate-100 mt-3 rounded-full overflow-hidden">
+                                                    <div className="h-1 w-24 bg-muted mt-3 rounded-full overflow-hidden">
                                                         <motion.div 
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${(item.revenue / (topSellingItems[0]?.revenue || 1)) * 100}%` }}
@@ -623,14 +623,14 @@ export default function AnalyticsPage() {
                                     ) : (
                                         <div className="h-[250px] flex items-center justify-center text-center">
                                             <div className="space-y-4">
-                                                <PieChart className="h-16 w-16 text-slate-200 mx-auto" />
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">En attente de commandes...</p>
+                                                <PieChart className="h-16 w-16 text-muted-foreground/30 mx-auto" />
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">En attente de commandes...</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                                 
-                                <div className="mt-12 p-8 bg-white/5 border border-white/5 rounded-[2rem] relative overflow-hidden group">
+                                <div className="mt-8 md:mt-12 p-5 md:p-8 bg-muted/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-[2rem] relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700" />
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-3">Vision Stratégique</h4>
                                     <p className="text-xs font-bold text-slate-500 leading-relaxed italic relative z-10">
@@ -642,13 +642,13 @@ export default function AnalyticsPage() {
 
                         {/* Comparaison entre mes établissements */}
                         {restaurantComparison.length > 1 && (
-                            <div className="glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Comparaison de mes Établissements</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Comparaison de mes Établissements</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Performance de chaque restaurant sur la période</p>
                                     </div>
-                                    <div className="p-3 bg-slate-100 rounded-2xl">
+                                    <div className="p-3 bg-muted rounded-2xl">
                                         <Store className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
@@ -656,7 +656,7 @@ export default function AnalyticsPage() {
                                 <div className="overflow-x-auto -mx-2">
                                     <table className="w-full min-w-[600px] border-collapse">
                                         <thead>
-                                            <tr className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 border-b border-white/5">
+                                            <tr className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 border-b border-border dark:border-white/5">
                                                 <th className="text-left px-2 pb-4">Établissement</th>
                                                 <th className="text-right px-2 pb-4">Revenu net</th>
                                                 <th className="text-right px-2 pb-4">Commandes</th>
@@ -666,11 +666,11 @@ export default function AnalyticsPage() {
                                         </thead>
                                         <tbody>
                                             {restaurantComparison.map((r) => (
-                                                <tr key={r.id} className="border-b border-white/5 last:border-0 group hover:bg-white/[0.03] transition-colors">
-                                                    <td className="text-left px-2 py-4 font-black uppercase text-sm text-white group-hover:text-primary transition-colors">{r.nom}</td>
+                                                <tr key={r.id} className="border-b border-border dark:border-white/5 last:border-0 group hover:bg-muted/50 dark:hover:bg-white/[0.03] transition-colors">
+                                                    <td className="text-left px-2 py-4 font-black uppercase text-sm text-foreground group-hover:text-primary transition-colors">{r.nom}</td>
                                                     <td className="text-right px-2 py-4 font-black italic tracking-tighter text-primary">{r.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40 not-italic">F</span></td>
-                                                    <td className="text-right px-2 py-4 font-bold text-slate-300">{r.orderCount}</td>
-                                                    <td className="text-right px-2 py-4 font-bold text-slate-300">{r.avgBasket.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} F</td>
+                                                    <td className="text-right px-2 py-4 font-bold text-muted-foreground">{r.orderCount}</td>
+                                                    <td className="text-right px-2 py-4 font-bold text-muted-foreground">{r.avgBasket.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} F</td>
                                                     <td className="text-right px-2 py-4">
                                                         {selectedRange !== 'all' ? (
                                                             <span className={cn(
@@ -696,7 +696,7 @@ export default function AnalyticsPage() {
                 {/* Bottom Branding */}
                 <div className="text-center py-10 opacity-20 group hover:opacity-100 transition-all duration-500">
                     <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-300 to-transparent mx-auto mb-6" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 group-hover:text-primary transition-colors">
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground group-hover:text-primary transition-colors">
                         Propulsé par Yakro Intelligence Engine v2.0
                     </p>
                 </div>

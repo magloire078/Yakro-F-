@@ -160,7 +160,7 @@ export default function DashboardMenuPage() {
         >
             <div className="space-y-6 md:space-y-8">
                 {/* Category Selector */}
-                <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 py-4 mb-4 flex overflow-x-auto gap-3 no-scrollbar scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
+                <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 py-4 mb-4 flex overflow-x-auto gap-3 scrollbar-hide scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
                     {categories.map((category, idx) => (
                         <motion.button
                             key={category}
@@ -172,7 +172,7 @@ export default function DashboardMenuPage() {
                                 "flex-none snap-start px-4 md:px-5 py-2 md:py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-500 border",
                                 selectedCategory === category 
                                     ? "bg-primary border-primary text-white shadow-xl shadow-primary/20" 
-                                    : "bg-white/5 backdrop-blur-md border-white/5 text-slate-400 hover:border-primary/30 hover:text-primary"
+                                    : "bg-muted/50 dark:bg-white/5 backdrop-blur-md border-border dark:border-white/5 text-slate-400 hover:border-primary/30 hover:text-primary"
                             )}
                         >
                             {category}
