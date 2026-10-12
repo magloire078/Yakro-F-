@@ -42,9 +42,9 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
     };
 
     return (
-        <div className="w-full h-[650px] bg-background/40 glass border border-foreground/10 relative overflow-hidden flex rounded-[2.5rem] shadow-3xl">
+        <div className="w-full md:h-[650px] bg-background/40 glass border border-foreground/10 relative overflow-hidden flex flex-col md:flex-row rounded-[1.5rem] md:rounded-[2.5rem] shadow-3xl">
             {/* Main Map Area */}
-            <div className="flex-1 relative overflow-hidden">
+            <div className="h-[380px] md:h-auto md:flex-1 relative overflow-hidden">
                 {/* Tactical Grid Background */}
                 <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] bg-[length:40px_40px] text-orange-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background" />
@@ -127,17 +127,17 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
 
                                 <div className={cn(
                                     "h-6 w-6 rounded-none border border-background flex items-center justify-center rotate-45 group-hover:scale-125 transition-transform relative z-10",
-                                    isActive ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,1)]" : "bg-white/10 dark:bg-white/20 hover:bg-orange-500/50"
+                                    isActive ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,1)]" : "bg-orange-500/10 dark:bg-white/20 hover:bg-orange-500/50"
                                 )}>
                                     <Bike className={cn("h-3.5 w-3.5 -rotate-45", isActive ? "text-white" : "text-orange-500")} />
                                 </div>
                                 
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
-                                    <div className="glass p-4 border border-white/10 rounded-none shadow-3xl min-w-[200px]">
+                                    <div className="glass p-4 border border-border dark:border-white/10 rounded-none shadow-3xl min-w-[200px]">
                                         <div className="text-[10px] font-black uppercase italic tracking-tighter text-orange-500 mb-1">UNITÉ DÉPLOYÉE</div>
                                         <div className="text-sm font-headline font-bold tracking-tight uppercase mb-2">{livreur.nom || 'Anonyme'}</div>
-                                        <div className="h-px bg-white/5 mb-2" />
-                                        <div className="flex items-center justify-between text-[9px] font-body font-bold text-gray-500 uppercase tracking-widest">
+                                        <div className="h-px bg-muted/50 dark:bg-white/5 mb-2" />
+                                        <div className="flex items-center justify-between text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">
                                             <span>Missions actives:</span>
                                             <span className="text-orange-500">{activeOrders.length}</span>
                                         </div>
@@ -149,26 +149,26 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
                 })}
 
                 {/* Floating Map Controls */}
-                <div className="absolute top-8 left-8 space-y-4">
-                    <div className="glass p-6 border border-white/5 space-y-4 shadow-2xl">
+                <div className="absolute top-4 left-4 md:top-8 md:left-8 space-y-4">
+                    <div className="glass p-4 md:p-6 border border-border dark:border-white/5 space-y-4 shadow-2xl">
                         <div className="flex items-center gap-3">
                             <Zap className="h-4 w-4 text-orange-500 animate-pulse" />
                             <span className="text-[10px] font-headline font-bold uppercase tracking-wider">PROTOCOLE YAM-EYE v2.0</span>
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between gap-10">
-                                <span className="text-[9px] font-body font-bold text-gray-600 uppercase tracking-widest">SIGNAL</span>
-                                <span className="text-[9px] font-headline font-bold text-green-500">OPTIMAL</span>
+                                <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">SIGNAL</span>
+                                <span className="text-[10px] font-headline font-bold text-green-500">OPTIMAL</span>
                             </div>
                             <div className="flex items-center justify-between gap-10">
-                                <span className="text-[9px] font-body font-bold text-muted-foreground uppercase tracking-widest">ACTIFS</span>
-                                <span className="text-[9px] font-headline font-bold">{livreurs.length} UNITÉS</span>
+                                <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">ACTIFS</span>
+                                <span className="text-[10px] font-headline font-bold">{livreurs.length} UNITÉS</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="absolute bottom-8 right-8 flex gap-4 glass p-4 border border-white/5">
+                <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 flex gap-2 md:gap-4 glass p-2 md:p-4 border border-border dark:border-white/5">
                     <Button 
                         variant="ghost" 
                         size="icon" 
@@ -184,8 +184,8 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
             </div>
 
             {/* Sidebar Details */}
-            <div className="w-80 border-l border-white/5 glass flex flex-col">
-                <div className="p-6 border-b border-white/5">
+            <div className="flex w-full md:w-80 max-h-[420px] md:max-h-none border-t md:border-t-0 md:border-l border-border dark:border-white/5 glass flex-col">
+                <div className="p-6 border-b border-border dark:border-white/5">
                     <h3 className="text-[11px] font-headline font-bold uppercase tracking-widest text-orange-500">Flux Tactique Live</h3>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
@@ -197,7 +197,7 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="space-y-6"
                             >
-                                <div className="p-5 bg-white/5 border border-white/5 rounded-3xl relative overflow-hidden group">
+                                <div className="p-5 bg-muted/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-3xl relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                         <Navigation2 className="h-12 w-12 text-orange-500" />
                                     </div>
@@ -207,7 +207,7 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
                                         </div>
                                         <div>
                                             <div className="text-sm font-headline font-bold tracking-tight uppercase">{selectedLivreur.nom}</div>
-                                            <div className="text-[9px] font-body font-bold text-orange-500/70 tracking-widest uppercase">Unité de Transit Alpha</div>
+                                            <div className="text-[10px] font-body font-bold text-orange-500/70 tracking-widest uppercase">Unité de Transit Alpha</div>
                                         </div>
                                     </div>
                                     <div className="space-y-3 relative z-10">
@@ -236,7 +236,7 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
                                         key={l.uid}
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        className="p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-orange-500/30 cursor-pointer transition-colors group"
+                                        className="p-4 bg-muted/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-2xl hover:border-orange-500/30 cursor-pointer transition-colors group"
                                         onClick={() => setSelectedLivreur(l)}
                                     >
                                         <div className="flex justify-between items-center">
@@ -257,10 +257,10 @@ export function TacticalMap({ users, orders }: TacticalMapProps) {
                         )}
                     </AnimatePresence>
                 </div>
-                <div className="p-6 bg-white/[0.02] border-t border-white/5">
+                <div className="p-6 bg-muted/30 dark:bg-white/[0.02] border-t border-border dark:border-white/5">
                     <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-orange-500 animate-ping" />
-                        <span className="text-[9px] font-body font-bold text-gray-500 uppercase tracking-widest">SYSTÈME DE LOCALISATION ACTIF</span>
+                        <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">SYSTÈME DE LOCALISATION ACTIF</span>
                     </div>
                 </div>
             </div>

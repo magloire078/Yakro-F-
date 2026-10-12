@@ -107,7 +107,7 @@ function EditRestaurantContent() {
     }
 
     return (
-        <div className="min-h-screen relative overflow-hidden bg-[#0A0A0B] pb-20">
+        <div className="min-h-screen relative overflow-hidden bg-background text-foreground pb-20">
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
                 {!bgImageFailed && (
@@ -115,35 +115,35 @@ function EditRestaurantContent() {
                         src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=2070&auto=format&fit=crop"
                         alt=""
                         fill
-                        className="object-cover opacity-20 scale-110 animate-slow-zoom"
+                        className="object-cover opacity-10 dark:opacity-20 scale-110 animate-slow-zoom"
                         onError={() => setBgImageFailed(true)}
                     />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+                <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
             </div>
 
             <div className="relative z-10 container mx-auto pt-10 px-4">
                 <div className="max-w-3xl mx-auto">
                     {/* Mobile Navigation */}
-                    <div className="md:hidden absolute top-6 left-4 z-50">
+                    <div className="md:hidden absolute top-4 left-3 z-50">
                         <MobileBackButton label="Restaurants" href="/dashboard/my-restaurants" />
                     </div>
 
                     {/* Back Navigation (Desktop) */}
                     <Link 
                         href="/dashboard/my-restaurants" 
-                        className="hidden md:inline-flex items-center gap-2 text-gray-500 hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px] mb-8 group"
+                        className="hidden md:inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px] mb-8 group"
                     >
                         <span className="transition-transform group-hover:-translate-x-1">←</span>
                         Retour à la Flotte
                     </Link>
 
                     {/* Header */}
-                    <div className="text-center mb-12 pt-16 md:pt-0">
+                    <div className="text-center mb-8 md:mb-12 pt-8 md:pt-0">
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-6"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-4"
                         >
                             <ChefHat className="h-3.5 w-3.5 text-primary" />
                             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Optimisation d&apos;Établissement</span>
@@ -152,7 +152,7 @@ function EditRestaurantContent() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-white mb-4 leading-none"
+                            className="text-3xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground mb-3 leading-tight"
                         >
                             Raffiner <span className="text-primary">{restaurant.nom}</span>
                         </motion.h1>
@@ -160,14 +160,14 @@ function EditRestaurantContent() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-gray-400 font-medium max-w-md mx-auto text-sm md:text-base italic uppercase tracking-widest"
+                            className="text-muted-foreground font-medium max-w-md mx-auto text-xs md:text-sm italic uppercase tracking-wider"
                         >
                             Perfectionnez les détails de votre signature gastronomique pour une expérience client inégalée.
                         </motion.p>
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-[#121214]/80 backdrop-blur-xl border border-white/5 p-8 md:p-12 shadow-2xl relative overflow-hidden">
+                    <div className="bg-card/90 backdrop-blur-xl border border-border p-6 md:p-12 shadow-2xl relative overflow-hidden rounded-2xl sm:rounded-3xl">
                         <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
                         
                         <div className="relative z-10">
@@ -184,8 +184,8 @@ function EditRestaurantContent() {
                     </div>
 
                     {/* Footer Info */}
-                    <div className="mt-12 text-center">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">
+                    <div className="mt-8 md:mt-12 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
                             Certifié Yakro Elite Standards
                         </p>
                     </div>
@@ -198,7 +198,7 @@ function EditRestaurantContent() {
 export default function EditRestaurantPage() {
     return (
         <React.Suspense fallback={
-            <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
             </div>
         }>

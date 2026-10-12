@@ -43,18 +43,15 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/restaurateur');
 
   return (
-    <div className={cn(
-      "flex min-h-screen transition-colors duration-300",
-      isDashboard ? "bg-[#0A0A0B] text-white dark" : "bg-background text-foreground"
-    )}>
+    <div className="flex min-h-screen transition-colors duration-300 bg-background text-foreground">
       <div className="hidden md:flex">
         <Sidebar />
       </div>
       <div className="flex-1 flex flex-col md:pl-64">
         <MobileHeader />
         <main className={cn(
-          "flex-1 pb-24 md:pb-10",
-          isDashboard ? "p-0" : "p-4 md:p-10"
+          "flex-1 pb-20 md:pb-10",
+          isDashboard ? "p-0" : "p-3 sm:p-4 md:p-8 lg:p-10"
         )}>
           {children}
         </main>

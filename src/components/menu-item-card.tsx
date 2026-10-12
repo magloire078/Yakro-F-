@@ -25,41 +25,45 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
   const isCloudinary = imageSrc.includes('res.cloudinary.com');
 
   return (
-    <Card className="flex items-center p-4 gap-5 glass transition-all duration-500 group rounded-[2rem] border-white/5 hover:border-primary/30 hover:bg-white/10 shadow-lg hover:shadow-primary/10">
-      <div className="relative w-28 h-28 shrink-0 overflow-hidden rounded-2xl shadow-inner bg-slate-100 dark:bg-slate-800">
-        {isCloudinary ? (
-          <CldImage
-            src={imageSrc}
-            alt={item.nom}
-            width={placeholder.width}
-            height={placeholder.height}
-            crop="fill"
-            gravity="auto"
-            className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
-          />
-        ) : (
-          <Image
-            src={imageSrc}
-            alt={item.nom}
-            width={placeholder.width}
-            height={placeholder.height}
-            className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
-            data-ai-hint={item.indiceImage}
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      </div>
-      <div className="flex-1 space-y-2">
-        <h4 className="font-black uppercase tracking-tighter text-base md:text-lg group-hover:text-primary transition-colors duration-300">{item.nom}</h4>
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed opacity-70">{item.description}</p>
-        <div className="flex justify-between items-center pt-2">
-          <p className="text-xl font-black text-primary tracking-tighter">{item.prix.toLocaleString('fr-FR')} <span className="text-[10px] opacity-60">FCFA</span></p>
-          <AddToCartDialog item={item}>
-            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl glass-orange text-white hover:scale-110 transition-all shadow-lg active:scale-95">
-              <PlusCircle className="w-6 h-6" />
-            </Button>
-          </AddToCartDialog>
+    <Card className="flex flex-col p-2 xs:p-2.5 sm:p-3.5 glass transition-all duration-300 group rounded-xl xs:rounded-2xl border-white/5 hover:border-primary/30 hover:bg-white/10 shadow-xs hover:shadow-lg h-full justify-between">
+      <div>
+        <div className="relative w-full h-24 xs:h-28 sm:h-36 shrink-0 overflow-hidden rounded-lg xs:rounded-xl shadow-inner bg-slate-100 dark:bg-slate-800 mb-2">
+          {isCloudinary ? (
+            <CldImage
+              src={imageSrc}
+              alt={item.nom}
+              fill
+              crop="fill"
+              gravity="auto"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500 ease-out"
+            />
+          ) : (
+            <Image
+              src={imageSrc}
+              alt={item.nom}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500 ease-out"
+              data-ai-hint={item.indiceImage}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
+        <div className="space-y-0.5 xs:space-y-1">
+          <h4 className="font-bold uppercase tracking-tight text-xs xs:text-sm group-hover:text-primary transition-colors duration-200 line-clamp-1">{item.nom}</h4>
+          <p className="text-[10px] xs:text-[11px] text-muted-foreground line-clamp-2 leading-tight opacity-80">{item.description}</p>
+        </div>
+      </div>
+      <div className="flex justify-between items-center pt-2 mt-auto">
+        <p className="text-xs xs:text-sm font-black text-primary tracking-tight">
+          {item.prix.toLocaleString('fr-FR')} <span className="text-[9px] xs:text-[10px] opacity-70">FCFA</span>
+        </p>
+        <AddToCartDialog item={item}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 xs:h-8 xs:w-8 rounded-lg xs:rounded-xl bg-primary text-white hover:bg-primary/90 hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95 shrink-0">
+            <PlusCircle className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+          </Button>
+        </AddToCartDialog>
       </div>
     </Card>
   );

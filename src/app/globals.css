@@ -5,26 +5,26 @@
 @layer base {
   :root {
     --background: 210 40% 98%; /* Fond Clair (#F8FAFC) */
-    --foreground: 215 28% 17%; /* Gris Nuit (#1F2937) */
+    --foreground: 222 47% 11%; /* Slate-900 (#0F172A) */
     --card: 0 0% 100%;
-    --card-foreground: 215 28% 17%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 28% 17%;
-    --primary: 148 78% 27%; /* Vert Yakro (#0F7B42) */
+    --popover-foreground: 222 47% 11%;
+    --primary: 24 95% 53%; /* Orange Yakro (#F97316) */
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 28% 17%;
-    --muted: 210 40% 96%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96.1%;
     --muted-foreground: 215 16% 47%;
-    --accent: 38 92% 50%; /* Orange Appetit (#F59E0B) */
-    --accent-foreground: 215 28% 17%; /* Gris Nuit — contraste AA sur fond orange */
+    --accent: 24 95% 53%; /* Orange Yakro (#F97316) */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 148 78% 27%;
+    --ring: 24 95% 53%;
     --radius: 1.5rem;
-    --chart-1: 25 95% 53%;
+    --chart-1: 24 95% 53%;
     --chart-2: 215 25% 27%;
     --chart-3: 199 89% 48%;
     --chart-4: 47 95% 55%;
@@ -34,24 +34,24 @@
   .dark {
     --background: 240 10% 3.9%; /* #0A0A0B */
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
+    --card: 240 10% 5.5%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
+    --popover: 240 10% 5.5%;
     --popover-foreground: 0 0% 98%;
-    --primary: 33 100% 50%;
+    --primary: 24 95% 53%; /* Orange Yakro (#F97316) */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --accent: 24 95% 53%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 33 100% 50%;
-    --chart-1: 33 100% 50%;
+    --ring: 24 95% 53%;
+    --chart-1: 24 95% 53%;
     --chart-2: 217 91% 60%;
     --chart-3: 199 89% 48%;
     --chart-4: 47 95% 55%;
@@ -149,12 +149,24 @@
     @apply bg-orange-500/10 backdrop-blur-md border border-orange-500/20;
   }
 
+  .glass-emerald {
+    @apply bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20;
+  }
+
   .premium-card {
-    @apply bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 overflow-hidden;
+    @apply bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 overflow-hidden;
   }
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400;
+  }
+
+  .text-gradient-ci {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-amber-400 to-emerald-500;
+  }
+
+  .bg-tricolor-ci {
+    @apply bg-gradient-to-r from-orange-500 via-white dark:via-slate-200 to-emerald-500;
   }
 
   /* ── Premium Food Typography Utilities ── */
@@ -203,5 +215,16 @@
     0% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
     100% { transform: translateY(0px); }
+  }
+}
+@layer utilities {
+  /* Défilement horizontal/vertical sans barre visible (onglets, flux live) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

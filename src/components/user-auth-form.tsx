@@ -7,8 +7,10 @@ import * as z from 'zod';
 import { useSearchParams } from 'next/navigation';
 import {
   GoogleAuthProvider,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  type UserCredential,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   getAdditionalUserInfo,
@@ -49,6 +51,41 @@ type AuthFormValues = z.infer<typeof signupSchema> & z.infer<typeof loginSchema>
 
 // Instancié une seule fois plutôt qu'à chaque rendu du formulaire.
 const googleAuthProvider = new GoogleAuthProvider();
+googleAuthProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Codes pour lesquels la pop-up ne peut pas s'ouvrir dans cet environnement
+// (bloqueur de pop-up, WebView/navigateur intégré d'une app) : on bascule
+// alors sur la redirection.
+const POPUP_FALLBACK_CODES = new Set([
+  'auth/popup-blocked',
+  'auth/operation-not-supported-in-this-environment',
+  'auth/web-storage-unsupported',
+]);
+
+// Fermeture volontaire de la pop-up : pas d'erreur à afficher.
+const SILENT_GOOGLE_CODES = new Set([
+  'auth/popup-closed-by-user',
+  'auth/cancelled-popup-request',
+  'auth/user-cancelled',
+]);
+
+function describeGoogleAuthError(error: unknown): string {
+  const code = (error as { code?: string })?.code;
+  switch (code) {
+    case 'auth/unauthorized-domain':
+      return `Le domaine « ${typeof window !== 'undefined' ? window.location.hostname : ''} » n'est pas autorisé. Ajoutez-le dans Firebase Console → Authentication → Settings → Authorized domains.`;
+    case 'auth/operation-not-allowed':
+      return 'La connexion Google n\'est pas activée. Activez le fournisseur Google dans Firebase Console → Authentication → Sign-in method.';
+    case 'auth/account-exists-with-different-credential':
+      return 'Un compte existe déjà avec cet email via une autre méthode. Connectez-vous avec email et mot de passe.';
+    case 'auth/network-request-failed':
+      return 'Problème de réseau. Vérifiez votre connexion et réessayez.';
+    case 'auth/internal-error':
+      return 'Erreur interne Firebase. Réessayez dans quelques instants.';
+    default:
+      return code ? `Erreur: ${code}` : 'Une erreur est survenue lors de la connexion.';
+  }
+}
 
 function UserAuthFormContent() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -92,98 +129,110 @@ function UserAuthFormContent() {
     });
   }, [isLoginView, form, referralFromLink]);
 
-  // `signInWithPopup` échoue de façon fiable sur Safari/iOS ("The requested
-  // action is invalid") : la protection anti-traçage d'Apple bloque le
-  // dialogue entre la pop-up et la page d'origine. `signInWithRedirect` est
-  // la solution recommandée par Firebase pour ces environnements — la page
-  // quitte brièvement l'app vers Google puis revient connectée ; le
-  // résultat est alors récupéré via `getRedirectResult` dans l'effet
-  // ci-dessous, au retour.
+  // Enregistre/complète le profil Firestore après une connexion Google, que
+  // celle-ci vienne de la pop-up ou d'un retour de redirection.
+  const handleGoogleCredential = React.useCallback((result: UserCredential) => {
+    const userDocRef = doc(db, 'utilisateurs', result.user.uid);
+    const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
+
+    const profileData = {
+        uid: result.user.uid,
+        email: result.user.email!,
+        nom: result.user.displayName || result.user.email?.split('@')[0],
+        // `dateCreation`, `role` et `roleSysteme` ne doivent être écrits
+        // qu'à la toute première connexion : ce merge s'exécute à CHAQUE
+        // connexion Google, y compris pour un compte existant — les
+        // resoumettre systématiquement écrasait silencieusement le rôle
+        // et le niveau système d'un compte restaurateur/livreur/admin à
+        // chaque reconnexion (ex. un SuperAdmin repassait "User" à
+        // chaque connexion via Google), les rules l'autorisant puisque
+        // l'utilisateur agit alors sur son propre profil avec ses
+        // privilèges actuels encore en vigueur au moment de la lecture.
+        ...(isNewUser
+          ? {
+              dateCreation: serverTimestamp(),
+              role: 'client',
+              roleSysteme: 'User',
+            }
+          : {}),
+        // parrainId n'est capturable qu'à la toute première connexion —
+        // sur les connexions suivantes le champ est verrouillé par les
+        // rules (immuable), donc on ne le renvoie jamais sur un merge.
+        ...(isNewUser && referralFromLink && referralFromLink !== result.user.uid
+          ? { parrainId: referralFromLink }
+          : {}),
+    };
+
+    setDoc(userDocRef, profileData, { merge: true })
+      .catch(async () => {
+          const permissionError = new FirestorePermissionError({
+              path: userDocRef.path,
+              operation: 'write',
+              requestResourceData: profileData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+      });
+
+    toast({
+      title: 'Connexion réussie',
+      description: 'Vous êtes maintenant connecté via Google.',
+    });
+  }, [db, referralFromLink, toast]);
+
+  // La pop-up est la méthode recommandée par Firebase : la redirection
+  // dépend du stockage tiers de `authDomain` (yakro-go.firebaseapp.com),
+  // désormais bloqué par Chrome, Firefox et Safari dès que l'app est servie
+  // depuis un autre domaine — l'utilisateur revenait alors de Google sans
+  // être connecté. La redirection ne sert plus que de repli quand la pop-up
+  // ne peut pas s'ouvrir (bloqueur, WebView d'application).
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await signInWithRedirect(auth, googleAuthProvider);
+      const result = await signInWithPopup(auth, googleAuthProvider);
+      handleGoogleCredential(result);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la connexion.';
-      toast({
-        variant: 'destructive',
-        title: 'Erreur de connexion Google',
-        description: errorMessage,
-      });
+      const code = (error as { code?: string })?.code ?? '';
+      if (POPUP_FALLBACK_CODES.has(code)) {
+        try {
+          await signInWithRedirect(auth, googleAuthProvider);
+          return;
+        } catch (redirectError: unknown) {
+          error = redirectError;
+        }
+      }
+      if (!SILENT_GOOGLE_CODES.has((error as { code?: string })?.code ?? '')) {
+        console.error('Google sign-in failed:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erreur de connexion Google',
+          description: describeGoogleAuthError(error),
+        });
+      }
+    } finally {
       setIsGoogleLoading(false);
     }
   };
 
+  // Retour d'une éventuelle redirection (repli ci-dessus).
   React.useEffect(() => {
     let cancelled = false;
 
-    (async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (!result || cancelled) return;
-
-        const userDocRef = doc(db, 'utilisateurs', result.user.uid);
-        const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
-
-        const profileData = {
-            uid: result.user.uid,
-            email: result.user.email!,
-            nom: result.user.displayName || result.user.email?.split('@')[0],
-            // `dateCreation`, `role` et `roleSysteme` ne doivent être écrits
-            // qu'à la toute première connexion : ce merge s'exécute à CHAQUE
-            // connexion Google, y compris pour un compte existant — les
-            // resoumettre systématiquement écrasait silencieusement le rôle
-            // et le niveau système d'un compte restaurateur/livreur/admin à
-            // chaque reconnexion (ex. un SuperAdmin repassait "User" à
-            // chaque connexion via Google), les rules l'autorisant puisque
-            // l'utilisateur agit alors sur son propre profil avec ses
-            // privilèges actuels encore en vigueur au moment de la lecture.
-            ...(isNewUser
-              ? {
-                  dateCreation: serverTimestamp(),
-                  role: 'client',
-                  roleSysteme: 'User',
-                }
-              : {}),
-            // parrainId n'est capturable qu'à la toute première connexion —
-            // sur les connexions suivantes le champ est verrouillé par les
-            // rules (immuable), donc on ne le renvoie jamais sur un merge.
-            ...(isNewUser && referralFromLink && referralFromLink !== result.user.uid
-              ? { parrainId: referralFromLink }
-              : {}),
-        };
-
-        setDoc(userDocRef, profileData, { merge: true })
-          .catch(async () => {
-              const permissionError = new FirestorePermissionError({
-                  path: userDocRef.path,
-                  operation: 'write',
-                  requestResourceData: profileData,
-              });
-              errorEmitter.emit('permission-error', permissionError);
-          });
-
-        if (!cancelled) {
-          toast({
-            title: 'Connexion réussie',
-            description: 'Vous êtes maintenant connecté via Google.',
-          });
-        }
-      } catch (error: unknown) {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result && !cancelled) handleGoogleCredential(result);
+      })
+      .catch((error: unknown) => {
         if (cancelled) return;
-        const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la connexion.';
+        console.error('Google redirect sign-in failed:', error);
         toast({
           variant: 'destructive',
           title: 'Erreur de connexion Google',
-          description: errorMessage,
+          description: describeGoogleAuthError(error),
         });
-      } finally {
-        if (!cancelled) setIsGoogleLoading(false);
-      }
-    })();
+      });
 
     return () => { cancelled = true; };
-  }, [auth, db, referralFromLink, toast]);
+  }, [auth, handleGoogleCredential, toast]);
 
   const onSubmit = async (data: AuthFormValues) => {
     setIsLoading(true);
@@ -437,7 +486,7 @@ function UserAuthFormContent() {
           </span>
         </div>
       </div>
-      <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
+      <Button type="button" variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
         {isGoogleLoading ? (
           <Loader className="mr-2 h-4 w-4 animate-spin" />
         ) : (

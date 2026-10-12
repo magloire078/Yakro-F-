@@ -160,7 +160,7 @@ export default function CouponsPage() {
       <div className="container mx-auto px-4 max-w-5xl pt-6 md:pt-12 space-y-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-white">
+            <h1 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">
               Promotions <span className="text-primary">Ciblées</span>
             </h1>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2">
@@ -244,14 +244,14 @@ export default function CouponsPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="glass-dark p-6 rounded-[2rem] border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="glass-dark p-6 rounded-[2rem] border border-border dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-primary/10 rounded-2xl shrink-0">
                         <Tag className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <p className="font-black uppercase tracking-tight text-white">{coupon.code}</p>
+                        <p className="font-black uppercase tracking-tight text-foreground">{coupon.code}</p>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                           {coupon.type === 'montant_fixe' ? `${coupon.valeur.toLocaleString('fr-FR')} FCFA` : `${coupon.valeur}%`}
                           {' • '}{restaurantName(coupon.restaurantId)}
@@ -284,9 +284,9 @@ export default function CouponsPage() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="glass-dark p-16 text-center rounded-[3rem] border border-white/5">
+          <div className="glass-dark p-16 text-center rounded-[3rem] border border-border dark:border-white/5">
             <Ticket className="h-16 w-16 text-primary/20 mx-auto mb-6" />
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-2">Aucun code promo</h2>
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-foreground mb-2">Aucun code promo</h2>
             <p className="text-slate-400 text-sm">
               {myRestaurants.length === 0
                 ? 'Créez un restaurant avant de lancer une promotion.'

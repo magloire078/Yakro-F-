@@ -113,29 +113,29 @@ function CompleteProfileContent() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-12 bg-background overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center px-3.5 sm:px-4 py-6 sm:py-12 bg-background overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
       <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-[120px]" />
       <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-primary/5 blur-[120px]" />
 
       <div className="relative z-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="bg-card/60 backdrop-blur-xl border border-primary/20 rounded-[2rem] shadow-2xl shadow-primary/10 p-10 space-y-8">
-          <div className="space-y-4 text-center">
-            <div className="inline-flex p-4 bg-primary/10 rounded-2xl border border-primary/20 shadow-lg shadow-primary/10">
-              <UserCircle className="h-10 w-10 text-primary" />
+        <div className="bg-card/60 backdrop-blur-xl border border-primary/20 rounded-2xl sm:rounded-[2rem] shadow-2xl shadow-primary/10 p-5 sm:p-10 space-y-5 sm:space-y-8">
+          <div className="space-y-3 text-center">
+            <div className="inline-flex p-3 sm:p-4 bg-primary/10 rounded-2xl border border-primary/20 shadow-lg shadow-primary/10">
+              <UserCircle className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
             </div>
-            <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/70">Dernière étape</p>
-              <h1 className="text-3xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">
+            <div className="space-y-1 sm:space-y-2">
+              <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-primary/70">Dernière étape</p>
+              <h1 className="text-2xl sm:text-3xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-tight">
                 Complétez votre <span className="text-primary">Profil</span>
               </h1>
-              <p className="text-sm font-medium text-muted-foreground/80 max-w-xs mx-auto">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground/80 max-w-xs mx-auto">
                 Identifiez-vous pour commencer l&apos;aventure à Yamoussoukro.
               </p>
             </div>
           </div>
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
             <div className="space-y-2">
               <Label htmlFor="nom" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nom complet</Label>
               <Input

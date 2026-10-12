@@ -6,10 +6,15 @@ export interface GeoLocationCoords {
     longitude: number;
 }
 
+/** Coordonnées de référence du Centre-ville de Yamoussoukro (Mairie / Grande Mosquée / Basilique) */
+export const YAKRO_DEFAULT_COORDS: GeoLocationCoords = {
+    latitude: 6.8276,
+    longitude: -5.2893,
+};
+
 export async function getCurrentLocation(): Promise<GeoLocationCoords> {
     if (Capacitor.isNativePlatform()) {
         try {
-            // Check permissions first on native
             const permissions = await Geolocation.checkPermissions();
             if (permissions.location !== 'granted') {
                 const request = await Geolocation.requestPermissions();
@@ -20,16 +25,15 @@ export async function getCurrentLocation(): Promise<GeoLocationCoords> {
 
             const position = await Geolocation.getCurrentPosition({
                 enableHighAccuracy: true,
-                timeout: 10000
+                timeout: 8000,
             });
 
             return {
                 latitude: position.coords.latitude,
-                longitude: position.coords.longitude
+                longitude: position.coords.longitude,
             };
         } catch (error) {
             console.error('Capacitor Geolocation error:', error);
-            // Fallback to browser geolocation even if on native (sometimes works better in some webviews)
             return getBrowserLocation();
         }
     } else {
@@ -39,25 +43,42 @@ export async function getCurrentLocation(): Promise<GeoLocationCoords> {
 
 function getBrowserLocation(): Promise<GeoLocationCoords> {
     return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
+        if (typeof window === 'undefined' || !navigator.geolocation) {
             reject(new Error('Geolocation not supported'));
             return;
         }
 
+        // Essai 1 : Haute précision avec timeout de 5s
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 resolve({
                     latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
+                    longitude: position.coords.longitude,
                 });
             },
-            (error) => {
-                reject(error);
+            (firstError) => {
+                // Essai 2 : Basse précision (IP / Wi-Fi réseau, fonctionne sur PC/Mac sans GPS matériel)
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                        });
+                    },
+                    (secondError) => {
+                        reject(secondError || firstError);
+                    },
+                    {
+                        enableHighAccuracy: false,
+                        timeout: 7000,
+                        maximumAge: 60000,
+                    }
+                );
             },
             {
                 enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
+                timeout: 5000,
+                maximumAge: 30000,
             }
         );
     });

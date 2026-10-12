@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { getCurrentLocation, YAKRO_DEFAULT_COORDS } from '@/lib/geolocation';
 
 interface Category {
     name: string;
@@ -295,29 +296,33 @@ export default function CustomerHomePage() {
 
   }, [isLoading, restaurants, menuItems, searchQuery, interpretedSearch, activeFilter, userLocation, selectedCategory]);
 
-  const handleLocationFilter = () => {
+  const handleLocationFilter = async () => {
     if (activeFilter === 'distance') {
       setActiveFilter(null);
       return;
     }
 
-    if (!navigator.geolocation) {
-      toast({ variant: 'destructive', title: 'Géolocalisation non supportée' });
-      return;
+    try {
+      const coords = await getCurrentLocation();
+      setUserLocation({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
+      setActiveFilter('distance');
+      toast({
+        title: '📍 Position détectée',
+        description: 'Les restaurants sont triés par distance réelle.',
+      });
+    } catch (error) {
+      // Si la permission est refusée ou non disponible, bascule automatique sur le centre-ville de Yakro
+      console.warn('Geolocation fallback to Yakro center:', error);
+      setUserLocation(YAKRO_DEFAULT_COORDS);
+      setActiveFilter('distance');
+      toast({
+        title: '📍 Position par défaut activée (Yakro Centre)',
+        description: 'Autorisez la localisation dans votre navigateur pour une précision exacte.',
+      });
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        setActiveFilter('distance');
-      },
-      () => {
-        toast({ variant: 'destructive', title: "L'accès à la localisation a été refusé." });
-      }
-    );
   };
   
   const handleCategorySelect = (categoryName: string) => {
@@ -348,40 +353,46 @@ export default function CustomerHomePage() {
   }
   
   return (
-    <div className="flex flex-col gap-12 md:gap-16">
+    <div className="flex flex-col gap-4 sm:gap-6 md:gap-8">
       {activeOrder ? (
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
-        <section className="relative overflow-hidden rounded-[2rem] md:rounded-[3rem] min-h-[500px] flex items-center justify-center shadow-2xl bg-slate-900">
+        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] min-h-[280px] sm:min-h-[360px] md:min-h-[420px] flex items-center justify-center shadow-2xl bg-slate-950">
           {/* Background Image with Overlay */}
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-110 bg-[url('/assets/marketing/hero-basilica.png')]"
+            className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-105 bg-[url('/assets/marketing/hero-basilica.png')]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:bg-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/30" />
           
-          <div className="relative z-10 w-full px-6 py-12 md:py-24 text-center space-y-8">
+          <div className="relative z-10 w-full px-4 sm:px-6 py-6 sm:py-10 md:py-14 text-center space-y-3.5 sm:space-y-5">
             <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
             >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-orange text-white text-[10px] font-black uppercase tracking-[0.2em] mb-8 animate-float">
-                    <SparklesIcon className="h-4 w-4 text-primary" />
-                    Propulsé par Yakro Intelligence
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-orange-500/30 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2.5 sm:mb-4 animate-float shadow-lg">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-orange-400">Orange</span>
+                    <span className="opacity-40">•</span>
+                    <span className="text-white">Blanc</span>
+                    <span className="opacity-40">•</span>
+                    <span className="text-emerald-400">Vert</span>
+                    <span className="opacity-40 mx-1">|</span>
+                    <span>Yakro Intelligence</span>
                 </div>
-                <h1 className="text-4xl md:text-7xl font-black text-white leading-[1.1] tracking-tighter uppercase italic">
-                    L&apos;Élite de <span className="text-primary drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">Yakro</span><br />
+                <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.02] tracking-tighter uppercase italic drop-shadow-lg">
+                    L&apos;Élite de <span className="text-primary drop-shadow-[0_0_20px_rgba(249,115,22,0.6)]">Yakro</span> <span className="text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.6)]">Fê</span><br />
                     À votre porte.
                 </h1>
-                <p className="mt-6 text-base md:text-xl text-slate-200 max-w-xl mx-auto font-medium leading-relaxed opacity-80">
-                    Découvrez une expérience gastronomique transcendée par l&apos;intelligence artificielle.
+                <p className="mt-1.5 sm:mt-3 text-xs sm:text-base md:text-lg text-slate-200 max-w-lg mx-auto font-medium leading-relaxed opacity-90 line-clamp-2 sm:line-clamp-none">
+                    L&apos;expérience gastronomique transcendée par l&apos;intelligence artificielle.
                 </p>
             </motion.div>
 
             <motion.div 
-               initial={{ opacity: 0, scale: 0.95 }}
+               initial={{ opacity: 0, scale: 0.96 }}
                animate={{ opacity: 1, scale: 1 }}
-               transition={{ duration: 0.5, delay: 0.2 }}
+               transition={{ duration: 0.4, delay: 0.1 }}
                className="max-w-2xl mx-auto"
             >
               <IntelligentSearchBar 
@@ -389,55 +400,97 @@ export default function CustomerHomePage() {
                 onInterpretedSearchChange={setInterpretedSearch} 
               />
               
-              <div className="mt-10 flex flex-wrap justify-center gap-3 md:gap-4">
+              <div className="mt-3 sm:mt-5 flex flex-wrap justify-center gap-1.5 sm:gap-2">
                 {[
                   { id: 'rating', icon: TrendingUp, label: 'Mieux notés' },
                   { id: 'time', icon: Timer, label: 'Rapides' },
-                  { id: 'delivery', icon: Truck, label: 'Économiques' },
+                  { id: 'delivery', icon: Truck, label: 'Éco' },
                 ].map((filter) => (
                   <Button 
                     key={filter.id}
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-primary/20 transition-all active:scale-95",
-                        activeFilter === filter.id && "bg-primary/80 border-primary/60 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                        "rounded-xl bg-black/40 hover:bg-black/60 text-white border border-white/15 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:border-primary/50 transition-all active:scale-95",
+                        activeFilter === filter.id && "bg-primary hover:bg-primary/90 text-white border-primary shadow-[0_0_15px_rgba(249,115,22,0.4)]"
                     )}
                     onClick={() => setActiveFilter(activeFilter === filter.id ? null : filter.id as SortFilter)}
                   >
-                    <filter.icon className="mr-2 h-4 w-4"/> {filter.label}
+                    <filter.icon className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5"/> {filter.label}
                   </Button>
                 ))}
                 <Button 
                     size="sm" 
                     variant="ghost" 
                     className={cn(
-                        "rounded-xl glass-dark text-white border-white/5 px-5 py-6 hover:bg-primary/20 transition-all active:scale-95",
-                        activeFilter === 'distance' && "bg-primary/80 border-primary/60 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                        "rounded-xl bg-black/40 hover:bg-black/60 text-white border border-white/15 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 h-7 sm:h-9 text-xs sm:text-sm hover:border-primary/50 transition-all active:scale-95",
+                        activeFilter === 'distance' && "bg-primary hover:bg-primary/90 text-white border-primary shadow-[0_0_15px_rgba(249,115,22,0.4)]"
                     )}
                     onClick={handleLocationFilter}
                 >
-                    <MapPin className="mr-2 h-4 w-4"/> À proximité
+                    <MapPin className="mr-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5"/> À proximité
                 </Button>
               </div>
             </motion.div>
           </div>
         </section>
       )}
+
+      {/* Categories Section */}
+      <section>
+        <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
+            <div className="flex h-4 sm:h-5 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
+                <div className="flex-1 bg-orange-500" />
+                <div className="flex-1 bg-white dark:bg-slate-300" />
+                <div className="flex-1 bg-emerald-500" />
+            </div>
+            <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Explorer par catégories</h2>
+        </div>
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {categories.map((category, index) => (
+            <motion.div
+                key={category.name}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04 }}
+                viewport={{ once: true }}
+            >
+                <Card 
+                    className={cn("group flex flex-col items-center justify-center p-2.5 sm:p-4 bg-card hover:bg-accent/10 transition-all duration-300 cursor-pointer rounded-2xl border border-border shadow-sm",
+                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-primary text-white shadow-lg scale-105 border-primary" : "hover:border-primary/40"
+                    )}
+                    onClick={() => handleCategorySelect(category.name)}
+                >
+                  <div className={cn(
+                    "p-2 sm:p-3 rounded-xl transition-all duration-300 mb-1 sm:mb-2 shadow-inner",
+                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-muted group-hover:bg-primary/20"
+                  )}>
+                    <category.icon className={cn(
+                      "w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300",
+                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-primary"
+                    )}/>
+                  </div>
+                  <p className="font-black uppercase tracking-tight text-[9px] sm:text-xs text-center truncate w-full">{category.name}</p>
+                </Card>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
       {/* Hot Picks Section */}
       {!isLoading && restaurants.length > 0 && !searchQuery && !selectedCategory && (
         <section className="relative">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-               <div className="p-3 bg-red-100 dark:bg-red-950/30 rounded-2xl">
-                 <Flame className="text-red-600 fill-red-600 animate-bounce" size={24} />
+          <div className="flex items-center justify-between mb-2.5 sm:mb-4">
+            <div className="flex items-center gap-2">
+               <div className="p-1 sm:p-1.5 bg-red-500/10 rounded-lg">
+                 <Flame className="text-red-500 fill-red-500 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                </div>
-               <h2 className="text-2xl md:text-3xl font-headline text-foreground">Coups de Cœur</h2>
+               <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Coups de Cœur</h2>
             </div>
-            <Badge variant="hot">OFFRES PIMENTÉES</Badge>
+            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest text-red-500 border-red-500/30 bg-red-500/5 py-0.5 px-2">OFFRES CHAUDES</Badge>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
              {restaurants.filter(r => r.note >= 4.8).slice(0, 4).map(restaurant => (
               <RestaurantCard key={`hot-${restaurant.id}`} restaurant={restaurant} />
             ))}
@@ -452,18 +505,18 @@ export default function CustomerHomePage() {
       )}
       
       {recommendationError && user && (
-          <div className="text-center text-muted-foreground -mt-8">
-              <p className="text-sm">Service de recommandations IA temporairement indisponible.</p>
+          <div className="text-center text-muted-foreground -mt-2">
+              <p className="text-xs">Service de recommandations IA temporairement indisponible.</p>
           </div>
       )}
       
       {featuredRestaurants.length > 0 && !selectedCategory && !searchQuery && (
           <section>
-             <div className="flex items-center gap-4 mb-6">
-                <Star className="text-primary fill-primary" />
-                <h2 className="text-2xl md:text-3xl font-headline text-foreground">Restaurants en vedette</h2>
+             <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
+                <Star className="text-primary fill-primary h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Restaurants en vedette</h2>
              </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
                {featuredRestaurants.map(restaurant => (
                 <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
               ))}
@@ -471,60 +524,27 @@ export default function CustomerHomePage() {
           </section>
       )}
 
-      <section>
-        <div className="flex items-center gap-4 mb-8">
-            <div className="h-8 w-1 bg-primary rounded-full" />
-            <h2 className="text-2xl md:text-3xl font-headline text-foreground">Explorer par catégories</h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {categories.map((category, index) => (
-            <motion.div
-                key={category.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-            >
-                <Card 
-                    className={cn("group flex flex-col items-center justify-center p-6 md:p-8 glass transition-all duration-500 cursor-pointer rounded-[2rem] border-white/5 dark:border-white/5",
-                        selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-primary text-white shadow-[0_20px_40px_rgba(249,115,22,0.3)] scale-105 border-primary/60" : "hover:bg-white/10 dark:hover:bg-white/5"
-                    )}
-                    onClick={() => handleCategorySelect(category.name)}
-                >
-                  <div className={cn(
-                    "p-4 rounded-2xl transition-all duration-500 mb-4 shadow-inner",
-                    selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 group-hover:bg-primary"
-                  )}>
-                    <category.icon className={cn(
-                      "w-8 h-8 transition-colors duration-500",
-                      selectedCategory?.toLowerCase() === category.name.toLowerCase() ? "text-white" : "text-primary group-hover:text-white"
-                    )}/>
-                  </div>
-                  <p className="font-black uppercase tracking-tighter text-sm md:text-base">{category.name}</p>
-                </Card>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
       <section id="restaurants">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl md:text-3xl font-headline text-foreground">
+        <div className="flex items-center justify-between mb-2.5 sm:mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">
               {searchQuery || interpretedSearch || activeFilter || selectedCategory ? 'Résultats de recherche' : 'Tous les Restaurants'}
             </h2>
-            {getFilterLabel() && <Badge variant="secondary" className="px-3 py-1 font-medium">{getFilterLabel()}</Badge>}
+            {getFilterLabel() && <Badge variant="secondary" className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">{getFilterLabel()}</Badge>}
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
            {normalRestaurants.map(restaurant => (
             <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} />
           ))}
         </div>
          {normalRestaurants.length === 0 && (
-            <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg italic">Aucun restaurant ne correspond à votre recherche.</p>
-                <Button variant="link" onClick={() => { setSearchQuery(''); setInterpretedSearch(null); setSelectedCategory(null); setActiveFilter(null); }} className="mt-2">
+            <div className="text-center py-10 bg-card rounded-2xl border border-border p-6 space-y-3">
+                <p className="text-muted-foreground text-sm font-medium italic">Aucun restaurant ne correspond à votre recherche.</p>
+                <Button 
+                  onClick={() => { setSearchQuery(''); setInterpretedSearch(null); setSelectedCategory(null); setActiveFilter(null); }} 
+                  className="h-10 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl font-black italic text-xs uppercase tracking-wider shadow-lg shadow-primary/20"
+                >
                     Réinitialiser les filtres
                 </Button>
             </div>
@@ -532,12 +552,12 @@ export default function CustomerHomePage() {
       </section>
 
       <section>
-        <Card className="bg-primary text-primary-foreground p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-          <div className="text-center md:text-left">
-            <h2 className="text-2xl md:text-3xl font-headline">Vous êtes un restaurateur ?</h2>
-            <p className="mt-2 max-w-lg opacity-90">Rejoignez notre plateforme pour atteindre plus de clients et développer votre activité à Yamoussoukro.</p>
+        <Card className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 text-white p-5 sm:p-7 md:p-8 rounded-2xl sm:rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+          <div className="text-center md:text-left space-y-1">
+            <h2 className="text-xl sm:text-2xl font-black italic uppercase tracking-tight">Vous êtes un restaurateur ?</h2>
+            <p className="text-xs sm:text-sm max-w-lg text-white/90 font-medium leading-relaxed">Rejoignez notre plateforme d&apos;élite pour atteindre plus de clients et décupler votre chiffre d&apos;affaires à Yamoussoukro.</p>
           </div>
-          <Button variant="secondary" size="lg" className="shrink-0 font-bold" asChild>
+          <Button size="lg" className="shrink-0 font-black italic uppercase tracking-tight rounded-xl px-6 h-12 text-xs sm:text-sm bg-slate-950 hover:bg-slate-900 text-white shadow-2xl border border-white/10 transition-all hover:scale-105 active:scale-95" asChild>
             <Link href="/dashboard/new-restaurant">Rejoindre l&apos;aventure</Link>
           </Button>
         </Card>

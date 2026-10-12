@@ -125,12 +125,21 @@ export default function AssistantPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] md:h-[calc(100vh-2rem)] max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-100 dark:border-slate-800">
-        <div className="p-2 bg-primary/10 rounded-xl">
+      <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 dark:border-slate-800">
+        <div className="p-2 bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-emerald-500/20 rounded-xl border border-orange-500/20 shadow-xs">
           <Sparkles className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h1 className="font-headline text-lg text-slate-900 dark:text-white">Assistant YakroFe</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="font-headline text-lg font-bold text-slate-900 dark:text-white">
+              Assistant <span className="text-primary">Yakro</span><span className="text-emerald-500 dark:text-emerald-400">Fê</span>
+            </h1>
+            <div className="flex h-3 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
+              <div className="flex-1 bg-orange-500" />
+              <div className="flex-1 bg-white dark:bg-slate-300" />
+              <div className="flex-1 bg-emerald-500" />
+            </div>
+          </div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ton conseiller gourmand local</p>
         </div>
       </div>

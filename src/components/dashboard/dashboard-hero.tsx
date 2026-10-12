@@ -71,8 +71,9 @@ export function DashboardHero({
                         animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-2 rounded-full bg-orange-500/10 border border-orange-500/20 backdrop-blur-2xl mb-1 shadow-2xl"
                     >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         {badgeIcon && <span className="text-orange-500">{badgeIcon}</span>}
-                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-orange-500">
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-orange-500">
                             {badgeText}
                         </span>
                     </motion.div>
@@ -84,7 +85,7 @@ export function DashboardHero({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black italic uppercase tracking-tighter text-white mb-0.5 leading-[0.9] md:leading-none"
+                        className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black italic uppercase tracking-tighter text-foreground mb-0.5 leading-[0.9] md:leading-none"
                     >
                         {title}
                     </motion.h1>
@@ -93,7 +94,7 @@ export function DashboardHero({
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-muted-foreground font-bold text-[7px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.4em] italic opacity-80"
+                            className="text-muted-foreground font-bold text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.4em] italic opacity-80"
                         >
                             {subtitle}
                         </motion.p>

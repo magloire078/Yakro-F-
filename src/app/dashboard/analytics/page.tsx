@@ -264,10 +264,10 @@ export default function AnalyticsPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-transparent pb-24 relative overflow-hidden">
+        <div className="min-h-screen bg-transparent pb-10 sm:pb-16 relative overflow-hidden">
 
             {/* Elite Analytics Header */}
-            <div className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative py-4 sm:py-6 md:py-8 w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -278,47 +278,47 @@ export default function AnalyticsPage() {
                             onError={() => setBgImageFailed(true)}
                         />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-[#0A0A0B]/20" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20" />
                 </div>
                 
                 {/* Mobile Back Button — pattern my-restaurants */}
                 <MobileBackButton 
                     label="Dashboard" 
                     href="/restaurateur" 
-                    className="md:hidden absolute top-6 left-4 z-50 mb-0"
+                    className="md:hidden absolute top-3 left-3 z-50 mb-0"
                 />
 
-                <div className="relative z-30 text-center space-y-4 px-6 max-w-4xl pt-10 md:pt-0">
+                <div className="relative z-30 text-center space-y-1.5 sm:space-y-2 px-3 sm:px-6 max-w-3xl pt-2 md:pt-0">
                     <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-4"
+                        className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md shadow-sm"
                     >
                         <Activity className="h-3 w-3 text-primary animate-pulse" />
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
                     </motion.div>
                     <motion.h1 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-8xl font-black italic uppercase tracking-tighter text-white leading-none"
+                        className="text-2xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground leading-tight"
                     >
                         Analyse <span className="text-primary">Elite</span>
                     </motion.h1>
                     <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-slate-500 font-medium text-[10px] md:text-xs uppercase tracking-[0.3em]"
+                        className="text-muted-foreground font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.2em]"
                     >
                         Pilotez votre performance avec précision chirurgicale
                     </motion.p>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl -mt-12 md:-mt-16 relative z-40 space-y-10 md:space-y-12">
+            <div className="container mx-auto px-3 sm:px-6 max-w-5xl mt-2 sm:mt-4 relative z-40 space-y-4 sm:space-y-6 md:space-y-8">
                 {/* Time Range Selector — sticky scrollable on mobile */}
-                <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 py-4 mb-4 flex overflow-x-auto gap-3 no-scrollbar scroll-smooth snap-x bg-[#0A0A0B]/80 backdrop-blur-xl md:relative md:top-auto md:mx-0 md:px-0 md:py-0 md:justify-center md:flex-wrap md:bg-transparent">
+                <div className="sticky top-0 z-40 px-1 py-2.5 mb-2 flex overflow-x-auto gap-2 sm:gap-3 scrollbar-hide scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:justify-center md:flex-wrap md:bg-transparent">
                     {ranges.map((range, idx) => (
                         <motion.button
                             key={range.id}
@@ -327,10 +327,10 @@ export default function AnalyticsPage() {
                             transition={{ delay: 0.3 + idx * 0.05 }}
                             onClick={() => setSelectedRange(range.id)}
                             className={cn(
-                                "flex-none snap-start px-5 py-3 md:px-6 md:py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
+                                "flex-none snap-start px-3.5 py-1.5 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap",
                                 selectedRange === range.id 
-                                    ? "bg-primary text-white shadow-xl shadow-primary/20" 
-                                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5"
+                                    ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20" 
+                                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border"
                             )}
                         >
                             {range.label}
@@ -345,10 +345,10 @@ export default function AnalyticsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.3 }}
-                        className="space-y-12"
+                        className="space-y-6 sm:space-y-10 md:space-y-12"
                     >
                         {/* Key Metrics Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 md:gap-6">
                             {[
                                 { label: 'Revenu Net', value: stats.totalRevenue, growth: stats.revenueGrowth, sub: 'Après commission Yakro Fê', icon: DollarSign, color: 'orange' },
                                 { label: 'Flux de Commandes', value: stats.totalOrders, growth: stats.ordersGrowth, sub: 'Activité sur la période', icon: ShoppingCart, color: 'slate', unit: 'ITEMS' },
@@ -356,36 +356,36 @@ export default function AnalyticsPage() {
                             ].map((item, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="group glass-dark p-8 relative overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 shadow-xl rounded-[2.5rem]"
+                                    className="group glass-dark p-3.5 sm:p-5 md:p-6 relative overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-primary/10 shadow-lg rounded-xl sm:rounded-2xl"
                                 >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">{item.label}</span>
+                                    <div className="flex justify-between items-start mb-3 sm:mb-6">
+                                        <div className="space-y-0.5 sm:space-y-1">
+                                            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-muted-foreground group-hover:text-primary transition-colors">{item.label}</span>
                                             {selectedRange !== 'all' && (
                                                 <div className={cn(
-                                                    "flex items-center gap-1 text-[10px] font-bold",
+                                                    "flex items-center gap-1 text-[9px] sm:text-[10px] font-bold",
                                                     item.growth >= 0 ? "text-emerald-500" : "text-rose-500"
                                                 )}>
                                                     {item.growth >= 0 ? <TrendingUp className="h-3 w-3" /> : <Activity className="h-3 w-3 rotate-180" />}
                                                     <span>{Math.abs(item.growth).toFixed(1)}%</span>
-                                                    <span className="text-slate-400 ml-1">vs période précédente</span>
+                                                    <span className="text-muted-foreground ml-1">vs période précédente</span>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-3 bg-slate-100 rounded-2xl border border-slate-200 group-hover:border-primary/20 group-hover:bg-primary/10 transition-all">
-                                            <item.icon className={`h-5 w-5 ${item.color === 'orange' ? 'text-primary' : 'text-slate-400 group-hover:text-primary'}`} />
+                                        <div className="p-2 sm:p-3 bg-muted rounded-xl sm:rounded-2xl border border-border group-hover:border-primary/20 group-hover:bg-primary/10 transition-all">
+                                            <item.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${item.color === 'orange' ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
                                         </div>
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className={`text-4xl md:text-6xl font-black italic tracking-tighter ${item.color === 'orange' ? 'text-primary' : 'text-white'}`}>
+                                    <div className="flex items-baseline gap-1.5 sm:gap-2">
+                                        <span className={`text-2xl sm:text-4xl md:text-6xl font-black italic tracking-tighter ${item.color === 'orange' ? 'text-primary' : 'text-foreground'}`}>
                                             {item.value.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}
                                         </span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                                             {item.unit || 'FCFA'}
                                         </span>
                                     </div>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mt-4 tracking-[0.15em]">{item.sub}</p>
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase mt-2 sm:mt-4 tracking-[0.1em] sm:tracking-[0.15em]">{item.sub}</p>
                                     <div className="absolute -bottom-6 -right-6 h-24 w-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all" />
                                 </div>
                             ))}
@@ -394,22 +394,22 @@ export default function AnalyticsPage() {
                         {/* Detailed Analytics Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             {/* Revenue Trend Chart - Full Width */}
-                            <div className="lg:col-span-12 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="lg:col-span-12 glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Évolution de l&apos;Empire</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Évolution de l&apos;Empire</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Revenu net actuel vs période précédente</p>
                                     </div>
                                     <div className="flex items-center gap-6">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-primary" />
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Actuel</span>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Actuel</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-slate-200" />
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Précédent</span>
+                                            <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Précédent</span>
                                         </div>
-                                        <div className="p-3 bg-slate-100 rounded-2xl">
+                                        <div className="p-3 bg-muted rounded-2xl">
                                             <Activity className="h-6 w-6 text-primary" />
                                         </div>
                                     </div>
@@ -454,11 +454,11 @@ export default function AnalyticsPage() {
                                                         const growth = prev !== 0 ? ((curr - prev) / prev) * 100 : 0;
 
                                                         return (
-                                                          <div className="bg-[#0A0A0B] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-xl space-y-3">
+                                                          <div className="bg-card border border-border p-5 rounded-2xl shadow-2xl backdrop-blur-xl space-y-3">
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-primary">{payload[0].payload.name}</p>
                                                             <div className="space-y-1">
-                                                                <p className="text-2xl font-black italic tracking-tighter text-white">{curr.toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
-                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Précédent: {prev.toLocaleString('fr-FR')} F</p>
+                                                                <p className="text-2xl font-black italic tracking-tighter text-foreground">{curr.toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
+                                                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Précédent: {prev.toLocaleString('fr-FR')} F</p>
                                                             </div>
                                                             {prev > 0 && (
                                                                 <div className={cn(
@@ -482,14 +482,14 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Prévision de demande */}
-                            <div className="lg:col-span-12 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl border border-primary/10">
+                            <div className="lg:col-span-12 glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl border border-primary/10">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                                     <div className="flex items-center gap-5">
                                         <div className="p-4 bg-primary/10 rounded-2xl shrink-0">
                                             <Sparkles className="h-7 w-7 text-primary" />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter text-white">Prévision de demande</h2>
+                                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter text-foreground">Prévision de demande</h2>
                                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">
                                                 Estimation pour {nextPeriodLabel}, basée sur la tendance récente — pas une garantie
                                             </p>
@@ -498,7 +498,7 @@ export default function AnalyticsPage() {
                                     <div className="text-right shrink-0">
                                         <p className="text-4xl md:text-5xl font-black italic tracking-tighter text-primary">
                                             {revenueForecast.toLocaleString('fr-FR')}
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-300 ml-2">FCFA</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">FCFA</span>
                                         </p>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">Revenu net projeté</p>
                                     </div>
@@ -506,13 +506,13 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Revenue by Restaurant */}
-                            <div className="lg:col-span-7 glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="lg:col-span-7 glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Répartition Elite</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Répartition Elite</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Revenu net par établissement</p>
                                     </div>
-                                    <div className="p-3 bg-slate-100 rounded-2xl">
+                                    <div className="p-3 bg-muted rounded-2xl">
                                         <BarChart3 className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
@@ -553,9 +553,9 @@ export default function AnalyticsPage() {
                                                     content={({ active, payload }) => {
                                                       if (active && payload && payload.length) {
                                                         return (
-                                                          <div className="bg-[#0A0A0B] border border-white/10 p-5 rounded-2xl shadow-2xl backdrop-blur-xl">
+                                                          <div className="bg-card border border-border p-5 rounded-2xl shadow-2xl backdrop-blur-xl">
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 block">{payload[0].payload.name}</p>
-                                                            <p className="text-3xl font-black italic tracking-tighter text-white">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
+                                                            <p className="text-3xl font-black italic tracking-tighter text-foreground">{(payload[0].value as number).toLocaleString('fr-FR')} <span className="text-[10px] opacity-20 uppercase tracking-widest not-italic ml-1">FCFA</span></p>
                                                           </div>
                                                         )
                                                       }
@@ -576,7 +576,7 @@ export default function AnalyticsPage() {
                                     ) : (
                                         <div className="h-full flex items-center justify-center text-center">
                                             <div className="space-y-4">
-                                                <BarChart3 className="h-16 w-16 text-slate-200 mx-auto" />
+                                                <BarChart3 className="h-16 w-16 text-muted-foreground/30 mx-auto" />
                                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Aucune donnée pour cette période</p>
                                             </div>
                                         </div>
@@ -585,13 +585,13 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Top Sellers Table */}
-                            <div className="lg:col-span-5 glass-dark p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="lg:col-span-5 glass-dark p-5 md:p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Palmarès de Signature</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Palmarès de Signature</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Les 5 créations les plus dominantes</p>
                                     </div>
-                                    <div className="p-3 bg-slate-100 rounded-2xl">
+                                    <div className="p-3 bg-muted rounded-2xl">
                                         <PieChart className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
@@ -601,15 +601,15 @@ export default function AnalyticsPage() {
                                         topSellingItems.map((item, index) => (
                                             <div key={item.name} className="group relative flex items-center justify-between py-2">
                                                 <div className="flex items-center gap-5">
-                                                    <span className="text-lg font-black italic text-slate-200 group-hover:text-primary transition-colors w-6">0{index + 1}</span>
+                                                    <span className="text-lg font-black italic text-muted-foreground/40 group-hover:text-primary transition-colors w-6">0{index + 1}</span>
                                                     <div>
-                                                        <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-primary transition-colors">{item.name}</p>
+                                                        <p className="text-sm font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors">{item.name}</p>
                                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.count} Unités vendues</p>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-lg font-black italic tracking-tighter text-primary">{item.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40">F</span></p>
-                                                    <div className="h-1 w-24 bg-slate-100 mt-3 rounded-full overflow-hidden">
+                                                    <p className="text-lg font-black italic tracking-tighter text-primary">{item.revenue.toLocaleString('fr-FR')} <span className="text-[9px] opacity-40">F</span></p>
+                                                    <div className="h-1 w-24 bg-muted mt-3 rounded-full overflow-hidden">
                                                         <motion.div 
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${(item.revenue / (topSellingItems[0]?.revenue || 1)) * 100}%` }}
@@ -623,14 +623,14 @@ export default function AnalyticsPage() {
                                     ) : (
                                         <div className="h-[250px] flex items-center justify-center text-center">
                                             <div className="space-y-4">
-                                                <PieChart className="h-16 w-16 text-slate-200 mx-auto" />
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">En attente de commandes...</p>
+                                                <PieChart className="h-16 w-16 text-muted-foreground/30 mx-auto" />
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">En attente de commandes...</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                                 
-                                <div className="mt-12 p-8 bg-white/5 border border-white/5 rounded-[2rem] relative overflow-hidden group">
+                                <div className="mt-8 md:mt-12 p-5 md:p-8 bg-muted/50 dark:bg-white/5 border border-border dark:border-white/5 rounded-[2rem] relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700" />
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-3">Vision Stratégique</h4>
                                     <p className="text-xs font-bold text-slate-500 leading-relaxed italic relative z-10">
@@ -642,13 +642,13 @@ export default function AnalyticsPage() {
 
                         {/* Comparaison entre mes établissements */}
                         {restaurantComparison.length > 1 && (
-                            <div className="glass-dark p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-white/10">
+                            <div className="glass-dark p-5 md:p-8 relative overflow-hidden rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:border-primary/30">
                                 <div className="flex items-center justify-between mb-10">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white">Comparaison de mes Établissements</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-foreground">Comparaison de mes Établissements</h2>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Performance de chaque restaurant sur la période</p>
                                     </div>
-                                    <div className="p-3 bg-slate-100 rounded-2xl">
+                                    <div className="p-3 bg-muted rounded-2xl">
                                         <Store className="h-6 w-6 text-primary" />
                                     </div>
                                 </div>
@@ -656,7 +656,7 @@ export default function AnalyticsPage() {
                                 <div className="overflow-x-auto -mx-2">
                                     <table className="w-full min-w-[600px] border-collapse">
                                         <thead>
-                                            <tr className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 border-b border-white/5">
+                                            <tr className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 border-b border-border dark:border-white/5">
                                                 <th className="text-left px-2 pb-4">Établissement</th>
                                                 <th className="text-right px-2 pb-4">Revenu net</th>
                                                 <th className="text-right px-2 pb-4">Commandes</th>
@@ -666,11 +666,11 @@ export default function AnalyticsPage() {
                                         </thead>
                                         <tbody>
                                             {restaurantComparison.map((r) => (
-                                                <tr key={r.id} className="border-b border-white/5 last:border-0 group hover:bg-white/[0.03] transition-colors">
-                                                    <td className="text-left px-2 py-4 font-black uppercase text-sm text-white group-hover:text-primary transition-colors">{r.nom}</td>
-                                                    <td className="text-right px-2 py-4 font-black italic tracking-tighter text-primary">{r.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40 not-italic">F</span></td>
-                                                    <td className="text-right px-2 py-4 font-bold text-slate-300">{r.orderCount}</td>
-                                                    <td className="text-right px-2 py-4 font-bold text-slate-300">{r.avgBasket.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} F</td>
+                                                <tr key={r.id} className="border-b border-border dark:border-white/5 last:border-0 group hover:bg-muted/50 dark:hover:bg-white/[0.03] transition-colors">
+                                                    <td className="text-left px-2 py-4 font-black uppercase text-sm text-foreground group-hover:text-primary transition-colors">{r.nom}</td>
+                                                    <td className="text-right px-2 py-4 font-black italic tracking-tighter text-primary">{r.revenue.toLocaleString('fr-FR')} <span className="text-[9px] opacity-40 not-italic">F</span></td>
+                                                    <td className="text-right px-2 py-4 font-bold text-muted-foreground">{r.orderCount}</td>
+                                                    <td className="text-right px-2 py-4 font-bold text-muted-foreground">{r.avgBasket.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} F</td>
                                                     <td className="text-right px-2 py-4">
                                                         {selectedRange !== 'all' ? (
                                                             <span className={cn(
@@ -696,7 +696,7 @@ export default function AnalyticsPage() {
                 {/* Bottom Branding */}
                 <div className="text-center py-10 opacity-20 group hover:opacity-100 transition-all duration-500">
                     <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-300 to-transparent mx-auto mb-6" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 group-hover:text-primary transition-colors">
+                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground group-hover:text-primary transition-colors">
                         Propulsé par Yakro Intelligence Engine v2.0
                     </p>
                 </div>

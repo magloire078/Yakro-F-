@@ -65,6 +65,7 @@ export default function BoostPage() {
 
     return (
         <DashboardPage
+            containerClassName="max-w-4xl"
             heroProps={{
                 backgroundImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
                 badgeIcon: <Rocket className="h-4 w-4" />,
@@ -90,25 +91,25 @@ export default function BoostPage() {
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 + (idx * 0.1) }}
-                                className="bg-card/40 backdrop-blur-xl border border-border relative group overflow-hidden shadow-2xl rounded-[2.5rem] transition-all duration-500 hover:border-primary/30"
+                                className="bg-card/40 backdrop-blur-xl border border-border relative group overflow-hidden shadow-lg rounded-2xl sm:rounded-3xl transition-all duration-300 hover:border-primary/30"
                             >
-                                <div className={`absolute top-0 left-0 w-[2px] h-full transition-all duration-1000 ${restaurant.enVedette ? 'bg-primary shadow-[0_0_20px_rgba(249,115,22,0.8)]' : 'bg-muted'}`} />
+                                <div className={`absolute top-0 left-0 w-[2px] h-full transition-all duration-500 ${restaurant.enVedette ? 'bg-primary shadow-[0_0_15px_rgba(249,115,22,0.6)]' : 'bg-muted'}`} />
                                 
-                                <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                                    <div className="flex items-center gap-6">
-                                        <div className={`h-16 w-16 flex items-center justify-center border transition-all duration-700 rounded-2xl ${restaurant.enVedette ? 'bg-primary/10 border-primary/20 shadow-[0_10px_20px_rgba(249,115,22,0.1)]' : 'bg-muted border-border'}`}>
-                                            <Rocket className={`h-8 w-8 transition-all duration-700 ${restaurant.enVedette ? 'text-primary scale-110' : 'text-muted-foreground'}`} />
+                                <div className="p-3.5 sm:p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-3.5 md:gap-6">
+                                    <div className="flex items-center gap-3 sm:gap-4">
+                                        <div className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 flex items-center justify-center border transition-all duration-500 rounded-xl ${restaurant.enVedette ? 'bg-primary/10 border-primary/20 shadow-sm' : 'bg-muted border-border'}`}>
+                                            <Rocket className={`h-5 w-5 sm:h-6 sm:w-6 transition-all duration-500 ${restaurant.enVedette ? 'text-primary scale-105' : 'text-muted-foreground'}`} />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter italic text-foreground group-hover:text-primary transition-colors duration-300">{restaurant.nom}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <Zap className={`h-3 w-3 ${restaurant.enVedette ? 'text-primary' : 'text-muted'}`} />
-                                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">{restaurant.cuisine}</p>
+                                            <h3 className="text-base sm:text-lg md:text-xl font-black uppercase tracking-tight italic text-foreground group-hover:text-primary transition-colors line-clamp-1">{restaurant.nom}</h3>
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <Zap className={`h-2.5 w-2.5 ${restaurant.enVedette ? 'text-primary' : 'text-muted-foreground'}`} />
+                                                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground">{restaurant.cuisine}</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between md:justify-end gap-10 bg-muted/30 md:bg-transparent p-6 md:p-0 border border-border md:border-none relative overflow-hidden rounded-2xl">
+                                    <div className="flex items-center justify-between md:justify-end gap-4 sm:gap-6 bg-muted/30 md:bg-transparent p-3 md:p-0 border border-border md:border-none relative overflow-hidden rounded-xl">
                                         {restaurant.enVedette && (
                                             <div className="absolute inset-0 bg-primary/5 md:hidden animate-pulse" />
                                         )}
@@ -194,7 +195,7 @@ export default function BoostPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.7 }}
-                        className="bg-card/40 backdrop-blur-xl border border-border p-8 flex items-start gap-6 group hover:border-white/20 transition-all duration-500 rounded-[2rem] shadow-2xl"
+                        className="bg-card/40 backdrop-blur-xl border border-border p-8 flex items-start gap-6 group hover:border-primary/30 transition-all duration-500 rounded-[2rem] shadow-2xl"
                     >
                         <div className="h-12 w-12 bg-muted border border-border flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform rounded-2xl">
                             <ShieldCheck className="h-6 w-6 text-muted-foreground" />

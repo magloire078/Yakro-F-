@@ -51,6 +51,13 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        ci: {
+          orange: '#F97316',
+          white: '#FFFFFF',
+          green: '#10B981',
+          emerald: '#059669',
+          lightGreen: '#34D399',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',

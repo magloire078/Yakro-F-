@@ -117,19 +117,19 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl bg-[#0A0A0B] border border-white/10 rounded-none p-0 overflow-hidden shadow-2xl">
+      <DialogContent className="sm:max-w-2xl bg-background border border-border rounded-2xl p-0 overflow-hidden shadow-2xl">
         {/* Header Section */}
-        <div className="relative p-8 border-b border-white/5 bg-[#121214]">
+        <div className="relative p-8 border-b border-border bg-card">
           <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
           <DialogHeader>
             <div className="inline-flex items-center gap-2 mb-4">
               <BookOpenCheck className="h-4 w-4 text-primary" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Raffinement Culinaire</span>
             </div>
-            <DialogTitle className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white leading-none">
+            <DialogTitle className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-foreground leading-none">
               Actualiser <span className="text-primary">&ldquo;{menuItem.nom}&rdquo;</span>
             </DialogTitle>
-            <DialogDescription className="text-gray-500 font-medium text-sm mt-2">
+            <DialogDescription className="text-muted-foreground font-medium text-sm mt-2">
               Mise à jour des informations de votre carte.
             </DialogDescription>
           </DialogHeader>
@@ -142,12 +142,12 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
             onSubmit={onSubmit}
             isLoading={isSubmitting}
           >
-            <DialogFooter className="mt-8 pt-8 border-t border-white/5 gap-3">
+            <DialogFooter className="mt-8 pt-8 border-t border-border gap-3">
               <Button 
                 type="button" 
                 variant="ghost" 
                 onClick={onClose}
-                className="h-14 px-8 bg-white/5 hover:bg-white/10 text-white rounded-none font-bold uppercase tracking-widest text-[10px] transition-all"
+                className="h-14 px-8 bg-muted hover:bg-muted/80 text-foreground rounded-none font-bold uppercase tracking-widest text-[10px] transition-all"
               >
                 Annuler
               </Button>

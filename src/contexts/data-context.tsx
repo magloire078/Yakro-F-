@@ -88,7 +88,12 @@ function setupSubscription<T extends DocumentData>(
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { db } = useFirebase();
     const { user, userProfile, activeRole, loading: authLoading } = useAuth();
-    const { setRestaurants, setMenuItems, setOrders, setStocks, setNotifications, setIsLoading, restaurants } = useData();
+    const setRestaurants = useData(state => state.setRestaurants);
+    const setMenuItems = useData(state => state.setMenuItems);
+    const setOrders = useData(state => state.setOrders);
+    const setStocks = useData(state => state.setStocks);
+    const setNotifications = useData(state => state.setNotifications);
+    const setIsLoading = useData(state => state.setIsLoading);
 
     React.useEffect(() => {
         if (!db || authLoading) return;
@@ -143,7 +148,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     case 'restaurateur':
                         ordersQuery = query(collectionRef('commandes'), where('restaurateurId', '==', user.uid));
 
-                        const myRestaurantIds = restaurants
+                        const myRestaurantIds = useData.getState().restaurants
                             .filter(r => r.proprietaireId === user.uid)
                             .map(r => r.id);
 
@@ -229,7 +234,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (unsubStocks) unsubStocks();
             if (unsubNotifications) unsubNotifications();
         };
-    }, [db, user, userProfile, activeRole, authLoading, restaurants, setOrders, setStocks, setNotifications, setIsLoading]);
+    }, [db, user, userProfile, activeRole, authLoading, setOrders, setStocks, setNotifications, setIsLoading]);
 
     return <>{children}</>;
 };

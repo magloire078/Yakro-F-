@@ -125,7 +125,7 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                     
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="px-6 py-3 bg-card/50 border border-border/50 rounded-2xl flex flex-col items-end">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">UNITÉS ACTIVES</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">UNITÉS ACTIVES</span>
                         <span className="text-xl font-black italic text-foreground">{livreurs.filter(l => l.statutService === 'En service').length} EN LIGNE</span>
                     </div>
 
@@ -136,7 +136,7 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                             onClick={() => setView('list')}
                             className={cn(
                                 "h-10 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all",
-                                view === 'list' ? "bg-orange-500 text-white shadow-lg" : "text-slate-500 hover:bg-orange-500/10"
+                                view === 'list' ? "bg-orange-500 text-white shadow-lg" : "text-muted-foreground hover:bg-orange-500/10"
                             )}
                         >
                             <LayoutList className="h-4 w-4 mr-2" />
@@ -148,7 +148,7 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                             onClick={() => setView('map')}
                             className={cn(
                                 "h-10 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all",
-                                view === 'map' ? "bg-orange-500 text-white shadow-lg" : "text-slate-500 hover:bg-orange-500/10"
+                                view === 'map' ? "bg-orange-500 text-white shadow-lg" : "text-muted-foreground hover:bg-orange-500/10"
                             )}
                         >
                             <MapIcon className="h-4 w-4 mr-2" />
@@ -199,7 +199,7 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                                                         </Avatar>
                                                         <div className="flex flex-col gap-1 min-w-0">
                                                             <span className="font-black text-sm text-foreground uppercase italic tracking-tight group-hover:text-orange-500 transition-colors">{livreur.nom || 'UNITÉ ANONYME'}</span>
-                                                            <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest truncate">{livreur.email}</span>
+                                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">{livreur.email}</span>
                                                         </div>
                                                     </div>
                                                 </TableCell>
@@ -210,7 +210,7 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                                                             livreur.statutService === 'En service' ? "bg-green-500 shadow-green-500 animate-pulse" : "bg-red-500 shadow-red-500"
                                                         )} />
                                                         <span className={cn(
-                                                            "text-[9px] font-black uppercase tracking-widest",
+                                                            "text-[10px] font-black uppercase tracking-widest",
                                                             livreur.statutService === 'En service' ? "text-green-500" : "text-red-500"
                                                         )}>
                                                             {livreur.statutService || 'HORS SERVICE'}
@@ -226,16 +226,16 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                                                 <TableCell className="py-6">
                                                     {livreur.latitude && livreur.longitude ? (
                                                         <div className="flex flex-col gap-1">
-                                                            <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                                                            <div className="flex items-center gap-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                                                 <MapPin className="h-2.5 w-2.5 text-orange-500" />
                                                                 {livreur.latitude.toFixed(4)}, {livreur.longitude.toFixed(4)}
                                                             </div>
-                                                            <Button variant="link" onClick={() => setView('map')} className="h-auto p-0 text-[8px] font-black text-orange-500 uppercase tracking-widest justify-start">
+                                                            <Button variant="link" onClick={() => setView('map')} className="h-auto p-0 text-[10px] font-black text-orange-500 uppercase tracking-widest justify-start">
                                                                 VOIR SUR CARTE
                                                             </Button>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest italic opacity-50">NON LOCALISÉ</span>
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest italic opacity-50">NON LOCALISÉ</span>
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="text-right py-6 px-4">
@@ -277,8 +277,8 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
             </div>
             
             <div className="p-8 bg-card/30 flex justify-between items-center border-t border-border/50 relative z-10 mt-6">
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">Protocol: COURIER-TRACK-v4.0</span>
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{livreurs.length} livreur{livreurs.length !== 1 ? 's' : ''}</span>
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Protocol: COURIER-TRACK-v4.0</span>
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{livreurs.length} livreur{livreurs.length !== 1 ? 's' : ''}</span>
             </div>
         </div>
     );
