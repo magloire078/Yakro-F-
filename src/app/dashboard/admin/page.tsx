@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Loader, ShieldCheck, Edit, UserPlus, Users, Home, Store, TrendingUp, Bell, FileText, Activity, ShieldAlert, Cpu, Navigation2, Trash2, Bike } from 'lucide-react';
+import { Loader, ShieldCheck, Edit, UserPlus, Users, Home, Store, TrendingUp, Bell, FileText, Activity, ShieldAlert, Cpu, Navigation2, Trash2, Bike, MessageCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserProfile, SystemRole } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,6 +45,13 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+
+// Numéro WhatsApp du support technique, au format international sans « + »
+// (ex. 2250701020304). Les espaces ou symboles saisis dans l'env sont ignorés.
+const SUPPORT_WHATSAPP = (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? '').replace(/\D/g, '');
+const SUPPORT_WHATSAPP_URL = SUPPORT_WHATSAPP
+    ? `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent("Bonjour, je suis administrateur Yakro Fê et j'ai besoin d'une assistance technique.")}`
+    : null;
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
@@ -661,9 +668,23 @@ export default function AdminPage() {
                             <p className="text-[12px] font-medium text-orange-100 mb-10 leading-relaxed relative z-10 max-w-[80%]">
                                 Ligne directe avec l&apos;unité d&apos;intervention technique Yakro pour les opérations critiques.
                             </p>
-                            <Button variant="secondary" className="h-14 w-full bg-white text-primary hover:bg-orange-50 rounded-[1.5rem] font-body font-bold tracking-tight transition-all hover:scale-105 shadow-2xl relative z-10">
-                                SOLLICITER AIDE
-                            </Button>
+                            {SUPPORT_WHATSAPP_URL ? (
+                                <Button asChild variant="secondary" className="h-14 w-full bg-white text-primary hover:bg-orange-50 rounded-[1.5rem] font-body font-bold tracking-tight transition-all hover:scale-105 shadow-2xl relative z-10">
+                                    <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                                        <MessageCircle className="mr-2 h-5 w-5" />
+                                        SOLLICITER AIDE
+                                    </a>
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => toast({ variant: 'destructive', title: 'Support non configuré', description: 'Définissez NEXT_PUBLIC_SUPPORT_WHATSAPP pour activer le contact WhatsApp.' })}
+                                    className="h-14 w-full bg-white text-primary hover:bg-orange-50 rounded-[1.5rem] font-body font-bold tracking-tight transition-all hover:scale-105 shadow-2xl relative z-10"
+                                >
+                                    <MessageCircle className="mr-2 h-5 w-5" />
+                                    SOLLICITER AIDE
+                                </Button>
+                            )}
                         </div>
                         
                         <div className="text-center opacity-50 py-10">
