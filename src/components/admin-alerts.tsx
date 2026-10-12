@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getOverdueOrderAlerts } from '@/lib/order-alerts';
 import { requestBrowserNotificationPermission, fireBrowserNotification } from '@/lib/browser-notifications';
 
-export function AdminAlerts() {
+export function AdminAlerts({ onInspectOrder }: { onInspectOrder?: (orderId: string) => void } = {}) {
     const { orders } = useData();
     const { user } = useAuth();
     const [now, setNow] = React.useState(() => new Date());
@@ -146,14 +146,16 @@ export function AdminAlerts() {
                                         {alert.message}
                                     </p>
                                     
-                                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                                        <Button variant="outline" size="sm" className="h-9 px-5 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 hover:bg-primary hover:text-white hover:border-primary rounded-xl text-[10px] font-black italic uppercase tracking-widest transition-all">
-                                            INTERVENIR
+                                    {onInspectOrder && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => onInspectOrder(alert.orderId)}
+                                            className="h-9 px-5 gap-2 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 hover:bg-primary hover:text-white hover:border-primary rounded-xl text-[10px] font-black italic uppercase tracking-widest transition-all"
+                                        >
+                                            INTERVENIR <ArrowRight className="h-3 w-3" />
                                         </Button>
-                                        <Button variant="ghost" size="sm" className="h-9 px-4 text-muted-foreground hover:text-foreground rounded-xl text-[10px] font-black italic uppercase tracking-widest gap-2">
-                                            DÉTAILS <ArrowRight className="h-3 w-3" />
-                                        </Button>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>

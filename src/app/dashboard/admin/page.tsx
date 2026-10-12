@@ -30,7 +30,7 @@ import {
     AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 
-import { SupervisionModule } from '@/components/supervision-module';
+import { SupervisionModule, type OrderFocusRequest } from '@/components/supervision-module';
 import { RestaurantManager } from '@/components/restaurant-manager';
 import { FinancialAnalytics } from '@/components/financial-analytics';
 import { AdminAlerts } from '@/components/admin-alerts';
@@ -82,11 +82,23 @@ export default function AdminPage() {
         }
     }, []);
 
+    const [isAlertsSheetOpen, setIsAlertsSheetOpen] = React.useState(false);
+    const [orderFocus, setOrderFocus] = React.useState<OrderFocusRequest | null>(null);
+    const tabsRef = React.useRef<HTMLDivElement>(null);
+
     const handleTabChange = (value: string) => {
         startTransition(() => {
             setActiveTab(value);
         });
         localStorage.setItem('yakro-admin-active-tab', value);
+    };
+
+    // "Intervenir" sur une alerte : ouvre la supervision filtrée sur la commande.
+    const handleInspectOrder = (orderId: string) => {
+        setIsAlertsSheetOpen(false);
+        handleTabChange('live');
+        setOrderFocus({ orderId, requestedAt: Date.now() });
+        tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     React.useEffect(() => {
@@ -326,7 +338,7 @@ export default function AdminPage() {
                         transition={{ delay: 0.3 }}
                         className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-4 md:mt-8"
                     >
-                        <Sheet>
+                        <Sheet open={isAlertsSheetOpen} onOpenChange={setIsAlertsSheetOpen}>
                             <SheetTrigger asChild>
                                 <Button variant="outline" aria-label="Voir les alertes système" className="h-10 px-5 bg-card/50 border-border rounded-xl font-body font-bold tracking-tight hover:bg-primary/10 transition-all group text-xs">
                                     <Bell className="mr-2 h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
@@ -342,7 +354,7 @@ export default function AdminPage() {
                                     <SheetDescription className="text-muted-foreground font-body text-[11px] tracking-widest opacity-80">ANOMALIES ET ÉVÉNEMENTS CRITIQUES</SheetDescription>
                                 </SheetHeader>
                                 <ScrollArea className="h-[calc(100vh-150px)] mt-6 pr-4">
-                                    <AdminAlerts />
+                                    <AdminAlerts onInspectOrder={handleInspectOrder} />
                                 </ScrollArea>
                             </SheetContent>
                         </Sheet>
@@ -395,7 +407,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
-                    <div className="lg:col-span-3 min-w-0 space-y-10">
+                    <div ref={tabsRef} className="lg:col-span-3 min-w-0 space-y-10 scroll-mt-6">
                         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
                             <TabsList className="h-auto w-full bg-card/70 dark:bg-white/5 border border-border dark:border-white/5 p-1 rounded-2xl flex-nowrap md:flex-wrap justify-start gap-1 backdrop-blur-3xl overflow-x-auto scrollbar-hide">
                                 {[
@@ -424,7 +436,7 @@ export default function AdminPage() {
                                 transition={{ duration: 0.3 }}
                                 className={isPending ? "pointer-events-none" : ""}
                             >
-                                <TabsContent value="live" className="m-0 outline-none animate-in fade-in duration-700"><SupervisionModule /></TabsContent>
+                                <TabsContent value="live" className="m-0 outline-none animate-in fade-in duration-700"><SupervisionModule focusRequest={orderFocus} /></TabsContent>
                                 <TabsContent value="restaurants" className="m-0 outline-none animate-in fade-in duration-700"><RestaurantManager /></TabsContent>
                                 <TabsContent value="livreurs" className="m-0 outline-none animate-in fade-in duration-700"><LivreurManager users={allUsers} orders={orders} /></TabsContent>
                                 <TabsContent value="finances" className="m-0 outline-none animate-in fade-in duration-700"><FinancialAnalytics /></TabsContent>
@@ -639,7 +651,7 @@ export default function AdminPage() {
                     </div>
 
                     <div className="lg:col-span-1 min-w-0 space-y-10">
-                        <AdminAlerts />
+                        <AdminAlerts onInspectOrder={handleInspectOrder} />
                         
                         <div className="bg-primary p-8 rounded-[2rem] relative overflow-hidden group shadow-[0_30px_60px_rgba(249,115,22,0.3)] animate-float [animation-delay:1000ms]">
                             <div className="absolute top-0 right-0 p-8 opacity-20 rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110">

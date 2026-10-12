@@ -154,7 +154,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                         )}
                     </div>
                     <Label htmlFor="image-upload" className="cursor-pointer group block">
-                        <div className="relative w-full h-64 overflow-hidden bg-slate-50 border border-slate-200/60 rounded-2xl transition-all duration-500 group-hover:border-primary/50 flex items-center justify-center shadow-sm">
+                        <div className="relative w-full h-64 overflow-hidden bg-muted/50 border border-border rounded-2xl transition-all duration-500 group-hover:border-primary/50 flex items-center justify-center shadow-sm">
                             {isGeneratingImage ? (
                                 <div className="flex flex-col items-center gap-4">
                                     <div className="relative">
@@ -192,11 +192,11 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                 </>
                             ) : (
                                 <div className="text-center p-8 space-y-4">
-                                    <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white border border-slate-100 mb-2 group-hover:scale-110 transition-transform duration-500">
+                                    <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-card border border-border mb-2 group-hover:scale-110 transition-transform duration-500">
                                         <Upload className="h-8 w-8 text-primary" />
                                     </div>
                                     <div>
-                                        <p className="text-slate-900 font-black italic uppercase tracking-tighter text-xl leading-none">Sélectionner une Image</p>
+                                        <p className="text-foreground font-black italic uppercase tracking-tighter text-xl leading-none">Sélectionner une Image</p>
                                         <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-3">Format recommandé: 16:9</p>
                                     </div>
                                 </div>
@@ -218,7 +218,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                     <Input 
                                         placeholder="Ex: Le Palais de la Savane" 
                                         {...field} 
-                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 font-medium transition-all shadow-sm"
+                                        className="h-14 bg-muted/50 border-border rounded-xl focus-visible:ring-primary focus-visible:border-primary text-foreground font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -236,7 +236,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                     <Input 
                                         placeholder="Ex: Ivoirienne Moderne, Grillades" 
                                         {...field} 
-                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 font-medium transition-all shadow-sm"
+                                        className="h-14 bg-muted/50 border-border rounded-xl focus-visible:ring-primary focus-visible:border-primary text-foreground font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -255,7 +255,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                 <Input 
                                     placeholder="Ex: Yamoussoukro, Quartier 2000, Axe Royal" 
                                     {...field} 
-                                    className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 font-medium transition-all shadow-sm"
+                                    className="h-14 bg-muted/50 border-border rounded-xl focus-visible:ring-primary focus-visible:border-primary text-foreground font-medium transition-all shadow-sm"
                                 />
                             </FormControl>
                             <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -274,7 +274,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                     <Input 
                                         type="number" 
                                         {...field} 
-                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 font-medium transition-all shadow-sm"
+                                        className="h-14 bg-muted/50 border-border rounded-xl focus-visible:ring-primary focus-visible:border-primary text-foreground font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -291,7 +291,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                     <Input 
                                         type="number" 
                                         {...field} 
-                                        className="h-14 bg-slate-50 border-slate-200/60 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 font-medium transition-all shadow-sm"
+                                        className="h-14 bg-muted/50 border-border rounded-xl focus-visible:ring-primary focus-visible:border-primary text-foreground font-medium transition-all shadow-sm"
                                     />
                                 </FormControl>
                                 <FormMessage className="text-[10px] uppercase font-bold text-red-500" />
@@ -300,10 +300,10 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                     />
                 </div>
 
-                <div className="space-y-6 pt-10 border-t border-slate-100">
+                <div className="space-y-6 pt-10 border-t border-border">
                     <div className="flex justify-between items-center gap-4">
                         <div>
-                            <h4 className="text-slate-900 font-black italic uppercase tracking-tighter text-xl leading-tight">Géolocalisation</h4>
+                            <h4 className="text-foreground font-black italic uppercase tracking-tighter text-xl leading-tight">Géolocalisation</h4>
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mt-2">Précision stratégique pour les livreurs</p>
                         </div>
                         <Button 
@@ -311,7 +311,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                             variant="outline" 
                             onClick={handleGetLocation} 
                             disabled={isFetchingLocation}
-                            className="rounded-xl border-slate-200 bg-white hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[11px] h-12 px-6 shadow-sm"
+                            className="rounded-xl border-border bg-card hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[11px] h-12 px-6 shadow-sm"
                         >
                             {isFetchingLocation ? <Loader className="animate-spin h-4 w-4" /> : <MapPin className="h-4 w-4 mr-2" />}
                             Auto-Détection
@@ -332,7 +332,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                             placeholder="6.8213" 
                                             {...field} 
                                             value={field.value ?? ''} 
-                                            className="h-12 bg-slate-50 border-slate-100 rounded-xl text-slate-900 font-mono text-xs focus-visible:ring-primary shadow-inner"
+                                            className="h-12 bg-muted/50 border-border rounded-xl text-foreground font-mono text-xs focus-visible:ring-primary shadow-inner"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -352,7 +352,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                             placeholder="-5.2768" 
                                             {...field} 
                                             value={field.value ?? ''} 
-                                            className="h-12 bg-slate-50 border-slate-100 rounded-xl text-slate-900 font-mono text-xs focus-visible:ring-primary shadow-inner"
+                                            className="h-12 bg-muted/50 border-border rounded-xl text-foreground font-mono text-xs focus-visible:ring-primary shadow-inner"
                                         />
                                     </FormControl>
                                     <FormMessage />

@@ -37,10 +37,20 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
-export function SupervisionModule() {
+export type OrderFocusRequest = { orderId: string; requestedAt: number };
+
+export function SupervisionModule({ focusRequest }: { focusRequest?: OrderFocusRequest | null } = {}) {
     const { orders } = useData();
     const [view, setView] = React.useState<'list' | 'map'>('list');
     const [searchTerm, setSearchTerm] = React.useState('');
+
+    // Une alerte admin ("Intervenir") demande de cibler une commande :
+    // on bascule sur la liste filtrée sur son identifiant.
+    React.useEffect(() => {
+        if (!focusRequest) return;
+        setView('list');
+        setSearchTerm(focusRequest.orderId);
+    }, [focusRequest]);
     const [events, setEvents] = React.useState<{ id: string; msg: string; time: Date; type: 'departure' | 'arrival' | 'preparation' }[]>([]);
 
     // Simuler des événements en direct basés sur les commandes

@@ -138,7 +138,7 @@ export default function NewRestaurantPage() {
     };
 
     return (
-        <div className="min-h-screen relative overflow-hidden bg-white pb-20">
+        <div className="min-h-screen relative overflow-hidden bg-background pb-20">
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
                 {!bgImageFailed && (
@@ -150,7 +150,7 @@ export default function NewRestaurantPage() {
                         onError={() => setBgImageFailed(true)}
                     />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
+                <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
             </div>
 
             <div className="relative z-10 container mx-auto pt-10 px-4">
@@ -174,7 +174,7 @@ export default function NewRestaurantPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-slate-900 mb-4 leading-none"
+                            className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground mb-4 leading-none"
                         >
                             Érigez votre <span className="text-primary">Empire</span>
                         </motion.h1>
@@ -189,7 +189,7 @@ export default function NewRestaurantPage() {
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 p-8 md:p-12 shadow-2xl relative overflow-hidden rounded-3xl">
+                    <div className="bg-card/80 backdrop-blur-xl border border-border p-8 md:p-12 shadow-2xl relative overflow-hidden rounded-3xl">
                         <div className="absolute top-0 left-0 w-[2px] h-full bg-primary" />
                         
                         <div className="relative z-10">
