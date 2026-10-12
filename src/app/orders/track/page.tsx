@@ -12,7 +12,8 @@ import { Loader, MapPin, Bike, Home, Wallet, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { LiveMap } from '@/components/map/live-map';
-import { hasCoords, orderClientPoint, orderRestaurantPoint, useClientPositionSharing, useLivreurPositions } from '@/hooks/use-live-locations';
+import { hasCoords, orderClientPoint, orderRestaurantPoint, useClientPositionSharing, useLivreurPositions, useNow } from '@/hooks/use-live-locations';
+import { formatPositionAge, positionFreshness } from '@/lib/position-freshness';
 import Link from 'next/link';
 import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions';
 import { useToast } from '@/hooks/use-toast';
@@ -67,11 +68,18 @@ function TrackOrderContent() {
         }
     }, [sharing.status, toast]);
 
+    // Une position figée (app du livreur fermée) n'est plus « en direct » ;
+    // trop ancienne, elle n'est plus affichée du tout.
+    const now = useNow();
+    const livreurFreshness = positionFreshness(livreur?.updatedAt, now);
+    const livreurPosition = hasCoords(livreur) && livreurFreshness !== 'expired' ? livreur : null;
+    const isLivreurLive = !!livreurPosition && livreurFreshness === 'live';
+
     // Distance livreur → client (position live si partagée, sinon adresse),
-    // uniquement pendant la livraison.
+    // uniquement pendant la livraison et sur une position récente.
     const destination = sharing.position ?? (liveOrder ? orderClientPoint(liveOrder) : null);
-    const livreurDistance = liveOrder?.statut === 'En Route' && hasCoords(livreur) && destination
-        ? distanceMeters(livreur, destination)
+    const livreurDistance = liveOrder?.statut === 'En Route' && isLivreurLive && livreurPosition && destination
+        ? distanceMeters(livreurPosition, destination)
         : null;
     const isEnRoute = liveOrder?.statut === 'En Route';
 
@@ -175,8 +183,16 @@ function TrackOrderContent() {
     if (restaurantPoint) {
         mapMarkers.push({ id: 'restaurant', kind: 'restaurant', ...restaurantPoint, label: restaurant?.nom || liveOrder.nomRestaurant, sublabel: restaurant?.adresse || liveOrder.adresseRestaurant });
     }
-    if (hasCoords(livreur)) {
-        mapMarkers.push({ id: 'livreur', kind: 'livreur', latitude: livreur.latitude, longitude: livreur.longitude, label: livreur.nom || 'Votre livreur', live: true });
+    if (livreurPosition) {
+        mapMarkers.push({
+            id: 'livreur',
+            kind: 'livreur',
+            latitude: livreurPosition.latitude,
+            longitude: livreurPosition.longitude,
+            label: livreurPosition.nom || 'Votre livreur',
+            sublabel: !isLivreurLive && livreurPosition.updatedAt ? `Signal perdu ${formatPositionAge(livreurPosition.updatedAt, now)}` : undefined,
+            live: isLivreurLive,
+        });
     }
     if (clientPoint) {
         mapMarkers.push({ id: 'client', kind: 'client', ...clientPoint, label: sharing.position ? 'Vous (position en direct)' : 'Adresse de livraison', sublabel: liveOrder.adresseClient, live: !!sharing.position });
@@ -185,7 +201,7 @@ function TrackOrderContent() {
     const mapRoutes: MapRoute[] = [];
     if (restaurantPoint && clientPoint) {
         const points: Array<[number, number]> = [[restaurantPoint.latitude, restaurantPoint.longitude]];
-        if (hasCoords(livreur) && liveOrder.statut === 'En Route') points.push([livreur.latitude, livreur.longitude]);
+        if (livreurPosition && liveOrder.statut === 'En Route') points.push([livreurPosition.latitude, livreurPosition.longitude]);
         points.push([clientPoint.latitude, clientPoint.longitude]);
         mapRoutes.push({ id: 'trajet', points, status: liveOrder.statut === 'En Route' ? 'active' : 'planned' });
     }
@@ -297,7 +313,11 @@ function TrackOrderContent() {
                                 <p className="text-xs font-bold text-orange-500">
                                     À {formatDistance(livreurDistance)} · arrivée estimée ~{estimateArrivalMinutes(livreurDistance)} min
                                 </p>
-                            ) : livreur?.latitude ? (
+                            ) : livreurPosition && !isLivreurLive && livreurPosition.updatedAt ? (
+                                <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                                    Signal perdu {formatPositionAge(livreurPosition.updatedAt, now)} — la position se mettra à jour dès son retour
+                                </p>
+                            ) : livreurPosition ? (
                                 <p className="text-xs font-bold text-orange-500 animate-pulse">En mouvement…</p>
                             ) : (
                                 <p className="text-xs text-muted-foreground/80">En attente de localisation…</p>

@@ -62,7 +62,7 @@ export function useLivreurPositions(livreurIds: Array<string | undefined | null>
                 (snap) => {
                     setPositions((prev) => {
                         const next = { ...prev };
-                        if (snap.exists()) next[uid] = snap.data() as LivreurPublicData;
+                        if (snap.exists()) next[uid] = snap.data({ serverTimestamps: 'estimate' }) as LivreurPublicData;
                         else delete next[uid];
                         return next;
                     });
@@ -89,7 +89,7 @@ export function useAllLivreurPositions(enabled: boolean) {
             collection(db, 'livreurs_public'),
             (snapshot) => {
                 setPositions(
-                    Object.fromEntries(snapshot.docs.map((d) => [d.id, d.data() as LivreurPublicData])),
+                    Object.fromEntries(snapshot.docs.map((d) => [d.id, d.data({ serverTimestamps: 'estimate' }) as LivreurPublicData])),
                 );
             },
             (error) => console.error('livreurs_public:', error),
@@ -142,6 +142,16 @@ export function useClientPositions(orderIds: Array<string | undefined | null>) {
     }, [db, key]);
 
     return positions;
+}
+
+/** Heure courante rafraîchie périodiquement (réévalue la fraîcheur des positions). */
+export function useNow(intervalMs = 30_000): number {
+    const [now, setNow] = React.useState(() => Date.now());
+    React.useEffect(() => {
+        const id = setInterval(() => setNow(Date.now()), intervalMs);
+        return () => clearInterval(id);
+    }, [intervalMs]);
+    return now;
 }
 
 export type GeoWatchStatus = 'idle' | 'locating' | 'active' | 'denied' | 'unsupported' | 'error';

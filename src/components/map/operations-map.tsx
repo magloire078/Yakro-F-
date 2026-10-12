@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { LiveMap } from '@/components/map/live-map';
-import { hasCoords, orderClientPoint, orderRestaurantPoint, useAllLivreurPositions, useClientPositions, useLivreurPositions } from '@/hooks/use-live-locations';
+import { hasCoords, orderClientPoint, orderRestaurantPoint, useAllLivreurPositions, useClientPositions, useLivreurPositions, useNow } from '@/hooks/use-live-locations';
+import { formatPositionAge, positionFreshness } from '@/lib/position-freshness';
 import type { MapMarker, MapRoute, Order, Restaurant } from '@/lib/types';
 
 const ACTIVE_STATUSES: Order['statut'][] = ['Placée', 'En Préparation', 'Prête', 'En Route'];
@@ -35,6 +36,7 @@ export function OperationsMap({ restaurants, orders, livreurScope, className }: 
     );
     const livreurs = livreurScope === 'all' ? allLivreurs : assignedLivreurs;
     const clientPositions = useClientPositions(activeOrders.map((o) => o.id));
+    const now = useNow();
 
     const { markers, routes } = React.useMemo(() => {
         const markers: MapMarker[] = [];
@@ -52,17 +54,28 @@ export function OperationsMap({ restaurants, orders, livreurScope, className }: 
             });
         });
 
-        Object.entries(livreurs).forEach(([uid, livreur]) => {
+        // Livreurs dont la position est exploitable : une position expirée
+        // (app fermée sans passer hors service) n'est ni affichée ni utilisée
+        // pour tracer les trajets.
+        const visibleLivreurs = Object.fromEntries(
+            Object.entries(livreurs).filter(([, livreur]) => hasCoords(livreur) && positionFreshness(livreur.updatedAt, now) !== 'expired'),
+        );
+
+        Object.entries(visibleLivreurs).forEach(([uid, livreur]) => {
             if (!hasCoords(livreur)) return;
             const mission = activeOrders.find((o) => o.livreurId === uid && o.statut === 'En Route');
+            const isLive = positionFreshness(livreur.updatedAt, now) === 'live';
+            const activity = mission ? `En livraison · ${mission.nomRestaurant}` : 'Disponible';
             markers.push({
                 id: `livreur-${uid}`,
                 kind: 'livreur',
                 latitude: livreur.latitude,
                 longitude: livreur.longitude,
                 label: livreur.nom || 'Livreur',
-                sublabel: mission ? `En livraison · ${mission.nomRestaurant}` : 'Disponible',
-                live: true,
+                sublabel: isLive || !livreur.updatedAt
+                    ? activity
+                    : `Signal perdu ${formatPositionAge(livreur.updatedAt, now)} · ${activity}`,
+                live: isLive,
             });
         });
 
@@ -89,14 +102,14 @@ export function OperationsMap({ restaurants, orders, livreurScope, className }: 
             if (!restaurantPoint) return;
 
             const points: Array<[number, number]> = [[restaurantPoint.latitude, restaurantPoint.longitude]];
-            const livreur = order.livreurId ? livreurs[order.livreurId] : undefined;
+            const livreur = order.livreurId ? visibleLivreurs[order.livreurId] : undefined;
             if (order.statut === 'En Route' && hasCoords(livreur)) points.push([livreur.latitude, livreur.longitude]);
             points.push([clientPoint.latitude, clientPoint.longitude]);
             routes.push({ id: `route-${order.id}`, points, status: order.statut === 'En Route' ? 'active' : 'planned' });
         });
 
         return { markers, routes };
-    }, [restaurants, activeOrders, livreurs, clientPositions]);
+    }, [restaurants, activeOrders, livreurs, clientPositions, now]);
 
     return <LiveMap markers={markers} routes={routes} className={className} />;
 }
