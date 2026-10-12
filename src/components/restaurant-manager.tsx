@@ -11,8 +11,10 @@ import {
     ShieldAlert,
     Filter,
     Trash2,
-    Loader
+    Loader,
+    MapPinOff,
 } from 'lucide-react';
+import { hasReliableLocation } from '@/lib/geolocation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -187,6 +189,11 @@ export function RestaurantManager() {
                                                 <div className="flex flex-col gap-1 min-w-0">
                                                     <span className="font-black text-sm text-foreground uppercase italic tracking-tight group-hover:text-primary transition-colors">{restaurant.nom}</span>
                                                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">{restaurant.adresse || 'ZONE YAKRO CENTRALE'}</span>
+                                                    {!hasReliableLocation(restaurant) && (
+                                                        <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] md:text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                                                            <MapPinOff className="h-3 w-3 shrink-0" /> Position GPS à définir
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </TableCell>

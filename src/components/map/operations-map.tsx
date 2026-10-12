@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { LiveMap } from '@/components/map/live-map';
-import { hasCoords, useAllLivreurPositions, useClientPositions, useLivreurPositions } from '@/hooks/use-live-locations';
+import { hasCoords, orderClientPoint, orderRestaurantPoint, useAllLivreurPositions, useClientPositions, useLivreurPositions } from '@/hooks/use-live-locations';
 import type { MapMarker, MapRoute, Order, Restaurant } from '@/lib/types';
 
 const ACTIVE_STATUSES: Order['statut'][] = ['Placée', 'En Préparation', 'Prête', 'En Route'];
@@ -70,9 +70,7 @@ export function OperationsMap({ restaurants, orders, livreurScope, className }: 
             const live = clientPositions[order.id];
             const clientPoint = live
                 ? { latitude: live.latitude, longitude: live.longitude }
-                : order.latitudeClient !== undefined && order.longitudeClient !== undefined
-                    ? { latitude: order.latitudeClient, longitude: order.longitudeClient }
-                    : null;
+                : orderClientPoint(order);
             if (!clientPoint) return;
 
             markers.push({
@@ -87,9 +85,7 @@ export function OperationsMap({ restaurants, orders, livreurScope, className }: 
             const restaurant = restaurantById.get(order.restaurantId);
             const restaurantPoint = hasCoords(restaurant)
                 ? restaurant
-                : order.latitudeRestaurant !== undefined && order.longitudeRestaurant !== undefined
-                    ? { latitude: order.latitudeRestaurant, longitude: order.longitudeRestaurant }
-                    : null;
+                : orderRestaurantPoint(order);
             if (!restaurantPoint) return;
 
             const points: Array<[number, number]> = [[restaurantPoint.latitude, restaurantPoint.longitude]];

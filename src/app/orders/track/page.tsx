@@ -12,7 +12,7 @@ import { Loader, MapPin, Bike, Home, Wallet, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { LiveMap } from '@/components/map/live-map';
-import { hasCoords, useClientPositionSharing, useLivreurPositions } from '@/hooks/use-live-locations';
+import { hasCoords, orderClientPoint, orderRestaurantPoint, useClientPositionSharing, useLivreurPositions } from '@/hooks/use-live-locations';
 import Link from 'next/link';
 import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions';
 import { useToast } from '@/hooks/use-toast';
@@ -132,13 +132,9 @@ function TrackOrderContent() {
 
     const restaurantPoint = hasCoords(restaurant)
         ? restaurant
-        : liveOrder.latitudeRestaurant !== undefined && liveOrder.longitudeRestaurant !== undefined
-            ? { latitude: liveOrder.latitudeRestaurant, longitude: liveOrder.longitudeRestaurant }
-            : null;
+        : orderRestaurantPoint(liveOrder);
     const clientPoint = sharing.position
-        ?? (liveOrder.latitudeClient !== undefined && liveOrder.longitudeClient !== undefined
-            ? { latitude: liveOrder.latitudeClient, longitude: liveOrder.longitudeClient }
-            : null);
+        ?? orderClientPoint(liveOrder);
 
     const mapMarkers: MapMarker[] = [];
     if (restaurantPoint) {

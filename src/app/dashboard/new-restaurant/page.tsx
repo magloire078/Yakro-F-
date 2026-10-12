@@ -80,8 +80,8 @@ export default function NewRestaurantPage() {
                 enVedette: false,
                 image: imageUrl,
                 indiceImage: data.indiceImage || `${data.cuisine} restaurant`,
-                latitude: data.latitude || 6.82,
-                longitude: data.longitude || -5.28,
+                latitude: data.latitude,
+                longitude: data.longitude,
             };
 
             // Write directly to Firestore via client SDK

@@ -4,7 +4,8 @@ import * as React from 'react';
 import { collection, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { LivreurPublicData } from '@/lib/livreur-public';
-import type { ClientLivePosition } from '@/lib/types';
+import { hasReliableLocation } from '@/lib/geolocation';
+import type { ClientLivePosition, Order } from '@/lib/types';
 
 export const CLIENT_POSITIONS_COLLECTION = 'positions_clients';
 
@@ -33,7 +34,19 @@ export function distanceMeters(a: GeoPoint, b: GeoPoint): number {
 export function hasCoords<T extends { latitude?: number; longitude?: number }>(
     value: T | null | undefined,
 ): value is T & GeoPoint {
-    return typeof value?.latitude === 'number' && typeof value?.longitude === 'number';
+    return hasReliableLocation(value);
+}
+
+/** Adresse de livraison enregistrée avec la commande, si elle est fiable. */
+export function orderClientPoint(order: Pick<Order, 'latitudeClient' | 'longitudeClient'>): GeoPoint | null {
+    const point = { latitude: order.latitudeClient, longitude: order.longitudeClient };
+    return hasReliableLocation(point) ? point : null;
+}
+
+/** Position du restaurant copiée dans la commande, si elle est fiable. */
+export function orderRestaurantPoint(order: Pick<Order, 'latitudeRestaurant' | 'longitudeRestaurant'>): GeoPoint | null {
+    const point = { latitude: order.latitudeRestaurant, longitude: order.longitudeRestaurant };
+    return hasReliableLocation(point) ? point : null;
 }
 
 // Clé stable pour ne pas recréer les écouteurs quand seul l'ordre change.

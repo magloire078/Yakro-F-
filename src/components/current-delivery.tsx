@@ -9,7 +9,7 @@ import { ChefHat, Home, Map, Phone, Loader } from 'lucide-react';
 import Link from 'next/link';
 import { canTransitionOrder } from '@/lib/order-transitions';
 import { LiveMap } from '@/components/map/live-map';
-import { useClientPositions, useWatchPosition } from '@/hooks/use-live-locations';
+import { orderClientPoint, orderRestaurantPoint, useClientPositions, useWatchPosition } from '@/hooks/use-live-locations';
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -22,15 +22,11 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
     const clientPositions = useClientPositions([order.id]);
     const clientLive = clientPositions[order.id];
 
-    const restaurantPoint = order.latitudeRestaurant !== undefined && order.longitudeRestaurant !== undefined
-        ? { latitude: order.latitudeRestaurant, longitude: order.longitudeRestaurant }
-        : null;
+    const restaurantPoint = orderRestaurantPoint(order);
     // Position live du client si elle est partagée, sinon son adresse de livraison.
     const clientPoint = clientLive
         ? { latitude: clientLive.latitude, longitude: clientLive.longitude }
-        : order.latitudeClient !== undefined && order.longitudeClient !== undefined
-            ? { latitude: order.latitudeClient, longitude: order.longitudeClient }
-            : null;
+        : orderClientPoint(order);
 
     const mapMarkers: MapMarker[] = [];
     if (myPosition) mapMarkers.push({ id: 'moi', kind: 'livreur', ...myPosition, label: 'Vous', live: true });

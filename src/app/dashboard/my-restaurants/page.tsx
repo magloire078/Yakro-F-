@@ -17,8 +17,10 @@ import {
     MapPin,
     Star,
     ChefHat,
-    ExternalLink
+    ExternalLink,
+    MapPinOff,
 } from 'lucide-react';
+import { hasReliableLocation } from '@/lib/geolocation';
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
 import Link from 'next/link';
@@ -171,6 +173,11 @@ export default function MyRestaurantsPage() {
                                                 <MapPin className="h-2.5 w-2.5 text-primary shrink-0" />
                                                 <p className="text-[7.5px] md:text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground line-clamp-1">{restaurant.adresse || 'Emplacement non défini'}</p>
                                             </div>
+                                            {!hasReliableLocation(restaurant) && (
+                                                <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] md:text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                                                    <MapPinOff className="h-3 w-3 shrink-0" /> Position GPS à définir
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center gap-2 md:gap-6 mt-1 md:mt-2 mb-2 md:mb-4 p-1.5 sm:p-2.5 md:p-4 bg-muted/50 border border-border rounded-lg md:rounded-3xl">
