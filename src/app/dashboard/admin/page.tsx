@@ -36,6 +36,7 @@ import { FinancialAnalytics } from '@/components/financial-analytics';
 import { AdminAlerts } from '@/components/admin-alerts';
 import { ReportCenter } from '@/components/report-center';
 import { LivreurManager } from '@/components/livreur-manager';
+import { MobileBackButton } from '@/components/mobile-back-button';
 
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
@@ -54,8 +55,9 @@ const SUPPORT_WHATSAPP_URL = SUPPORT_WHATSAPP
     : null;
 
 export default function AdminPage() {
-    const { user, userProfile, loading: authLoading, updateOtherUserProfile } = useAuth();
+    const { user, userProfile, loading: authLoading, updateOtherUserProfile, activeRole } = useAuth();
     const { db } = useFirebase();
+    const exitHref = activeRole === 'restaurateur' ? '/restaurateur' : activeRole === 'livreur' ? '/livreur' : '/';
     const { restaurants, orders, isLoading: isPublicDataLoading } = useData();
     // Sur un réseau mobile faible, l'image de fond hotlinkée (Unsplash) peut
     // échouer à charger et son texte alternatif s'affiche alors comme du
@@ -295,7 +297,10 @@ export default function AdminPage() {
     return (
         <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-body">
             {/* Cinematic Hero Header */}
-            <div className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[350px] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative py-8 sm:py-12 md:py-16 min-h-[220px] md:min-h-[320px] w-full overflow-hidden flex items-center justify-center">
+                {/* Bouton retour mobile vers le tableau de bord actif */}
+                <MobileBackButton href={exitHref} label="Retour" className="md:hidden absolute top-3 left-3 z-50 mb-0 bg-card/80 border border-border shadow-sm backdrop-blur-md" />
+
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -310,22 +315,22 @@ export default function AdminPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/60 z-10" />
                 </div>
 
-                <div className="relative z-30 text-center space-y-5 md:space-y-8 px-4 md:px-6 max-w-5xl pt-8 md:pt-0">
+                <div className="relative z-30 text-center space-y-4 md:space-y-6 px-4 md:px-6 max-w-5xl pt-4 md:pt-0">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl mb-2 shadow-2xl"
+                        className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl shadow-xl"
                     >
-                        <ShieldCheck className="h-4 w-4 text-primary" />
-                        <span className="text-[11px] font-body font-bold tracking-widest text-primary">Autorité Suprême Yakro</span>
+                        <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                        <span className="text-[10px] sm:text-[11px] font-body font-bold tracking-widest text-primary">Autorité Suprême Yakro</span>
                     </motion.div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-2 md:space-y-3">
                         <motion.h1 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-3xl md:text-5xl font-headline font-bold tracking-tight text-foreground leading-tight mb-2 md:mb-4"
+                            className="text-2xl sm:text-4xl md:text-5xl font-headline font-bold tracking-tight text-foreground leading-tight"
                         >
                             Centre de <span className="text-primary italic">Contrôle</span>
                         </motion.h1>
@@ -333,7 +338,7 @@ export default function AdminPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-muted-foreground font-body text-[11px] md:text-xs tracking-wider"
+                            className="text-muted-foreground font-body text-[10px] sm:text-xs tracking-wider max-w-md mx-auto"
                         >
                             Supervision intégrale et commandement de l&apos;écosystème
                         </motion.p>
@@ -343,13 +348,13 @@ export default function AdminPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-4 md:mt-8"
+                        className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-3 md:mt-6"
                     >
                         <Sheet open={isAlertsSheetOpen} onOpenChange={setIsAlertsSheetOpen}>
                             <SheetTrigger asChild>
-                                <Button variant="outline" aria-label="Voir les alertes système" className="h-10 px-5 bg-card/50 border-border rounded-xl font-body font-bold tracking-tight hover:bg-primary/10 transition-all group text-xs">
-                                    <Bell className="mr-2 h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                                    Alertes <span className="ml-2 px-2 py-0.5 bg-red-500 text-[9px] font-body text-white rounded-full animate-pulse">Live</span>
+                                <Button variant="outline" aria-label="Voir les alertes système" className="h-9 sm:h-10 px-3.5 sm:px-5 bg-card/50 border-border rounded-xl font-body font-bold tracking-tight hover:bg-primary/10 transition-all group text-xs">
+                                    <Bell className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary group-hover:scale-110 transition-transform" />
+                                    Alertes <span className="ml-1.5 sm:ml-2 px-1.5 sm:px-2 py-0.5 bg-red-500 text-[8px] sm:text-[9px] font-body text-white rounded-full animate-pulse">Live</span>
                                 </Button>
                             </SheetTrigger>
                             <SheetContent className="w-full sm:max-w-md bg-background/95 backdrop-blur-3xl border-border text-foreground shadow-2xl">
@@ -366,24 +371,24 @@ export default function AdminPage() {
                             </SheetContent>
                         </Sheet>
                         
-                        <Button asChild className="h-10 px-5 bg-card/50 border border-border text-foreground rounded-xl font-body font-bold tracking-tight hover:bg-card transition-all text-xs">
-                            <Link href="/">
-                                <Home className="mr-2 h-4 w-4 text-slate-500" />
+                        <Button asChild className="h-9 sm:h-10 px-3.5 sm:px-5 bg-card/50 border border-border text-foreground rounded-xl font-body font-bold tracking-tight hover:bg-card transition-all text-xs">
+                            <Link href={exitHref}>
+                                <Home className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-500" />
                                 Quitter
                             </Link>
                         </Button>
                         
-                        <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-10 px-5 bg-primary hover:bg-primary/90 text-white rounded-xl font-body font-bold tracking-tight shadow-[0_15px_30px_rgba(249,115,22,0.2)] transition-all hover:scale-105 text-xs">
-                            <UserPlus className="mr-2 h-4 w-4" />
+                        <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-9 sm:h-10 px-3.5 sm:px-5 bg-primary hover:bg-primary/90 text-white rounded-xl font-body font-bold tracking-tight shadow-[0_15px_30px_rgba(249,115,22,0.2)] transition-all hover:scale-105 text-xs">
+                            <UserPlus className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             Enrôler Citoyen
                         </Button>
                     </motion.div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 md:px-6 -mt-10 md:-mt-12 relative z-40 pb-32">
+            <div className="container mx-auto px-3 sm:px-4 md:px-6 -mt-6 sm:-mt-8 md:-mt-12 relative z-40 pb-24 md:pb-32">
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-10 md:mb-16">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6 mb-6 md:mb-12">
                     {[
                         { title: 'Citoyens', value: allUsers.length, icon: Users, color: 'orange' },
                         { title: 'Bastions', value: restaurants.length, icon: Store, color: 'white' },
@@ -396,17 +401,17 @@ export default function AdminPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.4 + (idx * 0.1), duration: 0.5, ease: "easeOut" }}
                             whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                            className="bg-card/70 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-4 md:p-6 relative group overflow-hidden rounded-2xl md:rounded-3xl shadow-lg dark:shadow-2xl transition-colors duration-500 hover:border-primary/50 hover:shadow-primary/10"
+                            className="bg-card/70 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-3.5 sm:p-5 md:p-6 relative group overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl shadow-lg dark:shadow-2xl transition-colors duration-500 hover:border-primary/50 hover:shadow-primary/10"
                         >
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
-                            <div className="flex justify-between items-start mb-3 md:mb-6 relative z-10">
-                                <span className="text-[11px] font-body font-semibold tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{stat.title}</span>
-                                <div className={`p-2 rounded-xl ${stat.color === 'orange' ? 'bg-primary/10' : 'bg-muted dark:bg-white/5'}`}>
-                                    <stat.icon className={`h-4 w-4 ${stat.color === 'orange' ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <div className="flex justify-between items-start mb-2 sm:mb-4 md:mb-6 relative z-10">
+                                <span className="text-[10px] sm:text-[11px] font-body font-semibold tracking-wider text-muted-foreground group-hover:text-primary transition-colors">{stat.title}</span>
+                                <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl ${stat.color === 'orange' ? 'bg-primary/10' : 'bg-muted dark:bg-white/5'}`}>
+                                    <stat.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${stat.color === 'orange' ? 'text-primary' : 'text-muted-foreground'}`} />
                                 </div>
                             </div>
-                            <div className="text-2xl sm:text-3xl md:text-5xl font-headline font-bold tracking-tight text-foreground group-hover:scale-105 transition-transform duration-500 relative z-10">
+                            <div className="text-xl sm:text-2xl md:text-5xl font-headline font-bold tracking-tight text-foreground group-hover:scale-105 transition-transform duration-500 relative z-10">
                                 {stat.value}
                             </div>
                         </motion.div>
@@ -414,9 +419,9 @@ export default function AdminPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
-                    <div ref={tabsRef} className="lg:col-span-3 min-w-0 space-y-10 scroll-mt-6">
-                        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
-                            <TabsList className="h-auto w-full bg-card/70 dark:bg-white/5 border border-border dark:border-white/5 p-1 rounded-2xl flex-nowrap md:flex-wrap justify-start gap-1 backdrop-blur-3xl overflow-x-auto scrollbar-hide">
+                    <div ref={tabsRef} className="lg:col-span-3 min-w-0 space-y-6 sm:space-y-10 scroll-mt-6">
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6 sm:space-y-8">
+                            <TabsList className="h-auto w-full bg-card/70 dark:bg-white/5 border border-border dark:border-white/5 p-1 rounded-xl sm:rounded-2xl flex-nowrap md:flex-wrap justify-start gap-1 backdrop-blur-3xl overflow-x-auto scrollbar-hide">
                                 {[
                                     { id: 'live', icon: Navigation2, label: 'Supervision' },
                                     { id: 'restaurants', icon: Store, label: 'Établissements' },
@@ -429,9 +434,9 @@ export default function AdminPage() {
                                     <TabsTrigger 
                                         key={tab.id}
                                         value={tab.id} 
-                                        className="h-10 px-4 md:px-5 shrink-0 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white font-body font-bold text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-card/50 dark:hover:bg-white/5"
+                                        className="h-8 sm:h-10 px-2.5 sm:px-4 md:px-5 shrink-0 rounded-lg sm:rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white font-body font-bold text-[10px] sm:text-[11px] transition-all data-[state=active]:shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:bg-card/50 dark:hover:bg-white/5"
                                     >
-                                        <tab.icon className="h-4 w-4 mr-2" />
+                                        <tab.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                         {tab.label}
                                     </TabsTrigger>
                                 ))}
@@ -528,22 +533,22 @@ export default function AdminPage() {
                                 
                                 <TabsContent value="users" className="m-0 outline-none animate-in fade-in duration-700">
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
-                                        <div className="lg:col-span-2 bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                                        <div className="lg:col-span-2 bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-4 sm:p-6 rounded-2xl md:rounded-3xl shadow-2xl relative overflow-hidden">
                                             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
-                                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-12 relative z-10 gap-6">
-                                                <div className="space-y-2">
-                                                    <h2 className="text-2xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Registre des <span className="text-primary">Comptes</span></h2>
-                                                    <p className="text-[11px] font-body font-medium text-muted-foreground tracking-widest">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
+                                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 sm:mb-8 md:mb-12 relative z-10 gap-4 sm:gap-6">
+                                                <div className="space-y-1 sm:space-y-2">
+                                                    <h2 className="text-xl sm:text-2xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">Registre des <span className="text-primary">Comptes</span></h2>
+                                                    <p className="text-[10px] sm:text-[11px] font-body font-medium text-muted-foreground tracking-widest">GESTION DES ACCÈS ET PRIVILÈGES SYSTÈME</p>
                                                 </div>
-                                                <div className="flex items-center gap-4 w-full md:w-auto">
+                                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 w-full md:w-auto">
                                                     <Input 
                                                         value={userSearchQuery}
                                                         onChange={(e) => setUserSearchQuery(e.target.value)}
                                                         placeholder="Rechercher un citoyen..."
-                                                        className="h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-2xl text-[10px] font-body font-medium tracking-wide flex-1 min-w-0 md:min-w-[200px] focus:ring-primary/50"
+                                                        className="h-10 sm:h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-body font-medium tracking-wide flex-1 min-w-0 md:min-w-[200px] focus:ring-primary/50"
                                                     />
-                                                    <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-12 px-6 bg-primary hover:bg-primary/90 text-white rounded-2xl font-body font-bold tracking-tight transition-all hover:scale-105 shadow-xl whitespace-nowrap">
-                                                        <UserPlus className="mr-2 h-4 w-4" />
+                                                    <Button onClick={() => setIsAddUserDialogOpen(true)} className="h-10 sm:h-12 px-4 sm:px-6 bg-primary hover:bg-primary/90 text-white rounded-xl sm:rounded-2xl font-body font-bold text-xs tracking-tight transition-all hover:scale-105 shadow-xl whitespace-nowrap">
+                                                        <UserPlus className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                                         NOUVEAU
                                                     </Button>
                                                 </div>
@@ -552,45 +557,45 @@ export default function AdminPage() {
                                                 <Table>
                                                     <TableHeader className="border-border dark:border-white/5">
                                                         <TableRow className="hover:bg-transparent border-border dark:border-white/5">
-                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest text-muted-foreground py-4 md:py-6">Identité</TableHead>
-                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest text-muted-foreground py-4 md:py-6">Privilèges</TableHead>
-                                                            <TableHead className="text-right text-[10px] font-body font-bold tracking-widest text-muted-foreground py-4 md:py-6">Actions</TableHead>
+                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest text-muted-foreground py-3 sm:py-4 md:py-6">Identité</TableHead>
+                                                            <TableHead className="text-[10px] font-body font-bold tracking-widest text-muted-foreground py-3 sm:py-4 md:py-6">Privilèges</TableHead>
+                                                            <TableHead className="text-right text-[10px] font-body font-bold tracking-widest text-muted-foreground py-3 sm:py-4 md:py-6">Actions</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {displayedUsers.map((u) => (
                                                             <TableRow key={u.uid} className="border-border dark:border-white/5 hover:bg-card/80 dark:hover:bg-white/5 transition-colors group">
-                                                                <TableCell className="py-4 md:py-6">
-                                                                    <div className="flex items-center gap-4">
-                                                                        <Avatar className="h-10 w-10 md:h-12 md:w-12 shrink-0 rounded-2xl border border-border dark:border-white/10 group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg">
+                                                                <TableCell className="py-3 sm:py-4 md:py-6">
+                                                                    <div className="flex items-center gap-3 sm:gap-4">
+                                                                        <Avatar className="h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 shrink-0 rounded-xl sm:rounded-2xl border border-border dark:border-white/10 group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg">
                                                                             <AvatarFallback className="bg-card dark:bg-white/10 text-xs font-body font-bold text-primary">{getInitials(u.nom || u.email)}</AvatarFallback>
                                                                         </Avatar>
                                                                         <div className="flex flex-col min-w-0">
-                                                                            <span className="font-body font-bold text-sm text-foreground truncate">{u.nom || 'UTILISATEUR ANONYME'}</span>
-                                                                            <span className="text-[11px] font-body font-medium text-muted-foreground tracking-wide truncate">{u.email}</span>
+                                                                            <span className="font-body font-bold text-xs sm:text-sm text-foreground truncate">{u.nom || 'UTILISATEUR ANONYME'}</span>
+                                                                            <span className="text-[10px] sm:text-[11px] font-body font-medium text-muted-foreground tracking-wide truncate">{u.email}</span>
                                                                         </div>
                                                                     </div>
                                                                 </TableCell>
-                                                                <TableCell className="py-4 md:py-6">
+                                                                <TableCell className="py-3 sm:py-4 md:py-6">
                                                                     <Select
                                                                         value={u.roleSysteme || 'User'}
                                                                         onValueChange={(val: SystemRole) => handleSystemRoleChange(u.uid, val)}
                                                                         disabled={u.uid === user?.uid}
                                                                     >
-                                                                        <SelectTrigger aria-label="Changer le rôle système" className="w-[140px] h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 rounded-2xl text-[10px] font-body font-bold tracking-widest focus:ring-primary/50 transition-all hover:bg-card dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                                        <SelectTrigger aria-label="Changer le rôle système" className="w-[110px] sm:w-[140px] h-9 sm:h-12 bg-card/50 dark:bg-white/5 border-border dark:border-white/10 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-body font-bold tracking-widest focus:ring-primary/50 transition-all hover:bg-card dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">
                                                                             <SelectValue />
                                                                         </SelectTrigger>
-                                                                        <SelectContent className="bg-popover/95 backdrop-blur-3xl border-border text-foreground rounded-2xl overflow-hidden shadow-2xl">
-                                                                            <SelectItem value="SuperAdmin" className="focus:bg-primary focus:text-white text-[10px] font-body font-bold tracking-widest py-3 cursor-pointer">SUPERADMIN</SelectItem>
-                                                                            <SelectItem value="Admin" className="focus:bg-primary focus:text-white text-[10px] font-body font-bold tracking-widest py-3 cursor-pointer">ADMIN</SelectItem>
-                                                                            <SelectItem value="User" className="focus:bg-primary focus:text-white text-[10px] font-body font-bold tracking-widest py-3 cursor-pointer">USER</SelectItem>
+                                                                        <SelectContent className="bg-popover/95 backdrop-blur-3xl border-border text-foreground rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl">
+                                                                            <SelectItem value="SuperAdmin" className="focus:bg-primary focus:text-white text-[10px] font-body font-bold tracking-widest py-2.5 sm:py-3 cursor-pointer">SUPERADMIN</SelectItem>
+                                                                            <SelectItem value="Admin" className="focus:bg-primary focus:text-white text-[10px] font-body font-bold tracking-widest py-2.5 sm:py-3 cursor-pointer">ADMIN</SelectItem>
+                                                                            <SelectItem value="User" className="focus:bg-primary focus:text-white text-[10px] font-body font-bold tracking-widest py-2.5 sm:py-3 cursor-pointer">USER</SelectItem>
                                                                         </SelectContent>
                                                                     </Select>
                                                                 </TableCell>
-                                                                <TableCell className="text-right py-4 md:py-6">
-                                                                    <div className="flex justify-end gap-2">
-                                                                        <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} aria-label="Modifier l'utilisateur" className="h-12 w-12 hover:bg-primary/10 hover:text-primary rounded-2xl border border-transparent hover:border-primary/20 transition-all hover:scale-110">
-                                                                            <Edit className="h-5 w-5" />
+                                                                <TableCell className="text-right py-3 sm:py-4 md:py-6">
+                                                                    <div className="flex justify-end gap-1.5 sm:gap-2">
+                                                                        <Button variant="ghost" size="icon" onClick={() => setEditingUser(u)} aria-label="Modifier l'utilisateur" className="h-9 w-9 sm:h-12 sm:w-12 hover:bg-primary/10 hover:text-primary rounded-xl sm:rounded-2xl border border-transparent hover:border-primary/20 transition-all hover:scale-110">
+                                                                            <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                                                                         </Button>
                                                                         <Button
                                                                             variant="ghost"
@@ -598,9 +603,9 @@ export default function AdminPage() {
                                                                             onClick={() => setUserToDelete(u)}
                                                                             disabled={u.uid === user?.uid}
                                                                             aria-label="Supprimer l'utilisateur"
-                                                                            className="h-12 w-12 hover:bg-red-500/10 hover:text-red-500 rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                                                            className="h-9 w-9 sm:h-12 sm:w-12 hover:bg-red-500/10 hover:text-red-500 rounded-xl sm:rounded-2xl border border-transparent hover:border-red-500/20 transition-all hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                                                                         >
-                                                                            <Trash2 className="h-5 w-5" />
+                                                                            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                                                                         </Button>
                                                                     </div>
                                                                 </TableCell>
@@ -611,38 +616,38 @@ export default function AdminPage() {
                                             </div>
 
                                             {filteredUsers.length > userDisplayLimit && (
-                                                <div className="mt-8 flex justify-center">
+                                                <div className="mt-6 sm:mt-8 flex justify-center">
                                                     <Button 
                                                         onClick={() => setUserDisplayLimit(prev => prev + 20)}
                                                         variant="outline"
-                                                        className="rounded-2xl border-border dark:border-white/10 hover:bg-primary hover:text-white font-body font-bold text-[10px] h-12 px-8 transition-all hover:scale-105"
+                                                        className="rounded-xl sm:rounded-2xl border-border dark:border-white/10 hover:bg-primary hover:text-white font-body font-bold text-[10px] h-10 sm:h-12 px-6 sm:px-8 transition-all hover:scale-105"
                                                     >
                                                         Charger plus d&apos;utilisateurs
                                                     </Button>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="lg:col-span-1 space-y-8">
-                                            <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-6 rounded-3xl shadow-2xl relative overflow-hidden group">
-                                                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                                                    <UserPlus className="h-12 w-12 text-primary" />
+                                        <div className="lg:col-span-1 space-y-6 sm:space-y-8">
+                                            <div className="bg-card/50 dark:bg-white/5 backdrop-blur-3xl border border-border dark:border-white/5 p-4 sm:p-6 rounded-2xl md:rounded-3xl shadow-2xl relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 p-4 sm:p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                    <UserPlus className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
                                                 </div>
-                                                <h3 className="text-[11px] font-body font-semibold tracking-wider text-muted-foreground mb-8">FLUX D&apos;ENRÔLEMENT RÉCENT</h3>
-                                                <div className="space-y-8 relative z-10">
+                                                <h3 className="text-[10px] sm:text-[11px] font-body font-semibold tracking-wider text-muted-foreground mb-6 sm:mb-8">FLUX D&apos;ENRÔLEMENT RÉCENT</h3>
+                                                <div className="space-y-5 sm:space-y-8 relative z-10">
                                                     {latestUsers.map((u, i) => (
                                                         <motion.div 
                                                             key={u.uid} 
                                                             initial={{ opacity: 0, x: 20 }}
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ delay: 0.1 * i }}
-                                                            className="flex items-center gap-5 group/item"
+                                                            className="flex items-center gap-3 sm:gap-5 group/item"
                                                         >
-                                                            <div className="h-12 w-12 bg-card/50 dark:bg-white/5 flex items-center justify-center rounded-2xl border border-border dark:border-white/10 group-hover/item:border-primary/30 transition-all group-hover/item:bg-primary/5">
+                                                            <div className="h-10 w-10 sm:h-12 sm:w-12 bg-card/50 dark:bg-white/5 flex items-center justify-center rounded-xl sm:rounded-2xl border border-border dark:border-white/10 group-hover/item:border-primary/30 transition-all group-hover/item:bg-primary/5">
                                                                 <span className="text-xs font-body font-bold text-primary">{getInitials(u.nom || u.email)}</span>
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-body font-bold text-foreground tracking-tight group-hover/item:text-primary transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
-                                                                <span className="text-[10px] font-body font-medium text-muted-foreground tracking-widest">IDENTIFIÉ RÉCEMMENT</span>
+                                                                <span className="text-xs sm:text-sm font-body font-bold text-foreground tracking-tight group-hover/item:text-primary transition-colors">{u.nom || 'Citoyen Anonyme'}</span>
+                                                                <span className="text-[9px] sm:text-[10px] font-body font-medium text-muted-foreground tracking-widest">IDENTIFIÉ RÉCEMMENT</span>
                                                             </div>
                                                         </motion.div>
                                                     ))}
@@ -657,21 +662,21 @@ export default function AdminPage() {
                         </Tabs>
                     </div>
 
-                    <div className="lg:col-span-1 min-w-0 space-y-10">
+                    <div className="lg:col-span-1 min-w-0 space-y-6 sm:space-y-10">
                         <AdminAlerts onInspectOrder={handleInspectOrder} />
                         
-                        <div className="bg-primary p-8 rounded-[2rem] relative overflow-hidden group shadow-[0_30px_60px_rgba(249,115,22,0.3)] animate-float [animation-delay:1000ms]">
-                            <div className="absolute top-0 right-0 p-8 opacity-20 rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110">
-                                <ShieldAlert className="h-32 w-32 text-white" />
+                        <div className="bg-primary p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] relative overflow-hidden group shadow-[0_30px_60px_rgba(249,115,22,0.3)] animate-float [animation-delay:1000ms]">
+                            <div className="absolute top-0 right-0 p-4 sm:p-8 opacity-20 rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110">
+                                <ShieldAlert className="h-24 w-24 sm:h-32 sm:w-32 text-white" />
                             </div>
-                            <h3 className="text-2xl font-headline font-black italic uppercase tracking-tighter text-white mb-4 relative z-10">Support <span className="text-orange-200">Elite</span></h3>
-                            <p className="text-[12px] font-medium text-orange-100 mb-10 leading-relaxed relative z-10 max-w-[80%]">
+                            <h3 className="text-xl sm:text-2xl font-headline font-black italic uppercase tracking-tighter text-white mb-2 sm:mb-4 relative z-10">Support <span className="text-orange-200">Elite</span></h3>
+                            <p className="text-[11px] sm:text-[12px] font-medium text-orange-100 mb-6 sm:mb-10 leading-relaxed relative z-10 max-w-full sm:max-w-[80%]">
                                 Ligne directe avec l&apos;unité d&apos;intervention technique Yakro pour les opérations critiques.
                             </p>
                             {SUPPORT_WHATSAPP_URL ? (
-                                <Button asChild variant="secondary" className="h-14 w-full bg-white text-primary hover:bg-orange-50 rounded-[1.5rem] font-body font-bold tracking-tight transition-all hover:scale-105 shadow-2xl relative z-10">
+                                <Button asChild variant="secondary" className="h-11 sm:h-14 w-full bg-white text-primary hover:bg-orange-50 rounded-xl sm:rounded-[1.5rem] font-body font-bold text-xs sm:text-sm tracking-tight transition-all hover:scale-105 shadow-2xl relative z-10">
                                     <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                                        <MessageCircle className="mr-2 h-5 w-5" />
+                                        <MessageCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                                         SOLLICITER AIDE
                                     </a>
                                 </Button>
@@ -679,9 +684,9 @@ export default function AdminPage() {
                                 <Button
                                     variant="secondary"
                                     onClick={() => toast({ variant: 'destructive', title: 'Support non configuré', description: 'Définissez NEXT_PUBLIC_SUPPORT_WHATSAPP pour activer le contact WhatsApp.' })}
-                                    className="h-14 w-full bg-white text-primary hover:bg-orange-50 rounded-[1.5rem] font-body font-bold tracking-tight transition-all hover:scale-105 shadow-2xl relative z-10"
+                                    className="h-11 sm:h-14 w-full bg-white text-primary hover:bg-orange-50 rounded-xl sm:rounded-[1.5rem] font-body font-bold text-xs sm:text-sm tracking-tight transition-all hover:scale-105 shadow-2xl relative z-10"
                                 >
-                                    <MessageCircle className="mr-2 h-5 w-5" />
+                                    <MessageCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                                     SOLLICITER AIDE
                                 </Button>
                             )}

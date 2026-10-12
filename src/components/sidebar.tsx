@@ -40,7 +40,6 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   
   const getHomeLink = () => {
     if (!user) return "/login";
-    if (userProfile?.roleSysteme === 'SuperAdmin') return "/dashboard/admin";
     if (activeRole === 'restaurateur') return '/restaurateur';
     if (activeRole === 'livreur') return '/livreur';
     return '/';
