@@ -216,7 +216,7 @@ export default function DashboardOrdersPage() {
         <div className="min-h-screen bg-transparent pb-24 relative overflow-hidden">
 
             {/* Elite Command Header */}
-            <div className="relative h-[24vh] sm:h-[30vh] md:h-[40vh] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative py-8 sm:py-12 md:py-16 w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -263,22 +263,22 @@ export default function DashboardOrdersPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex justify-center gap-6 sm:gap-10 md:gap-20 mt-4 sm:mt-8"
+                        className="flex justify-center items-center gap-6 sm:gap-10 md:gap-20 mt-4 sm:mt-6 pb-2"
                     >
                         <div className="text-center group cursor-default">
-                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground mb-1 sm:mb-2 group-hover:text-primary transition-colors">Nouveaux</p>
-                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-foreground tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
+                            <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground mb-1 group-hover:text-primary transition-colors">Nouveaux</p>
+                            <p className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tighter group-hover:scale-110 transition-transform duration-500">{newOrders.length}</p>
                         </div>
-                        <div className="w-px h-10 sm:h-16 md:h-20 bg-border self-center rotate-12" />
+                        <div className="w-px h-8 sm:h-12 md:h-14 bg-border self-center rotate-12" />
                         <div className="text-center group cursor-default">
-                            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground mb-1 sm:mb-2 group-hover:text-emerald-500 transition-colors">Cuisine</p>
-                            <p className="text-3xl sm:text-4xl md:text-6xl font-black text-foreground tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
+                            <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground mb-1 group-hover:text-emerald-500 transition-colors">Cuisine</p>
+                            <p className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tighter group-hover:scale-110 transition-transform duration-500">{preparingOrders.length}</p>
                         </div>
                     </motion.div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-6xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40">
+            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-6xl mt-4 sm:mt-8 relative z-40">
                 {/* Mobile Header Correction */}
                 <div className="md:hidden flex justify-start mb-4 sm:mb-6">
                     <MobileBackButton href="/restaurateur" label="Tableau de Bord" />
@@ -287,11 +287,14 @@ export default function DashboardOrdersPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 items-start">
                     {/* New Orders Section */}
                     <div className="space-y-4 sm:space-y-8">
-                        <div className="flex items-center gap-4 sm:gap-6">
-                            <div className="h-6 sm:h-10 w-1.5 bg-primary rounded-full" />
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="h-6 sm:h-10 w-1.5 bg-primary rounded-full shrink-0" />
                             <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-foreground uppercase">
                                 Nouvelles <span className="text-primary italic">Entrées</span>
                             </h2>
+                            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-xs sm:text-sm">
+                                {newOrders.length}
+                            </span>
                             <div className="h-px flex-1 bg-border" />
                         </div>
                         
@@ -303,7 +306,7 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-border rounded-2xl sm:rounded-3xl shadow-2xl"
+                                        className="relative group overflow-hidden bg-card/80 border border-border backdrop-blur-2xl p-8 sm:p-14 md:p-16 text-center flex flex-col items-center justify-center transition-all duration-500 rounded-2xl sm:rounded-3xl shadow-xl"
                                     >
                                         <div className="relative mb-6">
                                             <div className="absolute inset-0 bg-primary/10 blur-[40px] rounded-full scale-150 animate-pulse" />
@@ -323,11 +326,14 @@ export default function DashboardOrdersPage() {
                     
                     {/* Preparing Section */}
                     <div className="space-y-4 sm:space-y-8">
-                        <div className="flex items-center gap-4 sm:gap-6">
-                            <div className="h-6 sm:h-10 w-1.5 bg-emerald-500 rounded-full" />
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="h-6 sm:h-10 w-1.5 bg-emerald-500 rounded-full shrink-0" />
                             <h2 className="text-xl sm:text-3xl md:text-4xl font-black italic tracking-tighter text-foreground uppercase">
                                 Atelier <span className="text-emerald-500 italic">Culinaire</span>
                             </h2>
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black text-xs sm:text-sm">
+                                {preparingOrders.length}
+                            </span>
                             <div className="h-px flex-1 bg-border" />
                         </div>
 
@@ -339,7 +345,7 @@ export default function DashboardOrdersPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden glass-dark p-8 sm:p-14 md:p-20 text-center flex flex-col items-center justify-center transition-all duration-500 hover:border-border rounded-2xl sm:rounded-3xl shadow-2xl"
+                                        className="relative group overflow-hidden bg-card/80 border border-border backdrop-blur-2xl p-8 sm:p-14 md:p-16 text-center flex flex-col items-center justify-center transition-all duration-500 rounded-2xl sm:rounded-3xl shadow-xl"
                                     >
                                         <div className="relative mb-6">
                                             <div className="absolute inset-0 bg-emerald-500/10 blur-[40px] rounded-full scale-150" />
@@ -357,7 +363,7 @@ export default function DashboardOrdersPage() {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Branding Footer */}
                 <div className="mt-12 sm:mt-20 text-center opacity-30 group hover:opacity-100 transition-all duration-700 pb-12">
                     <div className="h-px w-24 sm:w-32 bg-gradient-to-r from-transparent via-slate-800 to-transparent mx-auto mb-6 sm:mb-8" />
