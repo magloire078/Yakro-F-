@@ -62,7 +62,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
   }
 
   return (
-    <Card className="glass overflow-hidden border-white/5 transition-all duration-300 hover:border-primary/20 hover:shadow-xl rounded-2xl sm:rounded-3xl">
+    <Card className="glass overflow-hidden border-border dark:border-white/5 transition-all duration-300 hover:border-primary/20 hover:shadow-xl rounded-2xl sm:rounded-3xl">
       <Accordion type="single" collapsible>
         <AccordionItem value={order.id} className="border-b-0">
           <AccordionTrigger className="p-3.5 sm:p-5 md:p-6 hover:no-underline group">
@@ -71,7 +71,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 <div className="flex items-center gap-1.5">
                   <p className="font-bold text-base sm:text-lg uppercase tracking-tight group-hover:text-primary transition-colors duration-200 truncate max-w-[150px] sm:max-w-none">{order.nomRestaurant}</p>
                   {order.prioritaire && (
-                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
                       <Crown className="h-2.5 w-2.5" /> VIP
                     </span>
                   )}
@@ -107,7 +107,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 return (
                   <div key={`${item.id}-${index}`} className="flex justify-between items-center group/item">
                     <div className="flex items-center gap-3">
-                      <div className="relative w-10 h-10 sm:w-12 sm:h-12 overflow-hidden rounded-lg sm:rounded-xl bg-slate-100 dark:bg-slate-800 border border-white/10 shrink-0">
+                      <div className="relative w-10 h-10 sm:w-12 sm:h-12 overflow-hidden rounded-lg sm:rounded-xl bg-slate-100 dark:bg-slate-800 border border-border dark:border-white/10 shrink-0">
                         {isCloudinary ? (
                           <CldImage
                             src={imageSrc}
@@ -138,7 +138,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                         </div>
                       </div>
                     </div>
-                    <span className="font-bold text-xs sm:text-sm tracking-tight opacity-85 shrink-0 ml-2">{getItemPrice(item).toLocaleString('fr-FR')} <span className="text-[8px] opacity-50">F</span></span>
+                    <span className="font-bold text-xs sm:text-sm tracking-tight opacity-85 shrink-0 ml-2">{getItemPrice(item).toLocaleString('fr-FR')} <span className="text-[9px] opacity-50">F</span></span>
                   </div>
                 )
               })}

@@ -23,7 +23,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
   const initial = review.nomUtilisateur ? review.nomUtilisateur.charAt(0).toUpperCase() : '?';
   
   return (
-    <Card className="glass rounded-xl sm:rounded-2xl border-white/5 hover:border-primary/20 transition-all duration-300 shadow-xs hover:shadow-md">
+    <Card className="glass rounded-xl sm:rounded-2xl border-border dark:border-white/5 hover:border-primary/20 transition-all duration-300 shadow-xs hover:shadow-md">
       <CardContent className="p-3.5 sm:p-5">
         <div className="flex items-start gap-3 sm:gap-4">
           <Avatar className="h-9 w-9 sm:h-11 sm:w-11 rounded-xl border border-primary/20 shrink-0">

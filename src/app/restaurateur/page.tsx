@@ -108,7 +108,7 @@ export default function RestaurateurHomePage() {
 
     if (isDataLoading || authLoading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center bg-slate-50/50">
+            <div className="flex h-screen w-full items-center justify-center bg-background">
                 <Loader className="h-12 w-12 animate-spin text-primary" />
             </div>
         );
@@ -116,18 +116,18 @@ export default function RestaurateurHomePage() {
     
     if (myRestaurants.length === 0) {
         return (
-             <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50/50">
+             <div className="min-h-screen flex items-center justify-center p-6 bg-background">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="max-w-lg w-full"
                 >
-                    <Card className="bg-white/70 backdrop-blur-xl border-white/40 shadow-2xl shadow-slate-200/50 p-8 text-center">
+                    <Card className="bg-card/70 backdrop-blur-xl border-border shadow-2xl p-8 text-center">
                         <CardHeader>
                             <div className="h-20 w-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
                                 <ChefHat className="h-10 w-10 text-primary" />
                             </div>
-                            <CardTitle className="text-3xl font-black tracking-tight text-slate-900 italic">Bienvenue Elite !</CardTitle>
+                            <CardTitle className="text-3xl font-black tracking-tight text-foreground italic">Bienvenue Elite !</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <CardDescription className="text-slate-500 text-lg leading-relaxed mb-8">
@@ -243,7 +243,7 @@ export default function RestaurateurHomePage() {
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge className={cn(
-                                                                "text-[8px] sm:text-[9px] font-black uppercase tracking-wider rounded-lg px-2 py-0.5 border-none",
+                                                                "text-[9px] sm:text-[10px] font-black uppercase tracking-wider rounded-lg px-2 py-0.5 border-none",
                                                                 order.statut === 'Livrée' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
                                                                 order.statut === 'En Préparation' ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
                                                                 "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
@@ -279,7 +279,7 @@ export default function RestaurateurHomePage() {
                                                         </TableCell>
                                                         <TableCell className="text-right py-3 sm:py-4 pr-4 sm:pr-8">
                                                             <span className="font-black text-xs sm:text-sm text-slate-900 dark:text-white">{order.total.toLocaleString('fr-FR')}</span>
-                                                            <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 ml-1">F</span>
+                                                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 ml-1">F</span>
                                                         </TableCell>
                                                     </TableRow>
                                                 ))}

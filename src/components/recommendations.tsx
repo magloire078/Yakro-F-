@@ -118,7 +118,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
                   <span className="text-[9px] xs:text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">{rec.cuisine}</span>
                   <div className="flex items-center gap-1 text-xs sm:text-sm font-bold">
                     <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                    <span>{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') : '---'} <small className="text-[8px] xs:text-[9px] font-normal">FCFA</small></span>
+                    <span>{menuItem?.prix ? menuItem.prix.toLocaleString('fr-FR') : '---'} <small className="text-[9px] xs:text-[10px] font-normal">FCFA</small></span>
                   </div>
                </div>
                
@@ -179,8 +179,8 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
             ))}
           </CarouselContent>
           <div className="hidden md:flex justify-end gap-2 mt-4">
-            <CarouselPrevious className="relative inset-0 translate-y-0 h-10 w-10 rounded-xl border-slate-200" />
-            <CarouselNext className="relative inset-0 translate-y-0 h-10 w-10 rounded-xl border-slate-200 bg-slate-900 text-white hover:bg-slate-800" />
+            <CarouselPrevious className="relative inset-0 translate-y-0 h-10 w-10 rounded-xl border-border" />
+            <CarouselNext className="relative inset-0 translate-y-0 h-10 w-10 rounded-xl border-border bg-foreground text-background hover:bg-foreground/90" />
           </div>
         </Carousel>
       ) : (

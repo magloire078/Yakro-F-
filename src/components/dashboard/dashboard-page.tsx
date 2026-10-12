@@ -46,7 +46,7 @@ export function DashboardPage({
                         <div className="flex-1 bg-white dark:bg-slate-300" />
                         <div className="flex-1 bg-emerald-500" />
                     </div>
-                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-muted-foreground group-hover:text-foreground transition-colors">
+                    <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-muted-foreground group-hover:text-foreground transition-colors">
                         {brandingText} &bull; 🇨🇮 YAKRO ÉLITE
                     </p>
                 </div>

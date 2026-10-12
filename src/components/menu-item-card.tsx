@@ -57,7 +57,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
       </div>
       <div className="flex justify-between items-center pt-2 mt-auto">
         <p className="text-xs xs:text-sm font-black text-primary tracking-tight">
-          {item.prix.toLocaleString('fr-FR')} <span className="text-[8px] xs:text-[9px] opacity-70">FCFA</span>
+          {item.prix.toLocaleString('fr-FR')} <span className="text-[9px] xs:text-[10px] opacity-70">FCFA</span>
         </p>
         <AddToCartDialog item={item}>
           <Button variant="ghost" size="icon" className="h-7 w-7 xs:h-8 xs:w-8 rounded-lg xs:rounded-xl bg-primary text-white hover:bg-primary/90 hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95 shrink-0">

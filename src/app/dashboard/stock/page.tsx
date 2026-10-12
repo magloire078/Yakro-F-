@@ -377,7 +377,7 @@ export default function StockPage() {
                                                             </TableCell>
                                                             <TableCell>
                                                                 <Badge className={cn(
-                                                                    "rounded-full px-4 py-1 font-black italic text-[8px] tracking-tight uppercase border backdrop-blur-md",
+                                                                    "rounded-full px-4 py-1 font-black italic text-[9px] tracking-tight uppercase border backdrop-blur-md",
                                                                     isCritical ? "bg-red-500/10 text-red-500 border-red-500/20" : 
                                                                     isLow ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : 
                                                                     "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
@@ -395,7 +395,7 @@ export default function StockPage() {
                                                                     </button>
                                                                     <div className="min-w-[60px] group-hover:scale-110 transition-transform">
                                                                         <span className="text-2xl font-black italic tracking-tighter text-foreground">{item.quantite}</span>
-                                                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{item.unite}</p>
+                                                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{item.unite}</p>
                                                                     </div>
                                                                     <button 
                                                                         className="h-8 w-8 bg-muted/50 border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-emerald-500 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all font-black text-xl"
@@ -475,11 +475,11 @@ export default function StockPage() {
                                                         <h3 className="font-black text-lg italic tracking-tighter text-foreground leading-tight">{item.nom}</h3>
                                                         <div className="flex items-center gap-1.5 mt-1">
                                                             <MapPin className="h-2.5 w-2.5 text-primary" />
-                                                            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{restaurantName}</span>
+                                                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{restaurantName}</span>
                                                         </div>
                                                     </div>
                                                     <Badge className={cn(
-                                                        "rounded-full px-2 py-0.5 font-black italic text-[7px] tracking-tight uppercase border shadow-sm",
+                                                        "rounded-full px-2 py-0.5 font-black italic text-[9px] tracking-tight uppercase border shadow-sm",
                                                         isCritical ? "bg-red-500/20 text-red-500 border-red-500/30" : 
                                                         isLow ? "bg-amber-500/20 text-amber-500 border-amber-500/30" : 
                                                         "bg-emerald-500/20 text-emerald-500 border-emerald-500/30"
@@ -498,7 +498,7 @@ export default function StockPage() {
                                                         </button>
                                                         <div className="text-center min-w-[50px]">
                                                             <span className="text-xl font-black italic tracking-tighter text-foreground">{item.quantite}</span>
-                                                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{item.unite}</p>
+                                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{item.unite}</p>
                                                         </div>
                                                         <button 
                                                             className="h-8 w-8 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground active:text-emerald-500 active:bg-emerald-500/10 transition-colors font-black text-lg border border-border"
@@ -509,7 +509,7 @@ export default function StockPage() {
                                                     </div>
                                                     
                                                     <div className="flex flex-col items-end gap-1">
-                                                        <div className="flex items-center gap-1 text-muted-foreground text-[8px] font-black italic uppercase">
+                                                        <div className="flex items-center gap-1 text-muted-foreground text-[9px] font-black italic uppercase">
                                                             <History className="h-2.5 w-2.5" />
                                                             {format(new Date(item.derniereMiseAJour), "dd MMM")}
                                                         </div>

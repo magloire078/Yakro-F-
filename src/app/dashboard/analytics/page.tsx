@@ -295,7 +295,7 @@ export default function AnalyticsPage() {
                         className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md shadow-sm"
                     >
                         <Activity className="h-3 w-3 text-primary animate-pulse" />
-                        <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
                     </motion.div>
                     <motion.h1 
                         initial={{ opacity: 0, y: 15 }}
@@ -309,7 +309,7 @@ export default function AnalyticsPage() {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-muted-foreground font-medium text-[8px] sm:text-[9px] uppercase tracking-[0.2em]"
+                        className="text-muted-foreground font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.2em]"
                     >
                         Pilotez votre performance avec précision chirurgicale
                     </motion.p>
@@ -385,7 +385,7 @@ export default function AnalyticsPage() {
                                             {item.unit || 'FCFA'}
                                         </span>
                                     </div>
-                                    <p className="text-[8px] sm:text-[9px] font-bold text-muted-foreground uppercase mt-2 sm:mt-4 tracking-[0.1em] sm:tracking-[0.15em]">{item.sub}</p>
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase mt-2 sm:mt-4 tracking-[0.1em] sm:tracking-[0.15em]">{item.sub}</p>
                                     <div className="absolute -bottom-6 -right-6 h-24 w-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all" />
                                 </div>
                             ))}
@@ -403,11 +403,11 @@ export default function AnalyticsPage() {
                                     <div className="flex items-center gap-6">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-primary" />
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Actuel</span>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Actuel</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Précédent</span>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Précédent</span>
                                         </div>
                                         <div className="p-3 bg-muted rounded-2xl">
                                             <Activity className="h-6 w-6 text-primary" />
@@ -608,7 +608,7 @@ export default function AnalyticsPage() {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-lg font-black italic tracking-tighter text-primary">{item.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40">F</span></p>
+                                                    <p className="text-lg font-black italic tracking-tighter text-primary">{item.revenue.toLocaleString('fr-FR')} <span className="text-[9px] opacity-40">F</span></p>
                                                     <div className="h-1 w-24 bg-muted mt-3 rounded-full overflow-hidden">
                                                         <motion.div 
                                                             initial={{ width: 0 }}
@@ -668,7 +668,7 @@ export default function AnalyticsPage() {
                                             {restaurantComparison.map((r) => (
                                                 <tr key={r.id} className="border-b border-border dark:border-white/5 last:border-0 group hover:bg-muted/50 dark:hover:bg-white/[0.03] transition-colors">
                                                     <td className="text-left px-2 py-4 font-black uppercase text-sm text-foreground group-hover:text-primary transition-colors">{r.nom}</td>
-                                                    <td className="text-right px-2 py-4 font-black italic tracking-tighter text-primary">{r.revenue.toLocaleString('fr-FR')} <span className="text-[8px] opacity-40 not-italic">F</span></td>
+                                                    <td className="text-right px-2 py-4 font-black italic tracking-tighter text-primary">{r.revenue.toLocaleString('fr-FR')} <span className="text-[9px] opacity-40 not-italic">F</span></td>
                                                     <td className="text-right px-2 py-4 font-bold text-muted-foreground">{r.orderCount}</td>
                                                     <td className="text-right px-2 py-4 font-bold text-muted-foreground">{r.avgBasket.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} F</td>
                                                     <td className="text-right px-2 py-4">

@@ -215,7 +215,7 @@ export default function DashboardMenuPage() {
                                             
                                             <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">
                                                 <div className="bg-primary px-2 sm:px-4 py-1 sm:py-1.5 text-[9px] sm:text-[11px] font-black italic uppercase text-white shadow-xl rounded-md sm:rounded-lg">
-                                                    {item.prix.toLocaleString('fr-FR')} <span className="text-[7px] sm:text-[8px] opacity-80 ml-0.5 sm:ml-1">FCFA</span>
+                                                    {item.prix.toLocaleString('fr-FR')} <span className="text-[9px] sm:text-[10px] opacity-80 ml-0.5 sm:ml-1">FCFA</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -231,7 +231,7 @@ export default function DashboardMenuPage() {
                                             <div className="mt-auto flex items-center gap-1.5 sm:gap-2 pt-2 sm:pt-4 border-t border-border/50">
                                                 <Button 
                                                     variant="outline" 
-                                                    className="flex-1 h-8 sm:h-10 px-2 bg-card border-border hover:bg-primary hover:border-primary hover:text-white text-foreground rounded-lg sm:rounded-xl font-black uppercase tracking-widest text-[8px] sm:text-[9px] transition-all duration-500 shadow-sm"
+                                                    className="flex-1 h-8 sm:h-10 px-2 bg-card border-border hover:bg-primary hover:border-primary hover:text-white text-foreground rounded-lg sm:rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all duration-500 shadow-sm"
                                                     onClick={() => setEditingItem(item)}
                                                 >
                                                     <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-2" />

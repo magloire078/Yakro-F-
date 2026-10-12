@@ -59,7 +59,7 @@ export function DashboardStats({ items, className }: DashboardStatsProps) {
                                 
                                 {item.growth !== undefined && (
                                     <div className={cn(
-                                        "ml-1.5 flex items-center gap-0.5 px-1 md:px-1.5 py-0.5 rounded-md text-[7px] md:text-[9px] font-black shadow-lg",
+                                        "ml-1.5 flex items-center gap-0.5 px-1 md:px-1.5 py-0.5 rounded-md text-[9px] md:text-[10px] font-black shadow-lg",
                                         item.growth >= 0 ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"
                                     )}>
                                         {item.growth >= 0 ? <ArrowUpRight className="h-2 w-2" /> : <ArrowDownRight className="h-2 w-2" />}

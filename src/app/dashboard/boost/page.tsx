@@ -104,7 +104,7 @@ export default function BoostPage() {
                                             <h3 className="text-base sm:text-lg md:text-xl font-black uppercase tracking-tight italic text-foreground group-hover:text-primary transition-colors line-clamp-1">{restaurant.nom}</h3>
                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                 <Zap className={`h-2.5 w-2.5 ${restaurant.enVedette ? 'text-primary' : 'text-muted-foreground'}`} />
-                                                <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground">{restaurant.cuisine}</p>
+                                                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground">{restaurant.cuisine}</p>
                                             </div>
                                         </div>
                                     </div>

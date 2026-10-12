@@ -148,7 +148,7 @@ export default function MyRestaurantsPage() {
                                         <div className="absolute top-2 md:top-6 left-2 md:left-6">
                                             <div className="px-1.5 py-0.5 md:px-4 md:py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full flex items-center gap-1 md:gap-2 shadow-2xl">
                                                 <div className="h-1 w-1 md:h-2 md:w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white">LIVE</span>
+                                                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white">LIVE</span>
                                             </div>
                                         </div>
 
@@ -176,7 +176,7 @@ export default function MyRestaurantsPage() {
                                         <div className="flex items-center gap-2 md:gap-6 mt-1 md:mt-2 mb-2 md:mb-4 p-1.5 sm:p-2.5 md:p-4 bg-muted/50 border border-border rounded-lg md:rounded-3xl">
                                             <div className="flex flex-col">
                                                 <span className="text-[6.5px] md:text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-0.5">Cuisine</span>
-                                                <span className="text-[8px] md:text-xs font-black text-foreground uppercase italic tracking-wider truncate">{restaurant.cuisine}</span>
+                                                <span className="text-[9px] md:text-xs font-black text-foreground uppercase italic tracking-wider truncate">{restaurant.cuisine}</span>
                                             </div>
                                             <div className="h-5 md:h-10 w-[1px] bg-border shrink-0" />
                                             <div className="flex flex-col">
@@ -192,7 +192,7 @@ export default function MyRestaurantsPage() {
                                             <Button 
                                                 variant="outline" 
                                                 asChild 
-                                                className="flex-1 rounded-lg md:rounded-2xl border-border bg-card hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[8px] md:text-[11px] h-8 sm:h-10 md:h-14 px-1"
+                                                className="flex-1 rounded-lg md:rounded-2xl border-border bg-card hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[9px] md:text-[11px] h-8 sm:h-10 md:h-14 px-1"
                                             >
                                                 <Link href={`/dashboard/my-restaurants/edit?id=${restaurant.id}`}>
                                                     <Edit className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />

@@ -284,15 +284,15 @@ export function LandingPage() {
                 <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-2">
                   <div className="space-y-0.5 sm:space-y-1">
                     <p className="text-2xl sm:text-4xl font-black text-orange-500">50+</p>
-                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[8px] sm:text-xs">Partenaires</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[9px] sm:text-xs">Partenaires</p>
                   </div>
                   <div className="space-y-0.5 sm:space-y-1">
                     <p className="text-2xl sm:text-4xl font-black text-white">100%</p>
-                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[8px] sm:text-xs">Fait Maison</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[9px] sm:text-xs">Fait Maison</p>
                   </div>
                   <div className="space-y-0.5 sm:space-y-1">
                     <p className="text-2xl sm:text-4xl font-black text-emerald-400">15min</p>
-                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[8px] sm:text-xs">Livraison</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-wider text-[9px] sm:text-xs">Livraison</p>
                   </div>
                 </div>
               </div>

@@ -157,7 +157,7 @@ function RestaurantPageContent() {
     if (!restaurant) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-center space-y-4">
-                <div className="p-6 bg-slate-100 rounded-full">
+                <div className="p-6 bg-muted rounded-full">
                     <ShoppingBag className="h-12 w-12 text-slate-300" />
                 </div>
                 <h2 className="text-2xl font-headline">Restaurant introuvable</h2>

@@ -189,7 +189,7 @@ export function AvailableDeliveries({
                                     <div className="flex items-center gap-2">
                                         <p className="font-bold text-base sm:text-lg leading-tight">{delivery.nomRestaurant}</p>
                                         {delivery.prioritaire && (
-                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[8px] sm:text-[9px] font-black uppercase tracking-widest">
+                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">
                                                 <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> Prioritaire
                                             </span>
                                         )}

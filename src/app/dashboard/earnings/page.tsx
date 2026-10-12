@@ -203,7 +203,7 @@ export default function EarningsPage() {
                                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{new Date(order.date).toLocaleDateString('fr-FR')}</span>
                                                     <span className="font-black italic text-foreground uppercase text-xs">Mission #{order.id.slice(-6).toUpperCase()}</span>
                                                 </div>
-                                                <Badge className="rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1 font-black italic text-[8px] tracking-tight uppercase">
+                                                <Badge className="rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1 font-black italic text-[9px] tracking-tight uppercase">
                                                     Validée
                                                 </Badge>
                                             </div>

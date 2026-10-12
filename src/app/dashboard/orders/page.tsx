@@ -92,12 +92,12 @@ export default function DashboardOrdersPage() {
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
                             <div className="px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
-                                <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-primary">Elite Order</span>
+                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-primary">Elite Order</span>
                             </div>
                             {order.prioritaire && (
                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
                                     <Crown className="h-2.5 w-2.5 text-amber-500" />
-                                    <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-amber-500">Prioritaire</span>
+                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Prioritaire</span>
                                 </div>
                             )}
                             <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground">#{order.id.slice(-6).toUpperCase()}</span>
@@ -107,7 +107,7 @@ export default function DashboardOrdersPage() {
                         </h3>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                        <Badge variant="outline" className={`rounded-full px-2.5 sm:px-3 py-0.5 font-black uppercase text-[8px] sm:text-[9px] tracking-wider border ${
+                        <Badge variant="outline" className={`rounded-full px-2.5 sm:px-3 py-0.5 font-black uppercase text-[9px] sm:text-[10px] tracking-wider border ${
                             order.statut === 'Placée' 
                                 ? 'border-primary/30 text-primary bg-primary/10' 
                                 : 'border-emerald-500/30 text-emerald-500 bg-emerald-500/10'
@@ -139,13 +139,13 @@ export default function DashboardOrdersPage() {
                                             <span className="font-bold text-xs sm:text-sm tracking-tight text-foreground">{item.nom}</span>
                                         </div>
                                         {item.accompagnementSelectionne && (
-                                            <span className="text-[8px] sm:text-[9px] text-muted-foreground font-medium tracking-wider ml-7 uppercase italic">
+                                            <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium tracking-wider ml-7 uppercase italic">
                                                 + {item.accompagnementSelectionne.nom}
                                             </span>
                                         )}
                                     </div>
                                     <span className="font-black text-xs sm:text-sm tracking-tight text-foreground">
-                                        {item.prix.toLocaleString('fr-FR')} <span className="text-[8px] opacity-70">F</span>
+                                        {item.prix.toLocaleString('fr-FR')} <span className="text-[9px] opacity-70">F</span>
                                     </span>
                                 </div>
                             ))}
@@ -173,7 +173,7 @@ export default function DashboardOrdersPage() {
                                 <div className="flex justify-between items-center bg-primary/5 p-3.5 sm:p-4 rounded-2xl border border-primary/10 relative overflow-hidden group/revenue">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full" />
                                     <div className="space-y-0.5 relative z-10">
-                                        <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">Revenu Net Garanti</p>
+                                        <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">Revenu Net Garanti</p>
                                         <p className="text-xl sm:text-2xl font-black italic tracking-tighter text-foreground">
                                             {order.revenuNet.toLocaleString('fr-FR')} <span className="text-[10px] opacity-70 normal-case font-bold ml-1">FCFA</span>
                                         </p>
@@ -237,7 +237,7 @@ export default function DashboardOrdersPage() {
                         className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl shadow-sm"
                     >
                         <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[8px] sm:text-[9px] font-black tracking-[0.25em] text-primary uppercase">Live Operations Room</span>
+                        <span className="text-[9px] sm:text-[10px] font-black tracking-[0.25em] text-primary uppercase">Live Operations Room</span>
                     </motion.div>
                     
                     <div className="space-y-0.5">
@@ -253,7 +253,7 @@ export default function DashboardOrdersPage() {
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.15 }}
-                            className="text-muted-foreground font-bold text-[8px] sm:text-[9px] uppercase tracking-[0.25em]"
+                            className="text-muted-foreground font-bold text-[9px] sm:text-[10px] uppercase tracking-[0.25em]"
                         >
                             Orchestration en temps réel de votre excellence culinaire
                         </motion.p>
@@ -266,12 +266,12 @@ export default function DashboardOrdersPage() {
                         className="flex justify-center items-center gap-5 sm:gap-10 mt-2 sm:mt-3"
                     >
                         <div className="text-center group cursor-default">
-                            <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-primary transition-colors">Nouveaux</p>
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-primary transition-colors">Nouveaux</p>
                             <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter group-hover:scale-105 transition-transform duration-300">{newOrders.length}</p>
                         </div>
                         <div className="w-px h-6 sm:h-8 bg-border self-center rotate-12" />
                         <div className="text-center group cursor-default">
-                            <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-emerald-500 transition-colors">Cuisine</p>
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-emerald-500 transition-colors">Cuisine</p>
                             <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter group-hover:scale-105 transition-transform duration-300">{preparingOrders.length}</p>
                         </div>
                     </motion.div>
@@ -367,7 +367,7 @@ export default function DashboardOrdersPage() {
                 {/* Branding Footer */}
                 <div className="mt-8 sm:mt-12 text-center opacity-40 group hover:opacity-100 transition-all duration-500 pb-4">
                     <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-800 to-transparent mx-auto mb-3 sm:mb-4" />
-                    <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground group-hover:text-primary transition-colors">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground group-hover:text-primary transition-colors">
                         Yakro Ops Elite Framework v4.2 &bull; Secure Flux
                     </p>
                 </div>
