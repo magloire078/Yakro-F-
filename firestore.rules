@@ -331,6 +331,43 @@ service cloud.firestore {
       allow write: if isUser(livreurId);
     }
 
+    // Position GPS live partagée volontairement par un client pendant sa
+    // commande (document = id de la commande). Donnée sensible : lisible
+    // uniquement par les acteurs de CETTE commande (client, livreur
+    // assigné, restaurateur) et les SuperAdmin, écrite uniquement par le
+    // client lui-même tant que la commande est en cours.
+    match /positions_clients/{orderId} {
+      function commande() {
+        return get(/databases/$(database)/documents/commandes/$(orderId)).data;
+      }
+
+      function commandeExiste() {
+        return exists(/databases/$(database)/documents/commandes/$(orderId));
+      }
+
+      allow get: if isAuth() && commandeExiste() && (
+        commande().userId == request.auth.uid ||
+        commande().get('livreurId', '') == request.auth.uid ||
+        commande().restaurateurId == request.auth.uid ||
+        isRestaurantOwner(commande().restaurantId) ||
+        isSuperAdmin()
+      );
+      allow list: if isSuperAdmin();
+
+      allow create, update: if isAuth() && commandeExiste() &&
+        commande().userId == request.auth.uid &&
+        commande().statut in ['Placée', 'En Préparation', 'Prête', 'En Route'] &&
+        request.resource.data.keys().hasOnly(['userId', 'latitude', 'longitude', 'updatedAt']) &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.latitude is number &&
+        request.resource.data.latitude >= -90 && request.resource.data.latitude <= 90 &&
+        request.resource.data.longitude is number &&
+        request.resource.data.longitude >= -180 && request.resource.data.longitude <= 180 &&
+        request.resource.data.updatedAt == request.time;
+
+      allow delete: if isAuth() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+    }
+
     // Journal d'audit des actions administratives. Écriture réservée aux
     // SuperAdmin (avec adminId == auth.uid pour empêcher l'usurpation),
     // lecture réservée aux SuperAdmin, jamais d'update ni de delete —

@@ -7,10 +7,12 @@ import { useData } from '@/contexts/data-context';
 import { useAuth } from '@/contexts/auth-context';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useFirebase } from '@/contexts/firebase-provider';
-import type { Order, Restaurant } from '@/lib/types';
-import type { LivreurPublicData } from '@/lib/livreur-public';
-import { Loader, MapPin, Bike, Home, Wallet } from 'lucide-react';
+import type { MapMarker, MapRoute, Order, Restaurant } from '@/lib/types';
+import { Loader, MapPin, Bike, Home, Wallet, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { LiveMap } from '@/components/map/live-map';
+import { hasCoords, useClientPositionSharing, useLivreurPositions } from '@/hooks/use-live-locations';
 import Link from 'next/link';
 import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions';
 import { useToast } from '@/hooks/use-toast';
@@ -26,9 +28,37 @@ function TrackOrderContent() {
     const orderId = searchParams.get('id');
 
     const [liveOrder, setLiveOrder] = React.useState<Order | null>(null);
-    const [livreur, setLivreur] = React.useState<LivreurPublicData | null>(null);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
     const [isRetryingPayment, setIsRetryingPayment] = React.useState(false);
+    const [shareLocation, setShareLocation] = React.useState(false);
+
+    // Position du livreur assigné, suivie dans son propre écouteur (l'ancien
+    // écouteur, créé dans le callback de la commande, n'était jamais
+    // désabonné et se multipliait à chaque mise à jour de la commande).
+    const livreurPositions = useLivreurPositions([liveOrder?.livreurId]);
+    const livreur = liveOrder?.livreurId ? livreurPositions[liveOrder.livreurId] ?? null : null;
+
+    const isOrderActive = !!liveOrder && !['Livrée', 'Annulée'].includes(liveOrder.statut);
+    const sharing = useClientPositionSharing({
+        orderId,
+        userId: user?.uid ?? null,
+        enabled: shareLocation && isOrderActive,
+    });
+
+    // Le partage s'arrête de lui-même quand la commande est terminée.
+    React.useEffect(() => {
+        if (!isOrderActive) setShareLocation(false);
+    }, [isOrderActive]);
+
+    React.useEffect(() => {
+        if (sharing.status === 'denied') {
+            setShareLocation(false);
+            toast({ variant: 'destructive', title: 'Position refusée', description: 'Autorisez la localisation dans votre navigateur pour la partager avec le livreur.' });
+        } else if (sharing.status === 'unsupported') {
+            setShareLocation(false);
+            toast({ variant: 'destructive', title: 'Localisation indisponible', description: "Votre appareil ne permet pas de partager votre position." });
+        }
+    }, [sharing.status, toast]);
 
     const handleRetryPayment = async () => {
         if (!orderId || !user) return;
@@ -71,18 +101,6 @@ function TrackOrderContent() {
                 if (orderData.restaurantId) {
                     setRestaurant(getRestaurant(orderData.restaurantId) || null);
                 }
-
-                if (orderData.livreurId) {
-                    const livreurDocRef = doc(db, 'livreurs_public', orderData.livreurId);
-                    const unsubscribeLivreur = onSnapshot(livreurDocRef, (livreurSnap) => {
-                        if (livreurSnap.exists()) {
-                            setLivreur(livreurSnap.data() as LivreurPublicData);
-                        }
-                    });
-                    return () => unsubscribeLivreur(); // Clean up livreur listener
-                } else {
-                    setLivreur(null);
-                }
             } else {
                 router.push('/');
             }
@@ -112,24 +130,34 @@ function TrackOrderContent() {
         );
     }
 
-    const getMapUrl = () => {
-        if (!restaurant?.latitude || !restaurant?.longitude || !liveOrder.latitudeClient || !liveOrder.longitudeClient) {
-            if (restaurant?.latitude && restaurant?.longitude) {
-                return `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${restaurant.latitude},${restaurant.longitude}`;
-            }
-            return null;
-        }
+    const restaurantPoint = hasCoords(restaurant)
+        ? restaurant
+        : liveOrder.latitudeRestaurant !== undefined && liveOrder.longitudeRestaurant !== undefined
+            ? { latitude: liveOrder.latitudeRestaurant, longitude: liveOrder.longitudeRestaurant }
+            : null;
+    const clientPoint = sharing.position
+        ?? (liveOrder.latitudeClient !== undefined && liveOrder.longitudeClient !== undefined
+            ? { latitude: liveOrder.latitudeClient, longitude: liveOrder.longitudeClient }
+            : null);
 
-        let url = `https://www.google.com/maps/embed/v1/directions?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&origin=${restaurant.latitude},${restaurant.longitude}&destination=${liveOrder.latitudeClient},${liveOrder.longitudeClient}`;
-
-        if (livreur?.latitude && livreur?.longitude) {
-            url += `&waypoints=${livreur.latitude},${livreur.longitude}`;
-        }
-
-        return url;
+    const mapMarkers: MapMarker[] = [];
+    if (restaurantPoint) {
+        mapMarkers.push({ id: 'restaurant', kind: 'restaurant', ...restaurantPoint, label: restaurant?.nom || liveOrder.nomRestaurant, sublabel: restaurant?.adresse || liveOrder.adresseRestaurant });
+    }
+    if (hasCoords(livreur)) {
+        mapMarkers.push({ id: 'livreur', kind: 'livreur', latitude: livreur.latitude, longitude: livreur.longitude, label: livreur.nom || 'Votre livreur', live: true });
+    }
+    if (clientPoint) {
+        mapMarkers.push({ id: 'client', kind: 'client', ...clientPoint, label: sharing.position ? 'Vous (position en direct)' : 'Adresse de livraison', sublabel: liveOrder.adresseClient, live: !!sharing.position });
     }
 
-    const mapUrl = getMapUrl();
+    const mapRoutes: MapRoute[] = [];
+    if (restaurantPoint && clientPoint) {
+        const points: Array<[number, number]> = [[restaurantPoint.latitude, restaurantPoint.longitude]];
+        if (hasCoords(livreur) && liveOrder.statut === 'En Route') points.push([livreur.latitude, livreur.longitude]);
+        points.push([clientPoint.latitude, clientPoint.longitude]);
+        mapRoutes.push({ id: 'trajet', points, status: liveOrder.statut === 'En Route' ? 'active' : 'planned' });
+    }
 
     return (
         <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -154,20 +182,35 @@ function TrackOrderContent() {
             </div>
 
             <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
-                <div className="md:col-span-2 relative h-72 sm:h-96 md:h-[480px] rounded-xl sm:rounded-2xl overflow-hidden bg-muted/40 border border-border/50">
-                    {mapUrl ? (
-                        <iframe
-                            className="w-full h-full border-0"
-                            title="Carte de suivi de la livraison de votre commande"
-                            loading="lazy"
-                            allowFullScreen
-                            src={mapUrl}
-                        />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
-                            <MapPin className="h-8 w-8 opacity-40" />
-                            <p className="text-[11px] font-black uppercase tracking-widest">Carte indisponible</p>
-                        </div>
+                <div className="md:col-span-2 space-y-3">
+                    <div className="relative h-72 sm:h-96 md:h-[480px] rounded-xl sm:rounded-2xl overflow-hidden bg-muted/40 border border-border/50">
+                        {mapMarkers.length > 0 ? (
+                            <LiveMap markers={mapMarkers} routes={mapRoutes} className="h-full w-full" />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                                <MapPin className="h-8 w-8 opacity-40" />
+                                <p className="text-[11px] font-black uppercase tracking-widest">Carte indisponible</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {isOrderActive && (
+                        <label className="flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-background/40 border border-border/30 cursor-pointer">
+                            <div className="h-10 w-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                                <Navigation className="h-4 w-4 text-sky-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-foreground">Partager ma position en direct</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {shareLocation
+                                        ? sharing.status === 'active'
+                                            ? sharing.writeError ? 'Envoi impossible pour le moment, nouvel essai en cours…' : 'Le livreur et le restaurant voient votre position jusqu’à la livraison.'
+                                            : 'Localisation en cours…'
+                                        : 'Aide le livreur à vous trouver. Arrêt automatique à la livraison.'}
+                                </p>
+                            </div>
+                            <Switch checked={shareLocation} onCheckedChange={setShareLocation} aria-label="Partager ma position en direct" />
+                        </label>
                     )}
                 </div>
 

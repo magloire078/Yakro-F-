@@ -228,3 +228,43 @@
     display: none;
   }
 }
+
+/* ── Cartographie temps réel (Leaflet) ─────────────────────────────────── */
+@layer components {
+  /* Les marqueurs glissent entre deux positions GPS au lieu de sauter… */
+  .yakro-marker {
+    background: transparent;
+    border: none;
+    transition: transform 1s linear;
+  }
+
+  /* …sauf pendant un zoom, où la transition ferait traîner les marqueurs. */
+  .leaflet-zoom-anim .yakro-marker {
+    transition: none;
+  }
+
+  .leaflet-container {
+    font-family: inherit;
+  }
+
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    @apply bg-card text-card-foreground shadow-xl;
+  }
+
+  .leaflet-popup-content-wrapper {
+    @apply rounded-2xl border border-border;
+  }
+
+  .leaflet-control-attribution {
+    @apply bg-card/80 text-muted-foreground backdrop-blur-sm;
+  }
+
+  .leaflet-control-attribution a {
+    @apply text-primary;
+  }
+
+  .leaflet-bar a {
+    @apply border-border bg-card text-foreground;
+  }
+}

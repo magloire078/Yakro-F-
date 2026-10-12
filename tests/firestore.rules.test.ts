@@ -17,6 +17,7 @@ import {
   query,
   where,
   Timestamp,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 
@@ -954,6 +955,103 @@ describe('firestore.rules — /livreurs_public', () => {
     });
     const db = env.unauthenticatedContext().firestore();
     await assertFails(getDoc(doc(db, 'livreurs_public', LIVREUR_UID)));
+  });
+});
+
+describe('firestore.rules — /positions_clients', () => {
+  const ORDER_ID = 'order-geo-1';
+  const ADMIN_UID = 'super-admin-1';
+  const position = (overrides: Record<string, unknown> = {}) => ({
+    userId: OTHER_USER_UID,
+    latitude: 6.8276,
+    longitude: -5.2893,
+    updatedAt: serverTimestamp(),
+    ...overrides,
+  });
+
+  async function seedOrder(overrides: Record<string, unknown> = {}) {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await setDoc(doc(db, 'commandes', ORDER_ID), baseOrder({ statut: 'En Route', livreurId: LIVREUR_UID, ...overrides }));
+      await setDoc(doc(db, 'utilisateurs', ADMIN_UID), { role: 'client', roleSysteme: 'SuperAdmin' });
+    });
+  }
+
+  async function seedPosition() {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'positions_clients', ORDER_ID), {
+        userId: OTHER_USER_UID,
+        latitude: 6.8276,
+        longitude: -5.2893,
+      });
+    });
+  }
+
+  beforeEach(seed);
+
+  it('lets the client share their live position for their own active order', async () => {
+    await seedOrder();
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertSucceeds(setDoc(doc(db, 'positions_clients', ORDER_ID), position()));
+  });
+
+  it('forbids sharing a position on someone else’s order', async () => {
+    await seedOrder({ userId: 'someone-else' });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'positions_clients', ORDER_ID), position()));
+  });
+
+  it('forbids sharing once the order is delivered', async () => {
+    await seedOrder({ statut: 'Livrée' });
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(setDoc(doc(db, 'positions_clients', ORDER_ID), position()));
+  });
+
+  it('rejects extra fields, invalid coordinates and client-chosen timestamps', async () => {
+    await seedOrder();
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    const ref = doc(db, 'positions_clients', ORDER_ID);
+    await assertFails(setDoc(ref, position({ adresse: 'leak' })));
+    await assertFails(setDoc(ref, position({ latitude: 120 })));
+    await assertFails(setDoc(ref, position({ longitude: 'abc' })));
+    await assertFails(setDoc(ref, position({ updatedAt: Timestamp.fromDate(new Date('2020-01-01')) })));
+    await assertFails(setDoc(ref, position({ userId: 'someone-else' })));
+  });
+
+  it('lets the assigned livreur, the restaurateur and a SuperAdmin read it', async () => {
+    await seedOrder();
+    await seedPosition();
+    for (const uid of [LIVREUR_UID, RESTAURATEUR_UID, ADMIN_UID, OTHER_USER_UID]) {
+      const db = env.authenticatedContext(uid).firestore();
+      await assertSucceeds(getDoc(doc(db, 'positions_clients', ORDER_ID)));
+    }
+  });
+
+  it('hides it from unrelated users, other livreurs and visitors', async () => {
+    await seedOrder();
+    await seedPosition();
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'utilisateurs', 'other-livreur'), { role: 'livreur' });
+    });
+    for (const uid of ['other-livreur', 'random-client']) {
+      const db = env.authenticatedContext(uid).firestore();
+      await assertFails(getDoc(doc(db, 'positions_clients', ORDER_ID)));
+    }
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), 'positions_clients', ORDER_ID)));
+  });
+
+  it('only lets a SuperAdmin list all positions', async () => {
+    await seedOrder();
+    await seedPosition();
+    await assertSucceeds(getDocs(collection(env.authenticatedContext(ADMIN_UID).firestore(), 'positions_clients')));
+    await assertFails(getDocs(collection(env.authenticatedContext(LIVREUR_UID).firestore(), 'positions_clients')));
+  });
+
+  it('lets the client stop sharing (delete) but not others', async () => {
+    await seedOrder();
+    await seedPosition();
+    await assertFails(deleteDoc(doc(env.authenticatedContext(LIVREUR_UID).firestore(), 'positions_clients', ORDER_ID)));
+    await assertSucceeds(deleteDoc(doc(env.authenticatedContext(OTHER_USER_UID).firestore(), 'positions_clients', ORDER_ID)));
   });
 });
 

@@ -35,7 +35,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { useToast } from '@/hooks/use-toast';
 import { logAdminAction } from '@/lib/audit-logs';
-import { TacticalMap } from '@/components/tactical-map';
+import { OperationsMap } from '@/components/map/operations-map';
 
 interface LivreurManagerProps {
     users: UserProfile[];
@@ -270,7 +270,9 @@ export function LivreurManager({ users, orders }: LivreurManagerProps) {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                         >
-                            <TacticalMap users={users} orders={orders} />
+                            <div className="h-[420px] md:h-[650px] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden border border-border shadow-xl">
+                                <OperationsMap restaurants={[]} orders={orders} livreurScope="all" className="h-full w-full" />
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

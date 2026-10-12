@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/contexts/data-context';
-import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, ArrowRight, Activity, Sparkles, Check, Play, TrendingUp } from 'lucide-react';
+import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, ArrowRight, Activity, Sparkles, Check, Play, TrendingUp, MapPinned } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,6 +19,7 @@ import { Order } from '@/lib/types';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { DashboardPage } from '@/components/dashboard/dashboard-page';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
+import { OperationsMap } from '@/components/map/operations-map';
 
 export default function RestaurateurHomePage() {
     const { restaurants, orders, isLoading: isDataLoading } = useData();
@@ -200,6 +201,29 @@ export default function RestaurateurHomePage() {
                     </Button>
                 </div>
 
+                {/* Live Map */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-card/70 backdrop-blur-xl border border-border shadow-lg rounded-2xl sm:rounded-3xl overflow-hidden"
+                >
+                    <div className="p-4 sm:p-6 flex flex-wrap items-center justify-between gap-2 border-b border-border">
+                        <div className="flex items-center gap-2.5">
+                            <MapPinned className="h-5 w-5 text-primary" />
+                            <h2 className="text-base sm:text-lg font-black tracking-tight text-foreground">Carte en direct</h2>
+                        </div>
+                        <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Vos établissements · livreurs en route · clients
+                        </p>
+                    </div>
+                    <OperationsMap
+                        restaurants={myRestaurants}
+                        orders={myOrders}
+                        livreurScope="assigned"
+                        className="h-72 sm:h-96"
+                    />
+                </motion.section>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
                     {/* Latest Orders & Performance */}

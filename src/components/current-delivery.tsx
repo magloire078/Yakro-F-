@@ -1,13 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import type { Order } from '@/lib/types';
+import type { MapMarker, MapRoute, Order } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChefHat, Home, Map, Phone, Loader } from 'lucide-react';
 import Link from 'next/link';
 import { canTransitionOrder } from '@/lib/order-transitions';
+import { LiveMap } from '@/components/map/live-map';
+import { useClientPositions, useWatchPosition } from '@/hooks/use-live-locations';
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -16,12 +18,33 @@ interface CurrentDeliveryProps {
 
 export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryProps) {
     const [isCompleting, setIsCompleting] = React.useState(false);
+    const { position: myPosition } = useWatchPosition(true);
+    const clientPositions = useClientPositions([order.id]);
+    const clientLive = clientPositions[order.id];
 
-    const getGoogleMapsLink = (order: Order) => {
-        if (!order.latitudeRestaurant || !order.longitudeRestaurant || !order.latitudeClient || !order.longitudeClient) {
-            return null;
-        }
-        return `https://www.google.com/maps/dir/?api=1&origin=${order.latitudeRestaurant},${order.longitudeRestaurant}&destination=${order.latitudeClient},${order.longitudeClient}&travelmode=driving`;
+    const restaurantPoint = order.latitudeRestaurant !== undefined && order.longitudeRestaurant !== undefined
+        ? { latitude: order.latitudeRestaurant, longitude: order.longitudeRestaurant }
+        : null;
+    // Position live du client si elle est partagée, sinon son adresse de livraison.
+    const clientPoint = clientLive
+        ? { latitude: clientLive.latitude, longitude: clientLive.longitude }
+        : order.latitudeClient !== undefined && order.longitudeClient !== undefined
+            ? { latitude: order.latitudeClient, longitude: order.longitudeClient }
+            : null;
+
+    const mapMarkers: MapMarker[] = [];
+    if (myPosition) mapMarkers.push({ id: 'moi', kind: 'livreur', ...myPosition, label: 'Vous', live: true });
+    if (restaurantPoint) mapMarkers.push({ id: 'restaurant', kind: 'restaurant', ...restaurantPoint, label: order.nomRestaurant, sublabel: order.adresseRestaurant });
+    if (clientPoint) mapMarkers.push({ id: 'client', kind: 'client', ...clientPoint, label: clientLive ? 'Client (position en direct)' : 'Adresse du client', sublabel: order.adresseClient, live: !!clientLive });
+
+    const routePoints: Array<[number, number]> = [myPosition, restaurantPoint, clientPoint]
+        .filter((point): point is { latitude: number; longitude: number } => !!point)
+        .map((point) => [point.latitude, point.longitude]);
+    const mapRoutes: MapRoute[] = routePoints.length >= 2 ? [{ id: 'course', points: routePoints, status: 'active' }] : [];
+
+    const getGoogleMapsLink = () => {
+        if (!restaurantPoint || !clientPoint) return null;
+        return `https://www.google.com/maps/dir/?api=1&origin=${restaurantPoint.latitude},${restaurantPoint.longitude}&destination=${clientPoint.latitude},${clientPoint.longitude}&travelmode=driving`;
     };
 
     const handleComplete = async () => {
@@ -30,7 +53,7 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
         setIsCompleting(false);
     };
 
-    const mapsLink = getGoogleMapsLink(order);
+    const mapsLink = getGoogleMapsLink();
 
     return (
         <div className="container mx-auto px-1 sm:px-4 pb-16">
@@ -44,6 +67,11 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                     <CardDescription className="text-xs sm:text-sm">Récupérez et livrez la commande suivante.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    {mapMarkers.length > 0 && (
+                        <div className="h-64 sm:h-80 rounded-xl overflow-hidden border border-border">
+                            <LiveMap markers={mapMarkers} routes={mapRoutes} className="h-full w-full" />
+                        </div>
+                    )}
                     <div className="space-y-3 border-b pb-3 sm:pb-4">
                         <div className="flex items-start gap-3">
                             <ChefHat className="text-primary mt-0.5 h-5 w-5 flex-shrink-0"/>
@@ -65,7 +93,7 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                             <Button asChild variant="outline" className="w-full h-10 text-xs sm:text-sm font-bold rounded-xl">
                                 <Link href={mapsLink} target="_blank" rel="noopener noreferrer">
                                     <Map className="mr-2 h-4 w-4"/>
-                                    Voir sur la carte
+                                    Itinéraire dans Google Maps
                                 </Link>
                             </Button>
                         )}
