@@ -264,10 +264,10 @@ export default function AnalyticsPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-transparent pb-24 relative overflow-hidden">
+        <div className="min-h-screen bg-transparent pb-10 sm:pb-16 relative overflow-hidden">
 
             {/* Elite Analytics Header */}
-            <div className="relative h-[24vh] sm:h-[30vh] md:h-[40vh] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative py-4 sm:py-6 md:py-8 w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -285,38 +285,38 @@ export default function AnalyticsPage() {
                 <MobileBackButton 
                     label="Dashboard" 
                     href="/restaurateur" 
-                    className="md:hidden absolute top-4 left-3 z-50 mb-0"
+                    className="md:hidden absolute top-3 left-3 z-50 mb-0"
                 />
 
-                <div className="relative z-30 text-center space-y-2 md:space-y-4 px-4 sm:px-6 max-w-4xl pt-4 md:pt-0">
+                <div className="relative z-30 text-center space-y-1.5 sm:space-y-2 px-3 sm:px-6 max-w-3xl pt-2 md:pt-0">
                     <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md mb-1 sm:mb-2"
+                        className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md shadow-sm"
                     >
                         <Activity className="h-3 w-3 text-primary animate-pulse" />
                         <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-primary">Intelligence Stratégique</span>
                     </motion.div>
                     <motion.h1 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-3xl sm:text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-foreground leading-tight"
+                        className="text-2xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground leading-tight"
                     >
                         Analyse <span className="text-primary">Elite</span>
                     </motion.h1>
                     <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-muted-foreground font-medium text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em]"
+                        className="text-muted-foreground font-medium text-[8px] sm:text-[9px] uppercase tracking-[0.2em]"
                     >
                         Pilotez votre performance avec précision chirurgicale
                     </motion.p>
                 </div>
             </div>
 
-            <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-5xl -mt-6 sm:-mt-10 md:-mt-16 relative z-40 space-y-6 sm:space-y-8 md:space-y-10">
+            <div className="container mx-auto px-3 sm:px-6 max-w-5xl mt-2 sm:mt-4 relative z-40 space-y-4 sm:space-y-6 md:space-y-8">
                 {/* Time Range Selector — sticky scrollable on mobile */}
                 <div className="sticky top-0 z-40 px-1 py-2.5 mb-2 flex overflow-x-auto gap-2 sm:gap-3 scrollbar-hide scroll-smooth snap-x bg-background/80 backdrop-blur-xl md:relative md:top-auto md:justify-center md:flex-wrap md:bg-transparent">
                     {ranges.map((range, idx) => (
@@ -356,7 +356,7 @@ export default function AnalyticsPage() {
                             ].map((item, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="group glass-dark p-4 sm:p-6 md:p-8 relative overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 shadow-xl rounded-2xl sm:rounded-[2.5rem]"
+                                    className="group glass-dark p-3.5 sm:p-5 md:p-6 relative overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-primary/10 shadow-lg rounded-xl sm:rounded-2xl"
                                 >
                                     <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="flex justify-between items-start mb-3 sm:mb-6">
