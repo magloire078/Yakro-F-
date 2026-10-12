@@ -184,7 +184,7 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
           </div>
         </Carousel>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
           {recommendationsData.recommendations.map((rec, index) => (
             <RecommendationCard key={index} rec={rec} index={index} />
           ))}

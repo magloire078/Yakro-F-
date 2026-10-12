@@ -490,7 +490,7 @@ export default function CustomerHomePage() {
             <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest text-red-500 border-red-500/30 bg-red-500/5 py-0.5 px-2">OFFRES CHAUDES</Badge>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
              {restaurants.filter(r => r.note >= 4.8).slice(0, 4).map(restaurant => (
               <RestaurantCard key={`hot-${restaurant.id}`} restaurant={restaurant} />
             ))}
@@ -516,7 +516,7 @@ export default function CustomerHomePage() {
                 <Star className="text-primary fill-primary h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Restaurants en vedette</h2>
              </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
                {featuredRestaurants.map(restaurant => (
                 <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
               ))}
@@ -533,7 +533,7 @@ export default function CustomerHomePage() {
             {getFilterLabel() && <Badge variant="secondary" className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">{getFilterLabel()}</Badge>}
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
            {normalRestaurants.map(restaurant => (
             <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} />
           ))}

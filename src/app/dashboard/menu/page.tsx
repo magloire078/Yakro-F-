@@ -189,14 +189,14 @@ export default function DashboardMenuPage() {
                         transition={{ duration: 0.3 }}
                     >
                         {filteredItems.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
                                 {filteredItems.map((item, index) => (
                                     <motion.div
                                         key={item.id}
                                         initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className="group relative glass-dark border border-border overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 flex flex-col h-full rounded-[1.5rem] md:rounded-[2rem] shadow-2xl"
+                                        className="group relative glass-dark border border-border overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 flex flex-col h-full rounded-2xl md:rounded-[2rem] shadow-2xl"
                                     >
                                         <div className="aspect-[16/10] relative overflow-hidden">
                                             {item.image ? (
@@ -208,43 +208,43 @@ export default function DashboardMenuPage() {
                                                 />
                                             ) : (
                                                 <div className="absolute inset-0 bg-muted/50 flex items-center justify-center border-b border-border/50">
-                                                    <ChefHat className="h-12 w-12 text-muted/30" />
+                                                    <ChefHat className="h-8 w-8 sm:h-12 sm:w-12 text-muted/30" />
                                                 </div>
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-80" />
                                             
-                                            <div className="absolute bottom-4 left-4">
-                                                <div className="bg-primary px-4 py-1.5 text-[11px] font-black italic uppercase text-white shadow-xl rounded-lg">
-                                                    {item.prix.toLocaleString('fr-FR')} <span className="text-[8px] opacity-80 ml-1">FCFA</span>
+                                            <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">
+                                                <div className="bg-primary px-2 sm:px-4 py-1 sm:py-1.5 text-[9px] sm:text-[11px] font-black italic uppercase text-white shadow-xl rounded-md sm:rounded-lg">
+                                                    {item.prix.toLocaleString('fr-FR')} <span className="text-[7px] sm:text-[8px] opacity-80 ml-0.5 sm:ml-1">FCFA</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="p-3 flex-grow flex flex-col">
-                                            <h3 className="text-base md:text-lg font-black italic tracking-tight text-foreground group-hover:text-primary transition-colors mb-2 uppercase">
+                                        <div className="p-2.5 sm:p-3 flex-grow flex flex-col">
+                                            <h3 className="text-xs sm:text-base md:text-lg font-black italic tracking-tight text-foreground group-hover:text-primary transition-colors mb-1 sm:mb-2 uppercase line-clamp-1">
                                                 {item.nom}
                                             </h3>
-                                            <p className="text-muted-foreground text-[12px] font-medium line-clamp-2 mb-4 leading-relaxed italic">
+                                            <p className="text-muted-foreground text-[10px] sm:text-[12px] font-medium line-clamp-2 mb-2 sm:mb-4 leading-relaxed italic">
                                                 {item.description}
                                             </p>
 
-                                            <div className="mt-auto flex items-center gap-2 pt-4 border-t border-border/50">
+                                            <div className="mt-auto flex items-center gap-1.5 sm:gap-2 pt-2 sm:pt-4 border-t border-border/50">
                                                 <Button 
                                                     variant="outline" 
-                                                    className="flex-1 h-10 bg-card border-border hover:bg-primary hover:border-primary hover:text-white text-foreground rounded-xl font-black uppercase tracking-widest text-[9px] transition-all duration-500 shadow-sm"
+                                                    className="flex-1 h-8 sm:h-10 px-2 bg-card border-border hover:bg-primary hover:border-primary hover:text-white text-foreground rounded-lg sm:rounded-xl font-black uppercase tracking-widest text-[8px] sm:text-[9px] transition-all duration-500 shadow-sm"
                                                     onClick={() => setEditingItem(item)}
                                                 >
-                                                    <Edit className="h-3.5 w-3.5 mr-2" />
+                                                    <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-2" />
                                                     Modifier
                                                 </Button>
 
                                                 <Button 
                                                     variant="outline" 
-                                                    className="h-10 w-10 bg-card border-border hover:bg-red-500/10 hover:border-red-500/20 text-muted-foreground hover:text-red-500 rounded-xl transition-all duration-500 shadow-sm"
+                                                    className="h-8 w-8 sm:h-10 sm:w-10 bg-card border-border hover:bg-red-500/10 hover:border-red-500/20 text-muted-foreground hover:text-red-500 rounded-lg sm:rounded-xl transition-all duration-500 shadow-sm shrink-0"
                                                     disabled={isDeleting === item.id}
                                                     onClick={() => setItemToDelete(item)}
                                                 >
-                                                    {isDeleting === item.id ? <Loader className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                                    {isDeleting === item.id ? <Loader className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                                                 </Button>
                                             </div>
                                         </div>

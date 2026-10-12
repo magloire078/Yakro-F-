@@ -299,7 +299,7 @@ function RestaurantPageContent() {
                                 </div>
                                 <h2 className="text-lg sm:text-2xl font-headline">Nos Incontournables</h2>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5">
                                 {restaurantMenu.length > 0 ? restaurantMenu.map((item, index) => (
                                     <motion.div
                                         key={item.id}
@@ -310,7 +310,7 @@ function RestaurantPageContent() {
                                         <MenuItemCard item={item} />
                                     </motion.div>
                                 )) : (
-                                    <div className="md:col-span-3 py-12 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                    <div className="col-span-2 lg:col-span-3 py-12 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
                                         <p className="text-slate-400 text-sm">Le menu arrive bientôt. Restez connectés !</p>
                                     </div>
                                 )}

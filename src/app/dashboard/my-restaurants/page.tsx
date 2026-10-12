@@ -107,7 +107,7 @@ export default function MyRestaurantsPage() {
             }}
         >
             {myRestaurants.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
                     {myRestaurants.map((restaurant, index) => {
                         const placeholder = getPlaceholderImage(restaurant.indiceImage);
                         const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
@@ -145,16 +145,16 @@ export default function MyRestaurantsPage() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                         
                                         {/* Status Overlay */}
-                                        <div className="absolute top-2.5 md:top-6 left-3 md:left-6">
-                                            <div className="px-2 py-0.5 md:px-4 md:py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full flex items-center gap-1.5 md:gap-2 shadow-2xl">
+                                        <div className="absolute top-2 md:top-6 left-2 md:left-6">
+                                            <div className="px-1.5 py-0.5 md:px-4 md:py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full flex items-center gap-1 md:gap-2 shadow-2xl">
                                                 <div className="h-1 w-1 md:h-2 md:w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white">LIVE</span>
+                                                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white">LIVE</span>
                                             </div>
                                         </div>
 
                                         {restaurant.enVedette && (
-                                            <div className="absolute top-2.5 md:top-6 right-3 md:right-6">
-                                                <div className="h-6 w-6 md:h-10 md:w-10 bg-primary flex items-center justify-center rounded-lg md:rounded-2xl shadow-[0_0_20px_rgba(249,115,22,0.6)]">
+                                            <div className="absolute top-2 md:top-6 right-2 md:right-6">
+                                                <div className="h-5 w-5 md:h-10 md:w-10 bg-primary flex items-center justify-center rounded-md md:rounded-2xl shadow-[0_0_20px_rgba(249,115,22,0.6)]">
                                                     <Star className="h-2.5 w-2.5 md:h-5 md:w-5 text-white fill-white" />
                                                 </div>
                                             </div>
@@ -162,40 +162,40 @@ export default function MyRestaurantsPage() {
                                     </div>
 
                                     {/* Info Area */}
-                                    <div className="p-4 md:p-6 flex-grow flex flex-col">
-                                        <div className="mb-3 md:mb-4">
-                                            <h3 className="text-lg md:text-2xl font-black italic uppercase tracking-tighter text-foreground leading-tight group-hover:text-primary transition-colors duration-300">
+                                    <div className="p-2.5 sm:p-4 md:p-6 flex-grow flex flex-col">
+                                        <div className="mb-2 md:mb-4">
+                                            <h3 className="text-xs sm:text-base md:text-2xl font-black italic uppercase tracking-tighter text-foreground leading-tight group-hover:text-primary transition-colors duration-300 line-clamp-1">
                                                 {restaurant.nom}
                                             </h3>
-                                            <div className="flex items-center gap-2 mt-1.5 md:mt-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                <MapPin className="h-2.5 w-2.5 text-primary" />
-                                                <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground line-clamp-1">{restaurant.adresse || 'Emplacement non défini'}</p>
+                                            <div className="flex items-center gap-1 mt-1 md:mt-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                <MapPin className="h-2.5 w-2.5 text-primary shrink-0" />
+                                                <p className="text-[7.5px] md:text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground line-clamp-1">{restaurant.adresse || 'Emplacement non défini'}</p>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-4 md:gap-6 mt-1 md:mt-2 mb-2 md:mb-4 p-2.5 md:p-4 bg-muted/50 border border-border rounded-xl md:rounded-3xl">
+                                        <div className="flex items-center gap-2 md:gap-6 mt-1 md:mt-2 mb-2 md:mb-4 p-1.5 sm:p-2.5 md:p-4 bg-muted/50 border border-border rounded-lg md:rounded-3xl">
                                             <div className="flex flex-col">
-                                                <span className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-0.5">Cuisine</span>
-                                                <span className="text-[9px] md:text-xs font-black text-foreground uppercase italic tracking-wider">{restaurant.cuisine}</span>
+                                                <span className="text-[6.5px] md:text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-0.5">Cuisine</span>
+                                                <span className="text-[8px] md:text-xs font-black text-foreground uppercase italic tracking-wider truncate">{restaurant.cuisine}</span>
                                             </div>
-                                            <div className="h-6 md:h-10 w-[1px] bg-border" />
+                                            <div className="h-5 md:h-10 w-[1px] bg-border shrink-0" />
                                             <div className="flex flex-col">
-                                                <span className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-0.5">Expertise</span>
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="text-xs md:text-sm font-black text-foreground">{restaurant.note || '0.0'}</span>
+                                                <span className="text-[6.5px] md:text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground mb-0.5">Note</span>
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[10px] sm:text-xs md:text-sm font-black text-foreground">{restaurant.note || '0.0'}</span>
                                                     <Star className="h-2 w-2 md:h-3 md:w-3 text-primary fill-primary" />
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="mt-auto flex items-center gap-3 md:gap-4 pt-2 md:pt-4 border-t border-border">
+                                        <div className="mt-auto flex items-center gap-1.5 md:gap-4 pt-1.5 sm:pt-2 md:pt-4 border-t border-border">
                                             <Button 
                                                 variant="outline" 
                                                 asChild 
-                                                className="flex-1 rounded-xl md:rounded-2xl border-border bg-card hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[9px] md:text-[11px] h-10 md:h-14"
+                                                className="flex-1 rounded-lg md:rounded-2xl border-border bg-card hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[8px] md:text-[11px] h-8 sm:h-10 md:h-14 px-1"
                                             >
                                                 <Link href={`/dashboard/my-restaurants/edit?id=${restaurant.id}`}>
-                                                    <Edit className="h-3 w-3 mr-2" />
+                                                    <Edit className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                                                     Gérer
                                                 </Link>
                                             </Button>
@@ -203,11 +203,11 @@ export default function MyRestaurantsPage() {
                                             <Button 
                                                 variant="outline" 
                                                 asChild 
-                                                className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl border-border bg-card hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all duration-300 flex items-center justify-center"
+                                                className="h-8 w-8 sm:h-10 sm:w-10 md:h-14 md:w-14 rounded-lg md:rounded-2xl border-border bg-card hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all duration-300 flex items-center justify-center shrink-0"
                                                 title="Voir la vitrine publique"
                                             >
                                                 <Link href={`/restaurants?id=${restaurant.id}`}>
-                                                    <ExternalLink className="h-4 w-4 md:h-5 md:w-5" />
+                                                    <ExternalLink className="h-3 w-3 md:h-5 md:w-5" />
                                                 </Link>
                                             </Button>
 
