@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChefHat, Home, Map, Phone, Loader } from 'lucide-react';
 import Link from 'next/link';
 import { canTransitionOrder } from '@/lib/order-transitions';
+import { distanceMeters, estimateArrivalMinutes, formatDistance } from '@/lib/delivery-eta';
 import { LiveMap } from '@/components/map/live-map';
 import { orderClientPoint, orderRestaurantPoint, useClientPositions, useWatchPosition } from '@/hooks/use-live-locations';
 
@@ -27,6 +28,8 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
     const clientPoint = clientLive
         ? { latitude: clientLive.latitude, longitude: clientLive.longitude }
         : orderClientPoint(order);
+
+    const distanceToClient = myPosition && clientPoint ? distanceMeters(myPosition, clientPoint) : null;
 
     const mapMarkers: MapMarker[] = [];
     if (myPosition) mapMarkers.push({ id: 'moi', kind: 'livreur', ...myPosition, label: 'Vous', live: true });
@@ -64,8 +67,16 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                     {mapMarkers.length > 0 && (
-                        <div className="h-64 sm:h-80 rounded-xl overflow-hidden border border-border">
-                            <LiveMap markers={mapMarkers} routes={mapRoutes} className="h-full w-full" />
+                        <div className="space-y-2">
+                            <div className="h-64 sm:h-80 rounded-xl overflow-hidden border border-border">
+                                <LiveMap markers={mapMarkers} routes={mapRoutes} className="h-full w-full" />
+                            </div>
+                            {distanceToClient !== null && (
+                                <p className="text-xs sm:text-sm font-bold text-foreground">
+                                    Client à {formatDistance(distanceToClient)} · ~{estimateArrivalMinutes(distanceToClient)} min
+                                    {clientLive && <span className="ml-1.5 text-sky-500">(position en direct)</span>}
+                                </p>
+                            )}
                         </div>
                     )}
                     <div className="space-y-3 border-b pb-3 sm:pb-4">

@@ -16,6 +16,13 @@ import { hasCoords, orderClientPoint, orderRestaurantPoint, useClientPositionSha
 import Link from 'next/link';
 import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions';
 import { useToast } from '@/hooks/use-toast';
+import { ARRIVAL_ALERT_DISTANCE_M, distanceMeters, estimateArrivalMinutes, formatDistance } from '@/lib/delivery-eta';
+import { fireBrowserNotification, requestBrowserNotificationPermission } from '@/lib/browser-notifications';
+
+// Clé de session : l'alerte « livreur tout proche » n'est montrée qu'une fois
+// par commande, même si la page est rechargée ou si le livreur s'éloigne
+// puis revient.
+const arrivalAlertKey = (orderId: string) => `yakro-arrival-alert-${orderId}`;
 
 function TrackOrderContent() {
     const searchParams = useSearchParams();
@@ -59,6 +66,34 @@ function TrackOrderContent() {
             toast({ variant: 'destructive', title: 'Localisation indisponible', description: "Votre appareil ne permet pas de partager votre position." });
         }
     }, [sharing.status, toast]);
+
+    // Distance livreur → client (position live si partagée, sinon adresse),
+    // uniquement pendant la livraison.
+    const destination = sharing.position ?? (liveOrder ? orderClientPoint(liveOrder) : null);
+    const livreurDistance = liveOrder?.statut === 'En Route' && hasCoords(livreur) && destination
+        ? distanceMeters(livreur, destination)
+        : null;
+    const isEnRoute = liveOrder?.statut === 'En Route';
+
+    // Demande l'autorisation des notifications au départ du livreur, pour
+    // pouvoir prévenir le client même si l'onglet est en arrière-plan.
+    React.useEffect(() => {
+        if (isEnRoute) void requestBrowserNotificationPermission();
+    }, [isEnRoute]);
+
+    React.useEffect(() => {
+        if (!orderId || livreurDistance === null || livreurDistance > ARRIVAL_ALERT_DISTANCE_M) return;
+        try {
+            if (sessionStorage.getItem(arrivalAlertKey(orderId))) return;
+            sessionStorage.setItem(arrivalAlertKey(orderId), '1');
+        } catch {
+            // Stockage indisponible (navigation privée) : on alerte quand même.
+        }
+        const title = 'Votre livreur arrive !';
+        const body = `${livreur?.nom || 'Le livreur'} est à ${formatDistance(livreurDistance)}. Préparez-vous à recevoir votre commande.`;
+        toast({ title, description: body });
+        fireBrowserNotification(title, { body, icon: '/favicon.ico', tag: arrivalAlertKey(orderId) });
+    }, [orderId, livreurDistance, livreur?.nom, toast]);
 
     const handleRetryPayment = async () => {
         if (!orderId || !user) return;
@@ -258,7 +293,11 @@ function TrackOrderContent() {
                         <div className="flex-1 min-w-0">
                             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Livreur</p>
                             <p className="font-bold text-foreground truncate">{livreur?.nom || "En attente d'assignation…"}</p>
-                            {livreur?.latitude ? (
+                            {livreurDistance !== null ? (
+                                <p className="text-xs font-bold text-orange-500">
+                                    À {formatDistance(livreurDistance)} · arrivée estimée ~{estimateArrivalMinutes(livreurDistance)} min
+                                </p>
+                            ) : livreur?.latitude ? (
                                 <p className="text-xs font-bold text-orange-500 animate-pulse">En mouvement…</p>
                             ) : (
                                 <p className="text-xs text-muted-foreground/80">En attente de localisation…</p>

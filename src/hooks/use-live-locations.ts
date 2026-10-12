@@ -5,6 +5,7 @@ import { collection, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc } from 
 import { useFirebase } from '@/contexts/firebase-provider';
 import type { LivreurPublicData } from '@/lib/livreur-public';
 import { hasReliableLocation } from '@/lib/geolocation';
+import { distanceMeters, type GeoPoint } from '@/lib/delivery-eta';
 import type { ClientLivePosition, Order } from '@/lib/types';
 
 export const CLIENT_POSITIONS_COLLECTION = 'positions_clients';
@@ -14,22 +15,8 @@ const CLIENT_WRITE_MIN_INTERVAL = 10_000;
 /** Déplacement minimal (m) déclenchant une écriture avant l'intervalle. */
 const CLIENT_WRITE_MIN_DISTANCE = 25;
 
-export interface GeoPoint {
-    latitude: number;
-    longitude: number;
-}
-
-/** Distance en mètres entre deux points (formule de haversine). */
-export function distanceMeters(a: GeoPoint, b: GeoPoint): number {
-    const R = 6_371_000;
-    const toRad = (deg: number) => (deg * Math.PI) / 180;
-    const dLat = toRad(b.latitude - a.latitude);
-    const dLng = toRad(b.longitude - a.longitude);
-    const h =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(a.latitude)) * Math.cos(toRad(b.latitude)) * Math.sin(dLng / 2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(h));
-}
+export type { GeoPoint };
+export { distanceMeters };
 
 export function hasCoords<T extends { latitude?: number; longitude?: number }>(
     value: T | null | undefined,
