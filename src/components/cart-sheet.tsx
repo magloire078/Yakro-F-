@@ -132,14 +132,21 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                    <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                  </button>
                ) : (
-                 <div className="p-1.5 sm:p-2 bg-primary/10 rounded-xl">
+                 <div className="p-1.5 sm:p-2 bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-emerald-500/20 border border-orange-500/20 rounded-xl shadow-xs">
                     <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                  </div>
                )}
                <div>
-                  <SheetTitle className="text-lg sm:text-xl font-headline">
-                    {checkoutStep === 'payment' ? 'Mode de paiement' : 'Mon Panier'}
-                  </SheetTitle>
+                  <div className="flex items-center gap-1.5">
+                     <SheetTitle className="text-lg sm:text-xl font-headline">
+                       {checkoutStep === 'payment' ? 'Mode de paiement' : 'Mon Panier'}
+                     </SheetTitle>
+                     <div className="flex h-3 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
+                       <div className="flex-1 bg-orange-500" />
+                       <div className="flex-1 bg-white dark:bg-slate-300" />
+                       <div className="flex-1 bg-emerald-500" />
+                     </div>
+                  </div>
                   {checkoutStep === 'cart' && (
                     <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider">{cartCount} article{cartCount > 1 ? 's' : ''}</p>
                   )}

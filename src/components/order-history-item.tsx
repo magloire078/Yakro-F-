@@ -86,7 +86,7 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 </div>
                 <Badge variant="outline" className={`rounded-full px-2 sm:px-3 py-0.5 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider border ${
                   order.statut === 'Livrée' 
-                    ? 'border-green-500/30 text-green-600 bg-green-500/10' 
+                    ? 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' 
                     : 'border-primary/30 text-primary bg-primary/10'
                 }`}>
                   {order.statut}

@@ -132,22 +132,29 @@ function TrackOrderContent() {
     const mapUrl = getMapUrl();
 
     return (
-        <div className="container mx-auto px-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <Button asChild variant="ghost" className="mb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-orange-500">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <Button asChild variant="ghost" className="mb-4 sm:mb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-orange-500 h-8 px-2">
                 <Link href="/">
                     ← Retour à l&apos;accueil
                 </Link>
             </Button>
 
-            <div className="space-y-3 mb-8">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500/70">Suivi en direct</p>
-                <h1 className="text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">
+            <div className="space-y-2 mb-6 sm:mb-8">
+                <div className="flex items-center gap-2">
+                    <div className="flex h-3.5 sm:h-4 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
+                        <div className="flex-1 bg-orange-500" />
+                        <div className="flex-1 bg-white dark:bg-slate-300" />
+                        <div className="flex-1 bg-emerald-500" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500">Suivi en direct</p>
+                </div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">
                     Commande <span className="text-orange-500">#{liveOrder.id.slice(0, 6)}</span>
                 </h1>
             </div>
 
-            <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-[2rem] shadow-2xl p-6 md:p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="md:col-span-2 relative h-96 md:h-[500px] rounded-2xl overflow-hidden bg-muted/40 border border-border/50">
+            <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
+                <div className="md:col-span-2 relative h-72 sm:h-96 md:h-[480px] rounded-xl sm:rounded-2xl overflow-hidden bg-muted/40 border border-border/50">
                     {mapUrl ? (
                         <iframe
                             className="w-full h-full border-0"

@@ -265,9 +265,9 @@ function RestaurantPageContent() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-1 sm:px-0">
+            <div className="max-w-5xl mx-auto px-3 sm:px-6">
                 <Tabs defaultValue="menu" className="w-full">
-                    <div className="flex items-center justify-between mb-4 sm:mb-8 border-b border-slate-200 dark:border-slate-800 pb-0 overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center justify-between mb-4 sm:mb-6 border-b border-slate-200 dark:border-slate-800 pb-0 overflow-x-auto scrollbar-hide">
                         <TabsList className="bg-transparent h-auto p-0 gap-6 sm:gap-8 flex-nowrap">
                             <TabsTrigger 
                                 value="menu" 
@@ -291,11 +291,15 @@ function RestaurantPageContent() {
 
                     <TabsContent value="menu" className="mt-0 outline-none">
                         <section>
-                            <div className="flex items-center gap-2.5 mb-3 sm:mb-6">
-                                <div className="h-5 sm:h-6 w-1 bg-primary rounded-full" />
+                            <div className="flex items-center gap-2.5 mb-3 sm:mb-5">
+                                <div className="flex h-5 sm:h-6 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
+                                    <div className="flex-1 bg-orange-500" />
+                                    <div className="flex-1 bg-white dark:bg-slate-300" />
+                                    <div className="flex-1 bg-emerald-500" />
+                                </div>
                                 <h2 className="text-lg sm:text-2xl font-headline">Nos Incontournables</h2>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
                                 {restaurantMenu.length > 0 ? restaurantMenu.map((item, index) => (
                                     <motion.div
                                         key={item.id}

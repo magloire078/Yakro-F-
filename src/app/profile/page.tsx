@@ -108,8 +108,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-1 sm:px-4">
-      <h1 className="text-xl sm:text-3xl font-headline text-primary mb-3 sm:mb-6">Mon Profil</h1>
+    <div className="container mx-auto max-w-4xl px-3 sm:px-4 py-4 sm:py-6">
+      <div className="flex items-center gap-2 mb-4 sm:mb-6">
+        <span className="h-6 w-1.5 rounded-full bg-gradient-to-b from-[#F97316] via-white to-[#10B981] shadow-sm" />
+        <h1 className="text-xl sm:text-3xl font-black tracking-tight text-foreground">
+          Mon <span className="text-gradient-primary">Profil</span>
+        </h1>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-6">
         {/* Left Column: Profile Info & Details */}
         <div className="lg:col-span-2 space-y-3.5 sm:space-y-6">
@@ -181,8 +186,8 @@ export default function ProfilePage() {
                             </div>
                         </div>
                          <div className="flex items-center gap-3">
-                            <div className="p-2 sm:p-2.5 bg-green-500/10 rounded-xl">
-                                <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-green-600"/>
+                            <div className="p-2 sm:p-2.5 bg-emerald-500/10 rounded-xl">
+                                <BarChart className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400"/>
                             </div>
                             <div>
                                 <p className="font-bold text-lg sm:text-xl">{stats.totalSpent} FCFA</p>
