@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { FoodImage } from '@/components/food-image';
 import { currentIdToken } from '@/lib/auth-token';
+import { isAiAccessMessage } from '@/lib/ai-quota';
 
 function RestaurantPageContent() {
     const searchParams = useSearchParams();
@@ -87,7 +88,7 @@ function RestaurantPageContent() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: loginRequiredMessage(error) ?? "Le chef IA est occupé. Réessayez bientôt !",
+                description: aiAccessMessage(error) ?? "Le chef IA est occupé. Réessayez bientôt !",
             });
         } finally {
             setLoadingAiReviews(false);
@@ -114,7 +115,7 @@ function RestaurantPageContent() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur Audio',
-                description: loginRequiredMessage(error) ?? "Impossible d'activer la narration."
+                description: aiAccessMessage(error) ?? "Impossible d'activer la narration."
             });
         } finally {
             setIsGeneratingAudio(false);
@@ -405,10 +406,10 @@ function RestaurantPageContent() {
     )
 }
 
-// Les fonctions IA exigent un compte : on affiche alors l'invitation à se
-// connecter plutôt qu'un message d'indisponibilité trompeur.
-function loginRequiredMessage(error: unknown): string | null {
-    return error instanceof Error && error.message.startsWith('Connectez-vous') ? error.message : null;
+// Connexion requise ou limite quotidienne atteinte : on l'affiche tel quel
+// plutôt qu'un message d'indisponibilité trompeur.
+function aiAccessMessage(error: unknown): string | null {
+    return error instanceof Error && isAiAccessMessage(error.message) ? error.message : null;
 }
 
 export default function RestaurantPage() {
