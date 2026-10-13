@@ -11,6 +11,7 @@ import { Loader, UserX } from 'lucide-react';
 import type { Order, Restaurant } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { currentIdToken } from '@/lib/auth-token';
 
 // Helper function to generate user history summary
 const generateUserHistorySummary = (orders: Order[], restaurants: Restaurant[]): string => {
@@ -86,7 +87,7 @@ export default function RecommendationsPage() {
                     availableMenuItems: availableMenuItems,
                     currentLocation: 'Abidjan, Côte d\'Ivoire',
                     timeOfDay: new Date().getHours() < 12 ? 'Matin' : (new Date().getHours() < 18 ? 'Après-midi' : 'Soir'),
-                });
+                }, await currentIdToken());
 
                 if (!result.success) {
                     throw new Error(result.error);

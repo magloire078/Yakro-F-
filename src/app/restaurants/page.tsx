@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { FoodImage } from '@/components/food-image';
+import { currentIdToken } from '@/lib/auth-token';
 
 function RestaurantPageContent() {
     const searchParams = useSearchParams();
@@ -64,7 +65,7 @@ function RestaurantPageContent() {
                 restaurantName: restaurant.nom,
                 cuisine: restaurant.cuisine,
                 count: 3,
-            });
+            }, await currentIdToken());
 
             if (!result.success) {
                 throw new Error(result.error);
@@ -86,7 +87,7 @@ function RestaurantPageContent() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: "Le chef IA est occupé. Réessayez bientôt !",
+                description: loginRequiredMessage(error) ?? "Le chef IA est occupé. Réessayez bientôt !",
             });
         } finally {
             setLoadingAiReviews(false);
@@ -101,7 +102,7 @@ function RestaurantPageContent() {
             const audioInput = {
                 reviews: aiReviews.map(r => ({ nomUtilisateur: r.nomUtilisateur, note: r.note, commentaire: r.commentaire }))
             };
-            const result = await generateAudioReviewAction(audioInput);
+            const result = await generateAudioReviewAction(audioInput, await currentIdToken());
             
             if (!result.success) {
                 throw new Error(result.error);
@@ -113,7 +114,7 @@ function RestaurantPageContent() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur Audio',
-                description: "Impossible d'activer la narration."
+                description: loginRequiredMessage(error) ?? "Impossible d'activer la narration."
             });
         } finally {
             setIsGeneratingAudio(false);
@@ -402,6 +403,12 @@ function RestaurantPageContent() {
             </div>
         </div>
     )
+}
+
+// Les fonctions IA exigent un compte : on affiche alors l'invitation à se
+// connecter plutôt qu'un message d'indisponibilité trompeur.
+function loginRequiredMessage(error: unknown): string | null {
+    return error instanceof Error && error.message.startsWith('Connectez-vous') ? error.message : null;
 }
 
 export default function RestaurantPage() {

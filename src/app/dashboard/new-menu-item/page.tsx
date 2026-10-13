@@ -24,6 +24,7 @@ import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/e
 import { motion, AnimatePresence } from 'framer-motion';
 import { MobileBackButton } from '@/components/mobile-back-button';
 import { cn } from '@/lib/utils';
+import { currentIdToken } from '@/lib/auth-token';
 
 export default function NewMenuItemPage() {
     const { restaurants } = useData();
@@ -76,7 +77,7 @@ export default function NewMenuItemPage() {
                 restaurantName: selectedRestaurant.nom,
                 cuisine: selectedRestaurant.cuisine,
                 description: description,
-            });
+            }, await currentIdToken());
 
             if (!result.success) {
                 throw new Error(result.error);
@@ -111,7 +112,7 @@ export default function NewMenuItemPage() {
 
         setImageLoading(true);
         try {
-            const result = await generateImageAction({ prompt: nom });
+            const result = await generateImageAction({ prompt: nom }, await currentIdToken());
             if (!result.success) throw new Error(result.error);
             
             form.setValue('image', result.data.imageDataUri);

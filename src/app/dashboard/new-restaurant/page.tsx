@@ -16,6 +16,7 @@ import { MobileBackButton } from '@/components/mobile-back-button';
 import { motion } from 'framer-motion';
 import { generateImageAction } from '@/app/actions/ai-actions';
 import { ImageUploadError, uploadImage } from '@/lib/cloudinary';
+import { currentIdToken } from '@/lib/auth-token';
 
 export default function NewRestaurantPage() {
     const { toast } = useToast();
@@ -99,7 +100,7 @@ export default function NewRestaurantPage() {
         setIsGeneratingImage(true);
         try {
             const prompt = `restaurant ${nom} ${cuisine || ''}`;
-            const result = await generateImageAction({ prompt });
+            const result = await generateImageAction({ prompt }, await currentIdToken());
             if (!result.success) throw new Error(result.error);
             
             setGeneratedImageUrl(result.data.imageDataUri);

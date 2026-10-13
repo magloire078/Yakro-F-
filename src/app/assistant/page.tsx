@@ -15,6 +15,7 @@ import { Sparkles, Send, Loader2, ShoppingBag, Clock, Mic, MicOff } from 'lucide
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { currentIdToken } from '@/lib/auth-token';
 
 interface ChatMessage extends ConversationTurn {
   suggestions?: AssistantSuggestion[];
@@ -58,7 +59,7 @@ export default function AssistantPage() {
         conversationHistory,
         availableMenuItems: catalog,
         userLocation: userProfile?.adresseParDefaut,
-      });
+      }, await currentIdToken());
 
       if (!result.success) {
         setMessages((prev) => [...prev, {

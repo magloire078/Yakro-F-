@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { getCurrentLocation, YAKRO_DEFAULT_COORDS } from '@/lib/geolocation';
+import { currentIdToken } from '@/lib/auth-token';
 
 interface Category {
     name: string;
@@ -136,7 +137,7 @@ export default function CustomerHomePage() {
           availableMenuItems: availableMenuItems,
           currentLocation: 'Abidjan, Côte d\'Ivoire',
           timeOfDay: new Date().getHours() < 12 ? 'Matin' : (new Date().getHours() < 18 ? 'Après-midi' : 'Soir'),
-        });
+        }, await currentIdToken());
 
         if (!result.success) {
             throw new Error(result.error);

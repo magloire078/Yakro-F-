@@ -9,6 +9,7 @@ import { intelligentSearchAction } from '@/app/actions/ai-actions';
 import type { IntelligentSearchOutput } from '@/ai/flows/search-flow';
 import { Badge } from './ui/badge';
 import { useDebounce } from '@/hooks/use-debounce';
+import { currentIdToken } from '@/lib/auth-token';
 
 interface SearchBarProps {
   onSearchChange: (searchTerm: string) => void;
@@ -38,7 +39,7 @@ export function SearchBar({ onSearchChange, onInterpretedSearchChange }: SearchB
   React.useEffect(() => {
     if (debouncedSearchTerm.length > 3) {
       setIsAiLoading(true);
-      intelligentSearchAction({ query: debouncedSearchTerm })
+      currentIdToken().then((token) => intelligentSearchAction({ query: debouncedSearchTerm }, token))
         .then(result => {
             if (result.success) {
                 setInterpretedResult(result.data);
