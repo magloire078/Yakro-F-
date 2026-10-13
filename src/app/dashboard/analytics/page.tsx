@@ -417,7 +417,7 @@ export default function AnalyticsPage() {
                                 
                                 <div className="h-[350px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={revenueTrend} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                        <BarChart data={revenueTrend} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
@@ -443,6 +443,7 @@ export default function AnalyticsPage() {
                                                     fontWeight="900"
                                                     axisLine={false}
                                                     tickLine={false}
+                                                    width={48}
                                                     tickFormatter={(value) => `${(value as number)/1000}k`} 
                                                 />
                                                 <Tooltip
@@ -520,7 +521,7 @@ export default function AnalyticsPage() {
                                 <div className="h-[350px] w-full">
                                     {revenueByRestaurant.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                            <BarChart data={revenueByRestaurant} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.9}/>
@@ -546,6 +547,7 @@ export default function AnalyticsPage() {
                                                     fontWeight="900"
                                                     axisLine={false}
                                                     tickLine={false}
+                                                    width={48}
                                                     tickFormatter={(value) => `${(value as number)/1000}k`} 
                                                 />
                                                 <Tooltip

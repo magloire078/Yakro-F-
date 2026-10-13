@@ -47,7 +47,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <div className="hidden md:flex">
         <Sidebar />
       </div>
-      <div className="flex-1 flex flex-col md:pl-64">
+      <div className="flex-1 flex flex-col md:pl-64 min-w-0">
         <MobileHeader />
         <main className={cn(
           "flex-1 pb-20 md:pb-10",
