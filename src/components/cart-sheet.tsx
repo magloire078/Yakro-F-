@@ -22,9 +22,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentMethodSelector } from './payment-method-selector';
 import { Input } from './ui/input';
 import { FoodImage } from '@/components/food-image';
-
+import { useRouter } from 'next/navigation';
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const {
     cartItems, removeFromCart, updateQuantity, cartSubtotal, cartDeliveryFee, cartTotal, cartCount,
     appliedCoupon, cartDiscount, applyCoupon, removeCoupon, placeOrder, clearCart,
@@ -85,12 +86,15 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
         });
       } else {
         toast({
-          title: 'Commande passée !',
-          description: 'Votre commande a été envoyée au restaurant.',
+          title: 'Commande validée !',
+          description: 'Votre commande a été envoyée au restaurant avec succès.',
         });
       }
       setIsOpen(false);
       setCheckoutStep('cart');
+      if (result.orderId) {
+        router.push(`/orders/track?id=${result.orderId}`);
+      }
     } catch (e: unknown) {
       const error = e as Error;
       toast({
