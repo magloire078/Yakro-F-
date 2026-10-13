@@ -66,17 +66,17 @@ describe('buildOrderFromCart', () => {
     expect(order.revenuNet).toBeCloseTo(5100); // 6000 - 900
   });
 
-  it('falls back to a placeholder image when the cart item has none', () => {
+  it('stores an empty image (never undefined) when the cart item has none', () => {
     const order = buildOrderFromCart({
       ...baseInput,
       cartItems: [buildCartItem({ image: undefined })],
       cartSubtotal: 3000,
       cartTotal: 3500,
     });
-    expect(order.plats[0].image).toBeTruthy();
+    expect(order.plats[0].image).toBe('');
   });
 
-  it('replaces stale per-item picsum URLs with the canonical placeholder', () => {
+  it('drops stale per-item picsum URLs', () => {
     const stale = 'https://picsum.photos/200/300?random=abc';
     const order = buildOrderFromCart({
       ...baseInput,
@@ -84,7 +84,7 @@ describe('buildOrderFromCart', () => {
       cartSubtotal: 3000,
       cartTotal: 3500,
     });
-    expect(order.plats[0].image).not.toBe(stale);
+    expect(order.plats[0].image).toBe('');
   });
 
   it('inlines GPS coordinates when provided', () => {

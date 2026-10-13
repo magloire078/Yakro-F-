@@ -1,8 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -20,10 +18,10 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ArrowLeft, Loader2, Tag, 
 import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { type CartItem, type PaymentMode } from '@/lib/types';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentMethodSelector } from './payment-method-selector';
 import { Input } from './ui/input';
+import { FoodImage } from '@/components/food-image';
 
 
 export function CartSheet({ children }: { children: React.ReactNode }) {
@@ -218,11 +216,6 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col gap-3 sm:gap-4 py-4 sm:py-6">
                 <AnimatePresence mode="popLayout">
                   {cartItems.map((item, index) => {
-                    const placeholder = getPlaceholderImage(item.indiceImage);
-                    const imageSrc = (item.image && !item.image.includes('picsum.photos'))
-                      ? item.image
-                      : placeholder.url;
-                    const isCloudinary = imageSrc.includes('res.cloudinary.com');
                     
                     return (
                       <motion.div 
@@ -234,25 +227,12 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                         className="group relative flex items-start gap-3 p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm"
                       >
                         <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl">
-                          {isCloudinary ? (
-                            <CldImage
-                              src={imageSrc}
+                          <FoodImage
+                              src={item.image}
                               alt={item.nom}
-                              width={70}
-                              height={70}
-                              crop="fill"
-                              gravity="auto"
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <Image
-                              src={imageSrc}
-                              alt={item.nom}
-                              width={70}
-                              height={70}
-                              className="h-full w-full object-cover"
-                            />
-                          )}
+                              kind="plat"
+                              sizes="80px"
+                          />
                         </div>
 
                         <div className="flex flex-1 flex-col min-w-0">

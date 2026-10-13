@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { MenuItem } from '@/lib/types';
 import { doc, deleteDoc } from 'firebase/firestore';
-import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -38,6 +37,7 @@ import { DashboardPage } from '@/components/dashboard/dashboard-page';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 import { Tag, BookOpen } from 'lucide-react';
 import { deleteCloudinaryImageAction } from '@/app/actions/cloudinary-actions';
+import { FoodImage } from '@/components/food-image';
 
 export default function DashboardMenuPage() {
     const { user, activeRole } = useAuth();
@@ -199,18 +199,13 @@ export default function DashboardMenuPage() {
                                         className="group relative glass-dark border border-border overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-primary/10 flex flex-col h-full rounded-2xl md:rounded-[2rem] shadow-2xl"
                                     >
                                         <div className="aspect-[16/10] relative overflow-hidden">
-                                            {item.image ? (
-                                                <Image
-                                                    src={item.image}
-                                                    alt={item.nom}
-                                                    fill
-                                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                                />
-                                            ) : (
-                                                <div className="absolute inset-0 bg-muted/50 flex items-center justify-center border-b border-border/50">
-                                                    <ChefHat className="h-8 w-8 sm:h-12 sm:w-12 text-muted/30" />
-                                                </div>
-                                            )}
+                                            <FoodImage
+                                                src={item.image}
+                                                alt={item.nom}
+                                                kind="plat"
+                                                sizes="(max-width: 768px) 50vw, 33vw"
+                                                className="transition-transform duration-700 group-hover:scale-110"
+                                            />
                                             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-80" />
                                             
                                             <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">

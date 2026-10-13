@@ -16,13 +16,12 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader, Upload, MapPin, ChefHat, Wand2 } from 'lucide-react';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { getCurrentLocation, hasReliableLocation } from '@/lib/geolocation';
 import { LocationPicker } from '@/components/map/location-picker';
+import { FoodImage } from '@/components/food-image';
+import { resolveFoodImageSource } from '@/lib/food-image';
 
 // Un champ numérique vide ne doit pas devenir 0 : `z.coerce.number()`
 // transformait '' en 0 et enregistrait le restaurant en (0, 0), au large
@@ -99,11 +98,9 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
     React.useEffect(() => {
         if (initialData) {
             form.reset(initialData);
-            const placeholder = getPlaceholderImage(initialData.indiceImage);
-            const imageSrc = (initialData.image && !initialData.image.includes('picsum.photos'))
-                ? initialData.image
-                : placeholder.url;
-            setImagePreview(imageSrc);
+            // Sans photo exploitable, l'aperçu reste vide (« Sélectionner une
+            // image ») au lieu d'afficher une image de remplacement.
+            setImagePreview(resolveFoodImageSource(initialData.image) ? initialData.image ?? null : null);
         }
     }, [initialData, form]);
     
@@ -196,24 +193,13 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                 </div>
                             ) : imagePreview ? (
                                 <>
-                                    {imagePreview.includes('res.cloudinary.com') ? (
-                                        <CldImage
-                                            src={imagePreview}
-                                            alt="Aperçu"
-                                            fill
-                                            crop="fill"
-                                            gravity="auto"
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <Image 
-                                            src={imagePreview} 
-                                            alt="Aperçu" 
-                                            fill 
-                                            sizes="(max-width: 768px) 100vw, 400px"
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-105" 
-                                        />
-                                    )}
+                                    <FoodImage
+                                        src={imagePreview}
+                                        alt={'Aperçu'}
+                                        kind="restaurant"
+                                        sizes="(max-width: 768px) 100vw, 400px"
+                                        className="transition-transform duration-1000 group-hover:scale-105"
+                                    />
                                     <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                         <div className="flex flex-col items-center gap-2">
                                             <Upload className="h-8 w-8 text-white" />

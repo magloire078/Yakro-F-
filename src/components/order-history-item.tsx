@@ -2,10 +2,9 @@
 'use client';
 
 import * as React from 'react';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import { doc, getDoc } from 'firebase/firestore';
-import { Star, Crown } from 'lucide-react';
+import { Star, Crown, Navigation } from 'lucide-react';
+import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -15,8 +14,8 @@ import { Card } from './ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
 import { useFirebase } from '@/contexts/firebase-provider';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { OrderReviewDialog } from './order-review-dialog';
+import { FoodImage } from '@/components/food-image';
 
 interface OrderHistoryItemProps {
   order: Order;
@@ -99,35 +98,17 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
               {order.plats.map((item, index) => {
                 const menuItem = getMenuItem(item.id);
                 if (!menuItem) return null;
-                const placeholder = getPlaceholderImage(item.indiceImage);
-                const imageSrc = (item.image && !item.image.includes('picsum.photos'))
-                  ? item.image
-                  : placeholder.url;
-                const isCloudinary = imageSrc.includes('res.cloudinary.com');
                 return (
                   <div key={`${item.id}-${index}`} className="flex justify-between items-center group/item">
                     <div className="flex items-center gap-3">
                       <div className="relative w-10 h-10 sm:w-12 sm:h-12 overflow-hidden rounded-lg sm:rounded-xl bg-slate-100 dark:bg-slate-800 border border-border dark:border-white/10 shrink-0">
-                        {isCloudinary ? (
-                          <CldImage
-                            src={imageSrc}
+                        <FoodImage
+                            src={item.image}
                             alt={item.nom}
-                            width={48}
-                            height={48}
-                            crop="fill"
-                            gravity="auto"
-                            className="object-cover transition-transform duration-300 group-hover/item:scale-105"
-                          />
-                        ) : (
-                          <Image
-                            src={imageSrc}
-                            alt={item.nom}
-                            width={48}
-                            height={48}
-                            className="object-cover transition-transform duration-300 group-hover/item:scale-105"
-                            data-ai-hint={item.indiceImage}
-                          />
-                        )}
+                            kind="plat"
+                            sizes="48px"
+                            className="transition-transform duration-300 group-hover/item:scale-105"
+                        />
                       </div>
                       <div className="space-y-0.5 min-w-0">
                         <span className="font-bold uppercase text-xs sm:text-sm tracking-tight truncate block">{item.quantite}x {item.nom}</span>
@@ -178,6 +159,27 @@ export function OrderHistoryItem({ order }: OrderHistoryItemProps) {
                 </span>
               </div>
             </div>
+
+            {order.statut !== 'Livrée' && order.statut !== 'Annulée' && (
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/25">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-ping inline-block" />
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider text-orange-500">Course en direct</p>
+                    <p className="text-2xs text-muted-foreground">Suivez la préparation et le livreur sur la carte en temps réel.</p>
+                  </div>
+                </div>
+                <Button
+                  asChild
+                  size="sm"
+                  className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs h-9 px-4 shadow-md shadow-orange-500/20 shrink-0"
+                >
+                  <Link href={`/orders/track?id=${order.id}`}>
+                    <Navigation className="w-3.5 h-3.5 mr-1.5" /> Suivre en direct
+                  </Link>
+                </Button>
+              </div>
+            )}
             
             {order.statut === 'Livrée' && (
               <div className="mt-8 flex flex-wrap items-center justify-end gap-3">

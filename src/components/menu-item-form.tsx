@@ -17,9 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Trash, Plus, Upload, Tag } from 'lucide-react';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import { useData } from '@/contexts/data-context';
+import { FoodImage } from '@/components/food-image';
 
 const optionSchema = z.object({
   nom: z.string().min(1, "Le nom ne peut être vide."),
@@ -111,24 +110,13 @@ export function MenuItemForm({
                         <div className="relative w-full h-64 rounded-2xl border border-border bg-muted/50 flex flex-col items-center justify-center text-slate-400 hover:border-primary/50 transition-all duration-500 overflow-hidden shadow-sm">
                             {imageToDisplay ? (
                                 <>
-                                    {imageToDisplay.includes('res.cloudinary.com') ? (
-                                        <CldImage
-                                            src={imageToDisplay}
-                                            alt="Aperçu"
-                                            fill
-                                            crop="fill"
-                                            gravity="auto"
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <Image 
-                                            src={imageToDisplay} 
-                                            alt="Aperçu" 
-                                            fill 
-                                            sizes="(max-width: 768px) 100vw, 400px"
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-105" 
-                                        />
-                                    )}
+                                    <FoodImage
+                                        src={imageToDisplay}
+                                        alt={'Aperçu'}
+                                        kind="plat"
+                                        sizes="(max-width: 768px) 100vw, 400px"
+                                        className="transition-transform duration-1000 group-hover:scale-105"
+                                    />
                                     <div className="absolute inset-0 bg-slate-900/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-sm">
                                         <Upload className="h-8 w-8 text-white mb-2" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-white">Changer l&apos;Image</span>

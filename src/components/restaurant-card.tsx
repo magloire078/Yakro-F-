@@ -1,12 +1,10 @@
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
 import { Star, Clock, Bike, MapPin, ChevronRight } from 'lucide-react';
 import type { Restaurant } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { FoodImage } from '@/components/food-image';
 import { motion } from 'framer-motion';
 
 interface RestaurantCardProps {
@@ -17,13 +15,6 @@ interface RestaurantCardProps {
 }
 
 export function RestaurantCard({ restaurant, featured = false, matchReason, distance }: RestaurantCardProps) {
-  const placeholder = getPlaceholderImage(restaurant.indiceImage);
-  const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
-    ? restaurant.image
-    : placeholder.url;
-
-  const isCloudinary = imageSrc.includes('res.cloudinary.com');
-
   return (
     <motion.div
       whileHover={{ y: -6 }}
@@ -38,28 +29,13 @@ export function RestaurantCard({ restaurant, featured = false, matchReason, dist
           <CardHeader className="p-0 relative h-28 xs:h-32 sm:h-40 md:h-48 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
             
-            {isCloudinary ? (
-              <CldImage
-                src={imageSrc}
-                alt={restaurant.nom || ''}
-                width={placeholder.width}
-                height={placeholder.height}
-                crop="fill"
-                gravity="auto"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500 ease-out"
-              />
-            ) : (
-              <Image
-                src={imageSrc}
-                alt={restaurant.nom || ''}
-                width={placeholder.width}
-                height={placeholder.height}
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500 ease-out"
-                data-ai-hint={restaurant.indiceImage}
-              />
-            )}
+            <FoodImage
+              src={restaurant.image}
+              alt={restaurant.nom || ''}
+              kind="restaurant"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="transform group-hover:scale-105 transition-transform duration-500 ease-out"
+            />
             
             <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-20 flex flex-wrap gap-1 sm:gap-1.5">
                 {featured && (

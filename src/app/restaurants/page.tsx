@@ -5,8 +5,6 @@ import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/data-context";
 import { Clock, Star, Loader, Ear, Bike, Wand2, Users, MapPin, ChevronLeft, ShoppingBag, Sparkles } from "lucide-react";
-import Image from "next/image";
-import { CldImage } from 'next-cloudinary';
 import { useSearchParams, useRouter } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
 import { ReviewCard } from '@/components/review-card';
@@ -18,9 +16,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { FoodImage } from '@/components/food-image';
 
 function RestaurantPageContent() {
     const searchParams = useSearchParams();
@@ -169,10 +167,6 @@ function RestaurantPageContent() {
     }
 
     const restaurantMenu = menuItems.filter(item => item.restaurantId === id);
-    const placeholder = getPlaceholderImage(restaurant.indiceImage);
-    const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
-        ? restaurant.image
-        : placeholder.url;
 
     return (
         <div className="pb-16 sm:pb-24">
@@ -184,27 +178,13 @@ function RestaurantPageContent() {
                     transition={{ duration: 2, ease: "easeOut" }}
                     className="absolute inset-0"
                 >
-                    {imageSrc.includes('res.cloudinary.com') ? (
-                        <CldImage
-                            src={imageSrc}
-                            alt={restaurant.nom}
-                            fill
-                            sizes="100vw"
-                            crop="fill"
-                            gravity="auto"
-                            className="object-cover"
-                            priority
-                        />
-                    ) : (
-                        <Image
-                            src={imageSrc}
-                            alt={restaurant.nom}
-                            fill
-                            sizes="100vw"
-                            className="object-cover"
-                            priority
-                        />
-                    )}
+                    <FoodImage
+                        src={restaurant.image}
+                        alt={restaurant.nom}
+                        kind="restaurant"
+                        sizes="100vw"
+                        priority
+                    />
                 </motion.div>
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />

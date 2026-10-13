@@ -8,8 +8,6 @@ import { useData } from '@/contexts/data-context';
 import { Loader, Wand2, ChefHat, ClipboardList, BookOpenCheck, DollarSign, ShoppingCart, ArrowRight, Activity, Sparkles, Check, Play, TrendingUp, MapPinned, Store, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import Image from 'next/image';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { format, subDays } from 'date-fns';
@@ -22,6 +20,7 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { DashboardPage } from '@/components/dashboard/dashboard-page';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 import { OperationsMap } from '@/components/map/operations-map';
+import { FoodImage } from '@/components/food-image';
 
 export default function RestaurateurHomePage() {
     const { restaurants, orders, isLoading: isDataLoading } = useData();
@@ -275,10 +274,6 @@ export default function RestaurateurHomePage() {
 
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
                             {myRestaurants.map((restaurant) => {
-                                const placeholder = getPlaceholderImage(restaurant.indiceImage);
-                                const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
-                                    ? restaurant.image
-                                    : placeholder.url;
 
                                 return (
                                     <Link 
@@ -287,11 +282,12 @@ export default function RestaurateurHomePage() {
                                         className="group relative block overflow-hidden rounded-xl sm:rounded-2xl border border-border dark:border-white/10 bg-card/70 dark:bg-white/5 backdrop-blur-xl shadow-md transition-all duration-300 hover:border-primary/50 hover:shadow-primary/10 hover:scale-[1.02]"
                                     >
                                         <div className="aspect-[16/10] relative overflow-hidden">
-                                            <Image 
-                                                src={imageSrc} 
-                                                alt={restaurant.nom} 
-                                                fill 
-                                                className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                                            <FoodImage
+                                                src={restaurant.image}
+                                                alt={restaurant.nom}
+                                                kind="restaurant"
+                                                sizes="(max-width: 640px) 50vw, 25vw"
+                                                className="transition-transform duration-500 group-hover:scale-105"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                                             <div className="absolute top-2 left-2 flex items-center gap-1">

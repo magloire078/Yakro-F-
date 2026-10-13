@@ -8,6 +8,7 @@ import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { uploadImage } from '@/lib/cloudinary';
 
 interface DataState {
     restaurants: Restaurant[];
@@ -273,29 +274,13 @@ export const updateRestaurant = async (db: Firestore, restaurantId: string, data
     const restaurantDocRef = doc(db, 'restaurants', restaurantId);
     const updateData: Partial<Restaurant> = { ...data };
 
+    // Un échec d'envoi remonte désormais à l'appelant au lieu d'être ignoré
+    // en silence (la photo restait l'ancienne sans aucun message).
+    if (imageFile) {
+        updateData.image = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+    }
+
     try {
-        if (imageFile) {
-            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-            const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-            
-            if (!cloudName || !uploadPreset) throw new Error("Cloudinary config missing");
-
-            const formData = new FormData();
-            formData.append('file', imageFile);
-            formData.append('upload_preset', uploadPreset);
-            formData.append('public_id', `restaurants/${restaurantId}`);
-
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                const uploadResult = await response.json();
-                updateData.image = uploadResult.secure_url;
-            }
-        }
-
         await updateDoc(restaurantDocRef, updateData);
     } catch (e) {
         const permissionError = new FirestorePermissionError({

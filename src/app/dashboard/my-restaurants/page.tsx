@@ -21,11 +21,8 @@ import {
     MapPinOff,
 } from 'lucide-react';
 import { hasReliableLocation } from '@/lib/geolocation';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DashboardPage } from '@/components/dashboard/dashboard-page';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
+import { FoodImage } from '@/components/food-image';
 
 export default function MyRestaurantsPage() {
     const { user, activeRole } = useAuth();
@@ -111,10 +109,6 @@ export default function MyRestaurantsPage() {
             {myRestaurants.length > 0 ? (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
                     {myRestaurants.map((restaurant, index) => {
-                        const placeholder = getPlaceholderImage(restaurant.indiceImage);
-                        const imageSrc = (restaurant.image && restaurant.image !== "" && !restaurant.image.includes('picsum.photos'))
-                            ? restaurant.image
-                            : placeholder.url;
                         
                         return (
                             <motion.div 
@@ -127,23 +121,13 @@ export default function MyRestaurantsPage() {
                                 <div className="glass-dark border border-border dark:border-white/5 transition-all duration-500 group-hover:border-primary/50 overflow-hidden h-full flex flex-col shadow-2xl group-hover:shadow-primary/10 rounded-2xl md:rounded-[2rem]">
                                     {/* Image Area */}
                                     <div className="relative h-24 md:h-40 w-full overflow-hidden">
-                                        {imageSrc.includes('res.cloudinary.com') ? (
-                                            <CldImage
-                                                src={imageSrc}
-                                                alt={restaurant.nom}
-                                                fill
-                                                crop="fill"
-                                                gravity="auto"
-                                                className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                                            />
-                                        ) : (
-                                            <Image
-                                                src={imageSrc}
-                                                alt={restaurant.nom}
-                                                fill
-                                                className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                                            />
-                                        )}
+                                        <FoodImage
+                                            src={restaurant.image}
+                                            alt={restaurant.nom}
+                                            kind="restaurant"
+                                            sizes="(max-width: 768px) 50vw, 33vw"
+                                            className="transition-transform duration-1000 group-hover:scale-110"
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                         
                                         {/* Status Overlay */}

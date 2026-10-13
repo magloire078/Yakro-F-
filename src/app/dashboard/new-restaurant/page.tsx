@@ -15,32 +15,7 @@ import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/e
 import { MobileBackButton } from '@/components/mobile-back-button';
 import { motion } from 'framer-motion';
 import { generateImageAction } from '@/app/actions/ai-actions';
-
-const uploadImage = async (fileOrDataUrl: File | string, path: string): Promise<string> => {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
-    if (!cloudName || !uploadPreset) {
-        throw new Error("Cloudinary configuration missing.");
-    }
-
-    const formData = new FormData();
-    formData.append('file', fileOrDataUrl);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('public_id', path);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formData
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to upload image to Cloudinary');
-    }
-
-    const data = await response.json();
-    return data.secure_url;
-};
+import { ImageUploadError, uploadImage } from '@/lib/cloudinary';
 
 export default function NewRestaurantPage() {
     const { toast } = useToast();
@@ -105,7 +80,7 @@ export default function NewRestaurantPage() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: 'Impossible de créer le restaurant. Vérifiez vos permissions.'
+                description: e instanceof ImageUploadError ? e.message : 'Impossible de créer le restaurant. Vérifiez vos permissions.'
             });
         } finally {
             setIsLoading(false);

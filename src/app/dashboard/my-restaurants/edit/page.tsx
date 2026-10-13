@@ -18,7 +18,7 @@ import { RestaurantForm, type RestaurantFormValues } from '@/components/restaura
 import { doc, updateDoc } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { uploadImage } from '@/lib/cloudinary';
+import { ImageUploadError, uploadImage } from '@/lib/cloudinary';
 
 function EditRestaurantContent() {
     const { getRestaurant } = useData();
@@ -84,7 +84,7 @@ function EditRestaurantContent() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: 'Impossible de mettre à jour le restaurant.'
+                description: error instanceof ImageUploadError ? error.message : 'Impossible de mettre à jour le restaurant.'
             });
         } finally {
             setIsLoading(false);

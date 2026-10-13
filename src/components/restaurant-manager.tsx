@@ -43,7 +43,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useData } from '@/contexts/data-context';
 import { Restaurant } from '@/lib/types';
-import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useFirebase } from '@/contexts/firebase-provider';
@@ -53,6 +52,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { deleteRestaurant } from '@/contexts/data-context';
+import { FoodImage } from '@/components/food-image';
 
 export function RestaurantManager() {
     const { restaurants } = useData();
@@ -179,11 +179,12 @@ export function RestaurantManager() {
                                         <TableCell className="py-6 px-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="relative h-12 w-12 rounded-2xl border border-border group-hover:border-primary/30 transition-all group-hover:scale-110 shadow-lg overflow-hidden">
-                                                    <Image 
-                                                        src={restaurant.image || `/assets/marketing/hero-food.png`}
+                                                    <FoodImage
+                                                        src={restaurant.image}
                                                         alt={restaurant.nom}
-                                                        fill
-                                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                                        kind="restaurant"
+                                                        sizes="48px"
+                                                        className="grayscale group-hover:grayscale-0 transition-all duration-500"
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-1 min-w-0">
