@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useFirebase } from '@/contexts/firebase-provider';
-import { useData } from '@/contexts/data-context';
+import { deleteEntityImages, useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { MenuItem } from '@/lib/types';
@@ -21,6 +21,7 @@ import {
 import { logAdminAction } from '@/lib/audit-logs';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
     AlertDialog, 
     AlertDialogAction, 
@@ -36,7 +37,6 @@ import { EditMenuItemDialog } from '@/components/edit-menu-item-dialog';
 import { DashboardPage } from '@/components/dashboard/dashboard-page';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 import { Tag, BookOpen } from 'lucide-react';
-import { deleteCloudinaryImageAction } from '@/app/actions/cloudinary-actions';
 import { FoodImage } from '@/components/food-image';
 
 export default function DashboardMenuPage() {
@@ -96,8 +96,8 @@ export default function DashboardMenuPage() {
         const itemToDeleteObj = myMenuItems.find(item => item.id === itemId);
         setIsDeleting(itemId);
         try {
+            await deleteEntityImages(db, 'plat', itemId);
             await deleteDoc(doc(db, 'plats', itemId));
-            void deleteCloudinaryImageAction(`plats/${itemId}`);
 
             // Log the action
             if (user) {
@@ -208,38 +208,66 @@ export default function DashboardMenuPage() {
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-80" />
                                             
+                                            {/* Catégorie Pill */}
+                                            {item.categorie && (
+                                                <div className="absolute top-2 right-2">
+                                                    <Badge variant="secondary" className="backdrop-blur-md bg-black/60 text-white border-white/10 text-3xs font-black uppercase tracking-wider py-0 px-1.5 h-4">
+                                                        {item.categorie}
+                                                    </Badge>
+                                                </div>
+                                            )}
+
                                             <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4">
-                                                <div className="bg-primary px-2 sm:px-4 py-1 sm:py-1.5 text-[9px] sm:text-[11px] font-black italic uppercase text-white shadow-xl rounded-md sm:rounded-lg">
-                                                    {item.prix.toLocaleString('fr-FR')} <span className="text-[9px] sm:text-[10px] opacity-80 ml-0.5 sm:ml-1">FCFA</span>
+                                                <div className="bg-primary px-2 sm:px-3.5 py-0.5 sm:py-1 text-[9px] sm:text-[11px] font-black italic uppercase text-white shadow-xl rounded-md sm:rounded-lg">
+                                                    {item.prix.toLocaleString('fr-FR')} <span className="text-[8px] sm:text-[9px] opacity-80 ml-0.5">FCFA</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="p-2.5 sm:p-3 flex-grow flex flex-col">
-                                            <h3 className="text-xs sm:text-base md:text-lg font-black italic tracking-tight text-foreground group-hover:text-primary transition-colors mb-1 sm:mb-2 uppercase line-clamp-1">
+                                        <div className="p-2 sm:p-3 flex-grow flex flex-col">
+                                            <h3 className="text-xs sm:text-base font-black italic tracking-tight text-foreground group-hover:text-primary transition-colors mb-0.5 sm:mb-1 uppercase line-clamp-1">
                                                 {item.nom}
                                             </h3>
-                                            <p className="text-muted-foreground text-[10px] sm:text-[12px] font-medium line-clamp-2 mb-2 sm:mb-4 leading-relaxed italic">
+                                            <p className="text-muted-foreground text-[9px] sm:text-[11px] font-medium line-clamp-2 mb-1.5 leading-relaxed italic">
                                                 {item.description}
                                             </p>
 
-                                            <div className="mt-auto flex items-center gap-1.5 sm:gap-2 pt-2 sm:pt-4 border-t border-border/50">
+                                            {/* Badges Options & Stocks */}
+                                            <div className="flex flex-wrap gap-1 mb-2">
+                                                {item.accompagnementsDisponibles && item.accompagnementsDisponibles.length > 0 && (
+                                                    <span className="inline-flex items-center text-3xs font-bold text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded-md border border-orange-500/20">
+                                                        +{item.accompagnementsDisponibles.length} acc.
+                                                    </span>
+                                                )}
+                                                {item.boissonsDisponibles && item.boissonsDisponibles.length > 0 && (
+                                                    <span className="inline-flex items-center text-3xs font-bold text-sky-500 bg-sky-500/10 px-1.5 py-0.5 rounded-md border border-sky-500/20">
+                                                        +{item.boissonsDisponibles.length} boiss.
+                                                    </span>
+                                                )}
+                                                {item.ingredients && item.ingredients.length > 0 && (
+                                                    <span className="inline-flex items-center text-3xs font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20">
+                                                        Stock lié
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="mt-auto flex items-center gap-1.5 sm:gap-2 pt-2 border-t border-border/50">
                                                 <Button 
                                                     variant="outline" 
-                                                    className="flex-1 h-8 sm:h-10 px-2 bg-card border-border hover:bg-primary hover:border-primary hover:text-white text-foreground rounded-lg sm:rounded-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all duration-500 shadow-sm"
+                                                    className="flex-1 h-7 sm:h-9 px-1.5 sm:px-2 bg-card border-border hover:bg-primary hover:border-primary hover:text-white text-foreground rounded-lg sm:rounded-xl font-black uppercase tracking-widest text-[8px] sm:text-[10px] transition-all duration-300 shadow-sm"
                                                     onClick={() => setEditingItem(item)}
                                                 >
-                                                    <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-2" />
+                                                    <Edit className="h-3 w-3 mr-1" />
                                                     Modifier
                                                 </Button>
 
                                                 <Button 
                                                     variant="outline" 
-                                                    className="h-8 w-8 sm:h-10 sm:w-10 bg-card border-border hover:bg-red-500/10 hover:border-red-500/20 text-muted-foreground hover:text-red-500 rounded-lg sm:rounded-xl transition-all duration-500 shadow-sm shrink-0"
+                                                    className="h-7 w-7 sm:h-9 sm:w-9 bg-card border-border hover:bg-red-500/10 hover:border-red-500/20 text-muted-foreground hover:text-red-500 rounded-lg sm:rounded-xl transition-all duration-300 shadow-sm shrink-0"
                                                     disabled={isDeleting === item.id}
                                                     onClick={() => setItemToDelete(item)}
                                                 >
-                                                    {isDeleting === item.id ? <Loader className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                                                    {isDeleting === item.id ? <Loader className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                                                 </Button>
                                             </div>
                                         </div>

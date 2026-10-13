@@ -23,6 +23,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MobileBackButton } from '@/components/mobile-back-button';
+import { cn } from '@/lib/utils';
 
 export default function NewMenuItemPage() {
     const { restaurants } = useData();
@@ -37,6 +38,7 @@ export default function NewMenuItemPage() {
 
     const [description, setDescription] = React.useState('');
     const [imageFile, setImageFile] = React.useState<File | null>(null);
+    const [mode, setMode] = React.useState<'manual' | 'ai'>('manual');
 
     const form = useForm<MenuItemFormValues>({
         resolver: zodResolver(menuItemFormSchema),
@@ -200,12 +202,12 @@ export default function NewMenuItemPage() {
         )
     }
 
-    const isGenerated = !!form.getValues('nom');
+    const isGenerated = mode === 'manual' || !!form.getValues('nom');
 
     return (
         <div className="min-h-screen bg-background text-foreground">
             {/* Cinematic Hero */}
-            <div className="relative h-[30vh] sm:h-[40vh] min-h-[300px] w-full overflow-hidden flex items-center justify-center">
+            <div className="relative h-[25vh] sm:h-[35vh] min-h-[260px] w-full overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 bg-background/60 z-10" />
                 <div 
                     className="absolute inset-0 bg-cover bg-center animate-slow-zoom bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop')]" 
@@ -217,60 +219,148 @@ export default function NewMenuItemPage() {
                     <MobileBackButton label="Menu" href="/dashboard/menu" />
                 </div>
 
-                <div className="relative z-30 text-center px-4 pt-8 md:pt-0">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 backdrop-blur-md border border-primary/30 mb-4 rounded-full"
-                    >
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Moteur Neural Yakro AI</span>
-                    </motion.div>
-                    <h1 className="text-3xl sm:text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-foreground mb-2 sm:mb-4">
-                        Créateur <span className="text-primary">Elite</span>
+                <div className="relative z-30 text-center px-4 pt-6 md:pt-0">
+                    <div className="flex items-center justify-center gap-1.5 h-3 mb-2">
+                        <span className="w-1.5 h-full rounded-full bg-orange-500" />
+                        <span className="w-1.5 h-full rounded-full bg-white/70" />
+                        <span className="w-1.5 h-full rounded-full bg-emerald-500" />
+                    </div>
+                    <h1 className="text-2xl sm:text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground mb-1">
+                        Nouveau <span className="text-primary">Plat</span>
                     </h1>
-                    <p className="max-w-xl mx-auto text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted-foreground italic">
-                        Sublimez votre carte par l&apos;intelligence artificielle prédictive.
+                    <p className="max-w-xl mx-auto text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-[0.25em] text-muted-foreground italic">
+                        Enrichissez la carte de votre bastion culinaire.
                     </p>
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-10 sm:-mt-20 relative z-40 pb-24">
-                <div className="grid lg:grid-cols-2 gap-6 sm:gap-10">
-                    {/* Step 1: Input Analysis */}
-                    <div className="space-y-6 sm:space-y-8">
-                        <div className="bg-card/80 backdrop-blur-xl border border-border p-6 sm:p-10 relative overflow-hidden h-full flex flex-col rounded-2xl shadow-xl">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
-                            
-                            <div className="flex items-center gap-4 mb-6 sm:mb-10">
-                                <div className="h-10 w-10 sm:h-12 sm:w-12 bg-muted border border-border flex items-center justify-center rounded-xl">
-                                    <span className="text-lg sm:text-xl font-black italic text-primary">01</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg sm:text-xl font-black uppercase tracking-tighter italic text-foreground">Analyse Conceptuelle</h2>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Définissez l&apos;essence du plat</p>
-                                </div>
-                            </div>
+            <div className="max-w-5xl mx-auto px-3 sm:px-6 -mt-8 sm:-mt-14 relative z-40 pb-24 space-y-6">
+                {/* Mode Selector */}
+                <div className="flex items-center justify-center">
+                    <div className="p-1 rounded-2xl bg-card/90 backdrop-blur-xl border border-border shadow-lg inline-flex gap-1">
+                        <button
+                            type="button"
+                            onClick={() => setMode('manual')}
+                            className={cn(
+                                "px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all",
+                                mode === 'manual'
+                                    ? "bg-primary text-white shadow-md shadow-primary/25"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            <ChefHat className="w-4 h-4 inline-block mr-1.5" />
+                            Saisie Manuelle
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setMode('ai')}
+                            className={cn(
+                                "px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all",
+                                mode === 'ai'
+                                    ? "bg-primary text-white shadow-md shadow-primary/25"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            <Sparkles className="w-4 h-4 inline-block mr-1.5" />
+                            Assistance IA
+                        </button>
+                    </div>
+                </div>
 
-                            <div className="space-y-6 flex-grow">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">Établissement Hôte</Label>
-                                    <Select
-                                        onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
-                                        value={selectedRestaurant?.id || ''}
-                                    >
-                                        <SelectTrigger className="h-12 bg-muted/40 border-border rounded-xl text-sm font-bold uppercase tracking-tight focus:ring-primary/50">
-                                            <SelectValue placeholder="SÉLECTIONNER L'ÉTABLISSEMENT" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-card border-border text-foreground rounded-xl">
-                                            {myRestaurants.map(r => (
-                                                <SelectItem key={r.id} value={r.id} className="focus:bg-primary/10 focus:text-primary uppercase font-bold text-xs tracking-widest py-2.5">
-                                                    {r.nom}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                {mode === 'manual' ? (
+                    /* Mode Manuel : Formulaire direct et réactif */
+                    <div className="bg-card/85 backdrop-blur-xl border border-border p-4 sm:p-8 rounded-2xl shadow-xl space-y-6 max-w-2xl mx-auto">
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">
+                                Établissement
+                            </Label>
+                            <Select
+                                onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
+                                value={selectedRestaurant?.id || ''}
+                            >
+                                <SelectTrigger className="h-12 bg-muted/40 border-border rounded-xl text-sm font-bold uppercase tracking-tight focus:ring-primary/50">
+                                    <SelectValue placeholder="SÉLECTIONNER L'ÉTABLISSEMENT" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-card border-border text-foreground rounded-xl">
+                                    {myRestaurants.map(r => (
+                                        <SelectItem key={r.id} value={r.id} className="focus:bg-primary/10 focus:text-primary uppercase font-bold text-xs tracking-widest py-2.5">
+                                            {r.nom}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <MenuItemForm
+                            form={form}
+                            onSubmit={handleAddItemToMenu}
+                            isLoading={loading}
+                            imageFile={imageFile}
+                            onImageChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) setImageFile(file);
+                            }}
+                        >
+                            <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full">
+                                <Button 
+                                    variant="outline" 
+                                    type="button" 
+                                    onClick={handleGenerateImage} 
+                                    disabled={imageLoading || loading}
+                                    className="h-12 flex-1 bg-muted/50 border-border hover:bg-primary/10 hover:border-primary/50 text-foreground rounded-xl font-black uppercase text-xs tracking-wider"
+                                >
+                                    {imageLoading ? <Loader className="animate-spin mr-2 h-4 w-4 text-primary" /> : <ImageIcon className="mr-2 h-4 w-4 text-primary" />}
+                                    {imageLoading ? 'Génération du visuel...' : 'Créer visuel par IA'}
+                                </Button>
+                                
+                                <Button 
+                                    type="submit" 
+                                    disabled={loading || !selectedRestaurant} 
+                                    className="h-12 flex-1 bg-primary hover:bg-primary/90 text-white rounded-xl font-black uppercase text-xs tracking-wider shadow-lg shadow-primary/20"
+                                >
+                                    {loading ? <Loader className="animate-spin mr-2 h-4 w-4" /> : <Flame className="mr-2 h-4 w-4" />}
+                                    Publier sur la Carte
+                                </Button>
+                            </div>
+                        </MenuItemForm>
+                    </div>
+                ) : (
+                    /* Mode IA : Grille 2 étapes */
+                    <div className="grid lg:grid-cols-2 gap-6 sm:gap-10">
+                        {/* Step 1: Input Analysis */}
+                        <div className="space-y-6 sm:space-y-8">
+                            <div className="bg-card/80 backdrop-blur-xl border border-border p-6 sm:p-10 relative overflow-hidden h-full flex flex-col rounded-2xl shadow-xl">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
+                                
+                                <div className="flex items-center gap-4 mb-6 sm:mb-10">
+                                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-muted border border-border flex items-center justify-center rounded-xl">
+                                        <span className="text-lg sm:text-xl font-black italic text-primary">01</span>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg sm:text-xl font-black uppercase tracking-tighter italic text-foreground">Analyse Conceptuelle</h2>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Définissez l&apos;essence du plat</p>
+                                    </div>
                                 </div>
+
+                                <div className="space-y-6 flex-grow">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">Établissement Hôte</Label>
+                                        <Select
+                                            onValueChange={value => setSelectedRestaurant(myRestaurants.find(r => r.id === value) || null)}
+                                            value={selectedRestaurant?.id || ''}
+                                        >
+                                            <SelectTrigger className="h-12 bg-muted/40 border-border rounded-xl text-sm font-bold uppercase tracking-tight focus:ring-primary/50">
+                                                <SelectValue placeholder="SÉLECTIONNER L'ÉTABLISSEMENT" />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-card border-border text-foreground rounded-xl">
+                                                {myRestaurants.map(r => (
+                                                    <SelectItem key={r.id} value={r.id} className="focus:bg-primary/10 focus:text-primary uppercase font-bold text-xs tracking-widest py-2.5">
+                                                        {r.nom}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">Vision Culinaire</Label>
@@ -412,6 +502,7 @@ export default function NewMenuItemPage() {
                         </div>
                     </div>
                 </div>
+                )}
 
                 {/* Technical Footnote */}
                 <div className="mt-16 text-center opacity-40 group cursor-default">
