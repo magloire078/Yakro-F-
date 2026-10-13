@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { Timestamp, type QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Cron route for automatic purge of audit logs older than 30 days.
  *
