@@ -6,7 +6,6 @@ import { collection, getDocs, writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { initialRestaurants, initialMenuItems } from '@/lib/data';
 import type { Restaurant } from '@/lib/types';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 export async function seedDatabaseAction(userId: string) {
     if (!userId) {
@@ -39,11 +38,12 @@ export async function seedDatabaseAction(userId: string) {
 
                 if (assignedRestaurant) {
                     const itemDocRef = doc(collection(db!, 'plats'));
-                    const placeholder = getPlaceholderImage(item.indiceImage);
+                    // Pas d'image de remplacement aléatoire : sans photo, l'app
+                    // affiche son visuel de marque (FoodImage).
                     batch.set(itemDocRef, {
                         ...item,
                         restaurantId: assignedRestaurant.id,
-                        image: placeholder.url
+                        image: '',
                     });
                 }
             });

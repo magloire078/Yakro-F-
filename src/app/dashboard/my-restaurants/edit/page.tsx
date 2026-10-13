@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { useData } from '@/contexts/data-context';
+import { deleteEntityImages, useData } from '@/contexts/data-context';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -73,6 +73,9 @@ function EditRestaurantContent() {
                 errorEmitter.emit('permission-error', permissionError);
                 throw e;
             });
+
+            // Nouvelle photo enregistrée : on efface les versions précédentes.
+            if (updateData.image && imageFile) void deleteEntityImages(db, 'restaurant', restaurantId, updateData.image);
 
             toast({
                 title: 'Restaurant mis à jour !',

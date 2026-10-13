@@ -23,6 +23,7 @@ import { logAdminAction } from '@/lib/audit-logs';
 import { useAuth } from '@/contexts/auth-context';
 import { ImageUploadError, uploadImage } from '@/lib/cloudinary';
 import { Loader, BookOpenCheck } from 'lucide-react';
+import { deleteEntityImages } from '@/contexts/data-context';
 
 
 
@@ -87,6 +88,9 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
         errorEmitter.emit('permission-error', permissionError);
         throw e;
       });
+
+      // Nouvelle photo enregistrée : on efface les versions précédentes.
+      if (updateData.image && imageFile) void deleteEntityImages(db, 'plat', menuItem.id, updateData.image);
 
       toast({
         title: 'Plat mis à jour',
