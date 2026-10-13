@@ -1,6 +1,18 @@
 import type { NextConfig } from 'next';
 
+// Domaine Firebase Hosting qui héberge les pages de connexion (/__/auth/*).
+const FIREBASE_AUTH_HOST = 'https://yakro-go.firebaseapp.com';
+
 const nextConfig: NextConfig = {
+  // Relais des pages de connexion Firebase sur le domaine de l'app, pour que
+  // la connexion Google fonctionne sur Safari iOS (voir src/firebase/client.ts
+  // et NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN).
+  async rewrites() {
+    return [
+      { source: '/__/auth/:path*', destination: `${FIREBASE_AUTH_HOST}/__/auth/:path*` },
+      { source: '/__/firebase/:path*', destination: `${FIREBASE_AUTH_HOST}/__/firebase/:path*` },
+    ];
+  },
   typescript: {
     ignoreBuildErrors: false,
   },
