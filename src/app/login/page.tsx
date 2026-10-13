@@ -29,7 +29,7 @@ export default function LoginPage() {
 
     if (authResolving || isRedirecting || (!authResolving && user)) {
         return (
-            <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
+            <div className="flex h-dvh w-full flex-col items-center justify-center gap-4 bg-background">
                 <Loader className="h-16 w-16 animate-spin text-primary" />
                 <p className="text-primary font-bold animate-pulse">Yakro Fê se prépare...</p>
             </div>

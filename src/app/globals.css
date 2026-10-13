@@ -276,3 +276,15 @@
     filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.6);
   }
 }
+
+@layer utilities {
+  /* Marge pour la zone du trait d'accueil de l'iPhone (barres fixées en bas). */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Marge sous l'encoche / la barre d'état (app installée, Capacitor). */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}

@@ -285,7 +285,7 @@ export default function AdminPage() {
 
     if (dataLoading || isPublicDataLoading || !userProfile || userProfile.roleSysteme !== 'SuperAdmin') {
         return (
-            <div className="flex h-screen w-full items-center justify-center bg-background">
+            <div className="flex h-dvh w-full items-center justify-center bg-background">
                 <div className="relative">
                     <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
                     <Loader className="h-16 w-16 animate-spin text-primary relative" />

@@ -130,7 +130,7 @@ function EditRestaurantContent() {
 
     if (!restaurantId) {
         return (
-            <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
+            <div className="flex h-dvh w-full flex-col items-center justify-center gap-4">
                 <p>Identifiant de restaurant manquant.</p>
                 <Button asChild>
                     <Link href="/dashboard/my-restaurants">Retour à mes restaurants</Link>

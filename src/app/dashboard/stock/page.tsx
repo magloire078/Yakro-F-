@@ -142,7 +142,7 @@ export default function StockPage() {
 
     if (isLoading) {
         return (
-            <div className="flex h-screen w-full items-center justify-center bg-background">
+            <div className="flex h-dvh w-full items-center justify-center bg-background">
                 <div className="relative">
                     <div className="h-20 w-20 border-2 border-primary/10 border-t-primary rounded-full animate-spin" />
                     <Package className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-primary animate-pulse" />
@@ -440,7 +440,7 @@ export default function StockPage() {
                                                             </div>
                                                             <Button 
                                                                 variant="outline" 
-                                                                className="rounded-2xl h-14 px-12 border-border bg-card text-foreground hover:bg-muted font-black italic transition-all" 
+                                                                className="rounded-2xl h-14 px-6 sm:px-12 border-border bg-card text-foreground hover:bg-muted font-black italic transition-all" 
                                                                 onClick={() => { setSearchQuery(''); setSelectedRestaurant('all'); }}
                                                             >
                                                                 Réinitialiser Flux
@@ -527,7 +527,7 @@ export default function StockPage() {
                                         );
                                     })
                                 ) : (
-                                    <div className="py-20 text-center">
+                                    <div className="py-12 sm:py-20 text-center">
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Aucune référence</p>
                                     </div>
                                 )}

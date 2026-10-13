@@ -172,7 +172,7 @@ export function SupervisionModule({ focusRequest }: { focusRequest?: OrderFocusR
                                         <OrderListItem key={order.id} order={order} index={idx} />
                                     ))
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
+                                    <div className="flex flex-col items-center justify-center py-16 md:py-32 text-muted-foreground">
                                         <Activity className="h-16 w-16 mb-6 opacity-20 animate-pulse" />
                                         <p className="font-headline text-xs font-bold uppercase tracking-widest opacity-50">Secteur Pacifié: Aucun flux détecté</p>
                                     </div>

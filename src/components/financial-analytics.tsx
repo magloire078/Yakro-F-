@@ -116,7 +116,7 @@ export function FinancialAnalytics() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
                 {/* Main Chart */}
                 <Card className="lg:col-span-2 border border-border shadow-3xl bg-card rounded-[2.5rem] overflow-hidden group">
                     <CardHeader className="p-10 border-b border-border relative">

@@ -18,6 +18,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // Indispensable pour que env(safe-area-inset-*) soit non nul sur iPhone.
+  viewportFit: 'cover',
   themeColor: '#F97316',
 };
 

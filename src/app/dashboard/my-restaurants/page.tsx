@@ -223,7 +223,7 @@ export default function MyRestaurantsPage() {
                     })}
                 </div>
             ) : (
-                <div className="max-w-2xl mx-auto glass-dark border border-border p-12 md:p-16 text-center shadow-2xl relative overflow-hidden rounded-[2rem] md:rounded-[3rem] mt-4 md:mt-8">
+                <div className="max-w-2xl mx-auto glass-dark border border-border p-6 sm:p-12 md:p-16 text-center shadow-2xl relative overflow-hidden rounded-[2rem] md:rounded-[3rem] mt-4 md:mt-8">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
                     <div className="relative mb-6 md:mb-8">
                         <div className="absolute inset-0 bg-primary/10 blur-[50px] rounded-full scale-150" />
@@ -238,7 +238,7 @@ export default function MyRestaurantsPage() {
 
             {/* Desktop Action Button */}
             <div className="hidden md:flex justify-center mt-8">
-                <Button asChild className="h-14 px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all duration-500 hover:scale-105 active:scale-95 group">
+                <Button asChild className="h-14 px-6 sm:px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic uppercase tracking-tighter text-base sm:text-lg shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all duration-500 hover:scale-105 active:scale-95 group">
                     <Link href="/dashboard/new-restaurant" className="flex items-center gap-4">
                         <Plus className="h-6 w-6 group-hover:rotate-90 transition-transform duration-500" />
                         Établir un Restaurant
@@ -247,7 +247,7 @@ export default function MyRestaurantsPage() {
             </div>
 
             {/* Persistent FAB for Mobile */}
-            <div className="fixed bottom-8 right-6 z-50 md:hidden">
+            <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-50 md:hidden">
                 <Button asChild className="h-16 w-16 bg-primary hover:bg-primary/90 text-white rounded-full shadow-[0_20px_40px_rgba(249,115,22,0.4)] p-0 border-4 border-background">
                     <Link href="/dashboard/new-restaurant" className="flex items-center justify-center">
                         <Plus className="h-8 w-8" />

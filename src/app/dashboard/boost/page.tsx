@@ -160,14 +160,14 @@ export default function BoostPage() {
 
                     </div>
                 ) : (
-                    <div className="max-w-2xl mx-auto bg-card/40 backdrop-blur-xl border border-border p-16 text-center shadow-2xl relative overflow-hidden rounded-[3rem]">
+                    <div className="max-w-2xl mx-auto bg-card/40 backdrop-blur-xl border border-border p-6 sm:p-10 md:p-16 text-center shadow-2xl relative overflow-hidden rounded-[2rem] sm:rounded-[3rem]">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
                         <Rocket className="h-20 w-20 text-primary/20 mx-auto mb-8" />
                         <h2 className="text-4xl font-black italic uppercase tracking-tighter text-foreground mb-4">Escouade Vide</h2>
                         <p className="text-muted-foreground font-medium mb-10 text-lg italic uppercase tracking-wider">
                             Enrôlez un établissement pour activer la propulsion.
                         </p>
-                        <Button asChild className="h-16 px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all hover:scale-105">
+                        <Button asChild className="h-14 sm:h-16 px-6 sm:px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic uppercase tracking-tighter text-base sm:text-lg shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all hover:scale-105">
                             <Link href="/dashboard/new-restaurant">Créer mon premier Restaurant</Link>
                         </Button>
                     </div>

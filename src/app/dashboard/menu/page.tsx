@@ -277,7 +277,7 @@ export default function DashboardMenuPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="max-w-2xl mx-auto glass-dark border border-border p-12 md:p-20 text-center shadow-2xl relative overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] mt-12">
+                            <div className="max-w-2xl mx-auto glass-dark border border-border p-6 sm:p-12 md:p-20 text-center shadow-2xl relative overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] mt-12">
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent" />
                                 <div className="bg-primary/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-primary/20">
                                     <BookOpenCheck className="h-8 w-8 text-primary" />
@@ -293,7 +293,7 @@ export default function DashboardMenuPage() {
 
                 {/* Add Button */}
                 <div className="mt-8 flex justify-center">
-                    <Button asChild className="h-16 px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic tracking-tight text-lg shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-105 group uppercase">
+                    <Button asChild className="h-14 sm:h-16 px-6 sm:px-12 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black italic tracking-tight text-base sm:text-lg shadow-xl shadow-primary/20 transition-all duration-500 hover:scale-105 group uppercase">
                         <Link href="/dashboard/new-menu-item" className="flex items-center gap-3">
                             <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-500" />
                             Ajouter un Plat
@@ -303,7 +303,7 @@ export default function DashboardMenuPage() {
             </div>
 
             {/* Floating Action Button for Mobile */}
-            <div className="fixed bottom-8 right-6 z-50 md:hidden">
+            <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-50 md:hidden">
                 <Button asChild className="h-16 w-16 bg-primary hover:bg-primary/90 text-white rounded-full shadow-2xl shadow-primary/20 p-0 hover:scale-110 transition-all">
                     <Link href="/dashboard/new-menu-item" className="flex items-center justify-center">
                         <Plus className="h-8 w-8" />

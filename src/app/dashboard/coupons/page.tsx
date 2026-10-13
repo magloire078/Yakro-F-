@@ -296,7 +296,7 @@ export default function CouponsPage() {
             </AnimatePresence>
           </div>
         ) : (
-          <div className="glass-dark p-16 text-center rounded-[3rem] border border-border dark:border-white/5">
+          <div className="glass-dark p-8 sm:p-16 text-center rounded-[2rem] sm:rounded-[3rem] border border-border dark:border-white/5">
             <Ticket className="h-16 w-16 text-primary/20 mx-auto mb-6" />
             <h2 className="text-2xl font-black italic uppercase tracking-tighter text-foreground mb-2">Aucun code promo</h2>
             <p className="text-slate-400 text-sm">

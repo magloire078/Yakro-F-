@@ -28,34 +28,34 @@ const livreurLinks = [
     { href: '/dashboard/earnings', label: 'Gains', icon: DollarSign },
 ];
 
+// Une colonne par lien + une pour « Moi ». Classes écrites en entier pour que
+// Tailwind les génère. (Le nombre de colonnes était fixé à la main : 4 pour
+// les clients alors qu'ils ont 5 boutons, et « Moi » passait à la ligne,
+// sous « Accueil ».)
+const GRID_COLS: Record<number, string> = {
+    3: 'grid-cols-3',
+    4: 'grid-cols-4',
+    5: 'grid-cols-5',
+    6: 'grid-cols-6',
+};
+
 
 export function BottomNavBar() {
     const { activeRole, userProfile } = useAuth();
     const pathname = usePathname();
 
-    let links;
-    let gridColsClass;
-    
-    switch(activeRole) {
-        case 'restaurateur':
-            links = restaurateurLinks;
-            gridColsClass = 'grid-cols-5';
-            break;
-        case 'livreur':
-            links = livreurLinks;
-            gridColsClass = 'grid-cols-3';
-            break;
-        case 'client':
-        default:
-            links = clientLinks;
-            gridColsClass = 'grid-cols-4';
-    }
+    const links = activeRole === 'restaurateur'
+        ? restaurateurLinks
+        : activeRole === 'livreur'
+            ? livreurLinks
+            : clientLinks;
+    const gridColsClass = GRID_COLS[links.length + 1];
     
     if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
 
     return (
-        <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-primary/10 dark:border-slate-800/50 md:hidden pb-safe">
-            <div className={cn("grid h-full mx-auto font-medium items-center", gridColsClass)}>
+        <nav aria-label="Navigation principale" className="fixed bottom-0 left-0 z-50 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-primary/10 dark:border-slate-800/50 md:hidden pb-safe">
+            <div className={cn("grid h-16 mx-auto font-medium items-center", gridColsClass)}>
                 {links.map((link) => {
                      const isActive = pathname === link.href;
                      return (
@@ -107,6 +107,6 @@ export function BottomNavBar() {
                     )}
                 </Link>
             </div>
-        </div>
+        </nav>
     );
 }

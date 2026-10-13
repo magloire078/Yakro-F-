@@ -108,11 +108,14 @@ export default function NewMenuItemPage() {
 
     const handleGenerateImage = async () => {
         const nom = form.getValues('nom');
+        const desc = form.getValues('description');
+        const cuisine = selectedRestaurant?.cuisine || '';
         if (!nom) return;
 
         setImageLoading(true);
         try {
-            const result = await generateImageAction({ prompt: nom }, await currentIdToken());
+            const prompt = `${nom}${desc ? ` (${desc})` : ''}${cuisine ? ` - cuisine ${cuisine}` : ''}`;
+            const result = await generateImageAction({ prompt }, await currentIdToken());
             if (!result.success) throw new Error(result.error);
             
             form.setValue('image', result.data.imageDataUri);
@@ -185,7 +188,7 @@ export default function NewMenuItemPage() {
     if (myRestaurants.length === 0) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center p-6">
-                <div className="max-w-lg w-full bg-card border border-border p-12 text-center relative overflow-hidden rounded-2xl shadow-xl">
+                <div className="max-w-lg w-full bg-card border border-border p-6 sm:p-12 text-center relative overflow-hidden rounded-2xl shadow-xl">
                     <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
                     <ChefHat className="h-20 w-20 mx-auto text-muted-foreground mb-8" />
                     <h2 className="text-3xl font-black italic uppercase tracking-tighter text-foreground mb-4">Infrastructure Requise</h2>

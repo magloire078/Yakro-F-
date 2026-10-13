@@ -41,7 +41,7 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
 
     if (lowStocks.length === 0) {
         return (
-            <div className="bg-muted/50 dark:bg-white/5 backdrop-blur-xl border border-dashed border-border dark:border-white/10 p-24 rounded-[3rem] text-center flex flex-col items-center justify-center relative overflow-hidden group shadow-2xl">
+            <div className="bg-muted/50 dark:bg-white/5 backdrop-blur-xl border border-dashed border-border dark:border-white/10 p-8 sm:p-16 md:p-24 rounded-[2rem] sm:rounded-[3rem] text-center flex flex-col items-center justify-center relative overflow-hidden group shadow-2xl">
                 <div className="relative mb-8">
                     <div className="absolute inset-0 bg-emerald-500/10 blur-3xl rounded-full scale-150 group-hover:scale-175 transition-transform duration-1000" />
                     <div className="h-20 w-20 bg-muted/50 dark:bg-white/5 border border-border dark:border-white/10 rounded-3xl flex items-center justify-center shadow-inner relative">
@@ -97,7 +97,7 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                             <div className="bg-card border border-border rounded-[2.5rem] relative group overflow-hidden shadow-2xl hover:border-primary/20 transition-all">
                                 <div className={`absolute top-0 left-0 w-2 h-full transition-colors ${item.quantite === 0 ? 'bg-red-500' : 'bg-primary'}`} />
                                 
-                                <div className="p-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+                                <div className="p-5 sm:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10">
                                     <div className="flex items-center gap-8">
                                         <div className={`h-20 w-20 border rounded-3xl flex items-center justify-center transition-all group-hover:scale-110 ${item.quantite === 0 ? 'bg-red-500/10 border-red-500/20' : 'bg-primary/10 border-primary/20'}`}>
                                             <AlertCircle className={`h-10 w-10 ${item.quantite === 0 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
@@ -113,7 +113,7 @@ export function PurchaseList({ stocks, restaurants }: PurchaseListProps) {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-12 md:gap-20">
+                                    <div className="flex items-center gap-6 sm:gap-12 md:gap-20">
                                         <div className="text-right">
                                             <p className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em] mb-2">État Actuel</p>
                                             <p className={`text-4xl font-black italic tracking-tighter leading-none ${item.quantite === 0 ? 'text-red-500' : 'text-primary'}`}>
