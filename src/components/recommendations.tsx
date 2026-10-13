@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
 import { Button } from './ui/button';
-import { Star, AlertTriangle, Sparkles, ShoppingBag, BrainCircuit } from 'lucide-react';
+import { Star, Sparkles, ShoppingBag, BrainCircuit } from 'lucide-react';
 import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Skeleton } from './ui/skeleton';
 import { useCart } from '@/contexts/cart-context';
@@ -26,15 +26,18 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   const { menuItems } = useData();
 
   if (hasError) {
+    if (isCarousel) {
+      return null;
+    }
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-16 px-6 bg-red-500/5 border border-red-500/20 rounded-[2rem] backdrop-blur-sm"
+        className="text-center py-12 px-6 glass rounded-2xl sm:rounded-3xl border border-border dark:border-white/5"
       >
-        <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-red-600 mb-2">Service intelligent en pause</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">Notre IA locale se repose un instant. Vos recommandations habituelles reviennent bientôt.</p>
+        <Sparkles className="w-10 h-10 text-primary mx-auto mb-3 opacity-60" />
+        <h3 className="text-base sm:text-lg font-bold text-foreground mb-1 uppercase tracking-tight">Recommandations indisponibles</h3>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto">Parcourez notre carte des restaurants pour explorer tous nos plats du jour.</p>
       </motion.div>
     );
   }

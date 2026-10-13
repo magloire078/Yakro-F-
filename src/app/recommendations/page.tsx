@@ -81,23 +81,30 @@ export default function RecommendationsPage() {
                 }
             });
 
+            const fallbackRecommendations = availableMenuItems.slice(0, 8).map(item => ({
+                item: item.nom,
+                description: item.description,
+                restaurant: item.nomRestaurant,
+                cuisine: item.cuisine
+            }));
+
             try {
+                const idToken = await currentIdToken();
                 const result = await getPersonalizedRecommendationsAction({
                     userHistory: userHistorySummary,
                     availableMenuItems: availableMenuItems,
                     currentLocation: 'Abidjan, Côte d\'Ivoire',
                     timeOfDay: new Date().getHours() < 12 ? 'Matin' : (new Date().getHours() < 18 ? 'Après-midi' : 'Soir'),
-                }, await currentIdToken());
+                }, idToken);
 
-                if (!result.success) {
-                    throw new Error(result.error);
+                if (result.success && result.data?.recommendations?.length > 0) {
+                    setRecommendations(result.data);
+                } else {
+                    setRecommendations(fallbackRecommendations.length > 0 ? { recommendations: fallbackRecommendations } : null);
                 }
-
-                setRecommendations(result.data);
             } catch (e) {
-                console.error("Error fetching recommendations:", e);
-                setHasError(true);
-                setRecommendations(null);
+                console.error("Error fetching recommendations, using fallback:", e);
+                setRecommendations(fallbackRecommendations.length > 0 ? { recommendations: fallbackRecommendations } : null);
             } finally {
                 setLoadingRecommendations(false);
             }

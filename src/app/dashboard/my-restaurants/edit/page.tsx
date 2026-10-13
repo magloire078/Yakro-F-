@@ -19,6 +19,8 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImageUploadError, uploadImage } from '@/lib/cloudinary';
+import { generateImageAction } from '@/app/actions/ai-actions';
+import { currentIdToken } from '@/lib/auth-token';
 
 function EditRestaurantContent() {
     const { getRestaurant } = useData();
@@ -30,6 +32,8 @@ function EditRestaurantContent() {
 
     const { user } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isGeneratingImage, setIsGeneratingImage] = React.useState(false);
+    const [generatedImageUrl, setGeneratedImageUrl] = React.useState<string | null>(null);
     const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
     // Sur un réseau mobile faible, l'image de fond hotlinkée (Unsplash) peut
     // échouer à charger et son texte alternatif s'affiche alors comme du
@@ -51,6 +55,31 @@ function EditRestaurantContent() {
         }
     }, [restaurantId, getRestaurant, user, router, toast]);
 
+    const handleGenerateImage = async () => {
+        const nom = (document.querySelector('input[name="nom"]') as HTMLInputElement)?.value || restaurant?.nom;
+        const cuisine = (document.querySelector('input[name="cuisine"]') as HTMLInputElement)?.value || restaurant?.cuisine;
+        
+        if (!nom) {
+            toast({ variant: 'destructive', title: 'Données Insuffisantes', description: 'Veuillez renseigner le nom du restaurant pour générer un visuel.' });
+            return;
+        }
+
+        setIsGeneratingImage(true);
+        try {
+            const prompt = `restaurant ${nom} ${cuisine || ''} à Yamoussoukro, Côte d'Ivoire, façade extérieure luxueuse ou salle élégante, photographie culinaire professionnelle`;
+            const result = await generateImageAction({ prompt }, await currentIdToken());
+            if (!result.success) throw new Error(result.error);
+            
+            setGeneratedImageUrl(result.data.imageDataUri);
+            toast({ title: 'Visuel généré !', description: 'Une photo prestigieuse a été créée pour votre restaurant.' });
+        } catch (e) {
+            console.error(e);
+            toast({ variant: 'destructive', title: 'Échec', description: "Impossible de générer le visuel IA pour l'instant." });
+        } finally {
+            setIsGeneratingImage(false);
+        }
+    };
+
     const onSubmit = async (data: RestaurantFormValues, imageFile: File | null) => {
         if (!user || !restaurant || !restaurantId) return;
         setIsLoading(true);
@@ -61,6 +90,9 @@ function EditRestaurantContent() {
         try {
             if (imageFile) {
                 const imageUrl = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+                updateData.image = imageUrl;
+            } else if (generatedImageUrl) {
+                const imageUrl = await uploadImage(generatedImageUrl, `restaurants/${restaurantId}`);
                 updateData.image = imageUrl;
             }
 
@@ -75,7 +107,9 @@ function EditRestaurantContent() {
             });
 
             // Nouvelle photo enregistrée : on efface les versions précédentes.
-            if (updateData.image && imageFile) void deleteEntityImages(db, 'restaurant', restaurantId, updateData.image);
+            if (updateData.image && (imageFile || generatedImageUrl)) {
+                void deleteEntityImages(db, 'restaurant', restaurantId, updateData.image);
+            }
 
             toast({
                 title: 'Restaurant mis à jour !',
@@ -92,7 +126,7 @@ function EditRestaurantContent() {
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     if (!restaurantId) {
         return (
@@ -155,7 +189,7 @@ function EditRestaurantContent() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-3xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground mb-3 leading-tight"
+                            className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-foreground mb-3 leading-tight break-words px-2"
                         >
                             Raffiner <span className="text-primary">{restaurant.nom}</span>
                         </motion.h1>
@@ -163,14 +197,14 @@ function EditRestaurantContent() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-muted-foreground font-medium max-w-md mx-auto text-xs md:text-sm italic uppercase tracking-wider"
+                            className="text-muted-foreground font-medium max-w-md mx-auto text-xs sm:text-sm leading-relaxed px-2"
                         >
                             Perfectionnez les détails de votre signature gastronomique pour une expérience client inégalée.
                         </motion.p>
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-card/90 backdrop-blur-xl border border-border p-6 md:p-12 shadow-2xl relative overflow-hidden rounded-2xl sm:rounded-3xl">
+                    <div className="bg-card/90 backdrop-blur-xl border border-border p-5 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden rounded-2xl sm:rounded-3xl">
                         <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
                         
                         <div className="relative z-10">
@@ -178,6 +212,9 @@ function EditRestaurantContent() {
                                 onSubmit={onSubmit}
                                 initialData={restaurant}
                                 isLoading={isLoading}
+                                isGeneratingImage={isGeneratingImage}
+                                onGenerateImage={handleGenerateImage}
+                                generatedImage={generatedImageUrl}
                                 submitButtonText="Actualiser mon Prestige"
                             />
                         </div>
