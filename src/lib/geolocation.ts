@@ -12,6 +12,25 @@ export const YAKRO_DEFAULT_COORDS: GeoLocationCoords = {
     longitude: -5.2893,
 };
 
+/**
+ * Coordonnées posées automatiquement par l'ancienne création de restaurant
+ * quand aucune position n'était saisie (centre-ville approximatif).
+ */
+const LEGACY_PLACEHOLDER_COORDS: GeoLocationCoords = { latitude: 6.82, longitude: -5.28 };
+
+/**
+ * Vrai si le point porte une vraie position : renseignée, différente de
+ * (0, 0) — valeur produite par un champ vide converti en nombre — et du
+ * centre-ville posé par défaut à la création.
+ */
+export function hasReliableLocation(point: { latitude?: number | null; longitude?: number | null } | null | undefined): point is GeoLocationCoords {
+    if (typeof point?.latitude !== 'number' || typeof point?.longitude !== 'number') return false;
+    if (!Number.isFinite(point.latitude) || !Number.isFinite(point.longitude)) return false;
+    if (point.latitude === 0 && point.longitude === 0) return false;
+    if (point.latitude === LEGACY_PLACEHOLDER_COORDS.latitude && point.longitude === LEGACY_PLACEHOLDER_COORDS.longitude) return false;
+    return true;
+}
+
 export async function getCurrentLocation(): Promise<GeoLocationCoords> {
     if (Capacitor.isNativePlatform()) {
         try {

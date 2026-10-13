@@ -16,12 +16,25 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader, Upload, MapPin, ChefHat, Wand2 } from 'lucide-react';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
-import { getCurrentLocation } from '@/lib/geolocation';
+import { getCurrentLocation, hasReliableLocation } from '@/lib/geolocation';
+import { LocationPicker } from '@/components/map/location-picker';
+import { FoodImage } from '@/components/food-image';
+import { resolveFoodImageSource } from '@/lib/food-image';
+
+// Un champ numérique vide ne doit pas devenir 0 : `z.coerce.number()`
+// transformait '' en 0 et enregistrait le restaurant en (0, 0), au large
+// des côtes. Vide → absent, texte → nombre.
+const coordinate = (min: number, max: number) => z.preprocess(
+    (value) => (value === '' || value === null || value === undefined
+        ? undefined
+        : typeof value === 'string' ? Number(value) : value),
+    z.number({
+        required_error: 'Placez le restaurant sur la carte.',
+        invalid_type_error: 'Coordonnée invalide.',
+    }).min(min, { message: 'Coordonnée invalide.' }).max(max, { message: 'Coordonnée invalide.' }),
+);
 
 const restaurantFormSchema = z.object({
     nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères." }),
@@ -29,10 +42,18 @@ const restaurantFormSchema = z.object({
     adresse: z.string().min(10, { message: "L'adresse doit contenir au moins 10 caractères." }),
     tempsDeLivraison: z.coerce.number().min(5, { message: "Le temps de livraison doit être d'au moins 5 minutes." }),
     fraisDeLivraison: z.coerce.number().min(0, { message: "Les frais de livraison ne peuvent être négatifs." }),
-    latitude: z.coerce.number().optional(),
-    longitude: z.coerce.number().optional(),
+    latitude: coordinate(-90, 90),
+    longitude: coordinate(-180, 180),
     image: z.string().optional(),
     indiceImage: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (!hasReliableLocation(data)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['latitude'],
+            message: 'Position approximative : placez précisément le restaurant sur la carte.',
+        });
+    }
 });
 
 export type RestaurantFormValues = z.infer<typeof restaurantFormSchema>;
@@ -65,14 +86,21 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
         },
     });
 
+    // Les champs latitude/longitude peuvent contenir du texte saisi à la main :
+    // on ne place le repère que sur une position exploitable.
+    const watchedLatitude = Number(form.watch('latitude'));
+    const watchedLongitude = Number(form.watch('longitude'));
+    const pickerValue = React.useMemo(() => {
+        const point = { latitude: watchedLatitude, longitude: watchedLongitude };
+        return hasReliableLocation(point) ? point : null;
+    }, [watchedLatitude, watchedLongitude]);
+
     React.useEffect(() => {
         if (initialData) {
             form.reset(initialData);
-            const placeholder = getPlaceholderImage(initialData.indiceImage);
-            const imageSrc = (initialData.image && !initialData.image.includes('picsum.photos'))
-                ? initialData.image
-                : placeholder.url;
-            setImagePreview(imageSrc);
+            // Sans photo exploitable, l'aperçu reste vide (« Sélectionner une
+            // image ») au lieu d'afficher une image de remplacement.
+            setImagePreview(resolveFoodImageSource(initialData.image) ? initialData.image ?? null : null);
         }
     }, [initialData, form]);
     
@@ -105,8 +133,8 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
         setIsFetchingLocation(true);
         try {
             const { latitude, longitude } = await getCurrentLocation();
-            form.setValue('latitude', parseFloat(latitude.toFixed(6)));
-            form.setValue('longitude', parseFloat(longitude.toFixed(6)));
+            form.setValue('latitude', parseFloat(latitude.toFixed(6)), { shouldDirty: true, shouldValidate: true });
+            form.setValue('longitude', parseFloat(longitude.toFixed(6)), { shouldDirty: true, shouldValidate: true });
             toast({
                 title: 'Position récupérée !',
                 description: 'Les coordonnées GPS ont été ajoutées au formulaire.',
@@ -165,24 +193,13 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                                 </div>
                             ) : imagePreview ? (
                                 <>
-                                    {imagePreview.includes('res.cloudinary.com') ? (
-                                        <CldImage
-                                            src={imagePreview}
-                                            alt="Aperçu"
-                                            fill
-                                            crop="fill"
-                                            gravity="auto"
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <Image 
-                                            src={imagePreview} 
-                                            alt="Aperçu" 
-                                            fill 
-                                            sizes="(max-width: 768px) 100vw, 400px"
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-105" 
-                                        />
-                                    )}
+                                    <FoodImage
+                                        src={imagePreview}
+                                        alt={'Aperçu'}
+                                        kind="restaurant"
+                                        sizes="(max-width: 768px) 100vw, 400px"
+                                        className="transition-transform duration-1000 group-hover:scale-105"
+                                    />
                                     <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                         <div className="flex flex-col items-center gap-2">
                                             <Upload className="h-8 w-8 text-white" />
@@ -304,7 +321,7 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                     <div className="flex justify-between items-center gap-4">
                         <div>
                             <h4 className="text-foreground font-black italic uppercase tracking-tighter text-xl leading-tight">Géolocalisation</h4>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mt-2">Précision stratégique pour les livreurs</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mt-2">Touchez la carte ou faites glisser le repère</p>
                         </div>
                         <Button 
                             type="button" 
@@ -318,6 +335,17 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                         </Button>
                     </div>
                     
+                    <div className="h-64 sm:h-80 rounded-2xl overflow-hidden border border-border">
+                        <LocationPicker
+                            value={pickerValue}
+                            onChange={({ latitude, longitude }) => {
+                                form.setValue('latitude', latitude, { shouldDirty: true, shouldValidate: true });
+                                form.setValue('longitude', longitude, { shouldDirty: true, shouldValidate: true });
+                            }}
+                            className="h-full w-full"
+                        />
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}

@@ -8,6 +8,9 @@ import { useFirebase } from './firebase-provider';
 import { useAuth } from './auth-context';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { getAuth } from 'firebase/auth';
+import { uploadImage } from '@/lib/cloudinary';
+import type { ImageEntityKind } from '@/lib/cloudinary-ids';
 
 interface DataState {
     restaurants: Restaurant[];
@@ -252,13 +255,31 @@ export const markNotificationRead = async (db: Firestore, notificationId: string
     }
 };
 
+/**
+ * Supprime de Cloudinary les photos d'un plat ou d'un restaurant (toutes, ou
+ * toutes sauf `keepImageUrl` après un changement de photo). À appeler AVANT
+ * de supprimer le document : l'action vérifie la propriété sur celui-ci.
+ * Un échec n'empêche jamais l'opération principale : l'image reste
+ * simplement stockée.
+ */
+export const deleteEntityImages = async (db: Firestore, kind: ImageEntityKind, entityId: string, keepImageUrl?: string | null) => {
+    try {
+        const idToken = await getAuth(db.app).currentUser?.getIdToken();
+        if (!idToken) return;
+        const { deleteEntityImagesAction } = await import('@/app/actions/cloudinary-actions');
+        const result = await deleteEntityImagesAction({ idToken, kind, entityId, keepImageUrl });
+        if (!result.success) console.error(`Nettoyage des photos (${kind} ${entityId}) refusé:`, result.error);
+    } catch (error) {
+        console.error(`Nettoyage des photos (${kind} ${entityId}) impossible:`, error);
+    }
+};
+
 export const deleteMenuItem = async (db: Firestore, itemId: string) => {
     const itemDocRef = doc(db, 'plats', itemId);
 
     try {
+        await deleteEntityImages(db, 'plat', itemId);
         await deleteDoc(itemDocRef);
-        const { deleteCloudinaryImageAction } = await import('@/app/actions/cloudinary-actions');
-        void deleteCloudinaryImageAction(`plats/${itemId}`);
     } catch (e) {
         const permissionError = new FirestorePermissionError({
             path: itemDocRef.path,
@@ -273,30 +294,15 @@ export const updateRestaurant = async (db: Firestore, restaurantId: string, data
     const restaurantDocRef = doc(db, 'restaurants', restaurantId);
     const updateData: Partial<Restaurant> = { ...data };
 
+    // Un échec d'envoi remonte désormais à l'appelant au lieu d'être ignoré
+    // en silence (la photo restait l'ancienne sans aucun message).
+    if (imageFile) {
+        updateData.image = await uploadImage(imageFile, `restaurants/${restaurantId}`);
+    }
+
     try {
-        if (imageFile) {
-            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-            const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-            
-            if (!cloudName || !uploadPreset) throw new Error("Cloudinary config missing");
-
-            const formData = new FormData();
-            formData.append('file', imageFile);
-            formData.append('upload_preset', uploadPreset);
-            formData.append('public_id', `restaurants/${restaurantId}`);
-
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                const uploadResult = await response.json();
-                updateData.image = uploadResult.secure_url;
-            }
-        }
-
         await updateDoc(restaurantDocRef, updateData);
+        if (updateData.image) void deleteEntityImages(db, 'restaurant', restaurantId, updateData.image);
     } catch (e) {
         const permissionError = new FirestorePermissionError({
             path: restaurantDocRef.path,
@@ -311,9 +317,8 @@ export const updateRestaurant = async (db: Firestore, restaurantId: string, data
 export const deleteRestaurant = async (db: Firestore, restaurantId: string) => {
     const restaurantDocRef = doc(db, 'restaurants', restaurantId);
     try {
+        await deleteEntityImages(db, 'restaurant', restaurantId);
         await deleteDoc(restaurantDocRef);
-        const { deleteCloudinaryImageAction } = await import('@/app/actions/cloudinary-actions');
-        void deleteCloudinaryImageAction(`restaurants/${restaurantId}`);
     } catch (e) {
         const permissionError = new FirestorePermissionError({
             path: restaurantDocRef.path,

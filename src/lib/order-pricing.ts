@@ -1,5 +1,5 @@
 import type { CartItem, MenuItem } from './types';
-import { getPlaceholderImage } from './placeholder-images';
+import { resolveFoodImageSource } from './food-image';
 
 export interface PriceCartItemInput {
   menuItemId: string;
@@ -44,10 +44,8 @@ export function priceCartItem(input: PriceCartItemInput, menuItem: MenuItem): Pr
     }
   }
 
-  const placeholder = getPlaceholderImage(menuItem.indiceImage);
-  const image = menuItem.image && !menuItem.image.includes('picsum.photos')
-    ? menuItem.image
-    : placeholder.url;
+  // Chaîne vide plutôt qu'une image de remplacement aléatoire (voir order-builder).
+  const image = resolveFoodImageSource(menuItem.image) ? menuItem.image : '';
 
   return {
     success: true,

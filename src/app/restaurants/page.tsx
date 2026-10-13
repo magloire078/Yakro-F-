@@ -5,8 +5,6 @@ import { MenuItemCard } from "@/components/menu-item-card";
 import { Badge } from "@/components/ui/badge";
 import { useData } from "@/contexts/data-context";
 import { Clock, Star, Loader, Ear, Bike, Wand2, Users, MapPin, ChevronLeft, ShoppingBag, Sparkles } from "lucide-react";
-import Image from "next/image";
-import { CldImage } from 'next-cloudinary';
 import { useSearchParams, useRouter } from "next/navigation";
 import { Skeleton } from '@/components/ui/skeleton';
 import { ReviewCard } from '@/components/review-card';
@@ -18,9 +16,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { FoodImage } from '@/components/food-image';
+import { currentIdToken } from '@/lib/auth-token';
+import { isAiAccessMessage } from '@/lib/ai-quota';
 
 function RestaurantPageContent() {
     const searchParams = useSearchParams();
@@ -66,7 +66,7 @@ function RestaurantPageContent() {
                 restaurantName: restaurant.nom,
                 cuisine: restaurant.cuisine,
                 count: 3,
-            });
+            }, await currentIdToken());
 
             if (!result.success) {
                 throw new Error(result.error);
@@ -88,7 +88,7 @@ function RestaurantPageContent() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur',
-                description: "Le chef IA est occupé. Réessayez bientôt !",
+                description: aiAccessMessage(error) ?? "Le chef IA est occupé. Réessayez bientôt !",
             });
         } finally {
             setLoadingAiReviews(false);
@@ -103,7 +103,7 @@ function RestaurantPageContent() {
             const audioInput = {
                 reviews: aiReviews.map(r => ({ nomUtilisateur: r.nomUtilisateur, note: r.note, commentaire: r.commentaire }))
             };
-            const result = await generateAudioReviewAction(audioInput);
+            const result = await generateAudioReviewAction(audioInput, await currentIdToken());
             
             if (!result.success) {
                 throw new Error(result.error);
@@ -115,7 +115,7 @@ function RestaurantPageContent() {
             toast({
                 variant: 'destructive',
                 title: 'Erreur Audio',
-                description: "Impossible d'activer la narration."
+                description: aiAccessMessage(error) ?? "Impossible d'activer la narration."
             });
         } finally {
             setIsGeneratingAudio(false);
@@ -169,10 +169,6 @@ function RestaurantPageContent() {
     }
 
     const restaurantMenu = menuItems.filter(item => item.restaurantId === id);
-    const placeholder = getPlaceholderImage(restaurant.indiceImage);
-    const imageSrc = (restaurant.image && !restaurant.image.includes('picsum.photos'))
-        ? restaurant.image
-        : placeholder.url;
 
     return (
         <div className="pb-16 sm:pb-24">
@@ -184,27 +180,13 @@ function RestaurantPageContent() {
                     transition={{ duration: 2, ease: "easeOut" }}
                     className="absolute inset-0"
                 >
-                    {imageSrc.includes('res.cloudinary.com') ? (
-                        <CldImage
-                            src={imageSrc}
-                            alt={restaurant.nom}
-                            fill
-                            sizes="100vw"
-                            crop="fill"
-                            gravity="auto"
-                            className="object-cover"
-                            priority
-                        />
-                    ) : (
-                        <Image
-                            src={imageSrc}
-                            alt={restaurant.nom}
-                            fill
-                            sizes="100vw"
-                            className="object-cover"
-                            priority
-                        />
-                    )}
+                    <FoodImage
+                        src={restaurant.image}
+                        alt={restaurant.nom}
+                        kind="restaurant"
+                        sizes="100vw"
+                        priority
+                    />
                 </motion.div>
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
@@ -422,6 +404,12 @@ function RestaurantPageContent() {
             </div>
         </div>
     )
+}
+
+// Connexion requise ou limite quotidienne atteinte : on l'affiche tel quel
+// plutôt qu'un message d'indisponibilité trompeur.
+function aiAccessMessage(error: unknown): string | null {
+    return error instanceof Error && isAiAccessMessage(error.message) ? error.message : null;
 }
 
 export default function RestaurantPage() {

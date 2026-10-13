@@ -1,9 +1,15 @@
-import { doc, setDoc, deleteDoc, Firestore } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, serverTimestamp, Firestore, type Timestamp } from 'firebase/firestore';
 
 export interface LivreurPublicData {
   nom?: string;
   latitude?: number;
   longitude?: number;
+  /**
+   * Heure serveur de la dernière position publiée. Permet aux cartes de
+   * repérer un livreur dont l'app s'est fermée sans passer hors service
+   * (position figée) au lieu de l'afficher indéfiniment « en direct ».
+   */
+  updatedAt?: Timestamp;
 }
 
 /**
@@ -15,9 +21,9 @@ export interface LivreurPublicData {
 export async function publishLivreurPublic(
   db: Firestore,
   uid: string,
-  data: LivreurPublicData,
+  data: Omit<LivreurPublicData, 'updatedAt'>,
 ): Promise<void> {
-  await setDoc(doc(db, 'livreurs_public', uid), data, { merge: true });
+  await setDoc(doc(db, 'livreurs_public', uid), { ...data, updatedAt: serverTimestamp() }, { merge: true });
 }
 
 /**

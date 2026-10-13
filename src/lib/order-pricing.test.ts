@@ -70,11 +70,11 @@ describe('priceCartItem', () => {
     expect(result.success).toBe(false);
   });
 
-  it('falls back to the placeholder image when none is set', () => {
+  it('stores an empty image (never undefined) when none is set', () => {
     const result = priceCartItem({ menuItemId: 'p1', quantite: 1 }, baseMenuItem({ image: undefined }));
     expect(result.success).toBe(true);
     if (!result.success) return;
-    expect(result.item.image).toBeTruthy();
+    expect(result.item.image).toBe('');
   });
 });
 

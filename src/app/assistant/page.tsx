@@ -15,6 +15,8 @@ import { Sparkles, Send, Loader2, ShoppingBag, Clock, Mic, MicOff } from 'lucide
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { currentIdToken } from '@/lib/auth-token';
+import { isAiAccessMessage } from '@/lib/ai-quota';
 
 interface ChatMessage extends ConversationTurn {
   suggestions?: AssistantSuggestion[];
@@ -58,12 +60,14 @@ export default function AssistantPage() {
         conversationHistory,
         availableMenuItems: catalog,
         userLocation: userProfile?.adresseParDefaut,
-      });
+      }, await currentIdToken());
 
       if (!result.success) {
         setMessages((prev) => [...prev, {
           role: 'assistant',
-          content: "Désolé, je n'ai pas pu réfléchir à votre demande pour le moment. Réessayez dans un instant.",
+          content: isAiAccessMessage(result.error)
+            ? result.error
+            : "Désolé, je n'ai pas pu réfléchir à votre demande pour le moment. Réessayez dans un instant.",
         }]);
         return;
       }

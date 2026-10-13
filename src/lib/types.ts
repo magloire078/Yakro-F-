@@ -244,3 +244,39 @@ export interface AppNotification {
   ageMinutes?: number;
 }
 
+
+// ── Cartographie temps réel ──────────────────────────────────────────────
+
+/**
+ * Position GPS live partagée volontairement par un client pendant sa
+ * commande (collection `positions_clients`, document = id de commande).
+ * Lisible uniquement par les acteurs de la commande (client, livreur,
+ * restaurateur) et les SuperAdmin ; supprimée quand le partage s'arrête.
+ */
+export interface ClientLivePosition {
+  userId: string;
+  latitude: number;
+  longitude: number;
+  updatedAt?: Timestamp | FieldValue;
+}
+
+export type MapMarkerKind = 'restaurant' | 'livreur' | 'client';
+
+export interface MapMarker {
+  id: string;
+  kind: MapMarkerKind;
+  latitude: number;
+  longitude: number;
+  label: string;
+  sublabel?: string;
+  /** Position GPS mise à jour en direct (pastille animée). */
+  live?: boolean;
+}
+
+/** Trajet tracé entre plusieurs points (ex. restaurant → livreur → client). */
+export interface MapRoute {
+  id: string;
+  points: Array<[number, number]>;
+  /** `active` : livraison en cours (trait plein), `planned` : à venir (pointillés). */
+  status: 'active' | 'planned';
+}

@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { getCurrentLocation, YAKRO_DEFAULT_COORDS } from '@/lib/geolocation';
+import { currentIdToken } from '@/lib/auth-token';
 
 interface Category {
     name: string;
@@ -97,7 +98,6 @@ export default function CustomerHomePage() {
   const [activeOrder, setActiveOrder] = React.useState<Order | null>(null);
   const [recommendations, setRecommendations] = React.useState<PersonalizedRecommendationsOutput | null>(null);
   const [loadingRecommendations, setLoadingRecommendations] = React.useState(true);
-  const [recommendationError, setRecommendationError] = React.useState<string | null>(null);
   const [activeFilter, setActiveFilter] = React.useState<SortFilter>(null);
   const [userLocation, setUserLocation] = React.useState<Coordinates | null>(null);
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
@@ -109,15 +109,13 @@ export default function CustomerHomePage() {
 
   React.useEffect(() => {
     const fetchRecommendations = async () => {
-      if (!user || menuItems.length === 0 || restaurants.length === 0) {
+      if (menuItems.length === 0 || restaurants.length === 0) {
         setLoadingRecommendations(false);
         return;
-      };
+      }
       
       setLoadingRecommendations(true);
-      setRecommendationError(null);
       
-      const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
       const availableMenuItems = menuItems.map(item => {
         const restaurant = restaurants.find(r => r && r.id === item.restaurantId);
         return {
@@ -127,27 +125,45 @@ export default function CustomerHomePage() {
           prix: item.prix,
           nomRestaurant: restaurant?.nom || 'Restaurant inconnu',
           cuisine: restaurant?.cuisine || 'Inconnue'
-        }
+        };
       });
-      
+
+      const fallbackRecommendations = availableMenuItems.slice(0, 5).map(item => ({
+        item: item.nom,
+        description: item.description,
+        restaurant: item.nomRestaurant,
+        cuisine: item.cuisine
+      }));
+
+      // Si l'utilisateur n'est pas connecté, afficher directement les suggestions de la carte
+      if (!user) {
+        if (fallbackRecommendations.length > 0) {
+          setRecommendations({ recommendations: fallbackRecommendations });
+        }
+        setLoadingRecommendations(false);
+        return;
+      }
+
+      const userHistorySummary = generateUserHistorySummary(userDeliveredOrders, restaurants);
+
       try {
+        const idToken = await currentIdToken();
         const result = await getPersonalizedRecommendationsAction({
           userHistory: userHistorySummary,
           availableMenuItems: availableMenuItems,
           currentLocation: 'Abidjan, Côte d\'Ivoire',
           timeOfDay: new Date().getHours() < 12 ? 'Matin' : (new Date().getHours() < 18 ? 'Après-midi' : 'Soir'),
-        });
+        }, idToken);
 
-        if (!result.success) {
-            throw new Error(result.error);
+        if (result.success && result.data?.recommendations?.length > 0) {
+          setRecommendations(result.data);
+        } else {
+          // Repli gracieux sur les spécialités disponibles sans alerte rouge
+          setRecommendations(fallbackRecommendations.length > 0 ? { recommendations: fallbackRecommendations } : null);
         }
-
-        setRecommendations(result.data);
       } catch (e) {
-        const error = e as Error;
-        console.error("Error fetching recommendations:", error);
-        setRecommendationError(error.message || "Impossible de charger les recommandations.");
-        setRecommendations(null);
+        console.error("Error fetching recommendations, using fallback:", e);
+        setRecommendations(fallbackRecommendations.length > 0 ? { recommendations: fallbackRecommendations } : null);
       } finally {
         setLoadingRecommendations(false);
       }
@@ -500,15 +516,9 @@ export default function CustomerHomePage() {
 
       {loadingRecommendations ? (
           <RecommendationsSkeleton />
-      ) : (
-          <Recommendations recommendationsData={recommendations} hasError={!!recommendationError} />
-      )}
-      
-      {recommendationError && user && (
-          <div className="text-center text-muted-foreground -mt-2">
-              <p className="text-xs">Service de recommandations IA temporairement indisponible.</p>
-          </div>
-      )}
+      ) : recommendations ? (
+          <Recommendations recommendationsData={recommendations} hasError={false} />
+      ) : null}
       
       {featuredRestaurants.length > 0 && !selectedCategory && !searchQuery && (
           <section>

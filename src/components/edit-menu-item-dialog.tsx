@@ -21,8 +21,9 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { logAdminAction } from '@/lib/audit-logs';
 import { useAuth } from '@/contexts/auth-context';
-import { uploadImage } from '@/lib/cloudinary';
+import { ImageUploadError, uploadImage } from '@/lib/cloudinary';
 import { Loader, BookOpenCheck } from 'lucide-react';
+import { deleteEntityImages } from '@/contexts/data-context';
 
 
 
@@ -88,6 +89,9 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
         throw e;
       });
 
+      // Nouvelle photo enregistrée : on efface les versions précédentes.
+      if (updateData.image && imageFile) void deleteEntityImages(db, 'plat', menuItem.id, updateData.image);
+
       toast({
         title: 'Plat mis à jour',
         description: 'Les modifications ont été enregistrées.',
@@ -104,11 +108,11 @@ export function EditMenuItemDialog({ isOpen, onClose, menuItem }: EditMenuItemDi
       }
 
       onClose();
-    } catch {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erreur',
-        description: 'Impossible de mettre à jour le plat.',
+        description: error instanceof ImageUploadError ? error.message : 'Impossible de mettre à jour le plat.',
       });
     } finally {
       setIsSubmitting(false);

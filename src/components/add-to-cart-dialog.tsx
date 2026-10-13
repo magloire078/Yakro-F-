@@ -17,10 +17,8 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { useCart } from '@/contexts/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import type { MenuItem, MenuOption } from '@/lib/types';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import { Minus, Plus } from 'lucide-react';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { FoodImage } from '@/components/food-image';
 
 interface AddToCartDialogProps {
   item: MenuItem;
@@ -98,11 +96,6 @@ export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
     return (basePrice + sidePrice + drinkPrice) * quantity;
   }
 
-  const placeholder = getPlaceholderImage(item.indiceImage);
-  const dialogImageSrc = (item.image && !item.image.includes('picsum.photos'))
-    ? item.image
-    : placeholder.url;
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild onClick={handleTriggerClick}>{children}</DialogTrigger>
@@ -110,25 +103,12 @@ export function AddToCartDialog({ item, children }: AddToCartDialogProps) {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <div className="relative w-full h-32 rounded-lg overflow-hidden mb-4">
-              {dialogImageSrc.includes('res.cloudinary.com') ? (
-                <CldImage
-                  src={dialogImageSrc}
+              <FoodImage
+                  src={item.image}
                   alt={item.nom}
-                  fill
-                  crop="fill"
-                  gravity="auto"
-                  className="object-cover"
-                />
-              ) : (
-                <Image
-                  src={dialogImageSrc}
-                  alt={item.nom}
-                  width={placeholder.width}
-                  height={placeholder.height}
-                  className="object-cover w-full h-full"
-                  data-ai-hint={item.indiceImage}
-                />
-              )}
+                  kind="plat"
+                  sizes="425px"
+              />
             </div>
             <DialogTitle>{item.nom}</DialogTitle>
             <DialogDescription>{item.description}</DialogDescription>

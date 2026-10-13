@@ -1,5 +1,5 @@
 import type { CartItem, Order, PaymentMode, Restaurant, UserProfile } from './types';
-import { getPlaceholderImage } from './placeholder-images';
+import { resolveFoodImageSource } from './food-image';
 import { isPremiumActive } from './premium';
 
 export const COMMISSION_RATE = 0.15;
@@ -60,13 +60,13 @@ export function buildOrderFromCart(input: BuildOrderInput): Omit<Order, 'id'> {
   const netRevenue = cartSubtotal - commissionAmount - discount;
   const discountedTotal = cartTotal - discount;
 
-  const itemsForOrder = cartItems.map((item) => {
-    const placeholder = getPlaceholderImage(item.indiceImage);
-    const image = item.image && !item.image.includes('picsum.photos')
-      ? item.image
-      : placeholder.url;
-    return { ...item, image };
-  });
+  // Sans photo exploitable, chaîne vide (jamais `undefined`, refusé par
+  // Firestore) : l'affichage montre alors le visuel de marque au lieu d'une
+  // image de remplacement aléatoire.
+  const itemsForOrder = cartItems.map((item) => ({
+    ...item,
+    image: resolveFoodImageSource(item.image) ? item.image : '',
+  }));
 
   return {
     userId: user.uid,

@@ -130,6 +130,10 @@ export async function processDeliveredOrderAction(
         tx.update(customerRef, { filleulRecompenseVersee: true });
       }
 
+      // Livraison terminée : la position GPS live du client (si partagée)
+      // n'a plus de raison d'être conservée.
+      tx.delete(db.collection('positions_clients').doc(orderId));
+
       tx.update(orderRef, { livraisonTraitee: true });
 
       return { success: true, lowStockAlerts, pointsAwarded };

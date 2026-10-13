@@ -12,6 +12,7 @@ import { initiateMobileMoneyPaymentAction } from '@/app/actions/payment-actions'
 
 interface PlaceOrderResult {
   success: boolean;
+  orderId?: string;
   error?: Error;
   /**
    * Présent uniquement pour un paiement Mobile Money réussi : l'appelant
@@ -274,7 +275,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.dispatchEvent(new CustomEvent('place-order'));
 
     if (paymentMode === 'especes') {
-      return { success: true };
+      return { success: true, orderId: result.orderId };
     }
 
     // Mobile Money : la commande existe déjà (paiement.statut =
@@ -285,12 +286,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const paymentResult = await initiateMobileMoneyPaymentAction(result.orderId, idToken);
       if (!paymentResult.success) {
-        return { success: true, error: new Error(paymentResult.error) };
+        return { success: true, orderId: result.orderId, error: new Error(paymentResult.error) };
       }
-      return { success: true, paymentUrl: paymentResult.paymentUrl };
+      return { success: true, orderId: result.orderId, paymentUrl: paymentResult.paymentUrl };
     } catch (err) {
       console.error('initiateMobileMoneyPaymentAction threw:', err);
-      return { success: true, error: err instanceof Error ? err : new Error(String(err)) };
+      return { success: true, orderId: result.orderId, error: err instanceof Error ? err : new Error(String(err)) };
     }
   }, [user, userProfile, cartItems, appliedCoupon, clearCart]);
 

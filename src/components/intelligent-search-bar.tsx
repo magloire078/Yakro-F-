@@ -9,6 +9,7 @@ import { Badge } from './ui/badge';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { currentIdToken } from '@/lib/auth-token';
 
 // Types pour l'API SpeechRecognition
 interface SpeechRecognitionEvent extends Event {
@@ -120,7 +121,7 @@ export function IntelligentSearchBar({ onSearchChange, onInterpretedSearchChange
   React.useEffect(() => {
     if (debouncedSearchTerm.length > 2) {
       setIsAiLoading(true);
-      intelligentSearchAction({ query: debouncedSearchTerm })
+      currentIdToken().then((token) => intelligentSearchAction({ query: debouncedSearchTerm }, token))
         .then(result => {
             if (result.success) {
                 setInterpretedResult(result.data);

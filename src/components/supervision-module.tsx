@@ -14,7 +14,6 @@ import {
     Navigation2,
     Activity,
     Target,
-    Zap,
     Maximize2,
     Store,
     Package
@@ -36,11 +35,12 @@ import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { OperationsMap } from '@/components/map/operations-map';
 
 export type OrderFocusRequest = { orderId: string; requestedAt: number };
 
 export function SupervisionModule({ focusRequest }: { focusRequest?: OrderFocusRequest | null } = {}) {
-    const { orders } = useData();
+    const { orders, restaurants } = useData();
     const [view, setView] = React.useState<'list' | 'map'>('list');
     const [searchTerm, setSearchTerm] = React.useState('');
 
@@ -187,7 +187,7 @@ export function SupervisionModule({ focusRequest }: { focusRequest?: OrderFocusR
                                 className="h-[420px] md:h-[650px] relative bg-background/40 overflow-hidden flex"
                             >
                                 <div className="flex-1 relative">
-                                    <MapSimulation orders={filteredOrders} />
+                                    <OperationsMap restaurants={restaurants} orders={filteredOrders} livreurScope="all" className="absolute inset-0" />
                                 </div>
                                 <div className="hidden md:flex w-80 border-l border-foreground/5 glass overflow-hidden flex-col">
                                     <div className="p-4 border-b border-foreground/5">
@@ -330,163 +330,5 @@ function OrderListItem({ order, index }: { order: Order, index: number }) {
                 </div>
             </div>
         </motion.div>
-    );
-}
-
-function MapSimulation({ orders }: { orders: Order[] }) {
-    const markers = React.useMemo(() => {
-        return orders.map((order, idx) => {
-            const x = 20 + (idx * 15) % 60 + Math.random() * 10;
-            const y = 20 + (idx * 20) % 60 + Math.random() * 10;
-            
-            // Pour les vecteurs, on simule une destination
-            const destX = x + (Math.random() > 0.5 ? 15 : -15);
-            const destY = y + (Math.random() > 0.5 ? 15 : -15);
-
-            return {
-                id: order.id,
-                x,
-                y,
-                destX,
-                destY,
-                type: order.statut === 'En Route' ? 'delivery' : 'restaurant',
-                status: order.statut,
-                isNew: (Date.now() - new Date(order.date).getTime()) < 300000 // 5 mins
-            };
-        });
-    }, [orders]);
-
-    return (
-        <div className="w-full h-full relative overflow-hidden bg-background flex items-center justify-center">
-            {/* Tactical Grid */}
-            <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] bg-[length:40px_40px] text-foreground" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background" />
-            
-            <div className="relative w-full h-full p-20">
-                <svg viewBox="0 0 800 600" className="w-full h-full fill-none stroke-foreground/5">
-                    <circle cx="400" cy="300" r="100" className="stroke-primary/10" strokeDasharray="10 10" />
-                    <circle cx="400" cy="300" r="200" className="stroke-primary/5" strokeDasharray="5 5" />
-                    <circle cx="400" cy="300" r="300" className="stroke-foreground/[0.02]" />
-                    <line x1="400" y1="0" x2="400" y2="600" className="stroke-foreground/[0.02]" />
-                    <line x1="0" y1="300" x2="800" y2="300" className="stroke-foreground/[0.02]" />
-                    
-                    <motion.circle 
-                        cx="400" cy="300" r="150" 
-                        className="stroke-primary/20" 
-                        strokeWidth="1"
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    />
-
-                    {/* Vector Lines for Transit Units */}
-                    {markers.filter(m => m.status === 'En Route').map(m => (
-                        <g key={`vector-${m.id}`}>
-                            <motion.line
-                                x1={`${m.x}%`}
-                                y1={`${m.y}%`}
-                                x2={`${m.destX}%`}
-                                y2={`${m.destY}%`}
-                                className="stroke-purple-500/20"
-                                strokeWidth="1"
-                                strokeDasharray="4 4"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                            />
-                            <motion.circle
-                                r="2"
-                                fill="#A855F7"
-                                initial={{ offset: 0 }}
-                                animate={{ 
-                                    cx: [`${m.x}%`, `${m.destX}%`],
-                                    cy: [`${m.y}%`, `${m.destY}%`]
-                                }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            />
-                        </g>
-                    ))}
-                </svg>
-
-                {markers.map((marker) => (
-                    <motion.div
-                        key={marker.id}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="absolute"
-                        style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
-                    >
-                        <div className="relative -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
-                            {/* Ping Animation for new/critical orders */}
-                            {marker.isNew && (
-                                <motion.div 
-                                    className="absolute inset-0 bg-primary/40 rounded-none rotate-45"
-                                    initial={{ scale: 1, opacity: 0.5 }}
-                                    animate={{ scale: 2.5, opacity: 0 }}
-                                    transition={{ duration: 1.5, repeat: Infinity }}
-                                />
-                            )}
-
-                            <div className={cn(
-                                "h-5 w-5 rounded-none border border-background flex items-center justify-center rotate-45 group-hover:scale-125 transition-transform relative z-10",
-                                marker.status === 'En Route' ? 'bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : 'bg-primary shadow-[0_0_20px_rgba(249,115,22,0.5)]'
-                            )}>
-                                {marker.status === 'En Route' ? <Bike className="h-3 w-3 -rotate-45 text-white" /> : <Store className="h-3 w-3 -rotate-45 text-white" />}
-                            </div>
-                            
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50">
-                                <div className="glass p-4 border border-foreground/10 dark:border-white/10 rounded-none shadow-3xl min-w-[180px]">
-                                    <div className="flex items-center justify-between mb-2 text-foreground dark:text-white">
-                                        <div className="text-[10px] font-black uppercase italic tracking-tighter text-primary">UNITÉ ACTIVÉE</div>
-                                        {marker.isNew && <span className="text-[10px] font-black bg-primary px-1 text-white animate-pulse">NEW</span>}
-                                    </div>
-                                    <div className="text-sm font-headline font-bold tracking-tight uppercase mb-2 text-foreground dark:text-white">#{marker.id.slice(-6)}</div>
-                                    <div className="h-px bg-foreground/5 dark:bg-white/5 mb-2" />
-                                    <div className="flex items-center gap-2">
-                                        <div className={cn("h-1.5 w-1.5 rounded-full", marker.status === 'En Route' ? 'bg-purple-500' : 'bg-primary')} />
-                                        <div className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">{marker.status}</div>
-                                    </div>
-                                    {marker.status === 'En Route' && (
-                                        <div className="mt-2 pt-2 border-t border-foreground/5 dark:border-white/5 flex items-center gap-2 text-[10px] font-body font-bold text-muted-foreground">
-                                            <Navigation2 className="h-2 w-2" />
-                                            VECTEUR DE TRANSIT CALCULÉ
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
-
-                <div className="absolute top-4 left-4 md:top-10 md:left-10 flex flex-col gap-4">
-                    <div className="glass p-4 md:p-6 border border-foreground/5 dark:border-white/5 space-y-4">
-                        <div className="flex items-center gap-3">
-                            <Zap className="h-4 w-4 text-primary" />
-                            <span className="text-[10px] font-headline font-bold uppercase tracking-wider text-foreground dark:text-white">YAM-NET ALPHA</span>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between gap-10">
-                                <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">SIGNAL</span>
-                                <span className="text-[10px] font-headline font-bold text-green-500">STABLE</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-10">
-                                <span className="text-[10px] font-body font-bold text-muted-foreground uppercase tracking-widest">SYNC</span>
-                                <span className="text-[10px] font-headline font-bold text-foreground dark:text-white">100%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="absolute bottom-4 right-4 md:bottom-10 md:right-10 flex gap-4 md:gap-6 glass p-3 md:p-6 border border-foreground/5 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                        <div className="h-2 w-2 bg-primary rotate-45 shadow-[0_0_10px_rgba(249,115,22,1)]" />
-                        <span className="text-[10px] font-body font-bold text-foreground dark:text-white uppercase tracking-widest">BASTION</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="h-2 w-2 bg-purple-500 rotate-45 shadow-[0_0_10px_rgba(168,85,247,1)]" />
-                        <span className="text-[10px] font-body font-bold text-foreground dark:text-white uppercase tracking-widest"> UNITÉ TRANSIT</span>
-                    </div>
-                </div>
-            </div>
-        </div>
     );
 }

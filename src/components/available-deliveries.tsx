@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Order, UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader, Bike, ScanLine, Crown } from 'lucide-react';
+import { Loader, Bike, ScanLine, Crown, Wallet, PackageCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import { canTransitionOrder } from '@/lib/order-transitions';
 import { publishLivreurPublic, unpublishLivreurPublic } from '@/lib/livreur-public';
 import { useFirebase } from '@/contexts/firebase-provider';
 import { getCurrentLocation } from '@/lib/geolocation';
+import { cn } from '@/lib/utils';
 
 
 interface AvailableDeliveriesProps {
@@ -154,24 +155,81 @@ export function AvailableDeliveries({
     }, [])
 
 
+    const todayStats = React.useMemo(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const delivered = orders.filter(o => o.livreurId === userId && o.statut === 'Livrée' && o.date?.startsWith(today));
+        const earnings = delivered.reduce((acc, o) => acc + (o.fraisDeLivraison || 0), 0);
+        return { count: delivered.length, earnings };
+    }, [orders, userId]);
+
     return (
-        <div className="container mx-auto pb-16 px-1 sm:px-4">
-            <div className="flex flex-col gap-3 sm:gap-6 mb-4 sm:mb-8">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl sm:text-3xl font-headline font-bold text-primary">Courses</h1>
-                    <div className="flex items-center gap-2 sm:gap-3 bg-card px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border shadow-sm">
-                        <Label htmlFor="service-status" className="text-xs sm:text-sm font-semibold">
-                            {isEnService ? 'En ligne' : 'Hors ligne'}
+        <div className="container mx-auto pb-20 px-2 sm:px-4 max-w-4xl">
+            {/* Liseré subtil tricolore */}
+            <div className="flex h-1 w-28 rounded-full overflow-hidden mb-3 opacity-80">
+                <div className="flex-1 bg-orange-500" />
+                <div className="flex-1 bg-white" />
+                <div className="flex-1 bg-emerald-500" />
+            </div>
+
+            {/* Titre & Statut */}
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div>
+                    <h1 className="text-xl sm:text-3xl font-headline font-black text-foreground">
+                        Espace <span className="text-primary italic">Livreur</span>
+                    </h1>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground font-semibold">
+                        {livreurNom ? `Connecté en tant que ${livreurNom}` : 'Supervision des courses'}
+                    </p>
+                </div>
+            </div>
+
+            {/* Mini stats du jour - 2 cartes par ligne */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-3.5 mb-3 sm:mb-5">
+                <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card/70 dark:bg-white/5 border border-border dark:border-white/10 backdrop-blur-xl shadow-sm">
+                    <div className="flex items-center gap-1.5 mb-1 text-emerald-500">
+                        <Wallet className="h-3.5 w-3.5" />
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground">Gains du Jour</span>
+                    </div>
+                    <p className="text-base sm:text-2xl font-headline font-black text-emerald-500">
+                        {todayStats.earnings.toLocaleString('fr-FR')} <span className="text-[9px] sm:text-xs font-normal text-muted-foreground">FCFA</span>
+                    </p>
+                </div>
+
+                <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card/70 dark:bg-white/5 border border-border dark:border-white/10 backdrop-blur-xl shadow-sm">
+                    <div className="flex items-center gap-1.5 mb-1 text-orange-500">
+                        <PackageCheck className="h-3.5 w-3.5" />
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-muted-foreground">Livrées Aujourd&apos;hui</span>
+                    </div>
+                    <p className="text-base sm:text-2xl font-headline font-black text-foreground">
+                        {todayStats.count} <span className="text-[9px] sm:text-xs font-normal text-muted-foreground">courses</span>
+                    </p>
+                </div>
+            </div>
+
+            {/* Barre de Contrôle En Service / Hors Service & Scanner */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-card/70 dark:bg-white/5 border border-border dark:border-white/10 backdrop-blur-xl shadow-sm mb-4 sm:mb-6">
+                <div className="flex items-center justify-between sm:justify-start gap-3">
+                    <div className="flex items-center gap-2">
+                        <div className={cn("h-3 w-3 rounded-full", isEnService ? "bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20" : "bg-slate-400")} />
+                        <Label htmlFor="service-status" className="font-headline font-black text-xs sm:text-sm uppercase tracking-wider cursor-pointer">
+                            {isEnService ? "En Service (GPS Actif)" : "Hors Service"}
                         </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
                         <Switch id="service-status" checked={isEnService} onCheckedChange={handleStatusToggle} disabled={isUpdatingStatus}/>
-                        {isUpdatingStatus && <Loader className="animate-spin h-4 w-4 text-primary" />}
+                        {isUpdatingStatus && <Loader className="animate-spin h-3.5 w-3.5 text-primary" />}
                     </div>
                 </div>
 
                 {isEnService && (
-                    <Button variant="default" size="default" className="w-full btn-mobile shadow-lg h-11 text-sm font-bold" onClick={() => setIsScannerOpen(true)}>
+                    <Button 
+                        variant="default" 
+                        size="default" 
+                        className="h-11 sm:h-12 px-4 bg-primary hover:bg-primary/90 text-white font-black text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-md shadow-primary/20 transition-all hover:scale-[1.01]"
+                        onClick={() => setIsScannerOpen(true)}
+                    >
                         <ScanLine className="mr-2 h-4 w-4" />
-                        Scanner pour récupérer
+                        Scanner QR Bastion
                     </Button>
                 )}
             </div>
@@ -181,94 +239,92 @@ export function AvailableDeliveries({
                     <div className="flex justify-center p-8"><Loader className="animate-spin h-8 w-8 text-primary" /></div>
                 )}
                 
-                {isEnService && !isLoading && availableDeliveries.length > 0 && availableDeliveries.map(delivery => (
-                    <Card key={delivery.id} className="overflow-hidden rounded-2xl hover:shadow-md transition-soft">
-                        <CardContent className="p-3.5 sm:p-4 space-y-3 sm:space-y-4">
-                           <div className="flex justify-between items-start">
-                                <div className="space-y-0.5">
-                                    <div className="flex items-center gap-2">
-                                        <p className="font-bold text-base sm:text-lg leading-tight">{delivery.nomRestaurant}</p>
-                                        {delivery.prioritaire && (
-                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">
-                                                <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> Prioritaire
+                {isEnService && !isLoading && availableDeliveries.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                        {availableDeliveries.map(delivery => (
+                            <Card key={delivery.id} className="overflow-hidden rounded-xl sm:rounded-2xl border border-border dark:border-white/10 bg-card/70 dark:bg-white/5 backdrop-blur-xl shadow-md hover:border-primary/50 transition-all duration-300">
+                                <CardContent className="p-3.5 sm:p-4.5 space-y-3">
+                                   <div className="flex justify-between items-start gap-2">
+                                        <div className="space-y-0.5 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-headline font-black text-sm sm:text-base text-foreground leading-tight truncate">{delivery.nomRestaurant}</p>
+                                                {delivery.prioritaire && (
+                                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-600 text-[8px] sm:text-[9px] font-black uppercase tracking-widest border border-orange-500/20 shrink-0">
+                                                        <Crown className="h-2.5 w-2.5 text-orange-500" /> Prioritaire
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                Commande #{delivery.id.slice(0,5)} &bull; {delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)
+                                            </p>
+                                        </div>
+                                        <Badge className="text-xs sm:text-sm font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-lg shrink-0">
+                                            +{delivery.fraisDeLivraison.toLocaleString('fr-FR')} F
+                                        </Badge>
+                                   </div>
+
+                                   <div className="space-y-2 py-2 border-y border-dashed border-border/80 text-xs">
+                                        <div className="flex gap-2.5 items-start">
+                                            <div className="w-2 h-2 rounded-full bg-orange-500 mt-1 flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[9px] uppercase font-bold text-muted-foreground">1. Récupération (Bastion)</p>
+                                                <p className="text-xs font-semibold text-foreground truncate">{delivery.adresseRestaurant}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2.5 items-start">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1 flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[9px] uppercase font-bold text-muted-foreground">2. Destination (Client)</p>
+                                                <p className="text-xs font-semibold text-foreground truncate">{delivery.adresseClient}</p>
+                                            </div>
+                                        </div>
+                                   </div>
+
+                                   <div className="flex items-center justify-between text-[11px] gap-2 flex-wrap">
+                                        {delivery.paiement.mode === 'especes' ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-500/10 text-orange-600 font-bold text-[9px] sm:text-[10px] border border-orange-500/20">
+                                                💵 Espèces à encaisser : {delivery.total.toLocaleString('fr-FR')} F
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 font-bold text-[9px] sm:text-[10px] border border-emerald-500/20">
+                                                ✅ Réglé Mobile Money
                                             </span>
                                         )}
-                                    </div>
-                                    <p className="text-[11px] text-muted-foreground flex items-center gap-1 italic">
-                                        Commande n°{delivery.id.slice(0,5)}
-                                    </p>
-                                </div>
-                                <Badge variant="secondary" className="text-sm sm:text-base font-bold text-primary px-2 py-0.5">
-                                    {delivery.fraisDeLivraison.toLocaleString('fr-FR')} F
-                                </Badge>
-                           </div>
+                                   </div>
 
-                           <div className="space-y-1.5 py-2 border-y border-dashed">
-                                <div className="flex gap-2.5 items-center">
-                                    <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] text-muted-foreground">Départ</p>
-                                        <p className="text-xs sm:text-sm font-medium truncate">{delivery.adresseRestaurant}</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2.5 items-center">
-                                    <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] text-muted-foreground">Arrivée</p>
-                                        <p className="text-xs sm:text-sm font-medium truncate">{delivery.adresseClient}</p>
-                                    </div>
-                                </div>
-                           </div>
-
-                           <div className="flex items-center justify-between text-[11px]">
-                                <span className="font-semibold text-muted-foreground">
-                                    {delivery.plats.reduce((acc, i) => acc + i.quantite, 0)} article(s)
-                                </span>
-                                {delivery.paiement.mode === 'especes' ? (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 font-bold text-[10px]">
-                                        À encaisser : {delivery.total.toLocaleString('fr-FR')} FCFA
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-700 font-bold text-[10px]">
-                                        {delivery.paiement.statut === 'paye' ? 'Déjà payé (MoMo)' : 'Paiement MoMo en attente'}
-                                    </span>
-                                )}
-                           </div>
-
-                           <div className="flex items-center justify-end pt-1">
-                               <Button
-                                 onClick={() => handleAccept(delivery)}
-                                 disabled={isAccepting !== null || !canTransitionOrder(delivery.statut, 'En Route', 'livreur')}
-                                 size="sm"
-                                 className="h-8 text-xs font-bold"
-                               >
-                                 {isAccepting === delivery.id ? <Loader className="animate-spin h-3.5 w-3.5" /> : "Prendre la course"}
-                               </Button>
-                           </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                                   <Button
+                                     onClick={() => handleAccept(delivery)}
+                                     disabled={isAccepting !== null || !canTransitionOrder(delivery.statut, 'En Route', 'livreur')}
+                                     className="w-full h-11 text-xs sm:text-sm font-black uppercase tracking-wider bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md transition-all hover:scale-[1.01]"
+                                   >
+                                     {isAccepting === delivery.id ? <Loader className="animate-spin h-4 w-4" /> : "Prendre la course"}
+                                   </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
 
                  {isEnService && !isLoading && availableDeliveries.length === 0 && (
-                    <div className="text-center py-8 sm:py-14 px-4 sm:px-6 bg-card rounded-2xl border-2 border-dashed flex flex-col items-center gap-3">
-                        <div className="bg-muted p-3 sm:p-4 rounded-full">
-                            <Bike className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground"/>
+                    <div className="text-center py-8 sm:py-14 px-4 sm:px-6 bg-card/60 dark:bg-white/5 rounded-2xl border-2 border-dashed border-border flex flex-col items-center gap-3">
+                        <div className="bg-primary/10 p-3 sm:p-4 rounded-full">
+                            <Bike className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
                         </div>
-                        <p className="text-base sm:text-lg font-bold">Zone calme...</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground max-w-[220px]">
-                            Aucune commande prête à proximité. Restez en ligne pour être alerté.
+                        <p className="text-base sm:text-lg font-headline font-black text-foreground">Zone calme...</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground max-w-[260px]">
+                            Aucune course prête à proximité. Restez en ligne, de nouvelles commandes arrivent constamment !
                         </p>
                     </div>
                 )}
 
                 {!isEnService && !isUpdatingStatus && (
-                    <div className="text-center py-8 sm:py-14 px-4 sm:px-6 bg-primary/5 rounded-2xl border-2 border-primary/20 flex flex-col items-center gap-3">
-                        <div className="bg-primary/10 p-3 sm:p-4 rounded-full">
-                            <Bike className="w-8 h-8 sm:w-10 sm:h-10 text-primary"/>
+                    <div className="text-center py-8 sm:py-14 px-4 sm:px-6 bg-card/60 dark:bg-white/5 rounded-2xl border-2 border-dashed border-border flex flex-col items-center gap-3">
+                        <div className="bg-muted p-3 sm:p-4 rounded-full">
+                            <Bike className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground"/>
                         </div>
-                        <p className="text-lg sm:text-xl font-bold text-primary">Hors ligne</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground max-w-[250px]">
-                            Passez en service pour commencer à recevoir des courses.
+                        <p className="text-base sm:text-lg font-headline font-black text-foreground">Hors ligne</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground max-w-[260px]">
+                            Activez le bouton « En service » ci-dessus pour recevoir des propositions de courses.
                         </p>
                     </div>
                 )}

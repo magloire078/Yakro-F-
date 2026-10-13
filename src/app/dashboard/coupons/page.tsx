@@ -157,13 +157,18 @@ export default function CouponsPage() {
         <MobileBackButton label="Dashboard" href="/restaurateur" />
       </div>
 
-      <div className="container mx-auto px-4 max-w-5xl pt-6 md:pt-12 space-y-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="container mx-auto px-3 sm:px-4 max-w-5xl pt-4 md:pt-10 space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
           <div>
-            <h1 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">
+            <div className="flex items-center gap-1.5 h-3 mb-2">
+              <span className="w-1.5 h-full rounded-full bg-orange-500" />
+              <span className="w-1.5 h-full rounded-full bg-white/70" />
+              <span className="w-1.5 h-full rounded-full bg-emerald-500" />
+            </div>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">
               Promotions <span className="text-primary">Ciblées</span>
             </h1>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-1">
               Codes de réduction pour vos clients — distincts de la mise en avant Boost
             </p>
           </div>
@@ -171,22 +176,22 @@ export default function CouponsPage() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                className="rounded-2xl h-14 px-8 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest"
+                className="rounded-xl sm:rounded-2xl h-12 sm:h-14 px-6 sm:px-8 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs sm:text-sm shadow-lg shadow-primary/20 shrink-0"
                 disabled={myRestaurants.length === 0}
               >
                 <Plus className="mr-2 h-4 w-4" /> Nouveau Code
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md rounded-[2rem]">
+            <DialogContent className="sm:max-w-md rounded-2xl">
               <DialogHeader>
-                <DialogTitle>Créer un code promo</DialogTitle>
+                <DialogTitle className="font-headline font-black text-lg sm:text-xl">Créer un code promo</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-2">
                 {myRestaurants.length > 1 && (
                   <div className="space-y-2">
-                    <Label>Restaurant</Label>
+                    <Label className="text-xs font-bold uppercase tracking-wider">Restaurant</Label>
                     <Select value={restaurantId} onValueChange={setRestaurantId}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {myRestaurants.map(r => (
                           <SelectItem key={r.id} value={r.id}>{r.nom}</SelectItem>
@@ -196,14 +201,14 @@ export default function CouponsPage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="code">Code</Label>
-                  <Input id="code" placeholder="YAKRO10" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} />
+                  <Label htmlFor="code" className="text-xs font-bold uppercase tracking-wider">Code (ex: YAKRO10)</Label>
+                  <Input id="code" placeholder="YAKRO10" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} className="rounded-xl font-mono uppercase font-black tracking-widest" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label>Type</Label>
+                    <Label className="text-xs font-bold uppercase tracking-wider">Type</Label>
                     <Select value={type} onValueChange={(v: CouponType) => setType(v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="montant_fixe">Montant fixe (FCFA)</SelectItem>
                         <SelectItem value="pourcentage">Pourcentage (%)</SelectItem>
@@ -211,22 +216,23 @@ export default function CouponsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="valeur">Valeur</Label>
-                    <Input id="valeur" type="number" min={1} placeholder={type === 'pourcentage' ? '10' : '1000'} value={valeur} onChange={(e) => setValeur(e.target.value)} />
+                    <Label htmlFor="valeur" className="text-xs font-bold uppercase tracking-wider">Valeur</Label>
+                    <Input id="valeur" type="number" min={1} placeholder={type === 'pourcentage' ? '10' : '1000'} value={valeur} onChange={(e) => setValeur(e.target.value)} className="rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="montantMinimum">Commande minimum (optionnel)</Label>
-                  <Input id="montantMinimum" type="number" min={0} placeholder="3000" value={montantMinimum} onChange={(e) => setMontantMinimum(e.target.value)} />
+                  <Label htmlFor="montantMinimum" className="text-xs font-bold uppercase tracking-wider">Commande minimum (optionnel)</Label>
+                  <Input id="montantMinimum" type="number" min={0} placeholder="3000" value={montantMinimum} onChange={(e) => setMontantMinimum(e.target.value)} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="dateExpiration">Date d&apos;expiration</Label>
-                  <Input id="dateExpiration" type="date" value={dateExpiration} onChange={(e) => setDateExpiration(e.target.value)} />
+                  <Label htmlFor="dateExpiration" className="text-xs font-bold uppercase tracking-wider">Date d&apos;expiration</Label>
+                  <Input id="dateExpiration" type="date" value={dateExpiration} onChange={(e) => setDateExpiration(e.target.value)} className="rounded-xl" />
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleCreate} disabled={isSaving} className="rounded-2xl w-full">
-                  {isSaving ? <Loader className="h-4 w-4 animate-spin" /> : 'Créer le code'}
+                <Button onClick={handleCreate} disabled={isSaving} className="rounded-xl w-full h-11 font-bold">
+                  {isSaving ? <Loader className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Créer le code promo
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -234,7 +240,7 @@ export default function CouponsPage() {
         </div>
 
         {coupons.length > 0 ? (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
             <AnimatePresence>
               {coupons.map((coupon) => {
                 const isExpired = coupon.dateExpiration.toDate().getTime() < Date.now();
@@ -244,25 +250,31 @@ export default function CouponsPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="glass-dark p-6 rounded-[2rem] border border-border dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="glass-dark p-4 sm:p-5 rounded-2xl border border-border dark:border-white/5 flex items-center justify-between gap-3 shadow-md hover:border-primary/30 transition-all relative overflow-hidden"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-primary/10 rounded-2xl shrink-0">
-                        <Tag className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-2.5 sm:p-3 bg-primary/10 rounded-xl shrink-0 text-primary">
+                        <Tag className="h-5 w-5" />
                       </div>
-                      <div>
-                        <p className="font-black uppercase tracking-tight text-foreground">{coupon.code}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          {coupon.type === 'montant_fixe' ? `${coupon.valeur.toLocaleString('fr-FR')} FCFA` : `${coupon.valeur}%`}
-                          {' • '}{restaurantName(coupon.restaurantId)}
-                          {' • '}Expire le {coupon.dateExpiration.toDate().toLocaleDateString('fr-FR')}
-                          {isExpired && <span className="text-rose-500"> • Expiré</span>}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-black uppercase tracking-wider text-foreground text-sm sm:text-base truncate px-2 py-0.5 rounded-lg bg-card border border-border">
+                            {coupon.code}
+                          </span>
+                          <span className="text-2xs font-black uppercase px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
+                            {coupon.type === 'montant_fixe' ? `-${coupon.valeur.toLocaleString('fr-FR')} F` : `-${coupon.valeur}%`}
+                          </span>
+                        </div>
+                        <p className="text-2xs text-muted-foreground mt-1 truncate">
+                          {restaurantName(coupon.restaurantId)}
+                          {' · '}Expire le {coupon.dateExpiration.toDate().toLocaleDateString('fr-FR')}
+                          {isExpired && <span className="text-rose-500 font-bold"> (Expiré)</span>}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="flex items-center gap-2">
-                        {togglingId === coupon.id && <Loader className="h-4 w-4 animate-spin text-primary" />}
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        {togglingId === coupon.id && <Loader className="h-3.5 w-3.5 animate-spin text-primary" />}
                         <Switch
                           checked={coupon.actif}
                           onCheckedChange={() => handleToggleActive(coupon)}
@@ -272,7 +284,7 @@ export default function CouponsPage() {
                       </div>
                       <button
                         onClick={() => handleDelete(coupon.id)}
-                        className="text-slate-500 hover:text-red-500 transition-colors p-2"
+                        className="text-muted-foreground hover:text-rose-500 transition-colors p-1.5 rounded-lg hover:bg-rose-500/10"
                         aria-label={`Supprimer ${coupon.code}`}
                       >
                         <Trash2 className="h-4 w-4" />

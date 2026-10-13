@@ -2,19 +2,17 @@
 
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
-import Image from 'next/image';
-import { CldImage } from 'next-cloudinary';
 import { Button } from './ui/button';
-import { Star, AlertTriangle, Sparkles, ShoppingBag, BrainCircuit } from 'lucide-react';
+import { Star, Sparkles, ShoppingBag, BrainCircuit } from 'lucide-react';
 import type { PersonalizedRecommendationsOutput } from '@/ai/flows/personalized-recommendations';
 import { Skeleton } from './ui/skeleton';
 import { useCart } from '@/contexts/cart-context';
 import type { CartItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useData } from '@/contexts/data-context';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
 import { motion } from 'framer-motion';
 import { Badge } from './ui/badge';
+import { FoodImage } from '@/components/food-image';
 
 interface RecommendationsProps {
   recommendationsData: PersonalizedRecommendationsOutput | null;
@@ -28,15 +26,18 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
   const { menuItems } = useData();
 
   if (hasError) {
+    if (isCarousel) {
+      return null;
+    }
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-16 px-6 bg-red-500/5 border border-red-500/20 rounded-[2rem] backdrop-blur-sm"
+        className="text-center py-12 px-6 glass rounded-2xl sm:rounded-3xl border border-border dark:border-white/5"
       >
-        <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-red-600 mb-2">Service intelligent en pause</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">Notre IA locale se repose un instant. Vos recommandations habituelles reviennent bientôt.</p>
+        <Sparkles className="w-10 h-10 text-primary mx-auto mb-3 opacity-60" />
+        <h3 className="text-base sm:text-lg font-bold text-foreground mb-1 uppercase tracking-tight">Recommandations indisponibles</h3>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto">Parcourez notre carte des restaurants pour explorer tous nos plats du jour.</p>
       </motion.div>
     );
   }
@@ -68,10 +69,6 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
 
   const RecommendationCard = ({ rec, index }: { rec: NonNullable<PersonalizedRecommendationsOutput['recommendations']>[number], index: number }) => {
     const menuItem = menuItems.find(item => item && item.nom && item.nom.toLowerCase() === rec.item.toLowerCase());
-    const placeholder = getPlaceholderImage(menuItem?.indiceImage || rec.cuisine);
-    const imageSrc = menuItem?.image && !menuItem.image.includes('picsum.photos') ? menuItem.image : placeholder.url;
-
-    const isCloudinary = imageSrc.includes('res.cloudinary.com');
 
     return (
       <motion.div
@@ -83,28 +80,13 @@ export function Recommendations({ recommendationsData, hasError, isCarousel = tr
         <Card className="group relative overflow-hidden bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 hover:border-primary/40 transition-all duration-300 h-full flex flex-col rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-xl">
           <CardHeader className="p-0 relative h-36 xs:h-40 sm:h-44 md:h-48 overflow-hidden">
              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10" />
-            {isCloudinary ? (
-              <CldImage
-                src={imageSrc}
+            <FoodImage
+                src={menuItem?.image}
                 alt={rec.item || 'plat recommandé'}
-                width={placeholder.width}
-                height={placeholder.height}
-                crop="fill"
-                gravity="auto"
+                kind="plat"
                 sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-              />
-            ) : (
-              <Image
-                src={imageSrc}
-                alt={rec.item || 'plat recommandé'}
-                width={placeholder.width}
-                height={placeholder.height}
-                sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                data-ai-hint={`${rec.cuisine} food`}
-              />
-            )}
+                className="transform group-hover:scale-105 transition-transform duration-500"
+            />
             <Badge className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 bg-primary/95 backdrop-blur-md border-none shadow-md text-[9px] xs:text-[10px] sm:text-xs py-0.5 px-2">
                 <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 fill-white" /> Recommandé
             </Badge>

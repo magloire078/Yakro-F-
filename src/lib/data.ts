@@ -1,7 +1,6 @@
 
 
 import type { MenuItem, Restaurant, Order } from './types';
-import { getPlaceholderImage } from './placeholder-images';
 
 // These are used for seeding the database on first run and for providing static data
 // for features that don't require real-time updates.
@@ -19,7 +18,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.5,
         tempsDeLivraison: 35,
         fraisDeLivraison: 1000,
-        image: getPlaceholderImage('maquis restaurant african').url,
+        image: '',
         indiceImage: 'maquis restaurant african',
         adresse: 'Quartier 2000, Yamoussoukro',
         latitude: 6.824,
@@ -32,7 +31,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.8,
         tempsDeLivraison: 45,
         fraisDeLivraison: 1500,
-        image: getPlaceholderImage('french bistro fine dining').url,
+        image: '',
         indiceImage: 'french bistro fine dining',
         adresse: 'Rue des Lacs, Yamoussoukro',
         latitude: 6.815,
@@ -45,7 +44,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.2,
         tempsDeLivraison: 30,
         fraisDeLivraison: 500,
-        image: getPlaceholderImage('pizza oven italy').url,
+        image: '',
         indiceImage: 'pizza oven italy',
         adresse: 'Centre-ville, près du marché',
         latitude: 6.818,
@@ -58,7 +57,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.6,
         tempsDeLivraison: 40,
         fraisDeLivraison: 1000,
-        image: getPlaceholderImage('grilled chicken barbecue').url,
+        image: '',
         indiceImage: 'grilled chicken barbecue',
         adresse: 'Route de l\'aéroport, Yamoussoukro',
         latitude: 6.80,
@@ -71,7 +70,7 @@ export const initialRestaurants: Omit<Restaurant, 'id'>[] = [
         note: 4.9,
         tempsDeLivraison: 25,
         fraisDeLivraison: 500,
-        image: getPlaceholderImage('french pastries cakes').url,
+        image: '',
         indiceImage: 'french pastries cakes',
         adresse: 'Quartier Millionnaire, Yamoussoukro',
         latitude: 6.83,

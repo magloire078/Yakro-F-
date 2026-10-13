@@ -6,7 +6,12 @@ import { getAnalytics, Analytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: "yakro-go.firebaseapp.com",
+  // Sur iOS (Safari), la connexion Google échoue (« The requested action is
+  // invalid ») quand la page de connexion est servie par un autre domaine
+  // que l'app : le stockage est isolé entre sites. En production, on la sert
+  // donc depuis le domaine de l'app (yakrogo.com), relayée vers
+  // firebaseapp.com par les réécritures de next.config.ts.
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "yakro-go.firebaseapp.com",
   databaseURL: "https://yakro-go-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "yakro-go",
   storageBucket: "yakro-go.firebasestorage.app",
