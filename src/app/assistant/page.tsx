@@ -128,7 +128,15 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] md:h-[calc(100vh-2rem)] max-w-2xl mx-auto">
+    // `h-full` plutôt qu'un `calc(100vh - Nrem)` deviné : cette page est un
+    // enfant direct de `<main>` (client-layout.tsx), déjà correctement
+    // dimensionné en flex pour occuper l'espace restant sous l'en-tête
+    // mobile et au-dessus de la barre de navigation fixe. Deviner cette
+    // hauteur ici dupliquait cette logique et s'est désynchronisé dès que
+    // les dimensions de l'en-tête/barre de nav ont changé ailleurs,
+    // laissant un vide énorme entre les messages et la zone de saisie
+    // (repoussée hors de l'écran, sous la barre de navigation).
+    <div className="flex flex-col h-full max-w-2xl mx-auto">
       <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 dark:border-slate-800">
         <div className="p-2 bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-emerald-500/20 rounded-xl border border-orange-500/20 shadow-xs">
           <Sparkles className="h-5 w-5 text-primary" />
