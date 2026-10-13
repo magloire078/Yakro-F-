@@ -7,7 +7,7 @@ import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-
 import { useTheme } from 'next-themes';
 import { LocateFixed } from 'lucide-react';
 import { YAKRO_DEFAULT_COORDS } from '@/lib/geolocation';
-import { MAP_ATTRIBUTION, MAP_TILES, MARKER_KIND_STYLES, markerIcon } from './map-shared';
+import { MAP_ATTRIBUTION, MAP_MAX_ZOOM, MAP_TILE_URL, mapTileClassName, MARKER_KIND_STYLES, markerIcon } from './map-shared';
 import type { MapMarker, MapMarkerKind, MapRoute } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -52,7 +52,7 @@ function FitToMarkers({ markers, singlePointZoom, recenterSignal }: { markers: M
 export default function LiveMapInner({ markers, routes = [], className, showLegend = true, singlePointZoom = 15 }: LiveMapProps) {
     const { resolvedTheme } = useTheme();
     const [recenterSignal, setRecenterSignal] = React.useState(0);
-    const tiles = resolvedTheme === 'dark' ? MAP_TILES.dark : MAP_TILES.light;
+    const isDark = resolvedTheme === 'dark';
 
     const counts = React.useMemo(() => {
         const result: Record<MapMarkerKind, number> = { restaurant: 0, livreur: 0, client: 0 };
@@ -68,7 +68,13 @@ export default function LiveMapInner({ markers, routes = [], className, showLege
                 scrollWheelZoom
                 className="h-full w-full bg-muted"
             >
-                <TileLayer key={tiles} url={tiles} attribution={MAP_ATTRIBUTION} />
+                <TileLayer
+                    key={isDark ? 'dark' : 'light'}
+                    url={MAP_TILE_URL}
+                    attribution={MAP_ATTRIBUTION}
+                    maxZoom={MAP_MAX_ZOOM}
+                    className={mapTileClassName(isDark)}
+                />
                 <FitToMarkers markers={markers} singlePointZoom={singlePointZoom} recenterSignal={recenterSignal} />
 
                 {routes.map((route) => (

@@ -7,7 +7,7 @@ import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-lea
 import { useTheme } from 'next-themes';
 import { YAKRO_DEFAULT_COORDS, type GeoLocationCoords } from '@/lib/geolocation';
 import { cn } from '@/lib/utils';
-import { MAP_ATTRIBUTION, MAP_TILES, markerIcon } from './map-shared';
+import { MAP_ATTRIBUTION, MAP_MAX_ZOOM, MAP_TILE_URL, mapTileClassName, markerIcon } from './map-shared';
 
 export interface LocationPickerProps {
     value: GeoLocationCoords | null;
@@ -40,7 +40,7 @@ function FollowValue({ value }: { value: GeoLocationCoords | null }) {
 
 export default function LocationPickerInner({ value, onChange, className }: LocationPickerProps) {
     const { resolvedTheme } = useTheme();
-    const tiles = resolvedTheme === 'dark' ? MAP_TILES.dark : MAP_TILES.light;
+    const isDark = resolvedTheme === 'dark';
     const center = value ?? YAKRO_DEFAULT_COORDS;
 
     const markerHandlers = React.useMemo(
@@ -61,7 +61,13 @@ export default function LocationPickerInner({ value, onChange, className }: Loca
                 scrollWheelZoom
                 className="h-full w-full cursor-crosshair bg-muted"
             >
-                <TileLayer key={tiles} url={tiles} attribution={MAP_ATTRIBUTION} />
+                <TileLayer
+                    key={isDark ? 'dark' : 'light'}
+                    url={MAP_TILE_URL}
+                    attribution={MAP_ATTRIBUTION}
+                    maxZoom={MAP_MAX_ZOOM}
+                    className={mapTileClassName(isDark)}
+                />
                 <ClickToPlace onChange={onChange} />
                 <FollowValue value={value} />
                 {value && (

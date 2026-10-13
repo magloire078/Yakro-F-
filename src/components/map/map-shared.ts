@@ -4,15 +4,21 @@
 import L from 'leaflet';
 import type { MapMarkerKind } from '@/lib/types';
 
-// Tuiles CARTO (données © OpenStreetMap) : gratuites, sans clé, avec une
-// variante sombre assortie au thème de l'app.
-export const MAP_TILES = {
-    light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-};
+// Tuiles OpenStreetMap standard : gratuites et sans clé. (Les fonds CARTO
+// utilisés auparavant exigent désormais une clé API et renvoyaient des
+// tuiles barrées « API KEY REQUIRED ».) OSM n'a pas de variante sombre :
+// le mode sombre est obtenu par un filtre CSS (classe yakro-tiles-dark).
+export const MAP_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 export const MAP_ATTRIBUTION =
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+
+export const MAP_MAX_ZOOM = 19;
+
+/** Classe des tuiles selon le thème (filtre sombre en mode dark). */
+export function mapTileClassName(isDark: boolean): string | undefined {
+    return isDark ? 'yakro-tiles-dark' : undefined;
+}
 
 const ICON_PATHS: Record<MapMarkerKind, string> = {
     // lucide « utensils »
