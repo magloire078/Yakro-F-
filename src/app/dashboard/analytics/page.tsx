@@ -267,7 +267,7 @@ export default function AnalyticsPage() {
         <div className="min-h-screen bg-transparent pb-10 sm:pb-16 relative overflow-hidden">
 
             {/* Elite Analytics Header */}
-            <div className="relative py-4 sm:py-6 md:py-8 w-full overflow-hidden flex items-center justify-center">
+            <div className="relative py-4 sm:py-6 md:py-8 w-full overflow-hidden flex items-start md:items-center justify-center">
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
                     className="md:hidden absolute top-3 left-3 z-50 mb-0"
                 />
 
-                <div className="relative z-30 text-center space-y-1.5 sm:space-y-2 px-3 sm:px-6 max-w-3xl pt-2 md:pt-0">
+                <div className="relative z-30 text-center space-y-1.5 sm:space-y-2 px-3 sm:px-6 max-w-3xl pt-14 md:pt-0">
                     <motion.div 
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
