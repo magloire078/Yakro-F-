@@ -18,10 +18,22 @@ import { Input } from '@/components/ui/input';
 import { Loader, Upload, MapPin, ChefHat, Wand2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { getCurrentLocation, hasReliableLocation } from '@/lib/geolocation';
+import { getCurrentLocation, hasReliableLocation, GeolocationFailure, type GeolocationFailureReason } from '@/lib/geolocation';
 import { LocationPicker } from '@/components/map/location-picker';
 import { FoodImage } from '@/components/food-image';
 import { resolveFoodImageSource } from '@/lib/food-image';
+
+// Message distinct par cause réelle d'échec de géolocalisation (permission
+// refusée, position indisponible, délai dépassé, non pris en charge) —
+// auparavant un seul message générique s'affichait quasi systématiquement,
+// la comparaison de texte utilisée ne correspondant jamais à la forme
+// d'erreur réellement renvoyée par l'API du navigateur.
+const GEOLOCATION_ERROR_MESSAGES: Record<GeolocationFailureReason, string> = {
+    'permission-denied': "L'accès à la position a été refusé. Autorisez la localisation pour ce site dans les réglages de votre navigateur, puis réessayez.",
+    'unavailable': "Position indisponible. Vérifiez que la localisation est activée sur votre appareil, ou placez le repère manuellement sur la carte.",
+    'timeout': "La récupération de la position a pris trop de temps (signal GPS faible). Réessayez dans un endroit dégagé, ou placez le repère manuellement sur la carte.",
+    'unsupported': "La géolocalisation n'est pas prise en charge par ce navigateur. Placez le repère manuellement sur la carte.",
+};
 
 // Un champ numérique vide ne doit pas devenir 0 : `z.coerce.number()`
 // transformait '' en 0 et enregistrait le restaurant en (0, 0), au large
@@ -141,13 +153,11 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
             });
         } catch (error: unknown) {
             console.error('Location error:', error);
-            const message = error instanceof Error ? error.message : String(error);
+            const reason: GeolocationFailureReason = error instanceof GeolocationFailure ? error.reason : 'unavailable';
             toast({
                 variant: 'destructive',
                 title: 'Erreur de géolocalisation',
-                description: message === 'Permission denied'
-                    ? "L'accès à la position a été refusé. Veuillez vérifier les autorisations."
-                    : "Impossible de récupérer votre position. Vérifiez votre GPS et les autorisations.",
+                description: GEOLOCATION_ERROR_MESSAGES[reason],
             });
         } finally {
             setIsFetchingLocation(false);
