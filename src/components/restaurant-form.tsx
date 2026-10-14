@@ -328,17 +328,17 @@ export function RestaurantForm({ onSubmit, initialData, isLoading, isGeneratingI
                 </div>
 
                 <div className="space-y-6 pt-10 border-t border-border">
-                    <div className="flex justify-between items-center gap-4">
-                        <div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <div className="min-w-0">
                             <h4 className="text-foreground font-black italic uppercase tracking-tighter text-xl leading-tight">Géolocalisation</h4>
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mt-2">Touchez la carte ou faites glisser le repère</p>
                         </div>
-                        <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={handleGetLocation} 
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleGetLocation}
                             disabled={isFetchingLocation}
-                            className="rounded-xl border-border bg-card hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[11px] h-12 px-6 shadow-sm"
+                            className="rounded-xl border-border bg-card hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 font-black uppercase tracking-tighter text-[11px] h-12 px-6 shadow-sm shrink-0"
                         >
                             {isFetchingLocation ? <Loader className="animate-spin h-4 w-4" /> : <MapPin className="h-4 w-4 mr-2" />}
                             Auto-Détection
