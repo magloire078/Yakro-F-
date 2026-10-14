@@ -24,18 +24,17 @@ export const generateImageFlow = ai.defineFlow(
     let refinedPrompt = "";
 
     if (isRestaurant) {
-      refinedPrompt = `Authentic street-level photography of a real restaurant in Côte d'Ivoire: ${prompt}. 
-        Natural daylight, real-world atmosphere, authentic storefront textures (wood, stone, glass). 
-        Warm and welcoming local vibe, shot on a high-end smartphone for a natural documentary look. 
-        Sharp focus on the signage and entrance, realistic urban environment. 
-        AVOID 3D renders, AVOID unrealistic luxury lighting, purely natural professional photography.`;
+      refinedPrompt = `High-end editorial architectural photography of an authentic, welcoming restaurant in Côte d'Ivoire (Yamoussoukro / Abidjan): ${prompt}. 
+        Setting: An elegant contemporary dining establishment or upscale tropical maquis with natural wood pergolas, textured clay, lush tropical foliage, warm ambient lighting, and clean outdoor or indoor tables set with glassware. 
+        Atmosphere: Warm daylight, diffused afternoon sun, genuine West African urban warmth. 
+        Photography style: Shot on 35mm lens, f/4 aperture, crisp natural depth of field, realistic textures (weathered teak, polished stone, woven artisan lanterns). 
+        Negative constraints: No futuristic CGI, no cartoon illustration, no 3D digital architectural render, no fake neon glow, no sterile European cafe clichés. Purely organic, inviting, realistic documentary photography.`;
     } else {
-      refinedPrompt = `Realistic and authentic food photography of: ${prompt}. 
-        Served in a simple ceramic plate on a wooden restaurant table. 
-        Natural window lighting, real textures (glistening oils, steam, charred edges). 
-        True West African colors, organic presentation, shallow depth of field. 
-        Shot in a real kitchen or restaurant setting, not a studio. 
-        AVOID plastic look, AVOID artificial saturation, AVOID perfection - make it look like a real delicious meal.`;
+      refinedPrompt = `Editorial culinary food photography of authentic West African & Ivorian cuisine: ${prompt}. 
+        Plating & presentation: Generously served in an authentic artisanal matte ceramic bowl, dark stoneware plate, or natural banana leaf on a rustic wooden dining table. 
+        Sensory details: Tactile realistic textures — glistening golden palm oil or braising jus, delicate steam rising, authentic grill-charred edges on braised fish or meats, granular fermented cassava attiéké, freshly diced red onions and tomatoes, vibrant scotch bonnet peppers, caramelized plantain alloco. 
+        Lighting & aesthetics: Soft natural side-window daylight with soft organic shadows, 50mm macro food lens, shallow depth of field with sharp focus on the main dish. 
+        Negative constraints: No plastic sheen, no artificial oversaturation, no 3D digital render, no fake glowing sauce, no miniature fine-dining tweezers plating, no irrelevant Western herbs (broccoli, mint on savory food), no cartoon look. Real, mouth-watering, genuine home-cooked and restaurant-quality Ivorian gastronomy.`;
     }
 
     try {

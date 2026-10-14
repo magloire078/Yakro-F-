@@ -11,6 +11,17 @@ import { canTransitionOrder } from '@/lib/order-transitions';
 import { distanceMeters, estimateArrivalMinutes, formatDistance } from '@/lib/delivery-eta';
 import { LiveMap } from '@/components/map/live-map';
 import { orderClientPoint, orderRestaurantPoint, useClientPositions, useWatchPosition } from '@/hooks/use-live-locations';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface CurrentDeliveryProps {
     order: Order;
@@ -19,6 +30,7 @@ interface CurrentDeliveryProps {
 
 export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryProps) {
     const [isCompleting, setIsCompleting] = React.useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = React.useState(false);
     const { position: myPosition } = useWatchPosition(true);
     const clientPositions = useClientPositions([order.id]);
     const clientLive = clientPositions[order.id];
@@ -227,18 +239,54 @@ export function CurrentDelivery({ order, onCompleteDelivery }: CurrentDeliveryPr
 
                     {/* Tactile Action Buttons (Zone du pouce) */}
                     <div className="pt-2 flex flex-col gap-2">
-                        <Button
-                            className="w-full h-12 text-sm font-black rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-600/20 flex items-center justify-center transition-all active:scale-[0.98]"
-                            onClick={handleComplete}
-                            disabled={isCompleting || !canTransitionOrder(order.statut, 'Livrée', 'livreur')}
-                        >
-                            {isCompleting ? (
-                                <Loader className="animate-spin mr-2 h-5 w-5" />
-                            ) : (
-                                <CheckCircle2 className="mr-2 h-5 w-5" />
-                            )}
-                            Valider la course (Marquer comme livré)
-                        </Button>
+                        <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    className="w-full h-12 text-sm font-black rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-600/20 flex items-center justify-center transition-all active:scale-[0.98]"
+                                    disabled={isCompleting || !canTransitionOrder(order.statut, 'Livrée', 'livreur')}
+                                >
+                                    {isCompleting ? (
+                                        <Loader className="animate-spin mr-2 h-5 w-5" />
+                                    ) : (
+                                        <CheckCircle2 className="mr-2 h-5 w-5" />
+                                    )}
+                                    Valider la course (Marquer comme livré)
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="rounded-2xl border border-white/10 bg-card/95 backdrop-blur-xl">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="font-headline font-black text-lg">
+                                        {isEspeces ? "Encaissement Espèces Requis" : "Confirmer la Livraison"}
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription className="text-sm space-y-2 text-muted-foreground">
+                                        {isEspeces ? (
+                                            <>
+                                                <span>Avez-vous bien encaissé la somme de </span>
+                                                <strong className="text-amber-500 font-black text-base block my-1">
+                                                    {order.total.toLocaleString('fr-FR')} FCFA en espèces
+                                                </strong>
+                                                <span>auprès du client avant de lui remettre la commande ?</span>
+                                            </>
+                                        ) : (
+                                            <span>
+                                                Confirmez-vous avoir remis l&apos;intégralité des articles au client ? Le paiement a déjà été validé par Mobile Money / Carte.
+                                            </span>
+                                        )}
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
+                                    <AlertDialogCancel className="rounded-xl font-bold">
+                                        Vérifier encore
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={handleComplete}
+                                        className="rounded-xl font-black bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    >
+                                        {isEspeces ? "Oui, j'ai encaissé et livré" : "Oui, commande remise"}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </CardContent>
             </Card>

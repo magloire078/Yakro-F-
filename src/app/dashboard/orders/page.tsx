@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader, QrCode, UtensilsCrossed, Clock, Receipt, ChefHat, Crown } from 'lucide-react';
+import { Loader, QrCode, UtensilsCrossed, Clock, Receipt, ChefHat, Crown, CheckCircle2, PackageCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/contexts/data-context';
@@ -13,6 +13,7 @@ import { QrCodeDialog } from '@/components/qr-code-dialog';
 import { updateOrderStatusAction } from '@/app/actions/order-actions';
 import { canTransitionOrder } from '@/lib/order-transitions';
 import { motion, AnimatePresence } from 'framer-motion';
+import { playNewOrderSound, playSuccessSound } from '@/lib/sound-alerts';
 
 import Image from 'next/image';
 import { MobileBackButton } from '@/components/mobile-back-button';
@@ -22,6 +23,7 @@ export default function DashboardOrdersPage() {
     const { orders, restaurants } = useData();
     const { toast } = useToast();
     const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
+    const [activeTab, setActiveTab] = React.useState<'tous' | 'nouveaux' | 'cuisine' | 'pretes'>('tous');
     // Sur un réseau mobile faible, l'image de fond hotlinkée (Unsplash) peut
     // échouer à charger et son texte alternatif s'affiche alors comme du
     // texte visible qui déborde du conteneur, faisant paraître toute la
@@ -50,6 +52,25 @@ export default function DashboardOrdersPage() {
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [myOrders]);
 
+    const readyOrders = React.useMemo(() => {
+        return myOrders
+            .filter(o => o.statut === 'Prête')
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [myOrders]);
+
+    // Déclenchement automatique de l'alerte sonore lors de la réception d'une nouvelle commande
+    const prevNewOrdersCountRef = React.useRef(newOrders.length);
+    React.useEffect(() => {
+        if (newOrders.length > prevNewOrdersCountRef.current) {
+            playNewOrderSound();
+            toast({
+                title: "🔔 Nouvelle Commande Reçue !",
+                description: `${newOrders.length} commande(s) en attente de préparation en cuisine.`,
+            });
+        }
+        prevNewOrdersCountRef.current = newOrders.length;
+    }, [newOrders.length, toast]);
+
     const handleAcceptOrder = async (order: Order) => {
         setIsUpdating(order.id);
         
@@ -59,6 +80,7 @@ export default function DashboardOrdersPage() {
                 status: 'En Préparation',
                 orderData: order
             });
+            playSuccessSound();
             toast({
                 title: "Excellence Confirmée",
                 description: "La préparation de la commande a débuté.",
@@ -75,6 +97,32 @@ export default function DashboardOrdersPage() {
         }
     };
 
+    const handleReadyOrder = async (order: Order) => {
+        setIsUpdating(order.id);
+        
+        try {
+            await updateOrderStatusAction({
+                orderId: order.id,
+                status: 'Prête',
+                orderData: order
+            });
+            playSuccessSound();
+            toast({
+                title: "Commande Prête !",
+                description: "Plats emballés, en attente de prise en charge par le livreur.",
+            });
+        } catch (e) {
+            console.error(e);
+            toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Impossible de marquer la commande comme prête.",
+            });
+        } finally {
+            setIsUpdating(null);
+        }
+    };
+
     const OrderCard = ({ order }: { order: Order }) => (
         <motion.div 
             layout
@@ -84,7 +132,7 @@ export default function DashboardOrdersPage() {
         >
             {/* Status Bar */}
             <div className={`absolute top-0 left-0 w-1.5 h-full transition-all duration-500 ${
-                order.statut === 'Placée' ? 'bg-primary' : 'bg-emerald-500'
+                order.statut === 'Placée' ? 'bg-primary' : order.statut === 'Prête' ? 'bg-emerald-500' : 'bg-amber-500'
             }`} />
             
             <div className="p-4 sm:p-5 md:p-6">
@@ -110,9 +158,11 @@ export default function DashboardOrdersPage() {
                         <Badge variant="outline" className={`rounded-full px-2.5 sm:px-3 py-0.5 font-black uppercase text-[9px] sm:text-[10px] tracking-wider border ${
                             order.statut === 'Placée' 
                                 ? 'border-primary/30 text-primary bg-primary/10' 
-                                : 'border-emerald-500/30 text-emerald-500 bg-emerald-500/10'
+                                : order.statut === 'Prête'
+                                ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/10'
+                                : 'border-amber-500/30 text-amber-500 bg-amber-500/10'
                         }`}>
-                            {order.statut === 'Placée' ? 'Nouveau' : 'En Cuisine'}
+                            {order.statut === 'Placée' ? 'Nouveau' : order.statut === 'Prête' ? 'Prête' : 'En Cuisine'}
                         </Badge>
                         <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/50 dark:bg-white/5 border border-border">
                             <Clock className="h-2.5 w-2.5 text-muted-foreground" />
@@ -185,7 +235,7 @@ export default function DashboardOrdersPage() {
                     </AccordionItem>
                 </Accordion>
                 
-                <div className="mt-4 flex flex-col sm:flex-row gap-2.5">
+                <div className="mt-4 flex flex-col sm:flex-row gap-2">
                     {canTransitionOrder(order.statut, 'En Préparation', 'restaurateur') && (
                         <Button
                             onClick={() => handleAcceptOrder(order)}
@@ -197,10 +247,28 @@ export default function DashboardOrdersPage() {
                         </Button>
                     )}
                     {order.statut === 'En Préparation' && (
+                        <>
+                            <Button
+                                onClick={() => handleReadyOrder(order)}
+                                disabled={isUpdating === order.id}
+                                className="flex-1 h-10 sm:h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black italic uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-95 shadow-md text-xs border-none"
+                            >
+                                {isUpdating === order.id ? <Loader className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 w-4 h-4" />}
+                                Marquer Prête
+                            </Button>
+                            <QrCodeDialog orderId={order.id}>
+                                <Button variant="outline" className="h-10 sm:h-11 rounded-xl font-black italic uppercase tracking-wider text-xs border-border">
+                                   <QrCode className="mr-1.5 w-4 h-4 text-primary"/>
+                                   QR
+                                </Button>
+                            </QrCodeDialog>
+                        </>
+                    )}
+                    {order.statut === 'Prête' && (
                         <QrCodeDialog orderId={order.id}>
-                            <Button className="flex-1 h-10 sm:h-11 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-gray-100 text-white dark:text-black rounded-xl font-black italic uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-95 text-xs shadow-md">
-                               <QrCode className="mr-2 w-4 h-4 text-primary"/>
-                               Valider Livraison
+                            <Button className="flex-1 h-10 sm:h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black italic uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-95 text-xs shadow-md">
+                               <QrCode className="mr-2 w-4 h-4 text-white"/>
+                               Présenter QR au Livreur
                             </Button>
                         </QrCodeDialog>
                     )}
@@ -211,6 +279,10 @@ export default function DashboardOrdersPage() {
             <div className="absolute -bottom-20 -right-20 h-64 w-64 bg-primary/5 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         </motion.div>
     );
+
+    const showNew = activeTab === 'tous' || activeTab === 'nouveaux';
+    const showPreparing = activeTab === 'tous' || activeTab === 'cuisine';
+    const showReady = activeTab === 'tous' || activeTab === 'pretes';
 
     return (
         <div className="min-h-screen bg-transparent pb-10 sm:pb-16 relative overflow-hidden">
@@ -263,7 +335,7 @@ export default function DashboardOrdersPage() {
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex justify-center items-center gap-5 sm:gap-10 mt-2 sm:mt-3"
+                        className="flex justify-center items-center gap-4 sm:gap-8 mt-2 sm:mt-3"
                     >
                         <div className="text-center group cursor-default">
                             <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-primary transition-colors">Nouveaux</p>
@@ -271,97 +343,195 @@ export default function DashboardOrdersPage() {
                         </div>
                         <div className="w-px h-6 sm:h-8 bg-border self-center rotate-12" />
                         <div className="text-center group cursor-default">
-                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-emerald-500 transition-colors">Cuisine</p>
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-amber-500 transition-colors">Cuisine</p>
                             <p className="text-xl sm:text-3xl font-black text-foreground tracking-tighter group-hover:scale-105 transition-transform duration-300">{preparingOrders.length}</p>
+                        </div>
+                        <div className="w-px h-6 sm:h-8 bg-border self-center rotate-12" />
+                        <div className="text-center group cursor-default">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-emerald-500 transition-colors">Prêtes</p>
+                            <p className="text-xl sm:text-3xl font-black text-emerald-500 tracking-tighter group-hover:scale-105 transition-transform duration-300">{readyOrders.length}</p>
                         </div>
                     </motion.div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-3 sm:px-6 max-w-5xl mt-2 sm:mt-4 relative z-40">
+            <div className="container mx-auto px-3 sm:px-6 max-w-6xl mt-2 sm:mt-4 relative z-40 space-y-4">
                 {/* Mobile Header Correction */}
-                <div className="md:hidden flex justify-start mb-3 sm:mb-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
                     <MobileBackButton href="/restaurateur" label="Tableau de Bord" />
+
+                    {/* Segmented Filter Bar Tactile */}
+                    <div className="flex items-center gap-1 p-1 bg-card/80 border border-border/60 rounded-xl backdrop-blur-md overflow-x-auto">
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('tous')}
+                            className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all ${
+                                activeTab === 'tous'
+                                    ? 'bg-primary text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            Tous ({newOrders.length + preparingOrders.length + readyOrders.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('nouveaux')}
+                            className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all ${
+                                activeTab === 'nouveaux'
+                                    ? 'bg-orange-500 text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            Nouveaux ({newOrders.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('cuisine')}
+                            className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all ${
+                                activeTab === 'cuisine'
+                                    ? 'bg-amber-500 text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            Cuisine ({preparingOrders.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('pretes')}
+                            className={`px-3 py-1 rounded-lg text-2xs font-black uppercase tracking-wider transition-all ${
+                                activeTab === 'pretes'
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            Prêtes ({readyOrders.length})
+                        </button>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-start">
+                <div className={`grid grid-cols-1 ${activeTab === 'tous' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-4 sm:gap-6 items-start`}>
                     {/* New Orders Section */}
-                    <div className="space-y-3 sm:space-y-4">
-                        <div className="flex items-center gap-2.5 sm:gap-3">
-                            <div className="h-5 sm:h-7 w-1.5 bg-primary rounded-full shrink-0" />
-                            <h2 className="text-lg sm:text-2xl font-black italic tracking-tighter text-foreground uppercase">
-                                Nouvelles <span className="text-primary italic">Entrées</span>
-                            </h2>
-                            <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-[10px] sm:text-xs">
-                                {newOrders.length}
-                            </span>
-                            <div className="h-px flex-1 bg-border" />
-                        </div>
-                        
+                    {showNew && (
                         <div className="space-y-3 sm:space-y-4">
-                            <AnimatePresence mode="popLayout">
-                                {newOrders.length > 0 ? (
-                                    newOrders.map(order => <OrderCard key={order.id} order={order} />)
-                                ) : (
-                                    <motion.div 
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden bg-card/80 border border-border backdrop-blur-xl p-5 sm:p-7 md:p-8 text-center flex flex-col items-center justify-center transition-all duration-300 rounded-xl sm:rounded-2xl shadow-sm"
-                                    >
-                                        <div className="relative mb-3">
-                                            <div className="absolute inset-0 bg-primary/10 blur-[25px] rounded-full scale-125" />
-                                            <div className="relative h-11 w-11 sm:h-12 sm:w-12 bg-muted/50 border border-border flex items-center justify-center rounded-xl backdrop-blur-md">
-                                                <UtensilsCrossed className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
+                            <div className="flex items-center gap-2.5 sm:gap-3">
+                                <div className="h-5 sm:h-7 w-1.5 bg-primary rounded-full shrink-0" />
+                                <h2 className="text-base sm:text-xl font-black italic tracking-tighter text-foreground uppercase">
+                                    Nouvelles <span className="text-primary italic">Entrées</span>
+                                </h2>
+                                <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-[10px] sm:text-xs">
+                                    {newOrders.length}
+                                </span>
+                                <div className="h-px flex-1 bg-border" />
+                            </div>
+                            
+                            <div className="space-y-3 sm:space-y-4">
+                                <AnimatePresence mode="popLayout">
+                                    {newOrders.length > 0 ? (
+                                        newOrders.map(order => <OrderCard key={order.id} order={order} />)
+                                    ) : (
+                                        <motion.div 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="relative group overflow-hidden bg-card/80 border border-border backdrop-blur-xl p-5 sm:p-7 md:p-8 text-center flex flex-col items-center justify-center transition-all duration-300 rounded-xl sm:rounded-2xl shadow-sm"
+                                        >
+                                            <div className="relative mb-3">
+                                                <div className="absolute inset-0 bg-primary/10 blur-[25px] rounded-full scale-125" />
+                                                <div className="relative h-11 w-11 sm:h-12 sm:w-12 bg-muted/50 border border-border flex items-center justify-center rounded-xl backdrop-blur-md">
+                                                    <UtensilsCrossed className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-foreground italic">Calme Plat</p>
-                                            <p className="text-[9px] sm:text-[10px] font-medium text-muted-foreground max-w-xs leading-relaxed">Le silence avant la tempête culinaire. Aucune nouvelle commande.</p>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-foreground italic">Calme Plat</p>
+                                                <p className="text-[9px] sm:text-[10px] font-medium text-muted-foreground max-w-xs leading-relaxed">Le silence avant la tempête culinaire. Aucune nouvelle commande.</p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
-                    </div>
+                    )}
                     
                     {/* Preparing Section */}
-                    <div className="space-y-3 sm:space-y-4">
-                        <div className="flex items-center gap-2.5 sm:gap-3">
-                            <div className="h-5 sm:h-7 w-1.5 bg-emerald-500 rounded-full shrink-0" />
-                            <h2 className="text-lg sm:text-2xl font-black italic tracking-tighter text-foreground uppercase">
-                                Atelier <span className="text-emerald-500 italic">Culinaire</span>
-                            </h2>
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black text-[10px] sm:text-xs">
-                                {preparingOrders.length}
-                            </span>
-                            <div className="h-px flex-1 bg-border" />
-                        </div>
-
+                    {showPreparing && (
                         <div className="space-y-3 sm:space-y-4">
-                            <AnimatePresence mode="popLayout">
-                                {preparingOrders.length > 0 ? (
-                                    preparingOrders.map(order => <OrderCard key={order.id} order={order} />)
-                                ) : (
-                                    <motion.div 
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="relative group overflow-hidden bg-card/80 border border-border backdrop-blur-xl p-5 sm:p-7 md:p-8 text-center flex flex-col items-center justify-center transition-all duration-300 rounded-xl sm:rounded-2xl shadow-sm"
-                                    >
-                                        <div className="relative mb-3">
-                                            <div className="absolute inset-0 bg-emerald-500/10 blur-[25px] rounded-full scale-125" />
-                                            <div className="relative h-11 w-11 sm:h-12 sm:w-12 bg-muted/50 border border-border flex items-center justify-center rounded-xl backdrop-blur-md">
-                                                <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-emerald-500 transition-colors duration-300" />
+                            <div className="flex items-center gap-2.5 sm:gap-3">
+                                <div className="h-5 sm:h-7 w-1.5 bg-amber-500 rounded-full shrink-0" />
+                                <h2 className="text-base sm:text-xl font-black italic tracking-tighter text-foreground uppercase">
+                                    Atelier <span className="text-amber-500 italic">Culinaire</span>
+                                </h2>
+                                <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 font-black text-[10px] sm:text-xs">
+                                    {preparingOrders.length}
+                                </span>
+                                <div className="h-px flex-1 bg-border" />
+                            </div>
+
+                            <div className="space-y-3 sm:space-y-4">
+                                <AnimatePresence mode="popLayout">
+                                    {preparingOrders.length > 0 ? (
+                                        preparingOrders.map(order => <OrderCard key={order.id} order={order} />)
+                                    ) : (
+                                        <motion.div 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="relative group overflow-hidden bg-card/80 border border-border backdrop-blur-xl p-5 sm:p-7 md:p-8 text-center flex flex-col items-center justify-center transition-all duration-300 rounded-xl sm:rounded-2xl shadow-sm"
+                                        >
+                                            <div className="relative mb-3">
+                                                <div className="absolute inset-0 bg-amber-500/10 blur-[25px] rounded-full scale-125" />
+                                                <div className="relative h-11 w-11 sm:h-12 sm:w-12 bg-muted/50 border border-border flex items-center justify-center rounded-xl backdrop-blur-md">
+                                                    <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-amber-500 transition-colors duration-300" />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-foreground italic">Plan de Travail Prêt</p>
-                                            <p className="text-[9px] sm:text-[10px] font-medium text-muted-foreground max-w-xs leading-relaxed">Toutes les préparations en cours ont été finalisées.</p>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-foreground italic">Plan de Travail Dégagé</p>
+                                                <p className="text-[9px] sm:text-[10px] font-medium text-muted-foreground max-w-xs leading-relaxed">Aucun plat en cours de cuisson actuellement.</p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Ready Section */}
+                    {showReady && (
+                        <div className="space-y-3 sm:space-y-4">
+                            <div className="flex items-center gap-2.5 sm:gap-3">
+                                <div className="h-5 sm:h-7 w-1.5 bg-emerald-500 rounded-full shrink-0" />
+                                <h2 className="text-base sm:text-xl font-black italic tracking-tighter text-foreground uppercase">
+                                    Prêtes au <span className="text-emerald-500 italic">Comptoir</span>
+                                </h2>
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-black text-[10px] sm:text-xs">
+                                    {readyOrders.length}
+                                </span>
+                                <div className="h-px flex-1 bg-border" />
+                            </div>
+
+                            <div className="space-y-3 sm:space-y-4">
+                                <AnimatePresence mode="popLayout">
+                                    {readyOrders.length > 0 ? (
+                                        readyOrders.map(order => <OrderCard key={order.id} order={order} />)
+                                    ) : (
+                                        <motion.div 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="relative group overflow-hidden bg-card/80 border border-border backdrop-blur-xl p-5 sm:p-7 md:p-8 text-center flex flex-col items-center justify-center transition-all duration-300 rounded-xl sm:rounded-2xl shadow-sm"
+                                        >
+                                            <div className="relative mb-3">
+                                                <div className="absolute inset-0 bg-emerald-500/10 blur-[25px] rounded-full scale-125" />
+                                                <div className="relative h-11 w-11 sm:h-12 sm:w-12 bg-muted/50 border border-border flex items-center justify-center rounded-xl backdrop-blur-md">
+                                                    <PackageCheck className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-emerald-500 transition-colors duration-300" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-foreground italic">Comptoir Libre</p>
+                                                <p className="text-[9px] sm:text-[10px] font-medium text-muted-foreground max-w-xs leading-relaxed">Toutes les commandes prêtes ont été récupérées par les livreurs.</p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Branding Footer */}
