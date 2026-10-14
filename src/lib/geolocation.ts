@@ -6,6 +6,35 @@ export interface GeoLocationCoords {
     longitude: number;
 }
 
+/**
+ * Raison normalisée d'un échec de géolocalisation, quelle que soit la source
+ * (plugin natif Capacitor ou API navigateur) — les deux exposent des formes
+ * d'erreur différentes et incompatibles, ce qui empêchait tout appelant de
+ * distinguer de façon fiable un refus de permission d'un simple délai
+ * dépassé (le code affichait systématiquement le même message générique).
+ */
+export type GeolocationFailureReason = 'permission-denied' | 'unavailable' | 'timeout' | 'unsupported';
+
+export class GeolocationFailure extends Error {
+    readonly reason: GeolocationFailureReason;
+    constructor(reason: GeolocationFailureReason) {
+        super(`Geolocation failure: ${reason}`);
+        this.name = 'GeolocationFailure';
+        this.reason = reason;
+    }
+}
+
+/** Traduit une `GeolocationPositionError` native du navigateur en raison normalisée. */
+export function classifyBrowserGeolocationError(error: Pick<GeolocationPositionError, 'code'>): GeolocationFailureReason {
+    switch (error.code) {
+        case 1: return 'permission-denied'; // GeolocationPositionError.PERMISSION_DENIED
+        case 3: return 'timeout'; // GeolocationPositionError.TIMEOUT
+        case 2: // GeolocationPositionError.POSITION_UNAVAILABLE
+        default:
+            return 'unavailable';
+    }
+}
+
 /** Coordonnées de référence du Centre-ville de Yamoussoukro (Mairie / Grande Mosquée / Basilique) */
 export const YAKRO_DEFAULT_COORDS: GeoLocationCoords = {
     latitude: 6.8276,
@@ -38,7 +67,7 @@ export async function getCurrentLocation(): Promise<GeoLocationCoords> {
             if (permissions.location !== 'granted') {
                 const request = await Geolocation.requestPermissions();
                 if (request.location !== 'granted') {
-                    throw new Error('Permission denied');
+                    throw new GeolocationFailure('permission-denied');
                 }
             }
 
@@ -53,6 +82,12 @@ export async function getCurrentLocation(): Promise<GeoLocationCoords> {
             };
         } catch (error) {
             console.error('Capacitor Geolocation error:', error);
+            if (error instanceof GeolocationFailure && error.reason === 'permission-denied') {
+                // Un refus explicite ne se résoudra pas en retombant sur l'API
+                // navigateur du même WebView — inutile d'attendre un second
+                // échec identique.
+                throw error;
+            }
             return getBrowserLocation();
         }
     } else {
@@ -63,7 +98,7 @@ export async function getCurrentLocation(): Promise<GeoLocationCoords> {
 function getBrowserLocation(): Promise<GeoLocationCoords> {
     return new Promise((resolve, reject) => {
         if (typeof window === 'undefined' || !navigator.geolocation) {
-            reject(new Error('Geolocation not supported'));
+            reject(new GeolocationFailure('unsupported'));
             return;
         }
 
@@ -76,6 +111,13 @@ function getBrowserLocation(): Promise<GeoLocationCoords> {
                 });
             },
             (firstError) => {
+                // Un refus de permission ne se résoudra pas en retentant avec
+                // d'autres réglages de précision — inutile de faire attendre
+                // l'utilisateur jusqu'à 7s de plus pour le même refus.
+                if (classifyBrowserGeolocationError(firstError) === 'permission-denied') {
+                    reject(new GeolocationFailure('permission-denied'));
+                    return;
+                }
                 // Essai 2 : Basse précision (IP / Wi-Fi réseau, fonctionne sur PC/Mac sans GPS matériel)
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -85,7 +127,7 @@ function getBrowserLocation(): Promise<GeoLocationCoords> {
                         });
                     },
                     (secondError) => {
-                        reject(secondError || firstError);
+                        reject(new GeolocationFailure(classifyBrowserGeolocationError(secondError || firstError)));
                     },
                     {
                         enableHighAccuracy: false,

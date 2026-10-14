@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hasReliableLocation } from './geolocation';
+import { hasReliableLocation, classifyBrowserGeolocationError } from './geolocation';
 
 describe('hasReliableLocation', () => {
     it('accepte une vraie position à Yamoussoukro', () => {
@@ -25,5 +25,23 @@ describe('hasReliableLocation', () => {
     it('refuse les valeurs non finies', () => {
         expect(hasReliableLocation({ latitude: Number.NaN, longitude: -5.28 })).toBe(false);
         expect(hasReliableLocation({ latitude: 6.8, longitude: Number.POSITIVE_INFINITY })).toBe(false);
+    });
+});
+
+describe('classifyBrowserGeolocationError', () => {
+    it('reconnaît un refus de permission (code 1)', () => {
+        expect(classifyBrowserGeolocationError({ code: 1 })).toBe('permission-denied');
+    });
+
+    it('reconnaît une position indisponible (code 2)', () => {
+        expect(classifyBrowserGeolocationError({ code: 2 })).toBe('unavailable');
+    });
+
+    it('reconnaît un délai dépassé (code 3)', () => {
+        expect(classifyBrowserGeolocationError({ code: 3 })).toBe('timeout');
+    });
+
+    it('retombe sur "unavailable" pour un code inconnu', () => {
+        expect(classifyBrowserGeolocationError({ code: 99 as 1 })).toBe('unavailable');
     });
 });
