@@ -16,8 +16,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (file('yakro-release-key.jks').exists()) {
+                storeFile file('yakro-release-key.jks')
+                storePassword System.getenv("KEYSTORE_PASSWORD") ?: "yakrofe2026"
+                keyAlias System.getenv("KEY_ALIAS") ?: "yakro-key-alias"
+                keyPassword System.getenv("KEY_PASSWORD") ?: "yakrofe2026"
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
