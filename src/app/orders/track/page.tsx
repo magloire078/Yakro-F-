@@ -190,7 +190,7 @@ function TrackOrderContent() {
 
   if (!orderId) {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-4 p-4 text-center">
+      <div className="flex h-dvh w-full flex-col items-center justify-center gap-4 p-4 text-center">
         <p className="text-muted-foreground font-semibold">Identifiant de commande manquant.</p>
         <Button asChild className="rounded-xl font-bold">
           <Link href="/">Retour à l&apos;accueil</Link>
@@ -201,7 +201,7 @@ function TrackOrderContent() {
 
   if (!liveOrder) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-dvh w-full items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader className="h-10 w-10 animate-spin text-orange-500" />
           <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">
@@ -542,7 +542,7 @@ export default function TrackOrderPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="flex h-screen w-full items-center justify-center">
+        <div className="flex h-dvh w-full items-center justify-center">
           <Loader className="h-12 w-12 animate-spin text-orange-500" />
         </div>
       }

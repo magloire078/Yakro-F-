@@ -106,7 +106,7 @@ function CompleteProfileContent() {
 
   if (authLoading || (user && userProfile)) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
+      <div className="flex h-dvh w-full items-center justify-center bg-background">
         <Loader className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
@@ -203,7 +203,7 @@ function CompleteProfileContent() {
 export default function CompleteProfilePage() {
   return (
     <React.Suspense fallback={
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-dvh w-full items-center justify-center">
         <Loader className="h-16 w-16 animate-spin text-primary" />
       </div>
     }>

@@ -229,7 +229,7 @@ export default function EarningsPage() {
                             <motion.div 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="py-24 text-center flex flex-col items-center gap-8"
+                                className="py-12 sm:py-24 text-center flex flex-col items-center gap-6 sm:gap-8"
                             >
                                 <div className="relative">
                                     <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full scale-150 animate-pulse" />

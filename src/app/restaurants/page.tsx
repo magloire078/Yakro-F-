@@ -148,7 +148,7 @@ function RestaurantPageContent() {
                 <Skeleton className="h-[40vh] w-full rounded-[2.5rem]" />
                 <div className="space-y-4">
                   <Skeleton className="h-12 w-64" />
-                  <Skeleton className="h-6 w-96" />
+                  <Skeleton className="h-6 w-full max-w-96" />
                 </div>
             </div>
         )

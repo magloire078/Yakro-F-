@@ -34,7 +34,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   if (authLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-dvh w-full items-center justify-center">
         <Loader className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
@@ -50,7 +50,9 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col md:pl-64 min-w-0">
         <MobileHeader />
         <main className={cn(
-          "flex-1 pb-20 md:pb-10",
+          // Laisse la place à la barre de navigation du bas (h-16) et à la
+          // zone du trait d'accueil de l'iPhone.
+          "flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-10",
           isDashboard ? "p-0" : "p-3 sm:p-4 md:p-8 lg:p-10"
         )}>
           {children}

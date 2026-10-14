@@ -21,7 +21,7 @@ export function MobileHeader() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/50 border-b border-primary/10 dark:border-slate-800/50 px-3 md:hidden">
+    <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] pt-safe items-center justify-between gap-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/50 border-b border-primary/10 dark:border-slate-800/50 px-3 md:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-primary/10 hover:text-primary rounded-xl transition-colors">

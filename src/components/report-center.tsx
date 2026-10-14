@@ -128,7 +128,7 @@ export function ReportCenter() {
                 }
             `}</style>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-10">
                 {/* Selector Section */}
                 <div className="lg:col-span-1 space-y-8">
                     <div className="bg-card/40 backdrop-blur-3xl border border-border/50 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
