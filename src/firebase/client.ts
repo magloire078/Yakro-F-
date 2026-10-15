@@ -4,7 +4,7 @@ import { getFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics, Analytics, isSupported } from "firebase/analytics";
 
-const firebaseConfig: FirebaseOptions = {
+export const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   // Sur iOS (Safari), la connexion Google échoue (« The requested action is
   // invalid ») quand la page de connexion est servie par un autre domaine

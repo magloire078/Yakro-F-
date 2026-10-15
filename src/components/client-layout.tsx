@@ -7,6 +7,8 @@ import { useAuth } from '@/contexts/auth-context';
 import { Sidebar } from '@/components/sidebar';
 import { MobileHeader } from '@/components/mobile-header';
 import { BottomNavBar } from '@/components/bottom-nav-bar';
+import { PushNotifications } from '@/components/push-notifications';
+import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { cn } from '@/lib/utils';
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -49,6 +51,8 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       </div>
       <div className="flex-1 flex flex-col md:pl-64 min-w-0">
         <MobileHeader />
+        <PushNotifications />
+        <PwaInstallPrompt />
         <main className={cn(
           // Laisse la place à la barre de navigation du bas (h-16) et à la
           // zone du trait d'accueil de l'iPhone.

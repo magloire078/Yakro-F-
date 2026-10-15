@@ -8,6 +8,7 @@ import { updateDoc, doc } from 'firebase/firestore';
 import { db, auth } from '@/firebase/client';
 import type { Order } from '@/lib/types';
 import { processDeliveredOrderAction } from '@/app/actions/stock-actions';
+import { notifyOrderStatusAction } from '@/app/actions/push-actions';
 
 export async function updateOrderStatusAction({
     orderId,
@@ -27,6 +28,12 @@ export async function updateOrderStatusAction({
 
     try {
         await updateDoc(orderDocRef, updateData);
+
+        // Notification push (client, ou livreurs quand la commande est prête),
+        // sans bloquer ni faire échouer le changement de statut.
+        void auth?.currentUser?.getIdToken()
+            .then((idToken) => notifyOrderStatusAction(orderId, idToken))
+            .catch((error) => console.error('notifyOrderStatusAction failed:', error));
 
         if (status === 'Livrée') {
             const idToken = await auth?.currentUser?.getIdToken();

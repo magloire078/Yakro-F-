@@ -5,6 +5,8 @@ import { priceCartItem, computeCartSubtotal } from '@/lib/order-pricing';
 import { validateCoupon } from '@/lib/coupon-validation';
 import { buildOrderFromCart } from '@/lib/order-builder';
 import type { Coupon, MenuItem, PaymentMode, Restaurant, UserProfile } from '@/lib/types';
+import { newOrderPush } from '@/lib/push-messages';
+import { sendPushToUsers } from '@/lib/push-server';
 
 export interface CreateOrderItemInput {
   menuItemId: string;
@@ -148,6 +150,9 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
       // échouer à cause d'un souci d'écriture sur /notifications.
       console.error('createOrderAction: échec de la notification NEW_ORDER', err);
     }
+    // Notification push sur les appareils du restaurateur, même app fermée
+    // (sendPushToUsers ne lève jamais d'erreur).
+    await sendPushToUsers([order.restaurateurId], newOrderPush({ ...order, id: orderRef.id }));
   }
 
   return { success: true, orderId: orderRef.id };

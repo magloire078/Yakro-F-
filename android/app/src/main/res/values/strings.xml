@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Yakro-Fê</string>
+    <string name="title_activity_main">Yakro-Fê</string>
+    <string name="package_name">com.yakrof.app</string>
+    <string name="custom_url_scheme">com.yakrof.app</string>
+</resources>

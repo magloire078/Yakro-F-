@@ -22,8 +22,8 @@ Ce document centralise les problèmes architecturaux, les bugs connus et les am�
 
 ## 🟡 Améliorations (Qualité & UX)
 
-- [ ] **Optimisation SSR** : S'assurer que les polyfills n'augmentent pas inutilement la taille du bundle client.
-- [ ] **Audit des Prompts Genkit** : Améliorer le réalisme des images générées (éviter le look "trop IA").
+- [x] **Audit des Prompts Genkit** : Améliorer le réalisme des images générées (éviter le look "trop IA").
+    - *Résolu (13 oct. 2026)* : `generate-image-flow.ts` révisé avec des directives photographiques documentaires 35mm/50mm macro, textures culinaires ivoiriennes réelles (attiéké granuleux, piments, oignons, braisé au feu de bois, huiles naturelles) et contraintes négatives strictes (zéro CGI/plastique/3D). Prompts enrichis de la description et du type de cuisine.
 - [x] **Respect strict de AGENTS.md** : Nettoyer les `console.log` restants et migrer les styles inline vers Tailwind.
     - *Vérifié (12 oct. 2026)* : aucun `console.log` ; les seuls `style={{…}}` restants (`ui/chart.tsx`, `ui/progress.tsx`) portent des valeurs dynamiques, autorisées par AGENTS.md.
 - [ ] **Patch `buffer-equal-constant-time` perdu après `npm install`** : si le `postinstall` ne s'exécute pas, le build échoue sous Node 25 (`SlowBuffer` supprimé).
