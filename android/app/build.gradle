@@ -17,12 +17,18 @@ android {
         }
     }
     signingConfigs {
+        // Aucune valeur par défaut en dur ici : un mot de passe de secours
+        // committé dans le dépôt resterait lisible pour toujours dans
+        // l'historique Git, y compris après l'avoir retiré. Sans ces
+        // variables d'environnement, le build de release échoue
+        // explicitement au moment de signer plutôt que d'utiliser
+        // silencieusement un mot de passe public connu.
         release {
             if (file('yakro-release-key.jks').exists()) {
                 storeFile file('yakro-release-key.jks')
-                storePassword System.getenv("KEYSTORE_PASSWORD") ?: "yakrofe2026"
-                keyAlias System.getenv("KEY_ALIAS") ?: "yakro-key-alias"
-                keyPassword System.getenv("KEY_PASSWORD") ?: "yakrofe2026"
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
             }
         }
     }

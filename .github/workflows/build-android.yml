@@ -43,27 +43,42 @@ jobs:
       - name: Sync Capacitor Android
         run: npx cap sync android
 
+      # Aucun mot de passe en dur : un mot de passe de secours committé ici
+      # resterait lisible pour toujours dans l'historique Git. Avec le vrai
+      # secret ANDROID_KEYSTORE_BASE64, les mots de passe doivent être
+      # fournis via les secrets correspondants (sinon le build échoue
+      # explicitement à la signature). Sans ce secret (ex. sur un fork, ou
+      # avant la configuration des secrets), un trousseau jetable propre à
+      # cette seule exécution est généré avec un mot de passe aléatoire —
+      # jamais réutilisé, jamais une vraie clé de release.
       - name: Restore Keystore from Secret or Fallback
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          REAL_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          REAL_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          REAL_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Restoring release keystore from repository secret..."
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/yakro-release-key.jks
+            echo "KEYSTORE_PASSWORD=$REAL_KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=$REAL_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=$REAL_KEY_PASSWORD" >> "$GITHUB_ENV"
           else
-            echo "No ANDROID_KEYSTORE_BASE64 secret found. Generating standalone release keystore..."
+            echo "No ANDROID_KEYSTORE_BASE64 secret found. Generating a disposable one-off keystore for this run only (never a real release key)."
+            GENERATED_PASSWORD="$(openssl rand -hex 16)"
+            echo "::add-mask::$GENERATED_PASSWORD"
             keytool -genkeypair -v -keystore android/app/yakro-release-key.jks \
               -alias yakro-key-alias -keyalg RSA -keysize 2048 -validity 10000 \
-              -storepass yakrofe2026 -keypass yakrofe2026 \
+              -storepass "$GENERATED_PASSWORD" -keypass "$GENERATED_PASSWORD" \
               -dname "CN=Yakro-Fe, OU=Mobile, O=Yakro-Fe, L=Yamoussoukro, ST=Lacs, C=CI"
+            echo "KEYSTORE_PASSWORD=$GENERATED_PASSWORD" >> "$GITHUB_ENV"
+            echo "KEY_ALIAS=yakro-key-alias" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=$GENERATED_PASSWORD" >> "$GITHUB_ENV"
           fi
 
       - name: Build Android App Bundle (.aab) & APK (.apk)
         working-directory: android
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'yakrofe2026' }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || 'yakro-key-alias' }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'yakrofe2026' }}
         run: |
           chmod +x ./gradlew
           ./gradlew assembleRelease bundleRelease --stacktrace
