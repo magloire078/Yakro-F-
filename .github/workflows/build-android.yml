@@ -58,7 +58,7 @@ jobs:
               -dname "CN=Yakro-Fe, OU=Mobile, O=Yakro-Fe, L=Yamoussoukro, ST=Lacs, C=CI"
           fi
 
-      - name: Build Android App Bundle (.aab)
+      - name: Build Android App Bundle (.aab) & APK (.apk)
         working-directory: android
         env:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'yakrofe2026' }}
@@ -66,12 +66,20 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'yakrofe2026' }}
         run: |
           chmod +x ./gradlew
-          ./gradlew bundleRelease --stacktrace
+          ./gradlew assembleRelease bundleRelease --stacktrace
 
-      - name: Upload Android App Bundle artifact
+      - name: Upload Android App Bundle artifact (.aab)
         uses: actions/upload-artifact@v4
         with:
           name: yakro-fe-release-aab
           path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload Android APK artifact (.apk)
+        uses: actions/upload-artifact@v4
+        with:
+          name: yakro-fe-release-apk
+          path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 30

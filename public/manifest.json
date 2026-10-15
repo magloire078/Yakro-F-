@@ -1,12 +1,12 @@
 {
-  "theme_color": "#ff8c00",
-  "background_color": "#faebd7",
+  "theme_color": "#F97316",
+  "background_color": "#0A0A0B",
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "name": "Yakro Go",
-  "short_name": "Yakro Go",
-  "description": "Votre ville, livr\u00e9e.",
+  "name": "Yakro-Fê",
+  "short_name": "Yakro-Fê",
+  "description": "Votre ville, livrée à Yamoussoukro",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
