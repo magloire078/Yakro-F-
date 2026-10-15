@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { getAdminDb, getAdminMessaging } from '@/firebase/admin';
-import type { PushMessage } from '@/lib/push-messages';
+import { ORDER_CHANNEL_ID, type PushMessage } from '@/lib/push-messages';
 
 // Envoi des notifications push (Firebase Cloud Messaging).
 //
@@ -41,13 +41,26 @@ export async function sendPushToUsers(uids: string[], message: PushMessage): Pro
         const tokens = await tokensForUsers(uids);
         if (tokens.length === 0) return 0;
 
-        // Message « data » uniquement : c'est notre service worker qui affiche
-        // la notification, avec le même rendu et le même comportement au
-        // toucher sur tous les navigateurs.
+        // Navigateurs : message « data » seul, affiché par notre service worker
+        // (même rendu partout). App Android : le système n'affiche une
+        // notification app fermée que si elle est décrite dans `android`
+        // (ignoré par les navigateurs) ; `data.link` sert au toucher.
         const response = await getAdminMessaging().sendEachForMulticast({
             tokens,
             data: { title: message.title, body: message.body, link: message.link, tag: message.tag },
             webpush: { headers: { Urgency: 'high', TTL: '3600' } },
+            android: {
+                priority: 'high',
+                ttl: 3600 * 1000,
+                notification: {
+                    title: message.title,
+                    body: message.body,
+                    tag: message.tag,
+                    channelId: ORDER_CHANNEL_ID,
+                    defaultSound: true,
+                    defaultVibrateTimings: true,
+                },
+            },
         });
 
         const dead = response.responses

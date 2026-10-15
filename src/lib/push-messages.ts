@@ -2,6 +2,9 @@
 // Firebase) : partagé par le serveur et testable.
 import type { Order } from '@/lib/types';
 
+/** Canal Android des notifications de commande (créé par l'app, ciblé par le serveur). */
+export const ORDER_CHANNEL_ID = 'commandes';
+
 export interface PushMessage {
     title: string;
     body: string;

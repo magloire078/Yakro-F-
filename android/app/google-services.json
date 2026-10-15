@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "102516892596",
+    "firebase_url": "https://yakro-go-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "yakro-go",
+    "storage_bucket": "yakro-go.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:102516892596:android:2d42f303196889252808e1",
+        "android_client_info": {
+          "package_name": "com.yakrof.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "102516892596-c02hv9ok3di98kus57nd34ro0j3ldtg3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDnub2VV8rNzY9BUYyS2bk1x3BNhj0vvg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "102516892596-c02hv9ok3di98kus57nd34ro0j3ldtg3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

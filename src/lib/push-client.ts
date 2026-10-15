@@ -4,6 +4,7 @@ import { getMessaging, getToken, isSupported, onMessage, type MessagePayload } f
 import { app, firebaseConfig } from '@/firebase/client';
 import { registerPushTokenAction } from '@/app/actions/push-actions';
 import { currentIdToken } from '@/lib/auth-token';
+import { enableNativePush, isNativeApp, listenNativePush, nativePushPermission, refreshNativePush } from '@/lib/push-native';
 
 /** Clé publique « Web Push » (Firebase Console → Cloud Messaging). Sans elle, la fonction est désactivée. */
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
@@ -28,7 +29,10 @@ function isInstalledApp(): boolean {
 }
 
 export async function getPushAvailability(): Promise<PushAvailability> {
-    if (typeof window === 'undefined' || !VAPID_KEY || !app) return 'unsupported';
+    if (typeof window === 'undefined') return 'unsupported';
+    // App native (Capacitor) : push natif, sans service worker ni clé VAPID.
+    if (isNativeApp()) return nativePushPermission().catch(() => 'unsupported' as const);
+    if (!VAPID_KEY || !app) return 'unsupported';
     // Sur iOS, le push web n'existe que pour l'app installée (iOS 16.4+).
     if (isIos() && !isInstalledApp()) return 'ios-needs-install';
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return 'unsupported';
@@ -63,6 +67,7 @@ async function syncToken(): Promise<boolean> {
 
 /** Demande l'autorisation (à appeler sur un geste de l'utilisateur) puis inscrit l'appareil. */
 export async function enablePushNotifications(): Promise<PushAvailability> {
+    if (isNativeApp()) return enableNativePush();
     const availability = await getPushAvailability();
     if (availability !== 'default' && availability !== 'granted') return availability;
     const permission = await Notification.requestPermission();
@@ -75,12 +80,14 @@ export async function enablePushNotifications(): Promise<PushAvailability> {
  * changer, ou l'utilisateur connecté a changé). Silencieux en cas d'échec.
  */
 export async function refreshPushRegistration(): Promise<void> {
+    if (isNativeApp()) return refreshNativePush();
     if ((await getPushAvailability()) !== 'granted') return;
     await syncToken().catch((error) => console.error('Inscription aux notifications impossible:', error));
 }
 
 /** Notifications reçues pendant que l'app est ouverte au premier plan. */
 export function onForegroundPush(callback: (data: Record<string, string>) => void): () => void {
+    if (isNativeApp()) return listenNativePush(callback);
     if (!app || !VAPID_KEY) return () => {};
     let unsubscribe = () => {};
     let cancelled = false;
