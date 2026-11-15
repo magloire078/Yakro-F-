@@ -1,3 +1,5 @@
+# CI de qualité. Node 22 est requis par @capacitor/cli 8 ; le job rules garde
+# Java 21 (exigence firebase-tools). Aucun secret n'est nécessaire ici.
 name: CI
 
 on:
@@ -14,7 +16,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -37,7 +39,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - uses: actions/setup-java@v4

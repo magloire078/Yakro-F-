@@ -114,6 +114,146 @@ describe('firestore.rules — restaurants & plats', () => {
   });
 });
 
+describe('firestore.rules — /restaurants update', () => {
+  const SECOND_RESTAURATEUR_UID = 'resto-owner-2';
+  const SUPERADMIN_UID = 'super-1';
+
+  beforeEach(async () => {
+    await seed();
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      // Un second restaurateur, propriétaire d'un AUTRE restaurant : sert à
+      // prouver qu'un compte bien « restaurateur » mais non propriétaire est
+      // refusé (le rôle seul ne suffit pas).
+      await setDoc(doc(db, 'utilisateurs', SECOND_RESTAURATEUR_UID), {
+        role: 'restaurateur',
+      });
+      await setDoc(doc(db, 'restaurants', 'rest-2'), {
+        proprietaireId: SECOND_RESTAURATEUR_UID,
+        nom: 'Chez Autre',
+        fraisDeLivraison: 300,
+      });
+      // SuperAdmin : doit conserver un accès TOTAL, y compris sur les champs
+      // interdits au propriétaire.
+      await setDoc(doc(db, 'utilisateurs', SUPERADMIN_UID), {
+        role: 'client',
+        roleSysteme: 'SuperAdmin',
+      });
+    });
+  });
+
+  // Liste blanche = les champs du formulaire d'édition
+  // (src/components/restaurant-form.tsx), plus `enVedette` (interrupteur
+  // « Propulsion Vedette » self-service gratuit de /dashboard/boost).
+  it('lets the owner update every whitelisted editable field', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), {
+        nom: 'Chez Test Renommé',
+        cuisine: 'Ivoirienne',
+        adresse: 'Yamoussoukro, Quartier 2000',
+        tempsDeLivraison: 25,
+        fraisDeLivraison: 700,
+        image: 'https://res.cloudinary.com/demo/image/upload/rest.jpg',
+        indiceImage: 'rest-1-renamed',
+        latitude: 6.8276,
+        longitude: -5.2893,
+        enVedette: true,
+      }),
+    );
+  });
+
+  it('lets the owner toggle enVedette alone (free self-service boost)', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { enVedette: false }),
+    );
+  });
+
+  it('forbids the owner from writing note (fake self-rating)', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { note: 5 }),
+    );
+  });
+
+  it('forbids the owner from lifting their own suspension', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { suspendu: false }),
+    );
+  });
+
+  it('forbids the owner from transferring ownership (proprietaireId)', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), {
+        proprietaireId: SECOND_RESTAURATEUR_UID,
+      }),
+    );
+  });
+
+  it('forbids a forbidden field even when smuggled alongside an allowed one', async () => {
+    // Le diff porte sur les clés modifiées : glisser `note` dans une mise à
+    // jour légitime (nom) doit faire échouer TOUTE la requête.
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), {
+        nom: 'Nom légitime',
+        note: 5,
+      }),
+    );
+  });
+
+  it('forbids unknown fields and attempts to write the document id', async () => {
+    const db = env.authenticatedContext(RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { hacked: true }),
+    );
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { id: 'rest-2' }),
+    );
+  });
+
+  it('forbids a restaurateur who does not own the restaurant', async () => {
+    const db = env.authenticatedContext(SECOND_RESTAURATEUR_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { nom: 'Vol de restaurant' }),
+    );
+  });
+
+  it('forbids a client from updating a restaurant', async () => {
+    const db = env.authenticatedContext(OTHER_USER_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { enVedette: true }),
+    );
+  });
+
+  it('forbids an unauthenticated update', async () => {
+    const db = env.unauthenticatedContext().firestore();
+    await assertFails(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), { nom: 'Anonyme' }),
+    );
+  });
+
+  it('lets a SuperAdmin change the fields forbidden to the owner', async () => {
+    const db = env.authenticatedContext(SUPERADMIN_UID).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'restaurants', RESTAURANT_ID), {
+        note: 4.5,
+        suspendu: true,
+        proprietaireId: SECOND_RESTAURATEUR_UID,
+      }),
+    );
+  });
+
+  it('keeps public reads open despite the new update restriction', async () => {
+    // Le verrou ne doit pas refermer la lecture publique de l'accueil.
+    const db = env.unauthenticatedContext().firestore();
+    await assertSucceeds(getDoc(doc(db, 'restaurants', RESTAURANT_ID)));
+  });
+});
+
 describe('firestore.rules — /commandes create', () => {
   beforeEach(seed);
 

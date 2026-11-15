@@ -142,6 +142,26 @@ service cloud.firestore {
     }
 
     // ── Restaurants ───────────────────────────────────────────────────────
+    // Liste blanche des champs qu'un restaurateur PROPRIÉTAIRE peut modifier
+    // lui-même sur son restaurant : exactement ceux du formulaire d'édition
+    // (src/components/restaurant-form.tsx). `enVedette` y figure
+    // volontairement : l'interrupteur « Propulsion Vedette » de
+    // /dashboard/boost est une fonctionnalité self-service GRATUITE, sans
+    // paiement associé — si le boost devenait payant, il devrait passer par
+    // une action serveur (Admin SDK) et non par cette liste.
+    // Sont volontairement EXCLUS : `note` (note moyenne affichée, pour
+    // interdire l'auto-notation), `suspendu` (modération : un propriétaire ne
+    // doit pas pouvoir lever sa propre suspension), `proprietaireId`
+    // (transfert de propriété) et, par construction, tout champ inconnu
+    // (`hasOnly` refuse les clés hors liste). Le SuperAdmin n'est pas soumis
+    // à cette liste — voir `allow update` ci-dessous.
+    function restaurantOwnerEditableFieldsOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'nom', 'cuisine', 'adresse', 'tempsDeLivraison', 'fraisDeLivraison',
+        'image', 'indiceImage', 'latitude', 'longitude', 'enVedette',
+      ]);
+    }
+
     match /restaurants/{restaurantId} {
       // Lecture publique, y compris sans authentification : la liste des
       // restaurants doit pouvoir se charger dès l'écran d'accueil (parcours
@@ -156,7 +176,12 @@ service cloud.firestore {
         && isUser(request.resource.data.proprietaireId)
         && userExists()
         && (getRole() == 'restaurateur' || isSuperAdmin());
-      allow update: if isRestaurantOwner(restaurantId) || isSuperAdmin();
+      // Update : le propriétaire est restreint aux champs du formulaire
+      // d'édition (`restaurantOwnerEditableFieldsOnly`) ; `note`, `suspendu`
+      // et `proprietaireId` restent réservés au SuperAdmin et au SDK Admin.
+      // Le SuperAdmin conserve un accès total (aucune restriction de champ).
+      allow update: if (isRestaurantOwner(restaurantId) && restaurantOwnerEditableFieldsOnly())
+        || isSuperAdmin();
       allow delete: if isSuperAdmin();
     }
 
