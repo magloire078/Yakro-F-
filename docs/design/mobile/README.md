@@ -80,14 +80,17 @@ Avant : `avant/*.png` (écrans publics, seuls accessibles sans compte).
 - **Responsive** : 320, 390 et 430 px — aucun débordement horizontal, hauteurs cohérentes.
 - **Cibles tactiles** : 0 élément interactif sous 40 px (audit automatisé sur 12 configurations).
 - **Images** : aucune image cassée ; le composant `FoodImage` fournit un visuel de marque en
-  secours (photos de démo Unsplash, à remplacer par Cloudinary en production).
+  secours. Photos de démo Unsplash dans le prototype, Cloudinary en production. Les héros
+  marketing sont passés en WebP (750 Ko → 102 Ko, 889 Ko → 158 Ko).
 - **Sémantique** : boutons réels, `aria-label` sur les icônes, `aria-current` sur le dock,
   `aria-pressed` sur les sélecteurs, focus visible natif.
-- **Mouvement** : aucune animation infinie sur les écrans connectés (le prototype est statique) ;
-  à conserver avec `prefers-reduced-motion` lors de l'intégration.
-- **Contraste** : textes principaux ≥ 4,5:1 sur leur fond. Le blanc sur orange `#F97316` est à
-  ~3:1 (acceptable en gras ≥ 18,66 px seulement) : pour une conformité AA stricte des CTA,
-  basculer les fonds de bouton sur `orange-600/700`.
+- **Mouvement** : `prefers-reduced-motion` neutralise les animations décoratives (zoom lent,
+  flottement, pulsations).
+- **Zoom** : le pinch-zoom est autorisé (WCAG 1.4.4) ; les champs restent à 16 px pour éviter
+  l'auto-zoom iOS.
+- **Contraste** : les surfaces à texte blanc utilisent `#C2410C` (orange-700, ~5,2:1) et non
+  l'orange `#F97316` (~2,8:1) ; les textes d'accent en clair passent en orange-700. L'orange vif
+  reste réservé aux icônes et éléments décoratifs.
 
 ## 5. Intégration dans l'application réelle
 
@@ -106,8 +109,9 @@ Avant : `avant/*.png` (écrans publics, seuls accessibles sans compte).
 Vérification visuelle sans compte : `/design/mobile/composants` rend les **vrais** composants
 intégrés avec des données de démonstration (captures dans `integration/`).
 
-Reste à faire : passe d'accessibilité (contrastes AA des CTA orange), réduction des animations
-(`prefers-reduced-motion`), poids des images d'accueil.
+Reste à faire : décision produit sur la navigation (Assistant / Pour Vous hors du dock), et
+généralisation du contraste AA aux composants hérités hors du périmètre design (boutons shadcn
+`bg-primary`, badges orange anciens écrans).
 
 ## 6. Voir le prototype
 

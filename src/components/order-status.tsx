@@ -63,7 +63,7 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
         </div>
         <span
           className={cn(
-            'flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-orange-500/10 text-orange-600 dark:text-orange-400',
+            'flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-orange-500/10 text-[#C2410C] dark:text-orange-400',
             !isFinished && order.statut === 'En Route' && 'animate-pulse'
           )}
           aria-hidden="true"
@@ -83,7 +83,7 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
                   className={cn(
                     'flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold',
                     actif
-                      ? 'bg-orange-500 text-white shadow-[0_0_0_4px_rgba(249,115,22,0.15)]'
+                      ? 'bg-[#C2410C] text-white shadow-[0_0_0_4px_rgba(249,115,22,0.15)]'
                       : done
                         ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                         : 'bg-black/[0.05] text-[#A79E96] dark:bg-white/[0.06] dark:text-white/30'

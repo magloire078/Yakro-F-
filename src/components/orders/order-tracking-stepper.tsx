@@ -59,7 +59,7 @@ export function OrderTrackingStepper({ status, className }: OrderTrackingStepper
           <span className="h-2 w-2 animate-ping rounded-full bg-orange-500" />
           <p className="yk-label">Progression en direct</p>
         </div>
-        <span className="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#C2410C] dark:text-orange-400">
           Étape {currentIndex + 1} / {ORDER_TRACKING_STEPS.length}
         </span>
       </div>
@@ -91,7 +91,7 @@ export function OrderTrackingStepper({ status, className }: OrderTrackingStepper
                   className={cn(
                     'relative z-10 w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-300 font-bold',
                     isCompleted && 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25',
-                    isCurrent && 'bg-orange-500 text-white ring-4 ring-orange-500/20 shadow-lg shadow-orange-500/35 scale-110',
+                    isCurrent && 'bg-[#C2410C] text-white ring-4 ring-orange-500/20 shadow-lg shadow-orange-500/35 scale-110',
                     !isCompleted && !isCurrent && 'bg-card border border-border text-muted-foreground/60'
                   )}
                 >
@@ -106,7 +106,7 @@ export function OrderTrackingStepper({ status, className }: OrderTrackingStepper
                   <p
                     className={cn(
                       'text-[9.5px] font-bold uppercase leading-tight tracking-tight sm:text-[11px]',
-                      isCurrent && 'font-black text-orange-600 dark:text-orange-400',
+                      isCurrent && 'font-black text-[#C2410C] dark:text-orange-400',
                       isCompleted && 'font-semibold text-foreground',
                       !isCompleted && !isCurrent && 'text-muted-foreground/50'
                     )}

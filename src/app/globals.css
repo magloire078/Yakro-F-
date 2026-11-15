@@ -256,7 +256,7 @@
   }
 
   .yk-chip-active {
-    @apply border-orange-500 bg-orange-500 text-white shadow-[0_10px_24px_-10px_rgba(249,115,22,0.9)] dark:border-orange-500 dark:bg-orange-500 dark:text-white;
+    @apply border-[#C2410C] bg-[#C2410C] text-white shadow-[0_10px_24px_-10px_rgba(194,65,12,0.9)] dark:border-[#C2410C] dark:bg-[#C2410C] dark:text-white;
   }
 
   /* Micro-libellé éditorial (Sora, majuscules espacées). */
@@ -275,14 +275,33 @@
     font-variation-settings: 'SOFT' 60, 'WONK' 1;
   }
 
-  /* Bouton principal plein, pilule, ombre orange. */
+  /* Bouton principal plein, pilule, ombre orange.
+     Fond `#C2410C` (orange-700) et non orange-500 : le blanc sur `#F97316`
+     ne donne qu'un contraste ~2,8:1, insuffisant pour du texte (WCAG AA).
+     `#C2410C` porte le blanc à ~5,2:1 tout en restant la famille orange. */
   .yk-cta {
-    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full bg-orange-500 px-6 text-[15px] font-bold text-white shadow-[0_16px_34px_-14px_rgba(249,115,22,0.9)] transition-transform active:scale-[0.98] dark:bg-orange-500;
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#C2410C] px-6 text-[15px] font-bold text-white shadow-[0_16px_34px_-14px_rgba(194,65,12,0.9)] transition-transform hover:bg-[#9A3412] active:scale-[0.98] dark:bg-[#C2410C] dark:hover:bg-[#9A3412];
   }
 
   /* Barre d'action collée en bas d'écran, au-dessus du safe-area. */
   .yk-bottom-bar {
     @apply fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.06] bg-white/90 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#0B0B0D]/90;
+  }
+}
+
+/* ── Accessibilité : respect de `prefers-reduced-motion` ──────────────────
+   Les animations décoratives (zoom lent du héros, flottement, pulsations)
+   sont neutralisées pour les personnes sensibles au mouvement. On garde les
+   transitions quasi instantanées plutôt que de les supprimer, pour ne pas
+   casser les états visuels. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -209,7 +209,7 @@ function RestaurantPageContent() {
                         transition={{ delay: 0.3 }}
                         className="flex flex-wrap items-center gap-1.5 sm:gap-2.5"
                     >
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-500 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow-lg shadow-orange-500/40">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#C2410C] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow-lg shadow-orange-500/40">
                             <Star className="h-3 w-3 fill-white" />
                             {averageRating}
                             {allReviews.length > 0 ? ` · ${allReviews.length} avis` : ''}

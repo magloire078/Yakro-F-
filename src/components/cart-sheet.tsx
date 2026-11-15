@@ -173,11 +173,11 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
             <h1 className="yk-display mt-2 text-[32px] leading-none">
               {checkoutStep === 'payment' ? (
                 <>
-                  Votre <span className="yk-italic text-orange-600 dark:text-orange-400">paiement</span>
+                  Votre <span className="yk-italic text-[#C2410C] dark:text-orange-400">paiement</span>
                 </>
               ) : (
                 <>
-                  Votre <span className="yk-italic text-orange-600 dark:text-orange-400">panier</span>
+                  Votre <span className="yk-italic text-[#C2410C] dark:text-orange-400">panier</span>
                 </>
               )}
             </h1>
@@ -197,7 +197,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
               <SheetClose asChild>
                 <button
                   type="button"
-                  className="inline-flex min-h-[40px] shrink-0 items-center px-1 text-[11.5px] font-bold text-orange-600 dark:text-orange-400"
+                  className="inline-flex min-h-[40px] shrink-0 items-center px-1 text-[11.5px] font-bold text-[#C2410C] dark:text-orange-400"
                   aria-label="Modifier le restaurant"
                 >
                   Modifier
@@ -216,7 +216,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                 <p className="yk-label mb-2 px-1">Code promo</p>
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between rounded-[1.1rem] border border-orange-500/25 bg-orange-500/[0.06] px-3.5 py-2">
-                    <div className="flex items-center gap-2 text-[13px] font-bold text-orange-600 dark:text-orange-400">
+                    <div className="flex items-center gap-2 text-[13px] font-bold text-[#C2410C] dark:text-orange-400">
                       <Tag className="h-4 w-4" />
                       {appliedCoupon.code}
                     </div>
@@ -290,7 +290,7 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
                       )}
 
                       <div className="mt-2 flex items-center justify-between gap-2">
-                        <span className="yk-display text-[15.5px] text-orange-600 dark:text-orange-400">
+                        <span className="yk-display text-[15.5px] text-[#C2410C] dark:text-orange-400">
                           {formatFcfa(getCartItemPrice(item))}
                         </span>
                         <Stepper
@@ -351,14 +351,14 @@ export function CartSheet({ children }: { children: React.ReactNode }) {
               {cartDiscount > 0 && (
                 <div className="flex justify-between text-[#6B625A] dark:text-white/55">
                   <span>Réduction ({appliedCoupon?.code})</span>
-                  <span className="font-semibold tabular-nums text-orange-600 dark:text-orange-400">
+                  <span className="font-semibold tabular-nums text-[#C2410C] dark:text-orange-400">
                     -{formatFcfa(cartDiscount)}
                   </span>
                 </div>
               )}
               <div className="flex items-center justify-between border-t border-black/[0.06] pt-2 dark:border-white/[0.08]">
                 <span className="text-[15px] font-bold">Total</span>
-                <span className="yk-display text-[19px] text-orange-600 dark:text-orange-400">
+                <span className="yk-display text-[19px] text-[#C2410C] dark:text-orange-400">
                   {formatFcfa(montantAPayer)}
                 </span>
               </div>

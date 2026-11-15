@@ -40,7 +40,7 @@ export default function LoginPage() {
         <div className="relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-slate-50 dark:bg-slate-950 overflow-x-hidden">
              <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
                 <Image
-                    src="/assets/marketing/hero-delivery.png"
+                    src="/assets/marketing/hero-delivery.webp"
                     alt="Yakro Elite Delivery"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -67,7 +67,7 @@ export default function LoginPage() {
                  {/* Mobile Background Image */}
                  <div className="absolute inset-0 lg:hidden">
                     <Image
-                        src="/assets/marketing/hero-food.png"
+                        src="/assets/marketing/hero-food.webp"
                         alt="Yakro Elite Food"
                         fill
                         className="object-cover opacity-30 brightness-50"

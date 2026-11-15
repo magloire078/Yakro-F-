@@ -90,7 +90,7 @@ export function MobileHeader() {
             >
               <Icons.cart className="h-5 w-5" aria-hidden="true" />
               {cartCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[9px] font-black text-white shadow-sm">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C2410C] px-1 text-[9px] font-black text-white shadow-sm">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}

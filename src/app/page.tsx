@@ -381,7 +381,7 @@ export default function CustomerHomePage() {
       <section className="md:hidden">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="yk-label flex items-center gap-1.5 text-orange-600 dark:text-orange-400">
+            <p className="yk-label flex items-center gap-1.5 text-[#C2410C] dark:text-orange-400">
               <MapPin className="h-3 w-3" strokeWidth={2.6} />
               Yamoussoukro
             </p>
@@ -400,7 +400,7 @@ export default function CustomerHomePage() {
         <h1 className="yk-display mt-4 text-[32px] leading-[1.02]">
           Bonsoir{prenom ? ` ${prenom}` : ''},
           <br />
-          <span className="yk-italic text-orange-600 dark:text-orange-400">on mange quoi&nbsp;?</span>
+          <span className="yk-italic text-[#C2410C] dark:text-orange-400">on mange quoi&nbsp;?</span>
         </h1>
         <p className="mt-2 text-[13px] leading-relaxed text-[#6B625A] dark:text-white/55">
           Les meilleurs maquis de Yakro, livrés chauds en moins de 35 minutes.
@@ -420,7 +420,7 @@ export default function CustomerHomePage() {
         <section className="relative hidden overflow-hidden rounded-2xl sm:rounded-3xl md:block md:rounded-[2.5rem] min-h-[280px] sm:min-h-[360px] md:min-h-[420px] items-center justify-center shadow-2xl bg-slate-950">
           {/* Background Image with Overlay */}
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-105 bg-[url('/assets/marketing/hero-basilica.png')]"
+            className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-105 bg-[url('/assets/marketing/hero-basilica.webp')]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/30" />
           

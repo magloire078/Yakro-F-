@@ -28,7 +28,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
           </p>
         )}
         <p className="mt-auto pt-2">
-          <span className="yk-display text-[16px] text-orange-600 dark:text-orange-400">
+          <span className="yk-display text-[16px] text-[#C2410C] dark:text-orange-400">
             {formatFcfa(item.prix)}
           </span>
         </p>
@@ -50,7 +50,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             type="button"
             size="icon"
             aria-label={`Ajouter ${item.nom} au panier`}
-            className="absolute -bottom-2 -right-2 z-10 h-10 w-10 rounded-full border-[3px] border-white bg-orange-500 text-white shadow-[0_10px_20px_-8px_rgba(249,115,22,0.9)] transition-transform hover:bg-orange-500/90 hover:text-white active:scale-90 dark:border-[#141416]"
+            className="absolute -bottom-2 -right-2 z-10 h-10 w-10 rounded-full border-[3px] border-white bg-[#C2410C] text-white shadow-[0_10px_20px_-8px_rgba(249,115,22,0.9)] transition-transform hover:bg-[#C2410C]/90 hover:text-white active:scale-90 dark:border-[#141416]"
           >
             <Plus className="h-4 w-4" strokeWidth={3} />
           </Button>

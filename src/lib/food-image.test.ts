@@ -23,7 +23,7 @@ describe('resolveFoodImageSource', () => {
 
     it('optimise les hôtes déclarés et les fichiers locaux', () => {
         expect(resolveFoodImageSource('https://firebasestorage.googleapis.com/v0/b/x/o/a.jpg')?.type).toBe('optimized');
-        expect(resolveFoodImageSource('/assets/marketing/hero-food.png')?.type).toBe('optimized');
+        expect(resolveFoodImageSource('/assets/marketing/hero-food.webp')?.type).toBe('optimized');
     });
 
     it('affiche sans optimisation les aperçus locaux et hôtes inconnus (pas de plantage next/image)', () => {

@@ -16,8 +16,9 @@ export const dynamic = 'force-dynamic';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Le zoom (pinch) reste autorisé : le bloquer viole WCAG 1.4.4 et gêne les
+  // personnes malvoyantes. Les champs de saisie sont à 16px minimum
+  // (globals.css), donc Safari iOS ne zoome pas automatiquement au focus.
   // Indispensable pour que env(safe-area-inset-*) soit non nul sur iPhone.
   viewportFit: 'cover',
   themeColor: '#F97316',

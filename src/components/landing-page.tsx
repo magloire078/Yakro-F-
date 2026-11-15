@@ -41,17 +41,17 @@ const featureCategories = [
 
 const heroSlides = [
   {
-    image: "/assets/marketing/hero-basilica.png",
+    image: "/assets/marketing/hero-basilica.webp",
     title: "Yamoussoukro à votre table",
     description: "Découvrez les saveurs uniques de la capitale, livrées avec excellence jusque chez vous."
   },
   {
-    image: "/assets/marketing/hero-food.png",
+    image: "/assets/marketing/hero-food.webp",
     title: "L'excellence gastronomique",
     description: "Des plats d'exception préparés par les meilleurs restaurateurs de la ville."
   },
   {
-    image: "/assets/marketing/hero-delivery.png",
+    image: "/assets/marketing/hero-delivery.webp",
     title: "La ville, livrée intelligemment",
     description: "Une logistique de pointe pour une livraison rapide, sûre et toujours souriante."
   },
@@ -300,7 +300,7 @@ export function LandingPage() {
                 <div className="absolute inset-0 bg-primary/20 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl" />
                 <div className="relative h-full w-full rounded-2xl sm:rounded-3xl border border-white/10 overflow-hidden shadow-xl">
                     <Image 
-                        src="/assets/marketing/hero-basilica.png" 
+                        src="/assets/marketing/hero-basilica.webp" 
                         alt="Vision Yakro Fê"
                         fill 
                         className="object-cover opacity-60 hover:opacity-80 transition-opacity duration-500"

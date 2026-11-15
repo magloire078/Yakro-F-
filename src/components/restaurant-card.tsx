@@ -105,7 +105,7 @@ export function RestaurantCard({
 
             <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
               {isFeatured ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-500 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white shadow-lg shadow-orange-500/40">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#C2410C] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white shadow-lg shadow-orange-500/40">
                   <Sparkles className="h-3 w-3" /> En vedette
                 </span>
               ) : (
@@ -159,7 +159,7 @@ export function RestaurantCard({
 
             <div className="absolute inset-x-2 top-2 z-10 flex items-start justify-between gap-1">
               {isFeatured ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-white shadow-md shadow-orange-500/40">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#C2410C] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-white shadow-md shadow-orange-500/40">
                   <Sparkles className="h-3 w-3" /> En vedette
                 </span>
               ) : (
@@ -189,7 +189,7 @@ export function RestaurantCard({
             </p>
 
             {matchReason && (
-              <span className="inline-flex w-fit max-w-full items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+              <span className="inline-flex w-fit max-w-full items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#C2410C] dark:text-orange-400">
                 <span aria-hidden="true">✨</span>
                 <span className="truncate">{matchReason}</span>
               </span>

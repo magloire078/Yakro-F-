@@ -48,7 +48,7 @@ export function Dock({
         <span className="relative">
           <Icon className="h-[21px] w-[21px]" strokeWidth={actif ? 2.4 : 1.9} />
           {item.badge ? (
-            <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[9px] font-black text-white">
+            <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C2410C] px-1 text-[9px] font-black text-white">
               {item.badge > 9 ? '9+' : item.badge}
             </span>
           ) : null}
@@ -58,7 +58,7 @@ export function Dock({
     );
     const classes = cn(
       'flex flex-1 flex-col items-center gap-0.5 rounded-2xl py-1.5 transition-colors',
-      actif ? 'text-orange-600 dark:text-orange-400' : 'text-[#8A8078] dark:text-white/45'
+      actif ? 'text-[#C2410C] dark:text-orange-400' : 'text-[#8A8078] dark:text-white/45'
     );
     if (item.href) {
       return (
@@ -123,7 +123,7 @@ export function DockFab({
     >
       {children}
       {badge ? (
-        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-orange-500 px-1 text-[10px] font-black text-white dark:border-[#0A0A0B]">
+        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-[#C2410C] px-1 text-[10px] font-black text-white dark:border-[#0A0A0B]">
           {badge > 9 ? '9+' : badge}
         </span>
       ) : null}
@@ -145,7 +145,7 @@ export function SectionHeader({
   className?: string;
 }) {
   const actionClasses =
-    'inline-flex min-h-[40px] shrink-0 items-center gap-0.5 text-[12px] font-bold text-orange-600 dark:text-orange-400';
+    'inline-flex min-h-[40px] shrink-0 items-center gap-0.5 text-[12px] font-bold text-[#C2410C] dark:text-orange-400';
   return (
     <div className={cn('flex items-center justify-between gap-3', className)}>
       <h2 className="yk-display text-[22px] leading-tight">{title}</h2>
@@ -253,7 +253,7 @@ export function Stepper({
         onClick={() => onChange(valeur + 1)}
         className={cn(
           size,
-          'flex items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition-transform active:scale-90'
+          'flex items-center justify-center rounded-full bg-[#C2410C] text-white shadow-sm transition-transform active:scale-90'
         )}
       >
         <Plus className="h-4 w-4" />

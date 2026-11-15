@@ -304,7 +304,7 @@ export default function AdminPage() {
                 <div className="absolute inset-0 z-0">
                     {!bgImageFailed && (
                         <Image
-                            src="/assets/marketing/hero-basilica.png"
+                            src="/assets/marketing/hero-basilica.webp"
                             alt=""
                             fill
                             unoptimized
