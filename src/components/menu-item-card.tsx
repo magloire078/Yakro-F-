@@ -1,48 +1,61 @@
-
 'use client';
 
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { PlusCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { MenuItem } from '@/lib/types';
-
-import { AddToCartDialog } from './add-to-cart-dialog';
-import * as React from 'react';
+import { formatFcfa } from '@/lib/utils';
 import { FoodImage } from '@/components/food-image';
+import { AddToCartDialog } from './add-to-cart-dialog';
+import { Button } from './ui/button';
 
 interface MenuItemCardProps {
   item: MenuItem;
 }
 
+/**
+ * Ligne de plat « Yakro Elite » : texte à gauche (nom, description, prix),
+ * photo carrée 92 px à droite et bouton « + » orange chevauchant le coin.
+ * Le bouton ouvre le `AddToCartDialog` existant — la logique d'ajout au panier
+ * reste entièrement portée par ce composant.
+ */
 export function MenuItemCard({ item }: MenuItemCardProps) {
   return (
-    <Card className="flex flex-col p-2 xs:p-2.5 sm:p-3.5 glass transition-all duration-300 group rounded-xl xs:rounded-2xl border-white/5 hover:border-primary/30 hover:bg-white/10 shadow-xs hover:shadow-lg h-full justify-between">
-      <div>
-        <div className="relative w-full h-24 xs:h-28 sm:h-36 shrink-0 overflow-hidden rounded-lg xs:rounded-xl shadow-inner bg-slate-100 dark:bg-slate-800 mb-2">
+    <article className="yk-card group flex gap-3.5 p-3">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <h3 className="yk-display line-clamp-1 text-[16.5px] leading-tight">{item.nom}</h3>
+        {item.description && (
+          <p className="mt-1 line-clamp-2 text-[11.5px] leading-relaxed text-[#8A8078] dark:text-white/45">
+            {item.description}
+          </p>
+        )}
+        <p className="mt-auto pt-2">
+          <span className="yk-display text-[16px] text-orange-600 dark:text-orange-400">
+            {formatFcfa(item.prix)}
+          </span>
+        </p>
+      </div>
+
+      <div className="relative h-[92px] w-[92px] shrink-0">
+        <div className="relative h-full w-full overflow-hidden rounded-[1.15rem] bg-slate-100 dark:bg-white/[0.06]">
           <FoodImage
             src={item.image}
             alt={item.nom}
             kind="plat"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
-            className="transform group-hover:scale-105 transition-transform duration-500 ease-out"
+            sizes="92px"
+            className="transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
-        <div className="space-y-0.5 xs:space-y-1">
-          <h4 className="font-bold uppercase tracking-tight text-xs xs:text-sm group-hover:text-primary transition-colors duration-200 line-clamp-1">{item.nom}</h4>
-          <p className="text-[10px] xs:text-[11px] text-muted-foreground line-clamp-2 leading-tight opacity-80">{item.description}</p>
-        </div>
-      </div>
-      <div className="flex justify-between items-center pt-2 mt-auto">
-        <p className="text-xs xs:text-sm font-black text-primary tracking-tight">
-          {item.prix.toLocaleString('fr-FR')} <span className="text-[9px] xs:text-[10px] opacity-70">FCFA</span>
-        </p>
+
         <AddToCartDialog item={item}>
-          <Button variant="ghost" size="icon" className="h-7 w-7 xs:h-8 xs:w-8 rounded-lg xs:rounded-xl bg-primary text-white hover:bg-primary/90 hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95 shrink-0">
-            <PlusCircle className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+          <Button
+            type="button"
+            size="icon"
+            aria-label={`Ajouter ${item.nom} au panier`}
+            className="absolute -bottom-2 -right-2 z-10 h-10 w-10 rounded-full border-[3px] border-white bg-orange-500 text-white shadow-[0_10px_20px_-8px_rgba(249,115,22,0.9)] transition-transform hover:bg-orange-500/90 hover:text-white active:scale-90 dark:border-[#141416]"
+          >
+            <Plus className="h-4 w-4" strokeWidth={3} />
           </Button>
         </AddToCartDialog>
       </div>
-    </Card>
+    </article>
   );
 }

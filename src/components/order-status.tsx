@@ -3,20 +3,28 @@ import * as React from 'react';
 
 import { useEffect } from 'react';
 import { Button } from './ui/button';
-import { CheckCircle, CookingPot, Bike, Home, Map, Package } from 'lucide-react';
+import { Check, CheckCircle, CookingPot, Bike, Home, Map, Package } from 'lucide-react';
 import type { Order } from '@/lib/types';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+
+/**
+ * Suivi de commande « Yakro Elite · Nuit & Braise ».
+ *
+ * Carte chaude avec pastille de statut, chronologie verticale compacte et
+ * accès au suivi live du livreur. La logique (statuts, disparition après
+ * livraison) est inchangée.
+ */
 
 type StatusKey = Order['statut'];
 
-const statusConfig: Record<StatusKey, { name: string; icon: React.ReactElement; description: string }> = {
-  'Placée': { name: 'Placée', icon: <CheckCircle className="h-8 w-8" />, description: "Le restaurant a bien reçu votre commande." },
-  'En Préparation': { name: 'En Préparation', icon: <CookingPot className="h-8 w-8" />, description: "Le restaurant prépare votre repas." },
-  'Prête': { name: 'Prête', icon: <Package className="h-8 w-8" />, description: "Votre commande est prête et attend le livreur." },
-  'En Route': { name: 'En Route', icon: <Bike className="h-8 w-8" />, description: "Votre livreur est en chemin." },
-  'Livrée': { name: 'Livrée', icon: <Home className="h-8 w-8" />, description: "Bon appétit ! Votre commande est arrivée." },
-  'Annulée': { name: 'Annulée', icon: <Home className="h-8 w-8" />, description: "Votre commande a été annulée." },
+const statusConfig: Record<StatusKey, { name: string; icon: React.ElementType; description: string }> = {
+  'Placée': { name: 'Placée', icon: CheckCircle, description: 'Le restaurant a bien reçu votre commande.' },
+  'En Préparation': { name: 'En Préparation', icon: CookingPot, description: 'Le restaurant prépare votre repas.' },
+  'Prête': { name: 'Prête', icon: Package, description: 'Votre commande est prête et attend le livreur.' },
+  'En Route': { name: 'En Route', icon: Bike, description: 'Votre livreur est en chemin.' },
+  'Livrée': { name: 'Livrée', icon: Home, description: 'Bon appétit ! Votre commande est arrivée.' },
+  'Annulée': { name: 'Annulée', icon: Home, description: 'Votre commande a été annulée.' },
 };
 
 interface OrderStatusProps {
@@ -26,13 +34,10 @@ interface OrderStatusProps {
 
 export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
   const currentStatus = statusConfig[order.statut];
+  const CurrentIcon = currentStatus.icon;
   const isFinished = order.statut === 'Livrée' || order.statut === 'Annulée';
-  const allStatuses = Object.values(statusConfig).filter(s => s.name !== 'Annulée');
-  const statusIndex = allStatuses.findIndex(s => s.name === order.statut);
-
-  // Tailwind classes prédéfinies pour éviter les styles inline
-  const progressWidths = ['w-0', 'w-1/4', 'w-1/2', 'w-3/4', 'w-full'] as const;
-  const progressClass = progressWidths[Math.min(Math.max(statusIndex, 0), progressWidths.length - 1)];
+  const allStatuses = Object.values(statusConfig).filter((s) => s.name !== 'Annulée');
+  const statusIndex = allStatuses.findIndex((s) => s.name === order.statut);
 
   useEffect(() => {
     if (isFinished) {
@@ -43,54 +48,97 @@ export function OrderStatus({ order, onNewOrder }: OrderStatusProps) {
     }
   }, [isFinished, onNewOrder]);
 
-
   return (
-    <section>
-      <Card className="w-full bg-primary/5 border-primary/20 shadow-lg">
-        <CardHeader className="text-center">
-          <h2 className="text-2xl font-headline text-primary">Suivi de votre commande</h2>
-          <p className="text-muted-foreground">Votre commande de <span className="font-semibold text-foreground">{order.nomRestaurant}</span></p>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center text-center">
-          <div className={`mb-4 p-3 rounded-full transition-colors duration-500 text-primary ${!isFinished ? 'animate-pulse' : ''}`}>
-            {currentStatus.icon}
-          </div>
-          <h3 className="text-2xl font-bold">{currentStatus.name}</h3>
-          <p className="text-muted-foreground mb-8 h-10">
-            {currentStatus.description}
-            {order.statut === 'En Route' && (
-              <Button asChild variant="link" className="text-primary">
-                <Link href={`/orders/track?id=${order.id}`}>
-                  Suivre le livreur
-                  <Map className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            )}
+    <section className="yk-card overflow-hidden">
+      <div className="flex items-start justify-between gap-3 p-4 pb-2">
+        <div className="min-w-0">
+          <p className="yk-label">Suivi de votre commande</p>
+          <h2 className="yk-display mt-1 text-[23px] leading-tight">
+            {currentStatus.name}
+          </h2>
+          <p className="mt-1 text-[12px] leading-relaxed text-[#6B625A] dark:text-white/55">
+            {isFinished ? 'Votre commande est terminée.' : currentStatus.description}
+            <span className="text-[#8A8078] dark:text-white/40"> · {order.nomRestaurant}</span>
           </p>
-
-          <div className="w-full max-w-lg">
-            <div className="relative w-full h-1 bg-muted rounded-full">
-              <div
-                className={`absolute top-0 left-0 h-1 bg-primary rounded-full transition-all duration-500 ${progressClass}`}
-              />
-            </div>
-            <div className="flex justify-between mt-3">
-              {allStatuses.map((status, index) => (
-                <div key={status.name} className="flex flex-col items-center w-20">
-                  <div className={`w-3 h-3 rounded-full transition-colors duration-500 ${index <= statusIndex ? 'bg-primary' : 'bg-muted'}`}></div>
-                  <span className={`text-xs mt-2 font-semibold transition-colors duration-500 text-center ${index <= statusIndex ? 'text-primary' : 'text-muted-foreground'}`}>{status.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          {isFinished && (
-            <div className="mt-8 text-center">
-              <p className="text-green-600 font-bold">Votre commande a été livrée !</p>
-              <p className="text-sm text-muted-foreground">Ce message disparaîtra dans quelques secondes.</p>
-            </div>
+        </div>
+        <span
+          className={cn(
+            'flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-orange-500/10 text-orange-600 dark:text-orange-400',
+            !isFinished && order.statut === 'En Route' && 'animate-pulse'
           )}
-        </CardContent>
-      </Card>
+          aria-hidden="true"
+        >
+          <CurrentIcon className="h-6 w-6" />
+        </span>
+      </div>
+
+      <ol className="space-y-0 px-4 pb-4 pt-1">
+        {allStatuses.map((status, index) => {
+          const done = index <= statusIndex;
+          const actif = index === statusIndex && !isFinished;
+          return (
+            <li key={status.name} className="flex gap-3">
+              <span className="flex flex-col items-center">
+                <span
+                  className={cn(
+                    'flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold',
+                    actif
+                      ? 'bg-orange-500 text-white shadow-[0_0_0_4px_rgba(249,115,22,0.15)]'
+                      : done
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-black/[0.05] text-[#A79E96] dark:bg-white/[0.06] dark:text-white/30'
+                  )}
+                >
+                  {done ? <Check className="h-3 w-3" strokeWidth={3} /> : index + 1}
+                </span>
+                {index < allStatuses.length - 1 && (
+                  <span
+                    className={cn(
+                      'my-0.5 h-4 w-px',
+                      done ? 'bg-emerald-500/30' : 'bg-black/10 dark:bg-white/10'
+                    )}
+                  />
+                )}
+              </span>
+              <span
+                className={cn(
+                  'pt-0.5 text-[12.5px] font-semibold',
+                  actif
+                    ? 'text-[#16130F] dark:text-white'
+                    : done
+                      ? 'text-[#6B625A] dark:text-white/55'
+                      : 'text-[#A79E96] dark:text-white/30'
+                )}
+              >
+                {status.name}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+
+      {isFinished ? (
+        <div className="border-t border-black/[0.05] px-4 py-3 dark:border-white/[0.06]">
+          <p className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400">
+            Votre commande a été livrée !
+          </p>
+          <p className="text-[11px] text-[#8A8078] dark:text-white/45">
+            Ce message disparaîtra dans quelques secondes.
+          </p>
+        </div>
+      ) : (
+        <div className="border-t border-black/[0.05] px-4 py-3 dark:border-white/[0.06]">
+          <Button
+            asChild
+            className="yk-cta w-full justify-between px-4 text-[13.5px]"
+          >
+            <Link href={`/orders/track?id=${order.id}`}>
+              Suivre en direct
+              <Map className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      )}
     </section>
   );
 }

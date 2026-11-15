@@ -21,6 +21,8 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     pathname === '/complete-profile' ||
     pathname === '/intro' ||
     pathname === '/marketing' ||
+    // Aperçu de design : écran autonome, sans chrome d'application.
+    pathname.startsWith('/design') ||
     (!user && pathname === '/');
 
   // Les pages d'authentification (login, sélection/complétion de profil…)

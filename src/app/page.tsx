@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { LandingPage } from '@/components/landing-page';
-import { Pizza, Drumstick, Salad, Soup, Star, Timer, Truck, TrendingUp, MapPin, Sparkles as SparklesIcon, Flame } from 'lucide-react';
+import { Pizza, Drumstick, Salad, Soup, Timer, Truck, TrendingUp, MapPin, Sparkles as SparklesIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RestaurantCard } from '@/components/restaurant-card';
 import { useData } from '@/contexts/data-context';
@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { getCurrentLocation, YAKRO_DEFAULT_COORDS } from '@/lib/geolocation';
 import { currentIdToken } from '@/lib/auth-token';
+import { SectionHeader } from '@/components/mobile-ui';
 
 interface Category {
     name: string;
@@ -89,7 +90,7 @@ const getDistance = (coords1: Coordinates, coords2: Coordinates) => {
 };
 
 export default function CustomerHomePage() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { restaurants, menuItems, orders, isLoading } = useData();
   const { toast } = useToast();
   
@@ -367,13 +368,56 @@ export default function CustomerHomePage() {
   if (!user) {
     return <LandingPage />;
   }
+
+  const prenom =
+    userProfile?.nom?.trim().split(/\s+/)[0] ||
+    user.displayName?.trim().split(/\s+/)[0] ||
+    '';
+  const quartier = userProfile?.adresseParDefaut?.split(',')[0]?.trim() || 'Yamoussoukro';
   
   return (
     <div className="flex flex-col gap-4 sm:gap-6 md:gap-8">
+      {/* En-tête éditorial mobile — la salutation avant le chrome */}
+      <section className="md:hidden">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="yk-label flex items-center gap-1.5 text-orange-600 dark:text-orange-400">
+              <MapPin className="h-3 w-3" strokeWidth={2.6} />
+              Yamoussoukro
+            </p>
+            <p className="mt-1 flex items-center gap-1 text-[15px] font-bold">
+              <span className="truncate">{quartier}</span>
+            </p>
+          </div>
+          <span
+            aria-hidden="true"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-[15px] font-black text-orange-600 ring-2 ring-orange-500/40 ring-offset-2 ring-offset-[#FAF7F2] dark:text-orange-400 dark:ring-offset-[#0A0A0B]"
+          >
+            {(prenom.charAt(0) || 'Y').toUpperCase()}
+          </span>
+        </div>
+
+        <h1 className="yk-display mt-4 text-[32px] leading-[1.02]">
+          Bonsoir{prenom ? ` ${prenom}` : ''},
+          <br />
+          <span className="yk-italic text-orange-600 dark:text-orange-400">on mange quoi&nbsp;?</span>
+        </h1>
+        <p className="mt-2 text-[13px] leading-relaxed text-[#6B625A] dark:text-white/55">
+          Les meilleurs maquis de Yakro, livrés chauds en moins de 35 minutes.
+        </p>
+
+        <div className="mt-4">
+          <IntelligentSearchBar
+            onSearchChange={setSearchQuery}
+            onInterpretedSearchChange={setInterpretedSearch}
+          />
+        </div>
+      </section>
+
       {activeOrder ? (
           <OrderStatus order={activeOrder} onNewOrder={handleNewOrder} />
       ) : (
-        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] min-h-[280px] sm:min-h-[360px] md:min-h-[420px] flex items-center justify-center shadow-2xl bg-slate-950">
+        <section className="relative hidden overflow-hidden rounded-2xl sm:rounded-3xl md:block md:rounded-[2.5rem] min-h-[280px] sm:min-h-[360px] md:min-h-[420px] items-center justify-center shadow-2xl bg-slate-950">
           {/* Background Image with Overlay */}
           <div 
             className="absolute inset-0 bg-cover bg-center transition-transform animate-slow-zoom hover:scale-105 bg-[url('/assets/marketing/hero-basilica.png')]"
@@ -454,15 +498,25 @@ export default function CustomerHomePage() {
 
       {/* Categories Section */}
       <section>
-        <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
-            <div className="flex h-4 sm:h-5 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
-                <div className="flex-1 bg-orange-500" />
-                <div className="flex-1 bg-white dark:bg-slate-300" />
-                <div className="flex-1 bg-emerald-500" />
-            </div>
-            <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Explorer par catégories</h2>
+        <SectionHeader title="Explorer par catégories" className="mb-3" />
+        <div className="scrollbar-hide -mx-3 flex gap-2 overflow-x-auto px-3 pb-1 md:hidden">
+          {categories.map((category) => {
+            const actif = selectedCategory?.toLowerCase() === category.name.toLowerCase();
+            return (
+              <button
+                key={category.name}
+                type="button"
+                aria-pressed={actif}
+                onClick={() => handleCategorySelect(category.name)}
+                className={cn('yk-chip shrink-0', actif && 'yk-chip-active')}
+              >
+                <category.icon className="h-4 w-4" aria-hidden="true" />
+                {category.name}
+              </button>
+            );
+          })}
         </div>
-        <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+        <div className="hidden grid-cols-4 gap-2 sm:gap-3 md:grid md:gap-4">
           {categories.map((category, index) => (
             <motion.div
                 key={category.name}
@@ -496,17 +550,9 @@ export default function CustomerHomePage() {
       {/* Hot Picks Section */}
       {!isLoading && restaurants.length > 0 && !searchQuery && !selectedCategory && (
         <section className="relative">
-          <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-            <div className="flex items-center gap-2">
-               <div className="p-1 sm:p-1.5 bg-red-500/10 rounded-lg">
-                 <Flame className="text-red-500 fill-red-500 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-               </div>
-               <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Coups de Cœur</h2>
-            </div>
-            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest text-red-500 border-red-500/30 bg-red-500/5 py-0.5 px-2">OFFRES CHAUDES</Badge>
-          </div>
+          <SectionHeader title="Coups de cœur" className="mb-3" />
           
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
              {restaurants.filter(r => r.note >= 4.8).slice(0, 4).map(restaurant => (
               <RestaurantCard key={`hot-${restaurant.id}`} restaurant={restaurant} />
             ))}
@@ -522,30 +568,28 @@ export default function CustomerHomePage() {
       
       {featuredRestaurants.length > 0 && !selectedCategory && !searchQuery && (
           <section>
-             <div className="flex items-center gap-2 mb-2.5 sm:mb-4">
-                <Star className="text-primary fill-primary h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">Restaurants en vedette</h2>
-             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
+            <SectionHeader title="En vedette ce soir" href="/restaurants" className="mb-3" />
+            <div className="scrollbar-hide -mx-3 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-3 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 xl:grid-cols-4">
                {featuredRestaurants.map(restaurant => (
-                <RestaurantCard key={restaurant.id} restaurant={restaurant} featured />
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} featured variant="featured" />
               ))}
             </div>
           </section>
       )}
 
       <section id="restaurants">
-        <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-base sm:text-xl font-black italic uppercase tracking-tight text-foreground">
-              {searchQuery || interpretedSearch || activeFilter || selectedCategory ? 'Résultats de recherche' : 'Tous les Restaurants'}
-            </h2>
-            {getFilterLabel() && <Badge variant="secondary" className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">{getFilterLabel()}</Badge>}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
+        <SectionHeader
+          title={searchQuery || interpretedSearch || activeFilter || selectedCategory ? 'Résultats' : 'Ouverts près de toi'}
+          className="mb-3"
+        />
+        {getFilterLabel() && (
+          <Badge variant="secondary" className="mb-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+            {getFilterLabel()}
+          </Badge>
+        )}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
            {normalRestaurants.map(restaurant => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} />
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} matchReason={restaurant.matchReason} distance={restaurant.distance} variant="row" />
           ))}
         </div>
          {normalRestaurants.length === 0 && (

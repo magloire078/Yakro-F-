@@ -1,112 +1,115 @@
-
 'use client';
 
-import { useAuth } from '@/contexts/auth-context';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { Home, Sparkles, History, ClipboardList, BookOpenCheck, BarChart, Bike, DollarSign, MessageCircle } from 'lucide-react';
 import * as React from 'react';
-import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
+import {
+  BarChart,
+  Bike,
+  BookOpenCheck,
+  ClipboardList,
+  Compass,
+  DollarSign,
+  Home,
+  ReceiptText,
+  ShoppingBag,
+  UserRound,
+} from 'lucide-react';
+import { CartSheet } from '@/components/cart-sheet';
+import { Dock, DockFab, type DockItem } from '@/components/mobile-ui';
+import { useAuth } from '@/contexts/auth-context';
+import { useCart } from '@/contexts/cart-context';
 
-const clientLinks = [
-    { href: '/', label: 'Accueil', icon: Home },
-    { href: '/recommendations', label: 'Pour Vous', icon: Sparkles },
-    { href: '/assistant', label: 'Assistant', icon: MessageCircle },
-    { href: '/orders', label: 'Historique', icon: History },
+/**
+ * Navigation mobile « Yakro Elite · Nuit & Braise ».
+ *
+ * Le rendu est délégué aux primitives partagées `Dock` / `DockFab`
+ * (`src/components/mobile-ui.tsx`) : dock flottant en verre, quatre liens et,
+ * côté client, le panier en action centrale surélevée.
+ */
+
+const CLIENT_LINKS: DockItem[] = [
+  { id: 'accueil', href: '/', label: 'Accueil', icon: Home },
+  // « Explorer » mène à la liste complète de l'accueil : `/restaurants` est la
+  // page détail (elle exige `?id=`), pas une liste.
+  { id: 'explorer', href: '/#restaurants', label: 'Explorer', icon: Compass },
+  { id: 'commandes', href: '/orders', label: 'Commandes', icon: ReceiptText },
+  { id: 'profil', href: '/profile', label: 'Moi', icon: UserRound },
 ];
 
-const restaurateurLinks = [
-    { href: '/restaurateur', label: 'Dashboard', icon: Home },
-    { href: '/dashboard/menu', label: 'Menus', icon: BookOpenCheck },
-    { href: '/dashboard/orders', label: 'Commandes', icon: ClipboardList },
-    { href: '/dashboard/analytics', label: 'Stats', icon: BarChart },
+const RESTAURATEUR_LINKS: DockItem[] = [
+  { id: 'dashboard', href: '/restaurateur', label: 'Dashboard', icon: Home },
+  { id: 'menus', href: '/dashboard/menu', label: 'Menus', icon: BookOpenCheck },
+  { id: 'commandes', href: '/dashboard/orders', label: 'Commandes', icon: ClipboardList },
+  { id: 'stats', href: '/dashboard/analytics', label: 'Stats', icon: BarChart },
 ];
 
-const livreurLinks = [
-    { href: '/livreur', label: 'Courses', icon: Bike },
-    { href: '/dashboard/earnings', label: 'Gains', icon: DollarSign },
+const LIVREUR_LINKS: DockItem[] = [
+  { id: 'courses', href: '/livreur', label: 'Courses', icon: Bike },
+  { id: 'gains', href: '/dashboard/earnings', label: 'Gains', icon: DollarSign },
 ];
 
-// Une colonne par lien + une pour « Moi ». Classes écrites en entier pour que
-// Tailwind les génère. (Le nombre de colonnes était fixé à la main : 4 pour
-// les clients alors qu'ils ont 5 boutons, et « Moi » passait à la ligne,
-// sous « Accueil ».)
-const GRID_COLS: Record<number, string> = {
-    3: 'grid-cols-3',
-    4: 'grid-cols-4',
-    5: 'grid-cols-5',
-    6: 'grid-cols-6',
-};
+/**
+ * Un lien est actif sur sa route exacte ; les sous-pages du tableau de bord
+ * gardent en plus le lien parent actif (ex. `/dashboard/menu/edition`).
+ */
+function isActiveHref(pathname: string, href: string): boolean {
+  if (pathname === href) return true;
+  return href.startsWith('/dashboard/') && pathname.startsWith(`${href}/`);
+}
 
+/**
+ * Radix `SheetTrigger asChild` exige un élément DOM qui reçoit la `ref` et le
+ * `onClick`. `DockFab` est un bouton de présentation partagé (primitives
+ * `mobile-ui`) qui ne relaie pas ces props : ce conteneur transparent
+ * (`display: contents`) porte le déclenchement du panier, et le clic sur le
+ * FAB (souris, tactile, Entrée/Espace) remonte naturellement jusqu'à lui.
+ */
+const CartFabTrigger = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
+  function CartFabTrigger({ children, ...props }, ref) {
+    return (
+      <span ref={ref} {...props} className="contents">
+        {children}
+      </span>
+    );
+  }
+);
 
 export function BottomNavBar() {
-    const { activeRole, userProfile } = useAuth();
-    const pathname = usePathname();
+  const { activeRole, userProfile } = useAuth();
+  const { cartCount } = useCart();
+  const pathname = usePathname();
 
-    const links = activeRole === 'restaurateur'
-        ? restaurateurLinks
-        : activeRole === 'livreur'
-            ? livreurLinks
-            : clientLinks;
-    const gridColsClass = GRID_COLS[links.length + 1];
-    
-    if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
+  // Comme avant : pas de dock pour les SuperAdmin ni tant que le profil
+  // n'est pas chargé.
+  if (!userProfile || userProfile.roleSysteme === 'SuperAdmin') return null;
 
-    return (
-        <nav aria-label="Navigation principale" className="fixed bottom-0 left-0 z-50 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-primary/10 dark:border-slate-800/50 md:hidden pb-safe">
-            <div className={cn("grid h-16 mx-auto font-medium items-center", gridColsClass)}>
-                {links.map((link) => {
-                     const isActive = pathname === link.href;
-                     return (
-                        <Link 
-                            key={link.href} 
-                            href={link.href} 
-                            className={cn(
-                                "relative inline-flex flex-col items-center justify-center py-1 group transition-colors duration-300",
-                                isActive ? "text-primary" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
-                            )}>
-                            {isActive && (
-                                <motion.div 
-                                    layoutId="nav-glow"
-                                    className="absolute inset-0 bg-primary/5 blur-lg rounded-full" 
-                                />
-                            )}
-                            <link.icon className={cn("w-5 h-5 mb-0.5 transition-transform duration-300", isActive && "scale-110")} />
-                            <span className="text-[9px] font-bold uppercase tracking-tighter leading-tight">{link.label}</span>
-                            {isActive && (
-                                <motion.div 
-                                    layoutId="nav-dot"
-                                    className="absolute bottom-1 w-1 h-1 bg-primary rounded-full" 
-                                />
-                            )}
-                        </Link>
-                     )
-                })}
-                 <Link 
-                    href="/profile" 
-                    className={cn(
-                        "relative inline-flex flex-col items-center justify-center py-1 group transition-colors duration-300",
-                        pathname === '/profile' ? "text-primary" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
-                    )}>
-                    {pathname === '/profile' && (
-                        <motion.div 
-                            layoutId="nav-glow"
-                            className="absolute inset-0 bg-primary/5 blur-lg rounded-full" 
-                        />
-                    )}
-                    <svg className={cn("w-5 h-5 mb-0.5 transition-transform duration-300", pathname === '/profile' && "scale-110")} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9.05 13.55a1 1 0 0 0 1.9 0 3.987 3.987 0 0 1 3.951 3.462A8.949 8.949 0 0 1 10 18Z"/>
-                    </svg>
-                    <span className="text-[9px] font-bold uppercase tracking-tighter leading-tight">Moi</span>
-                    {pathname === '/profile' && (
-                        <motion.div 
-                            layoutId="nav-dot"
-                            className="absolute bottom-1 w-1 h-1 bg-primary rounded-full" 
-                        />
-                    )}
-                </Link>
-            </div>
-        </nav>
-    );
+  if (activeRole === 'restaurateur') {
+    const activeId = RESTAURATEUR_LINKS.find(
+      (link) => link.href && isActiveHref(pathname, link.href)
+    )?.id;
+    return <Dock items={RESTAURATEUR_LINKS} activeId={activeId} />;
+  }
+
+  if (activeRole === 'livreur') {
+    const activeId = LIVREUR_LINKS.find((link) => link.href && isActiveHref(pathname, link.href))?.id;
+    return <Dock items={LIVREUR_LINKS} activeId={activeId} />;
+  }
+
+  const activeId = CLIENT_LINKS.find((link) => link.href && isActiveHref(pathname, link.href))?.id;
+
+  return (
+    <Dock
+      items={CLIENT_LINKS}
+      activeId={activeId}
+      center={
+        <CartSheet>
+          <CartFabTrigger>
+            <DockFab label="Panier" badge={cartCount}>
+              <ShoppingBag className="h-6 w-6" aria-hidden="true" />
+            </DockFab>
+          </CartFabTrigger>
+        </CartSheet>
+      }
+    />
+  );
 }

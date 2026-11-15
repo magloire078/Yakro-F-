@@ -229,6 +229,63 @@
   }
 }
 
+/* ── « Yakro Elite » — langage mobile (prototype & écrans connectés) ─────
+   Direction : crème chaud + encre profonde en clair, noir braise en sombre,
+   accent orange, ombres chaudes, rayons généreux. Les classes sont
+   volontairement préfixées `yk-` pour ne pas entrer en collision avec les
+   utilitaires existants. */
+@layer components {
+  /* Écran plein (le fond chaud remplace le gris froid par défaut). */
+  .yk-screen {
+    @apply bg-[#FAF7F2] text-[#16130F] dark:bg-[#0A0A0B] dark:text-[#FAFAF9];
+  }
+
+  /* Carte surface : blanc chaud en clair, graphite en sombre, ombre portée
+     chaude et diffuse (pas de gris bleuté). */
+  .yk-card {
+    @apply rounded-[1.75rem] border border-black/[0.05] bg-white shadow-[0_20px_50px_-24px_rgba(22,19,15,0.35)] dark:border-white/[0.07] dark:bg-[#141416] dark:shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)];
+  }
+
+  /* Verre : utilisé sur les photos et les barres flottantes. */
+  .yk-glass {
+    @apply border border-white/50 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06];
+  }
+
+  .yk-chip {
+    @apply inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border border-black/[0.06] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#4A443D] transition-colors dark:border-white/10 dark:bg-white/[0.05] dark:text-white/70;
+  }
+
+  .yk-chip-active {
+    @apply border-orange-500 bg-orange-500 text-white shadow-[0_10px_24px_-10px_rgba(249,115,22,0.9)] dark:border-orange-500 dark:bg-orange-500 dark:text-white;
+  }
+
+  /* Micro-libellé éditorial (Sora, majuscules espacées). */
+  .yk-label {
+    @apply font-ui text-[10px] font-bold uppercase tracking-[0.22em] text-[#8A8078] dark:text-white/45;
+  }
+
+  /* Titres éditoriaux : Fraunces (déjà chargée par l'application). */
+  .yk-display {
+    font-family: var(--font-fraunces), Georgia, serif;
+    @apply font-semibold tracking-[-0.02em];
+  }
+
+  .yk-italic {
+    font-style: italic;
+    font-variation-settings: 'SOFT' 60, 'WONK' 1;
+  }
+
+  /* Bouton principal plein, pilule, ombre orange. */
+  .yk-cta {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full bg-orange-500 px-6 text-[15px] font-bold text-white shadow-[0_16px_34px_-14px_rgba(249,115,22,0.9)] transition-transform active:scale-[0.98] dark:bg-orange-500;
+  }
+
+  /* Barre d'action collée en bas d'écran, au-dessus du safe-area. */
+  .yk-bottom-bar {
+    @apply fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.06] bg-white/90 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#0B0B0D]/90;
+  }
+}
+
 /* ── Cartographie temps réel (Leaflet) ─────────────────────────────────── */
 @layer components {
   /* Les marqueurs glissent entre deux positions GPS au lieu de sauter… */

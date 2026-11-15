@@ -17,7 +17,8 @@ import { useFirebase } from '@/contexts/firebase-provider';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, formatFcfa } from '@/lib/utils';
+import { MetaRow } from '@/components/mobile-ui';
 import { FoodImage } from '@/components/food-image';
 import { currentIdToken } from '@/lib/auth-token';
 import { isAiAccessMessage } from '@/lib/ai-quota';
@@ -144,11 +145,11 @@ function RestaurantPageContent() {
 
     if (isLoading && !restaurant) {
         return (
-            <div className="space-y-8 animate-pulse">
-                <Skeleton className="h-[40vh] w-full rounded-[2.5rem]" />
-                <div className="space-y-4">
-                  <Skeleton className="h-12 w-64" />
-                  <Skeleton className="h-6 w-full max-w-96" />
+            <div className="space-y-4 animate-pulse">
+                <Skeleton className="-mx-3 -mt-3 h-[320px] rounded-b-[2rem] sm:-mx-4 sm:-mt-4 sm:h-[380px] md:-mx-8 md:-mt-8 md:h-[440px]" />
+                <div className="mx-auto max-w-5xl px-2 pt-4 sm:px-6">
+                  <Skeleton className="h-10 w-64" />
+                  <Skeleton className="mt-3 h-5 w-full max-w-96" />
                 </div>
             </div>
         )
@@ -172,8 +173,8 @@ function RestaurantPageContent() {
 
     return (
         <div className="pb-16 sm:pb-24">
-            {/* Cinematic Header */}
-            <div className="relative h-[32vh] sm:h-[42vh] md:h-[50vh] w-full -mx-3 sm:-mx-4 md:-mx-8 lg:-mx-12 -mt-3 sm:-mt-4 md:-mt-8 mb-4 sm:mb-8 overflow-hidden shadow-xl rounded-b-3xl sm:rounded-b-[3rem]">
+            {/* Héros photo plein cadre */}
+            <div className="relative -mx-3 -mt-3 h-[320px] overflow-hidden rounded-b-[2rem] shadow-xl sm:-mx-4 sm:-mt-4 sm:h-[380px] sm:rounded-b-[2.5rem] md:-mx-8 md:-mt-8 md:h-[440px]">
                 <motion.div 
                     initial={{ scale: 1.15 }}
                     animate={{ scale: 1 }}
@@ -189,13 +190,14 @@ function RestaurantPageContent() {
                     />
                 </motion.div>
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" aria-hidden="true" />
                 
                 {/* Back Button */}
                 <Button 
                     variant="ghost" 
-                    className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 bg-black/30 hover:bg-black/50 hover:text-white backdrop-blur-md border border-white/15 text-white rounded-xl sm:rounded-2xl h-9 w-9 sm:h-11 sm:w-11 p-0 active:scale-90 transition-transform"
+                    className="absolute left-4 top-4 z-30 h-10 w-10 rounded-full border border-white/50 bg-white/80 p-0 text-[#16130F] shadow-sm backdrop-blur-xl transition-transform hover:bg-white/90 hover:text-[#16130F] active:scale-90 dark:border-white/10 dark:bg-black/40 dark:text-white dark:hover:bg-black/55 dark:hover:text-white sm:left-5 sm:top-5"
                     onClick={() => router.back()}
+                    aria-label="Retour"
                 >
                     <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
@@ -207,20 +209,21 @@ function RestaurantPageContent() {
                         transition={{ delay: 0.3 }}
                         className="flex flex-wrap items-center gap-1.5 sm:gap-2.5"
                     >
-                        <Badge className="glass-orange text-white font-black uppercase tracking-wider py-0.5 sm:py-1 px-2.5 sm:px-3.5 text-[10px] sm:text-xs rounded-full border-none">
-                            {restaurant.cuisine}
-                        </Badge>
-                        <div className="flex items-center gap-1 bg-black/30 backdrop-blur-md border border-white/15 text-white py-0.5 sm:py-1 px-2.5 sm:px-3.5 rounded-full text-[10px] sm:text-xs font-bold">
-                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-500 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow-lg shadow-orange-500/40">
+                            <Star className="h-3 w-3 fill-white" />
                             {averageRating}
-                        </div>
+                            {allReviews.length > 0 ? ` · ${allReviews.length} avis` : ''}
+                        </span>
+                        <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-white', restaurant.suspendu ? 'bg-red-500/90' : 'bg-emerald-500/90')}>
+                            {restaurant.suspendu ? 'Suspendu' : 'Ouvert'}
+                        </span>
                     </motion.div>
                     
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
-                        className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl font-black text-white uppercase italic tracking-tighter"
+                        className="yk-display mt-1 text-[30px] leading-tight text-white sm:text-[38px]"
                     >
                         {restaurant.nom}
                     </motion.h1>
@@ -231,35 +234,44 @@ function RestaurantPageContent() {
                         transition={{ delay: 0.5 }}
                         className="flex flex-wrap items-center gap-2 sm:gap-4 text-white/90 text-xs sm:text-sm"
                     >
-                        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-lg border border-white/5">
-                            <Clock className="w-3.5 h-3.5 text-primary" />
-                            <span className="font-bold">{restaurant.tempsDeLivraison} MIN</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-lg border border-white/5">
-                            <Bike className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="font-bold">{restaurant.fraisDeLivraison > 0 ? `${restaurant.fraisDeLivraison.toLocaleString('fr-FR')} F` : 'OFFERTE'}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-lg border border-white/5">
-                            <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                            <span className="font-bold uppercase text-[10px] sm:text-xs">Yakro</span>
-                        </div>
+                        <span className="flex items-center gap-1.5 text-[12px] font-medium text-white/80">
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-orange-400" />
+                            <span className="line-clamp-1">{restaurant.adresse || 'Yamoussoukro'}</span>
+                        </span>
+                        <MetaRow
+                            className="text-[11.5px] text-white/85"
+                            temps={`${restaurant.tempsDeLivraison} min`}
+                            frais={restaurant.fraisDeLivraison > 0 ? formatFcfa(restaurant.fraisDeLivraison) : 'Offerte'}
+                        />
                     </motion.div>
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-3 sm:px-6">
+            {/* Bandeau infos */}
+            <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto px-2 pb-1 sm:px-6">
+                <span className="yk-chip shrink-0">
+                    <Clock className="h-3.5 w-3.5 text-orange-500" /> {restaurant.tempsDeLivraison} min
+                </span>
+                <span className="yk-chip shrink-0">
+                    <Bike className="h-3.5 w-3.5 text-emerald-500" /> Livraison{' '}
+                    {restaurant.fraisDeLivraison > 0 ? formatFcfa(restaurant.fraisDeLivraison) : 'offerte'}
+                </span>
+                <span className="yk-chip shrink-0">{restaurant.cuisine}</span>
+            </div>
+
+            <div className="mt-2 max-w-5xl mx-auto px-2 sm:px-6">
                 <Tabs defaultValue="menu" className="w-full">
                     <div className="flex items-center justify-between mb-4 sm:mb-6 border-b border-slate-200 dark:border-slate-800 pb-0 overflow-x-auto scrollbar-hide">
                         <TabsList className="bg-transparent h-auto p-0 gap-6 sm:gap-8 flex-nowrap">
                             <TabsTrigger 
                                 value="menu" 
-                                className="bg-transparent data-[state=active]:bg-transparent border-b-[2.5px] border-transparent data-[state=active]:border-primary rounded-none px-0 py-2.5 sm:py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider transition-all data-[state=active]:text-primary"
+                                className="relative rounded-none border-b-[3px] border-transparent bg-transparent px-0 py-3 text-[13px] font-bold uppercase tracking-wider text-[#8A8078] transition-colors data-[state=active]:border-orange-500 data-[state=active]:bg-transparent data-[state=active]:text-[#16130F] dark:text-white/40 dark:data-[state=active]:text-white"
                             >
                                 <ShoppingBag className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Menu
                             </TabsTrigger>
                             <TabsTrigger 
                                 value="reviews" 
-                                className="bg-transparent data-[state=active]:bg-transparent border-b-[2.5px] border-transparent data-[state=active]:border-primary rounded-none px-0 py-2.5 sm:py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider transition-all data-[state=active]:text-primary"
+                                className="relative rounded-none border-b-[3px] border-transparent bg-transparent px-0 py-3 text-[13px] font-bold uppercase tracking-wider text-[#8A8078] transition-colors data-[state=active]:border-orange-500 data-[state=active]:bg-transparent data-[state=active]:text-[#16130F] dark:text-white/40 dark:data-[state=active]:text-white"
                             >
                                 <Users className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Avis
                             </TabsTrigger>
@@ -272,28 +284,28 @@ function RestaurantPageContent() {
                     </div>
 
                     <TabsContent value="menu" className="mt-0 outline-none">
-                        <section>
-                            <div className="flex items-center gap-2.5 mb-3 sm:mb-5">
-                                <div className="flex h-5 sm:h-6 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
-                                    <div className="flex-1 bg-orange-500" />
-                                    <div className="flex-1 bg-white dark:bg-slate-300" />
-                                    <div className="flex-1 bg-emerald-500" />
-                                </div>
-                                <h2 className="text-lg sm:text-2xl font-headline">Nos Incontournables</h2>
+                        <section className="mx-auto max-w-3xl">
+                            <div className="mb-3 flex items-end justify-between gap-2 sm:mb-5">
+                                <h2 className="yk-display text-[22px] leading-tight sm:text-[26px]">Nos incontournables</h2>
+                                <span className="yk-label shrink-0">
+                                    {restaurantMenu.length} plat{restaurantMenu.length > 1 ? 's' : ''}
+                                </span>
                             </div>
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5">
+                            <div className="space-y-3">
                                 {restaurantMenu.length > 0 ? restaurantMenu.map((item, index) => (
                                     <motion.div
                                         key={item.id}
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: index * 0.04 }}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: Math.min(index * 0.03, 0.3) }}
                                     >
                                         <MenuItemCard item={item} />
                                     </motion.div>
                                 )) : (
-                                    <div className="col-span-2 lg:col-span-3 py-12 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-                                        <p className="text-slate-400 text-sm">Le menu arrive bientôt. Restez connectés !</p>
+                                    <div className="rounded-[1.5rem] border border-dashed border-black/10 bg-white/60 py-12 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                                        <p className="text-[13px] font-medium text-[#8A8078] dark:text-white/45">
+                                            Le menu arrive bientôt. Restez connectés !
+                                        </p>
                                     </div>
                                 )}
                             </div>
