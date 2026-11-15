@@ -61,7 +61,7 @@ export function OrderItemsCard({ order, className }: OrderItemsCardProps) {
   };
 
   return (
-    <div className={cn('bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-md', className)}>
+    <div className={cn('yk-card p-4 sm:p-5', className)}>
       {/* En-tête cliquable */}
       <div className="flex items-center justify-between gap-3">
         <button

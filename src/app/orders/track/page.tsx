@@ -17,7 +17,6 @@ import {
   Crown,
   ChefHat,
   MessageCircle,
-  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -270,74 +269,62 @@ function TrackOrderContent() {
   const isCancellable = isOrderCancellableByClient(liveOrder);
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="mx-auto max-w-5xl space-y-4 px-0 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-1 animate-in fade-in slide-in-from-bottom-4 duration-700 sm:space-y-6 sm:px-6 sm:py-8">
       {/* Barre de retour et actions d'en-tête */}
-      <div className="flex items-center justify-between gap-3">
-        <Button
-          asChild
-          variant="ghost"
-          className="text-2xs sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-orange-500 h-8 px-2"
+      <div className="-mt-1 flex items-center justify-between gap-3">
+        <Link
+          href="/orders"
+          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-black/[0.06] bg-white/70 px-3.5 text-[11.5px] font-bold text-[#4A443D] shadow-sm backdrop-blur transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-white/70"
         >
-          <Link href="/orders">
-            ← Mes commandes
-          </Link>
-        </Button>
+          ← Mes commandes
+        </Link>
 
         {isCancellable && (
           <OrderCancelDialog orderId={liveOrder.id} />
         )}
       </div>
 
-      {/* Hero Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/40 pb-5">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-3.5 sm:h-4 w-1.5 flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
-              <div className="flex-1 bg-orange-500" />
-              <div className="flex-1 bg-white dark:bg-slate-300" />
-              <div className="flex-1 bg-emerald-500" />
+      {/* Héros « Yakro Elite » : statut, ETA, priorité */}
+      <div className="overflow-hidden rounded-[1.75rem] bg-[#0B0B0D] text-white shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]">
+        <div className="px-5 pb-5 pt-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                </span>
+                Suivi en direct
+              </p>
+              <h1 className="yk-display mt-1.5 text-[27px] leading-none">
+                Commande <span className="text-orange-400">#{liveOrder.id.slice(0, 6)}</span>
+              </h1>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-white/60">{headline.subtitle}</p>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500">
-              Suivi en direct · Yakro-Fê
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline font-black italic uppercase tracking-tighter text-foreground leading-none">
-              Commande <span className="text-orange-500">#{liveOrder.id.slice(0, 6)}</span>
-            </h1>
 
             {liveOrder.prioritaire && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-2xs sm:text-xs font-black uppercase tracking-wider">
-                <Crown className="h-3 w-3" /> VIP Prioritaire
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
+                <Crown className="h-3 w-3" /> VIP
               </span>
             )}
           </div>
 
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            {headline.subtitle}
-          </p>
+          {liveOrder.statut === 'En Route' && livreurDistance !== null && (
+            <div className="mt-4 flex items-end justify-between rounded-[1.25rem] border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Arrivée estimée</p>
+                <p className="yk-display text-[30px] leading-none text-orange-400">
+                  ~{estimateArrivalMinutes(livreurDistance)} min
+                </p>
+              </div>
+              <p className="pb-0.5 text-right text-[11px] font-medium text-white/55">
+                Distance
+                <br />
+                <span className="text-[13px] font-bold text-white/80">{formatDistance(livreurDistance)}</span>
+              </p>
+            </div>
+          )}
         </div>
-
-        {/* ETA Badge si En Route */}
-        {liveOrder.statut === 'En Route' && livreurDistance !== null && (
-          <div className="p-3 sm:p-4 rounded-2xl bg-orange-500/10 border border-orange-500/25 flex items-center gap-3 shrink-0">
-            <div className="h-10 w-10 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-orange-500/20">
-              <Clock className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-orange-500">
-                Arrivée estimée
-              </p>
-              <p className="text-lg sm:text-xl font-headline font-black text-foreground">
-                ~{estimateArrivalMinutes(livreurDistance)} min
-              </p>
-              <p className="text-2xs text-muted-foreground font-semibold">
-                Distance : {formatDistance(livreurDistance)}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Stepper de progression */}
@@ -352,7 +339,7 @@ function TrackOrderContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
         {/* Colonne gauche (2/3) : Carte et partage GPS */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="relative h-80 sm:h-96 md:h-[460px] rounded-2xl sm:rounded-3xl overflow-hidden bg-muted/40 border border-border/50 shadow-xl">
+          <div className="relative h-[300px] overflow-hidden rounded-[1.6rem] border border-black/[0.06] bg-muted/40 shadow-[0_24px_50px_-28px_rgba(22,19,15,0.4)] dark:border-white/[0.08] sm:h-96 md:h-[420px]">
             {mapMarkers.length > 0 ? (
               <LiveMap markers={mapMarkers} routes={mapRoutes} className="h-full w-full" />
             ) : (
@@ -365,18 +352,18 @@ function TrackOrderContent() {
 
           {/* Partage GPS en direct */}
           {isOrderActive && (
-            <label className="flex items-center gap-3.5 p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 cursor-pointer shadow-sm hover:border-sky-500/30 transition-all">
-              <div className="h-11 w-11 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+            <label className="yk-card flex cursor-pointer items-center gap-3.5 p-3.5 transition-colors hover:border-sky-500/30">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.9rem] border border-sky-500/20 bg-sky-500/10">
                 <Navigation className="h-5 w-5 text-sky-500" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-foreground">Partager ma position GPS en direct</p>
+                  <p className="text-[13.5px] font-bold text-foreground">Partager ma position GPS en direct</p>
                   {shareLocation && sharing.status === 'active' && (
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted-foreground">
                   {shareLocation
                     ? sharing.status === 'active'
                       ? sharing.writeError
@@ -401,29 +388,29 @@ function TrackOrderContent() {
         {/* Colonne droite (1/3) : Fiches d'informations */}
         <div className="space-y-4">
           {/* Fiche Restaurant */}
-          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-sm">
+          <div className="yk-card flex items-start gap-3.5 p-4">
             <div className="h-11 w-11 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0 text-rose-500">
               <ChefHat className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <p className="yk-label">
                 Restaurant
               </p>
-              <p className="font-bold text-foreground truncate mt-0.5">{restaurant?.nom || liveOrder.nomRestaurant}</p>
-              <p className="text-xs text-muted-foreground truncate">{restaurant?.adresse || liveOrder.adresseRestaurant}</p>
+              <p className="mt-0.5 truncate text-[13.5px] font-bold text-foreground">{restaurant?.nom || liveOrder.nomRestaurant}</p>
+              <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">{restaurant?.adresse || liveOrder.adresseRestaurant}</p>
             </div>
           </div>
 
           {/* Fiche Livreur */}
-          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-sm">
+          <div className="yk-card flex items-start gap-3.5 p-4">
             <div className="h-11 w-11 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0 text-orange-500">
               <Bike className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <p className="yk-label">
                 Livreur
               </p>
-              <p className="font-bold text-foreground truncate mt-0.5">
+              <p className="mt-0.5 truncate text-[13.5px] font-bold text-foreground">
                 {livreur?.nom || "En attente d'assignation…"}
               </p>
               {livreurDistance !== null ? (
@@ -437,7 +424,7 @@ function TrackOrderContent() {
               ) : livreurPosition ? (
                 <p className="text-xs font-bold text-orange-500 animate-pulse mt-1">En mouvement…</p>
               ) : (
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted-foreground">
                   Localisation disponible dès la prise en charge
                 </p>
               )}
@@ -445,15 +432,15 @@ function TrackOrderContent() {
           </div>
 
           {/* Fiche Adresse Client */}
-          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-sm">
+          <div className="yk-card flex items-start gap-3.5 p-4">
             <div className="h-11 w-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-500">
               <Home className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <p className="yk-label">
                 Destination
               </p>
-              <p className="font-bold text-foreground text-xs sm:text-sm mt-0.5 leading-snug">
+              <p className="mt-0.5 text-[12.5px] font-bold leading-snug text-foreground">
                 {liveOrder.adresseClient}
               </p>
               <p className="text-2xs text-muted-foreground mt-0.5">Tél : {liveOrder.telephoneClient}</p>
@@ -461,12 +448,12 @@ function TrackOrderContent() {
           </div>
 
           {/* Fiche Paiement */}
-          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-sm">
+          <div className="yk-card flex items-start gap-3.5 p-4">
             <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
               <Wallet className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <p className="yk-label">
                 Paiement
               </p>
               <div className="flex items-center gap-2">
@@ -510,15 +497,13 @@ function TrackOrderContent() {
           </div>
 
           {/* Assistance & Support WhatsApp */}
-          <div className="p-4 rounded-2xl bg-background/40 border border-border/40 text-center space-y-2">
-            <p className="text-2xs font-black uppercase tracking-wider text-muted-foreground">
-              Besoin d’aide sur cette course ?
-            </p>
+          <div className="yk-card space-y-2 p-4 text-center">
+            <p className="yk-label">Besoin d’aide sur cette course ?</p>
             <Button
               asChild
               variant="outline"
               size="sm"
-              className="w-full rounded-xl text-xs font-bold gap-1.5 border-border hover:bg-muted"
+              className="w-full gap-1.5 rounded-full text-[12px] font-bold"
             >
               <a
                 href={`https://wa.me/2250700000000?text=${encodeURIComponent(

@@ -53,13 +53,13 @@ export function OrderTrackingStepper({ status, className }: OrderTrackingStepper
   const progressPercent = Math.max(0, Math.min(100, (currentIndex / (ORDER_TRACKING_STEPS.length - 1)) * 100));
 
   return (
-    <div className={cn('space-y-4 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-md', className)}>
+    <div className={cn('yk-card space-y-4 p-4', className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping" />
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Progression en direct</p>
+          <span className="h-2 w-2 animate-ping rounded-full bg-orange-500" />
+          <p className="yk-label">Progression en direct</p>
         </div>
-        <span className="text-xs font-black uppercase tracking-wider text-orange-500">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
           Étape {currentIndex + 1} / {ORDER_TRACKING_STEPS.length}
         </span>
       </div>
@@ -105,9 +105,9 @@ export function OrderTrackingStepper({ status, className }: OrderTrackingStepper
                 <div className="mt-2.5 space-y-0.5">
                   <p
                     className={cn(
-                      'text-[9px] sm:text-xs font-black uppercase tracking-tight leading-tight',
-                      isCurrent && 'text-orange-500 font-black',
-                      isCompleted && 'text-foreground font-bold',
+                      'text-[9.5px] font-bold uppercase leading-tight tracking-tight sm:text-[11px]',
+                      isCurrent && 'font-black text-orange-600 dark:text-orange-400',
+                      isCompleted && 'font-semibold text-foreground',
                       !isCompleted && !isCurrent && 'text-muted-foreground/50'
                     )}
                   >
@@ -122,8 +122,8 @@ export function OrderTrackingStepper({ status, className }: OrderTrackingStepper
       </div>
 
       {/* Description de l'étape courante */}
-      <div className="pt-2 border-t border-border/30 flex items-center gap-2.5 text-xs text-muted-foreground">
-        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+      <div className="flex items-center gap-2.5 border-t border-border/30 pt-2 text-[11.5px] text-muted-foreground">
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
         <span className="italic">{ORDER_TRACKING_STEPS[currentIndex]?.description}</span>
       </div>
     </div>

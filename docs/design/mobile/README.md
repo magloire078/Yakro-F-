@@ -101,13 +101,13 @@ Avant : `avant/*.png` (écrans publics, seuls accessibles sans compte).
 | Panier | `src/components/cart-sheet.tsx` | ✅ intégré |
 | Accueil (salutation, recherche, catégories, vedettes, liste) | `src/app/page.tsx` | ✅ intégré |
 | Suivi de commande (carte sur l'accueil) | `src/components/order-status.tsx` | ✅ intégré |
-| Suivi live (page dédiée) | `src/app/orders/track/page.tsx` | ⏳ prochaine étape |
+| Suivi live (page dédiée) | `src/app/orders/track/page.tsx`, `src/components/orders/order-tracking-stepper.tsx`, `src/components/orders/order-items-card.tsx` | ✅ intégré |
 
 Vérification visuelle sans compte : `/design/mobile/composants` rend les **vrais** composants
 intégrés avec des données de démonstration (captures dans `integration/`).
 
-Ordre recommandé pour la suite : page de suivi live, puis passe d'accessibilité (contrastes AA des
-CTA orange) et réduction des animations (`prefers-reduced-motion`).
+Reste à faire : passe d'accessibilité (contrastes AA des CTA orange), réduction des animations
+(`prefers-reduced-motion`), poids des images d'accueil.
 
 ## 6. Voir le prototype
 
